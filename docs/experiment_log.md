@@ -39,3 +39,7 @@
 ## 2026-10-13 — Checkpoint 2 exclusive-device inventory
 
 **Setup:** Rerun `inventory.py --check-cuda` on only allocated UUID `GPU-18558721-7ba2-20a7-f883-b2c4e2593aff`; query compute processes and storage without changing device or cluster settings. **Observation:** CUDA/NVML identity crosscheck passed for the 132-SM H100 with 50 MiB queried L2. No compute processes were listed. Torch remains 2.11.0+cu128, vLLM and Nsight Systems are absent; CUDA 12.8 compiler is available. The 25 GiB overlay has about 2.09 GB free while the local archive is retained. **Interpretation:** Runtime build requires local space recovery after independent remote verification. **Next test:** verified cleanup and pinned vLLM source build.
+
+## 2026-10-13 — Roofline control pilot
+
+**Setup:** On the allocated UUID, run three warmups and three GPU-event trials of BF16 8192-square GEMM and a 1 GiB device copy, then combine the resulting control ceilings with existing correct bridge timing and analytical tensor/KV counts. **Observation:** Median GEMM 718.40 TFLOP/s; useful-byte copy 3032.09 GB/s. Analytical bridge intensity proxies span 1.01–7.47 FLOP/read-byte. **Interpretation:** These are useful controls and explicitly analytical decode proxies; no real decode HBM traffic or saturated-bandwidth claim follows. **Next test:** collect optimized vLLM timing and counters if profiler access permits. See `docs/roofline_report.md`.
