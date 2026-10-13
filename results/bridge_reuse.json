@@ -1,0 +1,146 @@
+{
+  "models": {
+    "bridge": "/root/26_memory_centric_gpu_h100/models/hf_cache/models--Qwen--Qwen2.5-1.5B-Instruct/snapshots/989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+  },
+  "cases": [
+    {
+      "case_id": "bridge_b1_c128_p0",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 128,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b1_c128_p75",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 128,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b1_c1024_p0",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b1_c1024_p75",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b1_c4096_p0",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b1_c4096_p75",
+      "model": "bridge",
+      "batch_size": 1,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b4_c128_p0",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 128,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b4_c128_p75",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 128,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b4_c1024_p0",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b4_c1024_p75",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b4_c4096_p0",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b4_c4096_p75",
+      "model": "bridge",
+      "batch_size": 4,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b8_c128_p0",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 128,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b8_c128_p75",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 128,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b8_c1024_p0",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b8_c1024_p75",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 1024,
+      "shared_prefix_fraction": 0.75
+    },
+    {
+      "case_id": "bridge_b8_c4096_p0",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0
+    },
+    {
+      "case_id": "bridge_b8_c4096_p75",
+      "model": "bridge",
+      "batch_size": 8,
+      "context_length": 4096,
+      "shared_prefix_fraction": 0.75
+    }
+  ],
+  "additional_sram_mib": [
+    0,
+    8,
+    32,
+    128,
+    512
+  ],
+  "chunk_bytes": 65536,
+  "decode_steps": 3,
+  "warmup_steps": 1,
+  "l2_bytes": 52428800,
+  "l2_capacity_provenance": "selected H100 CUDA device properties L2_cache_size; results/environment_cu128.json",
+  "scope": "logical synthetic full-block fills; not measured GPU traffic, area, energy or timing"
+}

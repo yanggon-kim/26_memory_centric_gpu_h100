@@ -4,7 +4,7 @@ Framework v2.0.0 `64653015f85fb5664c84a10f48527e8897d289d0`; backend `91880c5338
 
 A public genuine V100 LUD fixture replayed 10 kernels, 127,309 cycles and 418,884 active-thread instructions. The same compatible legacy fixture under H100 configuration produced 118,888 cycles and the same instructions. These are CPU build/config regression smokes, not native Hopper traces, H100 timing calibration or LLM results.
 
-A small native RTX sm_120 trace produced 20,224 reported warp instructions and nonempty compressed traces after fixing PATH and folder setup. Its simulation is correctly rejected: the trace frontend has no sm_120 dispatch and can report unsupported architecture while exiting zero. Never relabel its header as sm_90. Native H100 capture, modern Hopper opcode replay and workload calibration remain pending.
+A small native RTX sm_120 trace produced 20,224 reported warp instructions and nonempty compressed traces after fixing PATH and folder setup. Its simulation is correctly rejected: the trace frontend has no sm_120 dispatch and can report unsupported architecture while exiting zero. Never relabel its header as sm_90. A real H100 sm_90 dynamic-input micro and first-decoder-layer pilot now capture, postprocess and replay with positive cycles, instructions and kernel statistics; the pilot's `mbarrier` TRYWAIT-drop warnings, optimized whole-workload semantics and timing/power calibration remain open (see `docs/calibration_table.md`).
 
 The source audit found these consequential limitations:
 
@@ -16,7 +16,7 @@ The source audit found these consequential limitations:
 - Shipped H100 simple-DRAM configuration requires achieved-bandwidth and memory-timing calibration for the exact SKU. Spinlock replay/watchdog behavior must be separately checked.
 - `gpu_tot_sim_insn` is active-thread instruction count (`shader.cc` accumulation by active count); tracer statistics are warp records. Their denominators differ.
 
-Upstream trace-gating bug is reproduced at tracer_tool.cu 655–658: ACTIVE_FROM_START=0 overwrites active_region at each launch even after the ProfilerStart handler enables it. Native PASS/exit0 can therefore produce empty trace lists. Our scaffold uses ACTIVE_FROM_START=1, starts instrumentation disabled, attaches the official runtime-enable/disable hooks only after prefill, and insists on actual positive trace instructions and grouped files. This hook workaround still requires native H100 validation.
+Upstream trace-gating bug is reproduced at tracer_tool.cu 655–658: ACTIVE_FROM_START=0 overwrites active_region at each launch even after the ProfilerStart handler enables it. Native PASS/exit0 can therefore produce empty trace lists. Our scaffold uses ACTIVE_FROM_START=1, starts instrumentation disabled, attaches the official runtime-enable/disable hooks only after prefill, and insists on actual positive trace instructions and grouped files. The runtime hook and nonempty-capture path passed on the allocated H100 for both partial and whole-model HF eager forwards; Hopper async/barrier semantics and calibrated workload timing remain unvalidated.
 
 The shipped stock H100 configuration is132SM/SXM-like. A PCIe/NVL or another H100 allocation requires an explicitly derived, hashed SKU configuration; compare observed SM/HBM/L2/clocks/bandwidth and preserve calibration differences. The rental replay smoke intentionally uses stock config only for parser/completion integrity, never as automatic device accuracy.
 

@@ -11,6 +11,7 @@ export CUDA_INSTALL_PATH="$CUDA_HOME"
 export PATH="$CUDA_HOME/bin:$PATH"
 export ACCELSIM_CONFIG=release
 setup_root="$(realpath -m -- "$1")"
+package_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 framework="$setup_root/accel-sim-framework"
 jobs="${SIM_BUILD_JOBS:-4}"
 [[ "$jobs" =~ ^[1-9][0-9]*$ ]] && (( jobs <= 16 )) || { echo 'Bound SIM_BUILD_JOBS to1–16' >&2; exit 2; }
@@ -25,14 +26,26 @@ checkout_pin() {
     git -C "$destination" checkout --detach "$revision"
   fi
   [[ "$(git -C "$destination" rev-parse HEAD)" == "$revision" ]] || { echo "Unexpected checkout $destination" >&2; exit 1; }
+  if [[ "$destination" == "$framework" ]]; then return; fi
   [[ -z "$(git -C "$destination" diff --name-only)" && -z "$(git -C "$destination" diff --cached --name-only)" ]] || { echo "Tracked source changes at $destination; record/review before build" >&2; exit 1; }
 }
 checkout_pin https://github.com/accel-sim/accel-sim-framework.git "$framework" 64653015f85fb5664c84a10f48527e8897d289d0
 checkout_pin https://github.com/accel-sim/gpgpu-sim_distribution.git "$framework/gpu-simulator/gpgpu-sim" 91880c53383d5a6a6742bfb1be2c5f34e39c7871
 checkout_pin https://github.com/pybind/pybind11.git "$framework/gpu-simulator/extern/pybind11" 6254086d96062249c5153c17eab6b4437dd1589f
+mapfile -t patch_spec < <(python3 -c 'import json,sys; p=json.load(open(sys.argv[1]))["reviewed_local_patch"]; print(p["path"],p["sha256"],p["source_path"],p["original_source_sha256"],p["patched_source_sha256"],sep="\n")' "$package_dir/configs/simulator_pin.json")
+patch_file="$package_dir/${patch_spec[0]}"
+source_file="$framework/${patch_spec[2]}"
+[[ "$(sha256sum "$patch_file" | cut -d ' ' -f1)" == "${patch_spec[1]}" ]] || { echo 'Reviewed patch hash mismatch' >&2; exit 1; }
+source_hash="$(sha256sum "$source_file" | cut -d ' ' -f1)"
+if [[ "$source_hash" == "${patch_spec[3]}" ]]; then
+  git -C "$framework" apply --check "$patch_file"
+  git -C "$framework" apply "$patch_file"
+fi
+[[ "$(sha256sum "$source_file" | cut -d ' ' -f1)" == "${patch_spec[4]}" ]] || { echo 'Reviewed patched source hash mismatch' >&2; exit 1; }
+[[ "$(git -C "$framework" diff --name-only)" == "${patch_spec[2]}" && -z "$(git -C "$framework" diff --cached --name-only)" ]] || { echo 'Unreviewed tracked framework changes' >&2; exit 1; }
 cd "$framework"
 set +u
-source gpu-simulator/setup_environment.sh > "$setup_root/logs/build_environment.log" 2>&1
+source gpu-simulator/setup_environment.sh release > "$setup_root/logs/build_environment.log" 2>&1
 set -u
 extra=()
 if [[ -n "${ZSTD_INCLUDE_DIR:-}" && -n "${ZSTD_LIBRARY:-}" ]]; then

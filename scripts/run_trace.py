@@ -58,12 +58,19 @@ def main(a):
     modelconfig=Path(config['model_path'])/'config.json'
     dump(a.output/'checkpoint_model_config.json',json.loads(modelconfig.read_text()))
     source_state={name:{'unstaged':subprocess.check_output(['git','-C',str(path),'diff','--stat'],text=True),'staged':subprocess.check_output(['git','-C',str(path),'diff','--cached','--stat'],text=True)} for name,path in {'framework':a.accel_root,'backend':a.accel_root/'gpu-simulator/gpgpu-sim'}.items()}
-    assert all(not value for state in source_state.values() for value in state.values()),'baseline capture refuses staged or unstaged tracked source modifications'
+    patch_spec=pin['reviewed_local_patch']
+    patch_file=package/patch_spec['path']
+    source_file=a.accel_root/patch_spec['source_path']
+    assert hashlib.sha256(patch_file.read_bytes()).hexdigest()==patch_spec['sha256'],'reviewed patch hash mismatch'
+    assert hashlib.sha256(source_file.read_bytes()).hexdigest()==patch_spec['patched_source_sha256'],'reviewed patched source hash mismatch'
+    changed=subprocess.check_output(['git','-C',str(a.accel_root),'diff','--name-only'],text=True).splitlines()
+    assert changed==[patch_spec['source_path']] and not source_state['framework']['staged'],'unreviewed framework changes'
+    assert not source_state['backend']['unstaged'] and not source_state['backend']['staged'],'unreviewed backend changes'
     package_scripts={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (package/'scripts').glob('*.py')}
     summary={'status':'running','framework_sha':actual,'backend_sha':backend,'nvbit_version':'1.8','command':cmd,
              'engine':a.engine,'trace_env':{k:env[k] for k in ['ACTIVE_FROM_START','NVBIT_INSTRUMENTATION_ENABLED','ALLOW_REG_VAL_TRACING','SKIP_TMA_MEM','SPINLOCK_HANDLING_MODE','ENABLE_WATCHDOG','USER_DEFINED_FOLDERS','TRACE_FILE_COMPRESS','TRACES_FOLDER']},
              'runtime_packages':{dist.metadata['Name']:dist.version for dist in importlib.metadata.distributions()},'external_binaries':binaries,'CUDA_HOME':str(toolkit),'toolkit_versions':toolkit_versions,'source_changes':source_state,'package_script_sha256':package_scripts,'model_config_sha256':hashlib.sha256(modelconfig.read_bytes()).hexdigest(),
-             'budget_gib':a.budget_gib,'minimum_reserved_disk_gib':reserve,'timeout_s':a.timeout_s,'replay':'pending'}
+             'reviewed_local_patch':patch_spec,'budget_gib':a.budget_gib,'minimum_reserved_disk_gib':reserve,'timeout_s':a.timeout_s,'replay':'pending'}
     dump(a.output/'launch_manifest.json',summary)
     start=time.monotonic()
     failure=None

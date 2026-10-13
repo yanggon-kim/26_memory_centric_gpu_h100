@@ -1,6 +1,6 @@
 # Future H100 Phase 0–2 execution playbook
 
-All H100 steps below are pending. Begin with primary specification Sections 0 and 14. Establish evidence, including failures, before picking an architecture. The historical RTX study does not demonstrate H100 behavior, feasible SRAM area, or energy benefit.
+This playbook describes the complete Phase 0–2 contract. Selected H100 bridge, energy, analytical reuse and partial native-trace steps have now been attempted; see `STATUS.json`, `results/case_manifest.json` and `docs/opportunity_report.md` for their disposition. Begin with primary specification Sections 0 and 14. Establish evidence, including failures, before picking an architecture. The historical RTX study does not demonstrate H100 behavior, feasible SRAM area, or energy benefit.
 
 ## Phase 0: allocation and reproducibility gate
 

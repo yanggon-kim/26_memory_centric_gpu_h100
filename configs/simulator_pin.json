@@ -3,8 +3,15 @@
   "framework_sha": "64653015f85fb5664c84a10f48527e8897d289d0",
   "gpgpu_sim_sha": "91880c53383d5a6a6742bfb1be2c5f34e39c7871",
   "nvbit_version": "1.8",
-  "status": "CPU framework build and real V100 fixture replay verified by parent; H100 GPU trace/replay/calibration pending",
+  "status": "CPU build and V100 fixture regression verified; real sm_90 micro and partial decoder-layer parser/replay verified with reviewed local patch; H100 timing/power calibration pending",
   "pybind11_sha": "6254086d96062249c5153c17eab6b4437dd1589f",
   "nvbit_archive_sha256": "72a2b827f9531dcb86b6be13844f267640fb440929d92944177029da6da2b9e1",
-  "nvbit_core_sha256": "db221829106673bcd69d1e05766136f80e2df4497fb8415d8c2f298b96c302f7"
+  "nvbit_core_sha256": "db221829106673bcd69d1e05766136f80e2df4497fb8415d8c2f298b96c302f7",
+  "reviewed_local_patch": {
+    "path": "patches/accelsim_nvbit_missing_spinlock_entry.patch",
+    "sha256": "ffdb498bc7536f6950e41760adfa521d8c375a03c2889185a33a6c2e05da8145",
+    "source_path": "util/tracer_nvbit/tracer_tool/tracer_tool.cu",
+    "original_source_sha256": "92b55d50e8cfafa447ede1cd2f008e7e0b399751f3e9c13364c8e9e734979e95",
+    "patched_source_sha256": "34f4c555ff23a59aa63b00147fa03c56e392ae54392f7bc6849ff9ebe0c30288"
+  }
 }

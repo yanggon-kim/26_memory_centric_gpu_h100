@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "target_uuid": "GPU-18558721-7ba2-20a7-f883-b2c4e2593aff",
+  "cases": [
+    {
+      "id": "bridge_b1_c1024_cu128",
+      "kind": "software_decode",
+      "status": "complete",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": true,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 1,
+          "context_length": 1024,
+          "outputs_identical": true,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_b1_c1024_cu128/run.json",
+      "source_sha256": "6a221feb11dfc90d95fbd6dbe5e023f5a145b2319c4156f4a0e8f9d46c7ff023",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_b1_c1024_cu128_eager_energy",
+      "kind": "software_decode",
+      "status": "complete",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": false,
+      "mode": "energy",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 1,
+          "context_length": 1024,
+          "outputs_identical": true,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_b1_c1024_cu128_eager_energy/run.json",
+      "source_sha256": "8086b636de71e3054ca0d25b71798dec3f1d2f9eb8177e5dbb40ebf53b8647b3",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_b1_c128_cu128_eager",
+      "kind": "software_decode",
+      "status": "complete",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": false,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 1,
+          "context_length": 128,
+          "outputs_identical": true,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_b1_c128_cu128_eager/run.json",
+      "source_sha256": "84b1426fa05d4036acd9772d23e684223c11815ae92551aad6f15b896cf56364",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_b8_c4096_cu128",
+      "kind": "software_decode",
+      "status": "failed",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": true,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [],
+      "source": "results/bridge_b8_c4096_cu128/run.json",
+      "source_sha256": "a62c24b1f276610e2c69b6145c0ea02a996eb626e9286074c39bb53c4b81ff5c",
+      "failure_source": "results/bridge_b8_c4096_cu128/failure.json",
+      "failure_sha256": "31b4d38b7f0e80b4a309ac0ffe150287a5fbc8328cb857d7595732659802fc30"
+    },
+    {
+      "id": "bridge_b8_c4096_cu128_eager",
+      "kind": "software_decode",
+      "status": "complete",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": false,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 8,
+          "context_length": 4096,
+          "outputs_identical": true,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_b8_c4096_cu128_eager/run.json",
+      "source_sha256": "b9003e36913e39ebfb6534680a4d6398ca666be8e20f144a8f73d23d443a0e06",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_b8_c4096_cu128_retry1",
+      "kind": "software_decode",
+      "status": "failed",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 8,
+        "max_num_batched_tokens": 32768,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": true,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1,
+        4,
+        8
+      ],
+      "requested_context_lengths": [
+        128,
+        1024,
+        4096
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 8,
+          "context_length": 4096,
+          "outputs_identical": false,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_b8_c4096_cu128_retry1/run.json",
+      "source_sha256": "fefea0c9623c84a402d4e466fe965eb2bc6df7f17f10c56cd757af899c44e0e6",
+      "failure_source": "results/bridge_b8_c4096_cu128_retry1/failure.json",
+      "failure_sha256": "d7ba63373a3afbff380ad7c4ffb8fdefa2c816093f848888f1a4b3ae07e04202"
+    },
+    {
+      "id": "bridge_smoke_cu128_compiled",
+      "kind": "software_decode",
+      "status": "failed",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 1,
+        "max_num_batched_tokens": 8192,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": true,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1
+      ],
+      "requested_context_lengths": [
+        128
+      ],
+      "recorded_cases": [],
+      "source": "results/bridge_smoke_cu128_compiled/run.json",
+      "source_sha256": "4c2766b84cb5d2369de430db6d589e28c8ab44b5116e71b4ba153e1feaaa684f",
+      "failure_source": "results/bridge_smoke_cu128_compiled/failure.json",
+      "failure_sha256": "6f9504f27f8cb8030be68167bd816848ac12bc9a8638a8345c637a50d7308066"
+    },
+    {
+      "id": "bridge_smoke_cu128_compiled_retry1",
+      "kind": "software_decode",
+      "status": "complete",
+      "classification": "measured-real-GPU",
+      "engine": {
+        "max_model_len": 8192,
+        "max_num_seqs": 1,
+        "max_num_batched_tokens": 8192,
+        "gpu_memory_utilization": 0.7
+      },
+      "compile": true,
+      "mode": "timing",
+      "requested_batch_sizes": [
+        1
+      ],
+      "requested_context_lengths": [
+        128
+      ],
+      "recorded_cases": [
+        {
+          "batch_size": 1,
+          "context_length": 128,
+          "outputs_identical": true,
+          "measured_trials": 3
+        }
+      ],
+      "source": "results/bridge_smoke_cu128_compiled_retry1/run.json",
+      "source_sha256": "1831464e6cf1e00300e0466ffda7df4926900f88eeaca683721e184f84d81f48",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_eager_kernel_profile",
+      "kind": "instrumented_kernel_inventory",
+      "status": "failed",
+      "source": "results/bridge_eager_kernel_profile/failure.json",
+      "source_sha256": "e4b0b31a12b059ee41878042cdbde621300846e04c886536325814f1793ef9cc",
+      "failure_source": "results/bridge_eager_kernel_profile/failure.json",
+      "failure_sha256": "e4b0b31a12b059ee41878042cdbde621300846e04c886536325814f1793ef9cc"
+    },
+    {
+      "id": "bridge_eager_kernel_profile_retry1",
+      "kind": "instrumented_kernel_inventory",
+      "status": "complete",
+      "source": "results/bridge_eager_kernel_profile_retry1/kernel_inventory.json",
+      "source_sha256": "e825a1304a8d0bb600bab599d1b5dce9a5c6381a2c1cf2732f9290070a8da3cb",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "bridge_full_cu128",
+      "kind": "native_trace",
+      "status": "capture_and_postprocess_verified",
+      "recovered_after_failure": true,
+      "recovery_source": "results/bridge_full_cu128_trace_result.json",
+      "recovery_sha256": "d4551b0f04850d2f28cc3ed694a242edfb86af4615b67747b75821147f2b09dd",
+      "source": "traces/bridge_full_cu128/export_manifest.json",
+      "source_sha256": "74c3a556af2b36e2e1d6424acd26e4a81930c32cea2319281be007b0ec15b237",
+      "failure_source": "traces/bridge_full_cu128/failure.json",
+      "failure_sha256": "6f718c066db4898d72089de68517ee20bd79ae8e443a323f3beac1886b1c9dea"
+    },
+    {
+      "id": "bridge_layer0_pilot",
+      "kind": "native_trace",
+      "status": "capture_and_postprocess_verified",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/bridge_layer0_pilot/export_manifest.json",
+      "source_sha256": "e2ade207b1b429c767e03d83980c17b33bb1ae45fbb52b1c3e20f7a4013fad83",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "micro_cu128",
+      "kind": "native_trace",
+      "status": "partial_failed",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_cu128/failure.json",
+      "source_sha256": "7495016789afa43a20a11be46553bfc9d1d2cb097709d9217cea22b8edc53587",
+      "failure_source": "traces/micro_cu128/failure.json",
+      "failure_sha256": "7495016789afa43a20a11be46553bfc9d1d2cb097709d9217cea22b8edc53587"
+    },
+    {
+      "id": "micro_cu128_no_reg",
+      "kind": "native_trace",
+      "status": "partial_failed",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_cu128_no_reg/failure.json",
+      "source_sha256": "a94136f5a2f46e602d6566997082218ed73660644e46058f289eeef8dd5cc78c",
+      "failure_source": "traces/micro_cu128_no_reg/failure.json",
+      "failure_sha256": "a94136f5a2f46e602d6566997082218ed73660644e46058f289eeef8dd5cc78c"
+    },
+    {
+      "id": "micro_native_compressed",
+      "kind": "native_trace",
+      "status": "diagnostic_capture_passed_unverified",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_compressed/capture.log",
+      "source_sha256": "eb699364d6be29dda27d9eeda35caff8ddb87b2d72d898672a73f490e390b6ec",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "micro_native_cu128",
+      "kind": "native_trace",
+      "status": "partial_failed",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_cu128/failure.json",
+      "source_sha256": "f03b609783418839ad116e66081eba3f95a03de1fb169571611c299894d9fc7d",
+      "failure_source": "traces/micro_native_cu128/failure.json",
+      "failure_sha256": "f03b609783418839ad116e66081eba3f95a03de1fb169571611c299894d9fc7d"
+    },
+    {
+      "id": "micro_native_minimal",
+      "kind": "native_trace",
+      "status": "diagnostic_capture_passed_unverified",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_minimal/capture.log",
+      "source_sha256": "fca996879a974babde02233047ce97f00a4b3b14fe2165655bec70ae196f2a36",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "micro_native_patched",
+      "kind": "native_trace",
+      "status": "capture_and_postprocess_verified",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_patched/export_manifest.json",
+      "source_sha256": "0b968bd4bf839baebb74948a3a56178f1ddc441e11cfad9d2d725766172260ef",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "micro_native_reg",
+      "kind": "native_trace",
+      "status": "diagnostic_capture_passed_unverified",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_reg/capture.log",
+      "source_sha256": "f3b2393a2ee9e7630ed9a3ffd094a904e9d37d428187607ce2149268ec96d619",
+      "failure_source": null,
+      "failure_sha256": null
+    },
+    {
+      "id": "micro_native_spin",
+      "kind": "native_trace",
+      "status": "partial_failed",
+      "recovered_after_failure": false,
+      "recovery_source": null,
+      "recovery_sha256": null,
+      "source": "traces/micro_native_spin/failure.json",
+      "source_sha256": "d5f7c5fbbdde3171319c291f55a26a76b6f2c441b41a9d108dec62a41c289efa",
+      "failure_source": "traces/micro_native_spin/failure.json",
+      "failure_sha256": "d5f7c5fbbdde3171319c291f55a26a76b6f2c441b41a9d108dec62a41c289efa"
+    }
+  ],
+  "note": "Recorded attempts only; failed and partial artifacts remain in place."
+}

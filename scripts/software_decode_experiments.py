@@ -415,10 +415,11 @@ def main(args):
                     case['trials'].append(controlled_trial(model, cache, decode, prompt, count, torch,
                             sensor, config['minimum_energy_window_s'], args.mode=='profile'))
                 hashes = {t['output_sha256'] for t in case['trials']} | set(warmup_hashes)
+                case['warmup_output_sha256'] = warmup_hashes
                 case['outputs_identical'] = len(hashes)==1
-                assert case['outputs_identical'], 'same-shape greedy outputs differ across runs'
                 data['cases'].append(case)
                 dump(args.output/'run.json', data)
+                assert case['outputs_identical'], 'same-shape greedy outputs differ across runs'
                 print(f'{args.mode} B={batch} C={context}: {[round(t["wall_ms"],2) for t in case["trials"]]} ms', flush=True)
                 del decode, eager, cache
                 torch._dynamo.reset()

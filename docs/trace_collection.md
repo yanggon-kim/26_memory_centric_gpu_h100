@@ -4,7 +4,7 @@ The installed source inspected for this scaffold is `util/tracer_nvbit/others/to
 
 ## Prepare the external pinned source
 
-Clone the release into an external path, verify framework/backend pins, build CPU simulator/postprocessor and NVBit 1.8 under an explicitly selected matching toolkit. No code here downloads/builds a driver or patches the vendor tree. Example source location in the original workspace was `03_simulation/accel_sim2/vendor/accel-sim-framework`; portability uses an explicit `--accel-root`.
+Clone the release into an external path, verify framework/backend pins, build CPU simulator/postprocessor and NVBit 1.8 under an explicitly selected matching toolkit. The local H100 execution applies only the one-line `patches/accelsim_nvbit_missing_spinlock_entry.patch`: the original optional spinlock lookup dereferenced a missing map entry and reproducibly segfaulted even on the dynamic-input micro kernel. `configs/simulator_pin.json` pins original, patched and patch hashes; setup and capture reject other tracked source differences. No driver is downloaded or built. Example source location in the original workspace was `03_simulation/accel_sim2/vendor/accel-sim-framework`; portability uses an explicit `--accel-root`.
 
 Read upstream licenses/citation instructions. Preserve source diffs, compiler versions, tracer shared-library hash and build logs. Do not run the upstream destructive NVBit installer over an existing installation without reviewing its behavior. Validate a dynamic-input small kernel before an LLM; a constant-folded arithmetic test is inadequate.
 

@@ -1,6 +1,6 @@
 # H100 LLM decode research package
 
-A portable starting point for evidence-driven H100 Phase 0–2 research and Accel-Sim 2.0 trace collection. No H100 measurement, native Hopper trace replay, or architectural benefit has been established by this package. Read [the primary specification](docs/primary_specification.md), Sections 0 and 14 first, then [the execution playbook](docs/phase02_playbook.md).
+A portable package for evidence-driven H100 Phase 0–2 research and Accel-Sim 2.0 trace collection. A selected BF16 H100 bridge, real sm_90 micro/partial-layer/two-step whole-model HF trace replay and analytical reuse study have now been run; the optimized baseline, quantitative bottleneck, semantic calibration and architecture benefit remain unestablished. Read [the primary specification](docs/primary_specification.md), Sections 0 and 14 first, then [the execution playbook](docs/phase02_playbook.md) and [current opportunity report](docs/opportunity_report.md).
 
 The historical [RTX 5080 findings](docs/rtx5080_findings.md) motivate falsifiable tests: small-batch weight delivery can be busy, larger batches consume compute, ideal pinning differs from naive LRU expansion, and disagreement between energy sensors can invalidate J/token. None transfers automatically to H100.
 
@@ -24,7 +24,7 @@ Alternatively provide `--snapshot /cache/.../snapshots/IMMUTABLE_SHA` to materia
 
 Build external pinned tools with `CUDA_HOME=/existing/toolkit scripts/setup_accelsim.sh /owned/external/tools` in a child shell; dependencies and version/source gates are explicit. Open a fresh shell for native capture.
 
-Use [trace collection](docs/trace_collection.md) for the actual pinned upstream hook API, runnable HF and eager-vLLM routes (both native-H100 pending), the ACTIVE_FROM_START workaround, nonempty-capture checks, postprocessing, replay and export. Accel-Sim and NVBit are external source dependencies, not vendored binaries. See [the source audit and calibration gates](docs/simulator_audit.md).
+Use [trace collection](docs/trace_collection.md) for the actual pinned upstream hook API, runnable HF and eager-vLLM routes (native HF pilot verified; vLLM pending), the ACTIVE_FROM_START workaround, nonempty-capture checks, postprocessing, replay and export. Accel-Sim and NVBit are external source dependencies, not vendored binaries. See [the source audit and calibration gates](docs/simulator_audit.md).
 
 CPU-only checks:
 
