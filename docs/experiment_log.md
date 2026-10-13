@@ -35,3 +35,7 @@
 ## 2026-10-13 — Durable trace transfer
 
 **Setup:** Upload the existing whole-model HF eager archive to private Hugging Face dataset `yang-gon/h100-memory-centric-accelsim-traces`; verify the immutable repository revision, size and Hub LFS SHA256 against the local `sha256sum`. **Observation:** Revision `55688d40408d0684f1f9d1f458cd070ada4bc588` reports 5,135,554,560 bytes and SHA256 `8c57824a7b034caf6651cbd81b156dc6169da6862a0288dce0ee12991374f9a5`, matching the local file. **Interpretation:** The completed eager trace now has a durable remote copy. This does not resolve optimized trace coverage or simulator calibration. **Next test:** finish independent stream redownload verification, then recover local disk space for the optimized runtime.
+
+## 2026-10-13 — Checkpoint 2 exclusive-device inventory
+
+**Setup:** Rerun `inventory.py --check-cuda` on only allocated UUID `GPU-18558721-7ba2-20a7-f883-b2c4e2593aff`; query compute processes and storage without changing device or cluster settings. **Observation:** CUDA/NVML identity crosscheck passed for the 132-SM H100 with 50 MiB queried L2. No compute processes were listed. Torch remains 2.11.0+cu128, vLLM and Nsight Systems are absent; CUDA 12.8 compiler is available. The 25 GiB overlay has about 2.09 GB free while the local archive is retained. **Interpretation:** Runtime build requires local space recovery after independent remote verification. **Next test:** verified cleanup and pinned vLLM source build.
