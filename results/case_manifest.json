@@ -287,12 +287,66 @@
       "failure_sha256": null
     },
     {
+      "id": "roofline_ceilings_cu128",
+      "kind": "measured_control_ceilings",
+      "status": "complete",
+      "source": "results/roofline_ceilings_cu128.json",
+      "source_sha256": "05e90c36b9ba684c9738456d7aa650363ee1b0a03038d80ecba6dd0460e4c1dd"
+    },
+    {
+      "id": "profiler_pilot",
+      "kind": "profiler_capability",
+      "status": "partial",
+      "source": "results/profiler_pilot/capabilities.json",
+      "source_sha256": "4ce502b8583e1668eea7512cae517d30cead7c4b2ed2d1000cb424a682e5e1bb"
+    },
+    {
+      "id": "vllm_build_attempt_1",
+      "kind": "runtime_build",
+      "status": "failed",
+      "reason": "system CMake 3.22.1 below required 3.26",
+      "source": "results/runtime_build/attempt1_old_cmake.log",
+      "source_sha256": "65afdaedf621e074d328f5da9460f08e5c8bec57e9b11bdd50462f5264b64a73"
+    },
+    {
+      "id": "vllm_build_attempt_2",
+      "kind": "runtime_build",
+      "status": "failed",
+      "reason": "CUDA 12.8 toolkit lacked libnvrtc.so development link",
+      "source": "results/runtime_build/attempt2_missing_nvrtc.log",
+      "source_sha256": "2c47b7a29727df46ffb6a2bf1ae53eda97eac7d95f231e03a982430fa24bb200"
+    },
+    {
+      "id": "vllm_build_attempt_3",
+      "kind": "runtime_build",
+      "status": "failed",
+      "reason": "Python 3.10 spinloop uses Py_buffer but build sets Python 3.11 limited API; tracked local compatibility patch applied",
+      "source": "results/runtime_build/attempt3_py310_spinloop.log",
+      "source_sha256": "1aee871d6bbfe3a258ba3c83f739d6e459c0f6872de6e392f755cec6f913f593"
+    },
+    {
+      "id": "vllm_build_attempt_4",
+      "kind": "runtime_build",
+      "status": "failed",
+      "reason": "CUDA math headers absent from partial toolkit include directory",
+      "source": "results/runtime_build/attempt4_missing_cuda_headers.log",
+      "source_sha256": "aabdf94f853c3252e4c4c253d9d3d62f15c313edccd4a964bf1b040f7dca0827"
+    },
+    {
+      "id": "vllm_build_attempt_5",
+      "kind": "runtime_build",
+      "status": "failed",
+      "reason": "CPATH alone did not propagate CUDA math includes to nvcc; explicit NVCC_PREPEND_FLAGS verified separately",
+      "source": "results/runtime_build/attempt5_cpath_only.log",
+      "source_sha256": "9a03034864c4d797cfffbc6351e8744fe0d3bc1b9a36dbcb36bab9a2a0c26c7e"
+    },
+    {
       "id": "bridge_full_cu128",
       "kind": "native_trace",
       "status": "capture_and_postprocess_verified",
       "recovered_after_failure": true,
       "recovery_source": "results/bridge_full_cu128_trace_result.json",
-      "recovery_sha256": "d4551b0f04850d2f28cc3ed694a242edfb86af4615b67747b75821147f2b09dd",
+      "recovery_sha256": "aeabc40a363b370c961b272b0f4ebaeee3217117467bbce6e738634001e5f4ef",
       "source": "traces/bridge_full_cu128/export_manifest.json",
       "source_sha256": "74c3a556af2b36e2e1d6424acd26e4a81930c32cea2319281be007b0ec15b237",
       "failure_source": "traces/bridge_full_cu128/failure.json",

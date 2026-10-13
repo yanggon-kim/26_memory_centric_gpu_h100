@@ -43,6 +43,37 @@ def main():
                       'source': str(source), 'source_sha256': sha(source),
                       'failure_source': str(failure) if failure.is_file() else None,
                       'failure_sha256': sha(failure) if failure.is_file() else None})
+    for folder in sorted(Path('results').glob('vllm_*')):
+        run = folder / 'run.json'
+        if not run.is_file():
+            continue
+        data = json.loads(run.read_text())
+        failure = folder / 'failure.json'
+        shapes = [{'batch_size': c['batch_size'], 'context_length': c['context_length'],
+                   'output_digests_identical': c.get('output_digests_identical'),
+                   'measured_trials': len(c.get('trials', []))} for c in data.get('cases', [])]
+        cases.append({'id': folder.name, 'kind': 'optimized_software_decode',
+                      'status': data['status'], 'classification': data.get('classification'),
+                      'selected_cases': data.get('selected_cases'), 'recorded_cases': shapes,
+                      'source': str(run), 'source_sha256': sha(run),
+                      'failure_source': str(failure) if failure.is_file() else None,
+                      'failure_sha256': sha(failure) if failure.is_file() else None})
+    roofline = Path('results/roofline_ceilings_cu128.json')
+    if roofline.is_file():
+        cases.append({'id': 'roofline_ceilings_cu128', 'kind': 'measured_control_ceilings',
+                      'status': 'complete', 'source': str(roofline), 'source_sha256': sha(roofline)})
+    profiler = Path('results/profiler_pilot/capabilities.json')
+    if profiler.is_file():
+        cases.append({'id': 'profiler_pilot', 'kind': 'profiler_capability',
+                      'status': 'partial', 'source': str(profiler), 'source_sha256': sha(profiler)})
+    attempts = Path('results/runtime_build/attempt_manifest.json')
+    if attempts.is_file():
+        for attempt in json.loads(attempts.read_text())['attempts']:
+            log = Path(attempt['log'])
+            cases.append({'id': 'vllm_build_attempt_' + str(attempt['id']),
+                          'kind': 'runtime_build', 'status': attempt['status'],
+                          'reason': attempt['reason'], 'source': str(log),
+                          'source_sha256': sha(log)})
     for folder in sorted(Path('traces').iterdir()):
         if not folder.is_dir() or not any((folder / name).is_file() for name in
                                             ('launch_manifest.json', 'export_manifest.json',
