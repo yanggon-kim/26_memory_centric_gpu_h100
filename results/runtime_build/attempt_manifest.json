@@ -7,8 +7,9 @@
     {"id": 2, "status": "failed", "reason": "CUDA 12.8 toolkit lacked libnvrtc.so development link", "log": "results/runtime_build/attempt2_missing_nvrtc.log"},
     {"id": 3, "status": "failed", "reason": "Python 3.10 spinloop uses Py_buffer but build sets Python 3.11 limited API; tracked local compatibility patch applied", "log": "results/runtime_build/attempt3_py310_spinloop.log"},
     {"id": 4, "status": "failed", "reason": "CUDA math headers absent from partial toolkit include directory", "log": "results/runtime_build/attempt4_missing_cuda_headers.log"},
-    {"id": 5, "status": "failed", "reason": "CPATH alone did not propagate CUDA math includes to nvcc; explicit NVCC_PREPEND_FLAGS verified separately", "log": "results/runtime_build/attempt5_cpath_only.log"}
+    {"id": 5, "status": "failed", "reason": "CPATH alone did not propagate CUDA math includes to nvcc; explicit NVCC_PREPEND_FLAGS verified separately", "log": "results/runtime_build/attempt5_cpath_only.log"},
+    {"id": 6, "status": "failed", "reason": "NVCC_PREPEND_FLAGS used relative include paths that were invalid from pip's temporary build directory; cusparse.h remained unavailable", "log": "results/runtime_build/attempt6_relative_headers.log"}
   ],
-  "current_attempt": "NVCC_PREPEND_FLAGS plus CPATH; running",
+  "current_attempt": "absolute NVCC_PREPEND_FLAGS and CPATH from pinned torch CUDA wheels; running",
   "runtime_smoke": "pending"
 }
