@@ -1,0 +1,10 @@
+diff --git a/csrc/spinloop.cpp b/csrc/spinloop.cpp
+index c29e48a..85d0dc7 100644
+--- a/csrc/spinloop.cpp
++++ b/csrc/spinloop.cpp
+@@ -1,3 +1,5 @@
++// Py_buffer is not in Python 3.10's limited API; use the full local CPython API.
++#undef Py_LIMITED_API
+ #include <Python.h>
+ 
+ extern "C" {

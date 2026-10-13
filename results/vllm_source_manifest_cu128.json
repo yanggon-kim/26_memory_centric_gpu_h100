@@ -1,0 +1,72 @@
+{
+  "classification": "pinned-source-build-manifest",
+  "date_utc": "2026-10-13",
+  "vllm_tag": "v0.22.1",
+  "vllm_commit": "0decac0d96c42b49572498019f0a0e3600f50398",
+  "main_cutlass_tag": "v4.4.2",
+  "main_cutlass_commit": "da5e086dab31d63815acafdac9a9c5893b1c69e2",
+  "cuda_toolkit": "12.8.93",
+  "torch": "2.11.0+cu128",
+  "target_arch": "sm_90",
+  "max_jobs": 8,
+  "source_archives": {
+    "triton_kernels_v3.5.1": {
+      "revision": "v3.5.1",
+      "archive_sha256": "03d7c41f6f2dc1dfa3445776c4a893dc34b1e0ece42b953f036c071ff6409b80",
+      "archive_bytes": 6408387
+    },
+    "deepgemm": {
+      "revision": "891d57b4db1071624b5c8fa0d1e51cb317fa709f",
+      "archive_sha256": "522cced8b35d2f44f643acf4867843ee064b7627f528c5bc8871f8e916f37dcd",
+      "archive_bytes": 218175
+    },
+    "deepgemm_cutlass": {
+      "revision": "f3fde58372d33e9a5650ba7b80fc48b3b49d40c8",
+      "archive_sha256": "2e5890306557bd87136e1d6914e4ee42536050b9116433848175520fd15991f2",
+      "archive_bytes": 33354210
+    },
+    "deepgemm_fmt": {
+      "revision": "553ec11ec06fbe0beebfbb45f9dc3c9eabd83d28",
+      "archive_sha256": "c314292789d28c3c3b420e75a7b2d1706f685f7fb63289128d46aeaea2c6be71",
+      "archive_bytes": 707710
+    },
+    "flashmla": {
+      "revision": "a6ec2ba7bd0a7dff98b3f4d3e6b52b159c48d78b",
+      "archive_sha256": "e00ecd9aebadd8bd2e65ef187e5d048f1473187ed02dd5933829c60707901c29",
+      "archive_bytes": 252171
+    },
+    "flashmla_cutlass": {
+      "revision": "147f5673d0c1c3dcf66f78d677fd647e4a020219",
+      "archive_sha256": "9f6c53320a85b4a570975e557918cde65168cd311f081920446c238437347dc6",
+      "archive_bytes": 34013493
+    },
+    "qutlass": {
+      "revision": "830d2c4537c7396e14a02a46fbddd18b5d107c65",
+      "archive_sha256": "6b431aa10fbc6b288564c820658aed685641678903e128e7b0a958b8757b5d0c",
+      "archive_bytes": 151782
+    },
+    "qutlass_cutlass": {
+      "revision": "b2dd65dc864e09688245b316ac46c4a6cd07e15c",
+      "archive_sha256": "b1ed11b7004d7e4c104574bdddeb3b5af7238486eaff718c40c36e7f8f4b2ca9",
+      "archive_bytes": 33282965
+    },
+    "vllm_flash_attention": {
+      "revision": "bce29425653ec0fbc579d329883030e832d15ada",
+      "archive_sha256": "ad17224b3ad3b6cf1dc32a92abc0c3adbdcfbbd53b9b7def897444a4da9cba6e",
+      "archive_bytes": 14296230
+    },
+    "vllm_flash_attention_cutlass": {
+      "revision": "62750a2b75c802660e4894434dc55e839f322277",
+      "archive_sha256": "78816d6c6d97793b5b59ef2a702174cb85b78dfcefc8fe2489964de2e42f17d2",
+      "archive_bytes": 31379102
+    }
+  },
+  "cmake_build_type": "Release",
+  "patches": [
+    {
+      "path": "patches/vllm_py310_spinloop.patch",
+      "sha256": "6059a7432435fd62a229a0a4d9aab73faeddb047a78546b4efd18980b573bc86",
+      "scope": "Python 3.10 local spinloop extension ABI; no GPU/model arithmetic changes"
+    }
+  ]
+}
