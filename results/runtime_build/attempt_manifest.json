@@ -1,0 +1,14 @@
+{
+  "date_utc": "2026-10-13",
+  "classification": "pinned-runtime-build-attempts",
+  "source_manifest": "results/vllm_source_manifest_cu128.json",
+  "attempts": [
+    {"id": 1, "status": "failed", "reason": "system CMake 3.22.1 below required 3.26", "log": "results/runtime_build/attempt1_old_cmake.log"},
+    {"id": 2, "status": "failed", "reason": "CUDA 12.8 toolkit lacked libnvrtc.so development link", "log": "results/runtime_build/attempt2_missing_nvrtc.log"},
+    {"id": 3, "status": "failed", "reason": "Python 3.10 spinloop uses Py_buffer but build sets Python 3.11 limited API; tracked local compatibility patch applied", "log": "results/runtime_build/attempt3_py310_spinloop.log"},
+    {"id": 4, "status": "failed", "reason": "CUDA math headers absent from partial toolkit include directory", "log": "results/runtime_build/attempt4_missing_cuda_headers.log"},
+    {"id": 5, "status": "failed", "reason": "CPATH alone did not propagate CUDA math includes to nvcc; explicit NVCC_PREPEND_FLAGS verified separately", "log": "results/runtime_build/attempt5_cpath_only.log"}
+  ],
+  "current_attempt": "NVCC_PREPEND_FLAGS plus CPATH; running",
+  "runtime_smoke": "pending"
+}
