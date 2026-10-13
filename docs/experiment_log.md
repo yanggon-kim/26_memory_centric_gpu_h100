@@ -43,3 +43,7 @@
 ## 2026-10-13 — Roofline control pilot
 
 **Setup:** On the allocated UUID, run three warmups and three GPU-event trials of BF16 8192-square GEMM and a 1 GiB device copy, then combine the resulting control ceilings with existing correct bridge timing and analytical tensor/KV counts. **Observation:** Median GEMM 718.40 TFLOP/s; useful-byte copy 3032.09 GB/s. Analytical bridge intensity proxies span 1.01–7.47 FLOP/read-byte. **Interpretation:** These are useful controls and explicitly analytical decode proxies; no real decode HBM traffic or saturated-bandwidth claim follows. **Next test:** collect optimized vLLM timing and counters if profiler access permits. See `docs/roofline_report.md`.
+
+## 2026-10-13 — Nsight capability pilot
+
+**Setup:** Install Nsight Systems 2025.6.3 without changing the driver or device settings; profile the BF16 roofline control in a separate instrumented process. Retry bounded Nsight Compute and Nsight Systems GPU metrics. **Observation:** Nsight Systems produced a 119 KiB report with 104 CUDA kernel and 387 CUDA memcpy events. Its GPU metrics option and Nsight Compute both returned `ERR_NVGPUCTRPERM`; Nsight Compute profiled no kernels. **Interpretation:** CUDA timeline and launch inventory are available, but hardware traffic/utilization counters remain NA. These control kernels are not optimized vLLM decode kernels. **Next test:** capture selected optimized decode kernels after vLLM smoke and baseline correctness pass.
