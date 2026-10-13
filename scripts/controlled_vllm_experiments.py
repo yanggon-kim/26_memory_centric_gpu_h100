@@ -157,7 +157,8 @@ def main(args):
     verify_cuda(torch,args.gpu_uuid)
     import vllm
     from vllm.sampling_params import RequestOutputKind
-    assert vllm.__version__=='0.22.1'
+    from vllm_identity import verify as verify_vllm
+    vllm_identity=verify_vllm(vllm)
     path=Path(config['model_path'])
     assert path.is_dir() and path.name==config['model_revision']
     settings={'model':str(path),'dtype':'bfloat16','seed':config['seed'],'generation_config':'vllm',
@@ -172,6 +173,7 @@ def main(args):
           'hardware':hardware,'engine_settings':settings,'cases':[],
           'external_instrumentation':args.external_profiler,'baseline_comparison_eligible':not args.external_profiler,
           'versions':{'vllm':vllm.__version__,'torch':torch.__version__,'cuda_runtime':torch.version.cuda},
+          'vllm_identity':vllm_identity,
           'environment':{k:os.environ.get(k,'unset') for k in ['CUDA_HOME','CUDA_VISIBLE_DEVICES','VLLM_ENABLE_V1_MULTIPROCESSING','VLLM_WORKER_MULTIPROC_METHOD','TORCHINDUCTOR_COMPILE_THREADS','MAX_JOBS','OMP_NUM_THREADS']},
           'timing_scope':'single-process GPU decode after all-request one-token prefill barrier; first token excluded',
           'cuda_event_scope':'same-process CUDA-event elapsed decode interval including launch gaps; synchronized wall reported separately',

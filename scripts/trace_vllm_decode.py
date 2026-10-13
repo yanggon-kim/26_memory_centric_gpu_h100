@@ -37,7 +37,8 @@ def main(a):
     verify_cuda(torch,a.gpu_uuid)
     import vllm
     from vllm.sampling_params import RequestOutputKind
-    assert vllm.__version__=='0.22.1'
+    from vllm_identity import verify as verify_vllm
+    vllm_identity=verify_vllm(vllm)
     sys.path.insert(0,str(a.accel_root/'util/tracer_nvbit/others'))
     settings={'model':config['model_path'],'dtype':'bfloat16','seed':config['seed'],'generation_config':'vllm',
               'enable_prefix_caching':False,'enable_chunked_prefill':True,'disable_log_stats':False,
@@ -85,7 +86,8 @@ def main(a):
                   'reference_uninstrumented_output_ids':reference['output_ids'],'reference_sha256':reference['output_sha256'],
                   'workload':'seeded synthetic uniform token IDs; not representative expert/input locality',
                   'execution':'vLLM eager compilation_mode0; distinct from graph-optimized baseline; actual Hopper opcode coverage still to verify',
-                  'versions':{'vllm':vllm.__version__,'torch':torch.__version__,'cuda_runtime':torch.version.cuda}}
+                  'versions':{'vllm':vllm.__version__,'torch':torch.__version__,'cuda_runtime':torch.version.cuda},
+                  'vllm_identity':vllm_identity}
         dump(a.output/'trace_metadata.json',metadata)
         completed={}
         kv_lifecycle=[]
