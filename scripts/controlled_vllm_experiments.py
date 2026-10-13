@@ -2,6 +2,7 @@
 """Single-process vLLM decode measured after an experimentally checked prefill barrier."""
 import argparse
 import atexit
+import hashlib
 import json
 import math
 import os
@@ -199,12 +200,32 @@ def main(args):
     data['requested_case_filters']={'batch':args.batch,'context':args.context,'generated_tokens':args.generated_tokens}
     dump(args.output/'run.json',data)
     vocabulary=json.loads((path/'config.json').read_text())['vocab_size']
+    workload=None
+    if config.get('workload_file'):
+        workload_path=Path(__file__).resolve().parents[1]/config['workload_file']
+        workload_bytes=workload_path.read_bytes()
+        workload=json.loads(workload_bytes)
+        assert workload['version']=='representative_text_v1' and len(workload['texts'])>=max(b for b,_ in pairs)
+        from transformers import AutoTokenizer
+        tokenizer=AutoTokenizer.from_pretrained(path,local_files_only=True,trust_remote_code=False,use_fast=True)
+        encoded=[tokenizer.encode(text,add_special_tokens=False) for text in workload['texts']]
+        data['workload']={'version':workload['version'],'file':config['workload_file'],
+                          'file_sha256':hashlib.sha256(workload_bytes).hexdigest(),
+                          'tokenizer_revision':config['model_revision'],'add_special_tokens':False,
+                          'full_token_lengths':[len(ids) for ids in encoded],
+                          'selection':'first B texts, then first C tokens; reject short texts'}
+        dump(args.output/'run.json',data)
     for batch,context in pairs:
         assert context+count<=settings['max_model_len'] and batch<=settings['max_num_seqs']
-        generator=torch.Generator().manual_seed(config['seed'])
-        prompts=torch.randint(0,vocabulary,(batch,context),generator=generator).tolist()
+        if workload:
+            assert all(len(ids)>=context for ids in encoded[:batch]), 'versioned text shorter than selected context'
+            prompts=[ids[:context] for ids in encoded[:batch]]
+        else:
+            generator=torch.Generator().manual_seed(config['seed'])
+            prompts=torch.randint(0,vocabulary,(batch,context),generator=generator).tolist()
         case={'batch_size':batch,'context_length':context,'generated_tokens':count,
-              'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[]}
+              'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[],
+              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids'}
         warmup=[]
         for trial in range(config['warmup_trials']):
             warmup.append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)['output_sha256'])

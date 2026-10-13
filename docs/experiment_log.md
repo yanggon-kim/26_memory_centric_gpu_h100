@@ -47,3 +47,7 @@
 ## 2026-10-13 — Nsight capability pilot
 
 **Setup:** Install Nsight Systems 2025.6.3 without changing the driver or device settings; profile the BF16 roofline control in a separate instrumented process. Retry bounded Nsight Compute and Nsight Systems GPU metrics. **Observation:** Nsight Systems produced a 119 KiB report with 104 CUDA kernel and 387 CUDA memcpy events. Its GPU metrics option and Nsight Compute both returned `ERR_NVGPUCTRPERM`; Nsight Compute profiled no kernels. **Interpretation:** CUDA timeline and launch inventory are available, but hardware traffic/utilization counters remain NA. These control kernels are not optimized vLLM decode kernels. **Next test:** capture selected optimized decode kernels after vLLM smoke and baseline correctness pass.
+
+## 2026-10-13 — Representative text workload prepared
+
+**Setup:** Pin four original text passages as `representative_text_v1`; tokenize offline with the immutable Qwen2.5-1.5B-Instruct tokenizer and no added special tokens. Adapt the controlled vLLM runner to select the first B passages and first C tokens while retaining the strict prefill and correctness gates. **Observation:** The four passages tokenize to 170, 186, 173 and 169 tokens, supporting the separately recorded B1/B4 C128 configuration. **Interpretation:** This is a prepared real-text workload, not a completed GPU baseline. **Next test:** run three warmups and three trials after a compatible vLLM smoke passes; preserve any token or prefill failure.
