@@ -1,5 +1,7 @@
 # Decode-only Hopper trace collection and export
 
+For continuation, read `RENTAL_RESUME.md` first. The two-step whole-model HF eager capture and verified private archive transfer are complete as recorded in `results/archive_transfer.json`; full semantic/calibrated replay and optimized-vLLM collection are incomplete. Recover existing evidence before considering recapture.
+
 The installed source inspected for this scaffold is `util/tracer_nvbit/others/torch_hook/pytorch_profiler.py` at the pinned framework SHA. It supplies `TorchModelHookWrapper(model)`, `hook_nvbit_to_layer(wrapper, module_name)`, and exported tracer callbacks `enable_nvbit_instrumentation`, `disable_nvbit_instrumentation`, `set_nvbit_instrumentation_tag`. Hooks silently ignore a missing tracer; our runner checks that the callback library actually loaded. The optional Python `nvtx` dependency must be present.
 
 ## Prepare the external pinned source

@@ -1,5 +1,7 @@
 # Prioritized H100 experiment plan
 
+For the next rental, execute the ordered continuation tasks in `RENTAL_RESUME.md`. This original plan is the overall contract, not a claim that every listed step is still unattempted.
+
 1. Complete environment, version, UUID and disk inventory; validate CPU package contracts. Record failures and unavailable tools.
 2. Establish a driver-compatible BF16 bridge with the immutable Qwen2.5-1.5B revision. Run B1/C128 smoke with three warmups and three measured trials. Check all token IDs and the one-token prefill barrier before expanding.
 3. If a compatible optimized vLLM route is independently validated, run its controlled baseline. Otherwise keep any eager HF bridge as a distinct measured control and mark optimized-baseline gate incomplete. Add B1/C1024 then B4/B8 and longer contexts only after actual memory and disk fit.

@@ -1,6 +1,6 @@
 # Research contract
 
-Read `docs/primary_specification.md` thoroughly, beginning with Sections 0 and 14. It is the primary specification. This repository prepares future H100 Phase 0–2 work; `STATUS.json` deliberately says pending. Historical RTX evidence is not H100 evidence.
+Read `docs/primary_specification.md` thoroughly, beginning with Sections 0 and 14. It is the primary specification. This repository contains partial H100 Phase 0–2 evidence. Start with `docs/RENTAL_RESUME.md`, then `STATUS.json`, `results/case_manifest.json` and `docs/opportunity_report.md`. Resume unfinished gates; do not call the prior study complete or repeat expensive completed captures by default. Historical RTX evidence is not H100 evidence. A recorded running process belongs to the previous rental and is not evidence of a live process or successful build here.
 
 Start with inventory and the H100 playbook. Use only the explicitly allocated physical GPU UUID. Multiple GPUs may exist; never expose them or introduce tensor parallelism, quantization, a different precision, or shared-GPU contention without explicit scope authorization. Do not alter drivers, power limits, clocks, firmware, or cluster settings. Scripts use startup snapshots and a cooperating lock, not a guarantee against external interference.
 
