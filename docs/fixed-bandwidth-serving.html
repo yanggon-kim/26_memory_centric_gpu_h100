@@ -1,0 +1,208 @@
+<title>Memory at Fixed Bandwidth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Layout: one reading column of ~66ch on a paper field; figures and the widget step out to a wider
+   "cutout" sheet. Paper, ink and pencil. Coral marks the one thing to look at. */
+:root {
+  --paper: #f4eee2;        /* page field */
+  --sheet: #fbf7ee;        /* raised cutout: figures, widget */
+  --ink: #26241f;          /* text and primary strokes */
+  --ink-soft: #4d4940;     /* secondary text */
+  --pencil: #8c8577;       /* rules, idle strokes, captions */
+  --idle: #ddd5c4;         /* inactive fills */
+  --accent: #d4573a;       /* coral: the thing to look at (fills, strokes) */
+  --accent-ink: #a9412a;   /* coral dark enough for text on paper */
+  --teal: #2e716c;         /* second category */
+  --mustard: #b38a17;      /* third category, sparingly */
+  --shadow: #e3dac8;       /* cutout offset shadow */
+  --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-body: "Source Serif 4", "Noto Serif KR", "Iowan Old Style", Georgia, "Apple SD Gothic Neo", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.3125rem;
+  --step-2: 1.75rem;
+  --step-3: 2.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1d1c19; --sheet: #26241f; --ink: #eee6d6; --ink-soft: #c8bfad; --pencil: #8f8878;
+    --idle: #3b3832; --accent: #ef7a5c; --accent-ink: #f39176; --teal: #6db3ab; --mustard: #dcb548;
+    --shadow: #121110; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #1d1c19; --sheet: #26241f; --ink: #eee6d6; --ink-soft: #c8bfad; --pencil: #8f8878;
+  --idle: #3b3832; --accent: #ef7a5c; --accent-ink: #f39176; --teal: #6db3ab; --mustard: #dcb548;
+  --shadow: #121110; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 3rem 5rem;
+  display: grid;
+  gap: 3rem;
+}
+.page > *, section > *, .sheet > * { min-width: 0; }
+[hidden], .is-hidden { display: none !important; }  /* SVG elements ignore el.hidden: toggle .is-hidden */
+:lang(ko) { word-break: keep-all; overflow-wrap: anywhere; }
+
+/* Type */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: var(--step-3); letter-spacing: -0.01em; }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+p, ul, ol, dl { margin: 0; }
+p + p { margin-top: 0.9em; }
+section { display: grid; gap: 1rem; }
+section > h2 { padding-top: 1.25rem; border-top: 1px solid var(--pencil); }
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pencil);
+}
+strong { font-weight: 600; }
+em.key { font-style: normal; color: var(--accent-ink); font-weight: 600; }
+pre { margin: 0; overflow-x: auto; background: var(--sheet); border: 1px solid var(--idle); border-radius: 2px; padding: 0.8rem 1rem; font-size: var(--step--1); line-height: 1.5; }
+pre code { background: none; padding: 0; }
+code, kbd { font-family: var(--font-mono); font-size: 0.9em; background: var(--idle); padding: 0.05em 0.3em; border-radius: 3px; }
+a { color: var(--accent-ink); text-underline-offset: 0.2em; }
+ul, ol { padding-left: 1.3em; display: grid; gap: 0.4em; }
+
+/* Header */
+.masthead { display: grid; gap: 1rem; }
+.question { font-family: var(--font-body); font-style: italic; font-size: var(--step-1); color: var(--ink-soft); }
+.answer { font-size: var(--step-1); line-height: 1.5; max-width: 38rem; }
+.answer::before { content: "Short answer"; display: block; font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 0.35rem; }
+:lang(ko) .answer::before { content: "짧은 답"; }
+
+/* Cutout sheet: figures and the widget */
+.sheet {
+  background: var(--sheet);
+  border: 1px solid var(--pencil);
+  border-radius: 2px;
+  box-shadow: 5px 5px 0 var(--shadow);
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+}
+@media (min-width: 60rem) { .wide { margin-inline: -4rem; } }
+figure { margin: 0; }
+.diagram-scroll { overflow-x: auto; }
+.diagram-scroll svg { display: block; width: 100%; height: auto; min-width: 32rem; }
+figcaption { font-family: var(--font-mono); font-size: var(--step--1); line-height: 1.5; color: var(--ink-soft); }
+
+/* SVG classes: color every shape through these, never a literal hex */
+.f-paper { fill: var(--paper); } .f-sheet { fill: var(--sheet); } .f-idle { fill: var(--idle); }
+.f-ink { fill: var(--ink); } .f-accent { fill: var(--accent); } .f-teal { fill: var(--teal); }
+.f-mustard { fill: var(--mustard); } .f-none { fill: none; }
+.s-ink { stroke: var(--ink); } .s-pencil { stroke: var(--pencil); } .s-accent { stroke: var(--accent); }
+.s-teal { stroke: var(--teal); } .s-mustard { stroke: var(--mustard); }
+.dashed { stroke-dasharray: 5 4; }
+.t-label { fill: var(--ink); font-family: var(--font-body); font-size: 15px; }
+.t-mono { fill: var(--ink-soft); font-family: var(--font-mono); font-size: 13px; }
+.t-accent { fill: var(--accent-ink); font-family: var(--font-body); font-size: 15px; font-weight: 600; }
+svg [class*="s-"] { stroke-width: 1.5; }
+svg .thick { stroke-width: 2.5; }
+
+/* Prediction */
+.predict { border: 1px dashed var(--pencil); border-radius: 2px; padding: 0.9rem 1rem; }
+.predict summary { cursor: pointer; font-weight: 600; }
+.predict summary::marker { color: var(--accent); }
+.predict[open] summary { margin-bottom: 0.6rem; }
+
+/* Widget */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.controls label { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
+.controls output { font-family: var(--font-mono); font-variant-numeric: tabular-nums; min-width: 3ch; }
+input[type="range"] { accent-color: var(--accent); flex: 1 1 12rem; min-width: 0; }
+button {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+button:hover { background: var(--idle); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+.state { display: grid; gap: 0.4rem; align-content: start; min-width: 0; }
+.state .label { color: var(--ink-soft); }
+.state.after .label { color: var(--accent-ink); }
+.metric { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--step-1); }
+.why { border-top: 1px solid var(--pencil); padding-top: 0.75rem; }
+html:not(.js) .js-only { display: none; }
+html.js .nojs-only { display: none; }
+
+/* Terms (inside "What you already know"), misconception, recap, limits */
+.misconception { display: grid; gap: 0.6rem; }
+.misconception .wrong { text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; color: var(--ink-soft); }
+.terms { display: grid; grid-template-columns: minmax(7rem, max-content) 1fr; gap: 0.6rem 1.25rem; }
+.terms dt { font-family: var(--font-mono); font-size: var(--step--1); padding-top: 0.2em; color: var(--accent-ink); }
+.terms dd { margin: 0; min-width: 0; }
+@media (max-width: 30rem) { .terms { grid-template-columns: 1fr; gap: 0.2rem; } .terms dd { margin-bottom: 0.6rem; } }
+.limits { border: 1px dashed var(--pencil); border-radius: 2px; padding: 1rem 1.25rem; display: grid; gap: 0.6rem; font-size: var(--step--1); color: var(--ink-soft); }
+.limits .label { color: var(--ink-soft); }
+
+/* Timeline (references/timeline.md): a storyboard of frames, and a player built from it */
+.timeline .storyboard { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1rem; counter-reset: frame; }
+.storyboard .frame { counter-increment: frame; display: grid; gap: 0.4rem; align-content: start; min-width: 0; padding: 0.6rem 0.75rem 0.75rem; background: var(--paper); border: 1px solid var(--idle); border-radius: 2px; }
+.storyboard .frame::before { content: counter(frame); font-family: var(--font-mono); font-size: var(--step--1); color: var(--pencil); }
+.storyboard .frame svg { display: block; width: 100%; height: auto; }
+.frame-caption { font-size: var(--step--1); line-height: 1.5; }
+html.js .storyboard .frame { cursor: pointer; }
+.storyboard .frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.storyboard .frame.is-current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.storyboard .frame.is-current::before { color: var(--accent-ink); }
+.player { display: grid; gap: 0.75rem; }
+.stage svg { display: block; width: 100%; max-width: 40rem; height: auto; margin: 0 auto; }
+.stage-caption { min-height: 3.3em; }
+.scrub { accent-color: var(--accent); flex: 1 1 10rem; min-width: 0; }
+.counter { font-family: var(--font-mono); font-size: var(--step--1); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+svg .off { opacity: 0; }
+
+/* Motion: short, and none for readers who ask for none */
+svg * { transition: fill 180ms ease, opacity 180ms ease, transform 180ms ease; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style><style>.page{max-width:52rem}.wide{width:100%;margin-inline:0}.sheet{padding:1rem}.equation{overflow-x:auto;max-width:100%;padding:1rem;background:var(--sheet);border:1px solid var(--pencil)}.equation.boxed{border:2px solid var(--accent)}.equation math{font-size:1.2rem;color:var(--ink);min-width:max-content}.equation .label{margin-bottom:.7rem}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:var(--step--1)}th,td{padding:.6rem .4rem;text-align:left;border-bottom:1px solid var(--pencil)}th{font-family:var(--font-mono)}.notice{border-left:3px solid var(--accent);padding:.8rem;background:var(--sheet)}@media(max-width:30rem){h1{font-size:2rem}.compare{grid-template-columns:1fr}.sheet{padding:.8rem}}</style><main class="page" lang="en"><header class="masthead"><p class="label">Explainer · LLM serving</p><h1>Memory at Fixed Bandwidth</h1><p class="question">Can more on-chip memory improve serving without increasing off-chip bandwidth?</p><p class="answer">Yes, if it reduces critical off-chip traffic or improves bandwidth utilization; added capacity without useful reuse can give no gain.</p><p>This page models a fixed-batch decode step. Its numbers illustrate the rule; they are not H100 measurements.</p></header>
+<section id="familiar"><h2>What you already know</h2><p>Each decode step uses model weights and historical keys and values, called KV. On-chip storage can serve repeated reads. The data still must reach the executing threads.</p><p class="label">Words this page uses</p><dl class="terms"><dt>Traffic D</dt><dd>Traffic counts bytes that cross an interface during one measured interval.</dd><dt>Bandwidth ℬ</dt><dd>Bandwidth counts delivered bytes per second. Peak and achieved bandwidth can differ.</dd><dt>Fixed traffic</dt><dd>D_fixed counts reads and writes that the proposed memory change does not reduce.</dd><dt>Reusable traffic</dt><dd>D_reuse counts requested reusable bytes per step, before accounting for cache hits.</dd><dt>Hit fraction h</dt><dd>h counts the byte fraction of those requests served on chip. It is not automatically a cache-counter hit rate.</dd><dt>Capacity C</dt><dd>C counts usable storage dedicated to retention. W is the reusable working set’s size.</dd><dt>Compute F</dt><dd>F counts operations per step. C_compute counts effective operations per second.</dd><dt>Batch B</dt><dd>B counts requests advancing together. A complete ordinary decode step generates B tokens.</dd></dl></section>
+<section id="problem"><h2>The problem</h2><p>A larger tile can still read every required KV element. A larger cache can evict KV during intervening weight reads. Capacity helps traffic only when needed data remains resident.</p><p>The first fill still costs an off-chip read. We analyze later steps with established residency.</p></section>
+<section id="mechanism"><h2>How it works</h2><p>Separate unchanged traffic from traffic that retention can reduce. Before the change, the reusable byte-hit fraction is h₀. Afterwards it is h₁.</p><div class="equation"><p class="label">Off-chip traffic before and after</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Off-chip traffic before and after"><msub><mi>D</mi><mtext>0</mtext></msub><mo>=</mo><msub><mi>D</mi><mtext>fixed</mtext></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>h</mi><mtext>0</mtext></msub><mo>)</mo><msub><mi>D</mi><mtext>reuse</mtext></msub><mo>,</mo><mspace width="1em"/><msub><mi>D</mi><mtext>1</mtext></msub><mo>=</mo><msub><mi>D</mi><mtext>fixed</mtext></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>h</mi><mtext>1</mtext></msub><mo>)</mo><msub><mi>D</mi><mtext>reuse</mtext></msub></math></div><p>The requested reusable bytes need not equal the working-set size. A data element may have several requests. Actual traces and counters establish that distinction.</p><div class="equation"><p class="label">Fixed-bandwidth memory service</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Fixed-bandwidth memory service"><msub><mi>T</mi><mtext>0</mtext></msub><mo>≈</mo><mfrac><mrow><msub><mi>D</mi><mtext>0</mtext></msub></mrow><mrow><msub><mi>ℬ</mi><mtext>H</mtext></msub></mrow></mfrac><mo>,</mo><mspace width="1em"/><msub><mi>T</mi><mtext>1</mtext></msub><mo>≈</mo><mfrac><mrow><msub><mi>D</mi><mtext>1</mtext></msub></mrow><mrow><msub><mi>ℬ</mi><mtext>H</mtext></msub></mrow></mfrac></math></div> <div class="equation boxed"><p class="label">Memory-limited speedup</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Memory-limited speedup"><mfrac><mrow><msub><mi>T</mi><mtext>0</mtext></msub></mrow><mrow><msub><mi>T</mi><mtext>1</mtext></msub></mrow></mfrac><mo>≈</mo><mfrac><mrow><msub><mi>D</mi><mtext>fixed</mtext></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>h</mi><mtext>0</mtext></msub><mo>)</mo><msub><mi>D</mi><mtext>reuse</mtext></msub></mrow><mrow><msub><mi>D</mi><mtext>fixed</mtext></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>h</mi><mtext>1</mtext></msub><mo>)</mo><msub><mi>D</mi><mtext>reuse</mtext></msub></mrow></mfrac></math></div><p>The bandwidth cancels from this ratio. When h₁ increases, the numerator’s traffic stays fixed while the denominator’s traffic falls. This predicts speedup only while off-chip service remains the limiting cost.</p><div class="equation"><p class="label">Ideal dedicated residency</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Ideal dedicated residency"><mi>h</mi><mo>(</mo><mi>C</mi><mo>)</mo><mo>=</mo><mi>min</mi><mo>(</mo><mfrac><mrow><mi>C</mi></mrow><mrow><mi>W</mi></mrow></mfrac><mo>,</mo><mn>1</mn><mo>)</mo></math></div><p>This ideal policy retains selected data without eviction. Ordinary cache replacement can perform worse. Existing cache hits must be included in h₀ before claiming incremental savings.</p><figure class="sheet wide"><svg width="100%" viewBox="0 0 400 310" role="img" aria-labelledby="traffic-title traffic-desc"><title id="traffic-title">Retaining KV reduces only the KV traffic term</title><desc id="traffic-desc">The baseline sends64GiB weights and8GiB KV off chip per batch step. Retaining1GiB KV leaves64GiB weights and7GiB KV. Both rows use the same byte scale and unchanged bandwidth.</desc><text x="200" y="25" text-anchor="middle" class="t-label">Same bandwidth; fewer off-chip bytes</text><text x="20" y="58" class="t-label">Baseline: 72 GiB per batch step</text><rect x="20" y="78" width="320" height="44" class="f-sheet s-ink"/><rect x="20" y="78" width="284.444" height="44" class="f-idle s-ink"/><text x="160" y="106" text-anchor="middle" class="t-label">Weights: 64 GiB</text><text x="380" y="106" text-anchor="end" class="t-mono">KV: 8</text><text x="20" y="159" class="t-label" id="after-label">With 1 GiB retained: 71 GiB</text><rect x="20" y="179" width="320" height="44" class="f-none s-pencil dashed"/><rect x="20" y="179" width="284.444" height="44" class="f-idle s-ink"/><rect id="after-kv" x="304.444" y="179" width="31.111" height="44" class="f-sheet s-ink"/><text x="160" y="207" text-anchor="middle" class="t-label">Weights: still 64 GiB</text><text x="380" y="207" text-anchor="end" class="t-mono" id="kv-label">KV: 7</text><line id="removed-line" x1="335.555" y1="234" x2="340" y2="234" class="f-none s-accent thick"/><text x="200" y="266" text-anchor="middle" class="t-accent" id="removed-text">1 GiB of repeated off-chip reads avoided</text><text x="200" y="295" text-anchor="middle" class="t-mono">One scale: full width = 72 GiB</text></svg><figcaption>Both bars count off-chip bytes per batch step. Dashed space is removed traffic, not faster bandwidth. The example’s weights stay unchanged.</figcaption></figure></section>
+<section id="try"><h2>Try it</h2><p>The illustrative batch step reads 64 GiB of weights and requests 8 GiB of KV. The baseline fetches all 72 GiB off chip. Change only dedicated KV capacity.</p><details class="predict"><summary>Predict first: if all 8 GiB KV becomes resident, can this entire batch step become twice as fast from traffic reduction?</summary><p>No. The unchanged 64 GiB weight traffic remains. The HBM-service ratio reaches 72/64 = 1.125× under the stated assumptions.</p></details><div class="sheet wide" id="widget"><div class="controls js-only"><label for="capacity">Retained KV capacity</label><input id="capacity" type="range" min="0" max="8" step="0.25" value="1"><output id="capacity-value" for="capacity">1 GiB</output><button type="button" id="reset">Reset</button></div><div class="compare"><div class="state before"><p class="label">Baseline</p><p class="metric">72 GiB off chip</p><p>64 GiB weights + 8 GiB KV. Original off-chip service time is 100%.</p></div><div class="state after"><p class="label">Your setting</p><p class="metric" id="after-metric">71.00 GiB off chip</p><p id="after-text">1.00 GiB KV remains resident; weights still contribute 64 GiB.</p><p class="metric" id="speed">1.014× HBM-service ratio</p></div></div><p id="why" class="why" aria-live="polite">Retaining 1.00 GiB removes 1.39% of baseline traffic. Bandwidth stays unchanged.</p><p class="notice">Ideal retention, no baseline KV hits, and sufficiently fast on-chip delivery. This ratio compares HBM service times; compute and other costs can reduce the whole-step gain.</p></div><details class="predict"><summary>Transfer: what does retaining 1 GiB change when weights are 64 GiB and KV is only 1 GiB?</summary><p>Traffic falls from 65 to 64 GiB. The HBM-service ratio is 65/64 ≈ 1.016×. Complete KV retention can still have a small whole-model effect.</p></details></section>
+<section id="result"><h2>What it buys, and what it costs</h2><div class="equation"><p class="label">Other limits can stop the gain</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Other limits can stop the gain"><mi>T</mi><mo>≈</mo><mi>max</mi><mo>(</mo><mfrac><mrow><mi>F</mi></mrow><mrow><msub><mi>C</mi><mtext>compute</mtext></msub></mrow></mfrac><mo>,</mo><mfrac><mrow><msub><mi>D</mi><mtext>H</mtext></msub></mrow><mrow><msub><mi>ℬ</mi><mtext>H</mtext></msub></mrow></mfrac><mo>,</mo><mfrac><mrow><msub><mi>D</mi><mtext>P</mtext></msub></mrow><mrow><msub><mi>ℬ</mi><mtext>P</mtext></msub></mrow></mfrac><mo>,</mo><msub><mi>T</mi><mtext>other</mtext></msub><mo>)</mo></math></div><p>This simplified bound assumes substantial overlap. D_P counts persistent-storage deliveries and ℬ_P their bandwidth. T_other covers additional limiting work. Removing HBM pressure can expose a compute or on-chip-delivery limit.</p><pre><code>fixed-batch decode throughput = B / step_time</code></pre><p>More registers or shared memory may improve utilization without reducing bytes. Let η be the achieved fraction of peak bandwidth:</p><div class="equation"><p class="label">Same peak bandwidth, different utilization</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Same peak bandwidth, different utilization"><mi>T</mi><mo>≈</mo><mfrac><mrow><msub><mi>D</mi><mtext>H</mtext></msub></mrow><mrow><mi>η</mi><msub><mi>ℬ</mi><mtext>peak</mtext></msub></mrow></mfrac></math></div><p>If η increases from 0.5 to 0.75 with unchanged traffic, this service model improves by 0.75/0.5 = 1.5×. That is a utilization gain, not higher peak bandwidth.</p><p>If both sources have equal bandwidth and their deliveries serialize, the earlier two-source model gives:</p><div class="equation"><p class="label">Equal bandwidth under serialized service</p><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Equal bandwidth under serialized service"><mi>s</mi><mo>=</mo><mfrac><mrow><mn>1</mn></mrow><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>f</mi><mo>)</mo><mo>+</mo><mfrac><mrow><mi>f</mi></mrow><mrow><mi>ρ</mi></mrow></mfrac></mrow></mfrac><mo>=</mo><mn>1</mn><mspace width="1em"/><mtext>when ρ = 1</mtext></math></div><p>Here f is the retained fraction and ρ is on-chip/off-chip bandwidth. Independent concurrent paths can behave differently. An unchanged shared downstream bottleneck can also prevent gains.</p><p>For fixed-area designs, reduced compute must still sustain the faster data supply. For energy, avoided off-chip costs must exceed added storage, fabric and leakage costs.</p></section>
+<section id="misconception" class="misconception"><h2>A common misconception</h2><p class="wrong">Doubling on-chip capacity doubles serving performance.</p><p>Capacity changes performance through retention, scheduling or data reuse. Without a change in critical traffic or utilization, the bandwidth-limited time stays the same.</p></section>
+<section id="recap"><h2>Recap</h2><ul><li>Hold off-chip bandwidth fixed and measure the traffic change.</li><li>Account for existing hits and unaffected weight traffic.</li><li>Check on-chip delivery, utilization and compute limits.</li><li>Validate full-step latency and throughput separately from kernel traffic.</li></ul></section>
+<aside class="limits" aria-labelledby="limits-label"><p class="label" id="limits-label">Assumptions and limits</p><ul><li>The 64/8 GiB example is illustrative, not a measured larger-model result. It assumes one unchanged weight stream per batch step.</li><li>All traffic/time equations require explicit boundaries. Aggregate sector-hit counters cannot directly supply h₀ or h₁.</li><li>The retention widget omits cold fill, new KV writes, eviction, overlap and retention-management overhead.</li><li>Real serving mixes prefill, decode, scheduling and variable requests. B/T describes the controlled decode case, not queueing latency.</li><li>No H100 architecture speedup, area saving or energy benefit follows from these analytical ratios.</li></ul><p class="label">Background sources</p><ul><li><a href="https://arxiv.org/abs/2205.14135">FlashAttention: IO-aware attention</a></li><li><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/index.html">NVIDIA Hopper memory and occupancy guide</a></li></ul></aside></main><script>
+document.documentElement.classList.add('js');
+// BEGIN MODEL
+function fixedBandwidthModel(capacityGiB){
+ const retained=Math.min(capacityGiB,8),offChip=72-retained;
+ return {retained,offChip,ratio:72/offChip,
+  metric:offChip.toFixed(2)+' GiB off chip',
+  text:retained.toFixed(2)+' GiB KV remains resident; weights still contribute 64 GiB.',
+  speed:(72/offChip).toFixed(3)+'× HBM-service ratio',
+  why:'Retaining '+retained.toFixed(2)+' GiB removes '+(retained/72*100).toFixed(2)+'% of baseline traffic. Bandwidth stays unchanged.'};
+}
+// END MODEL
+(function(){const dial=document.getElementById('capacity');function render(){const m=fixedBandwidthModel(Number(dial.value));document.getElementById('capacity-value').textContent=Number(dial.value)+' GiB';document.getElementById('after-metric').textContent=m.metric;document.getElementById('after-text').textContent=m.text;document.getElementById('speed').textContent=m.speed;document.getElementById('why').textContent=m.why;document.getElementById('after-kv').setAttribute('width',String((8-m.retained)/72*320));document.getElementById('after-label').textContent='With '+m.retained+' GiB retained: '+m.offChip+' GiB';document.getElementById('kv-label').textContent='KV: '+(8-m.retained);document.getElementById('removed-line').setAttribute('x1',String(20+m.offChip/72*320));document.getElementById('removed-text').textContent=m.retained+' GiB of repeated off-chip reads avoided';document.getElementById('traffic-desc').textContent='The baseline reads72GiB. Your setting reads'+m.offChip+'GiB off chip, with'+m.retained+'GiB KV retained. Weight traffic remains64GiB.';}dial.addEventListener('input',render);document.getElementById('reset').addEventListener('click',()=>{dial.value='1';render();});render();})();
+</script>

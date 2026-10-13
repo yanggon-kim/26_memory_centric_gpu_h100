@@ -2,6 +2,8 @@
 
 This playbook describes the complete Phase 0–2 contract. Selected H100 bridge, energy, analytical reuse and partial native-trace steps have now been attempted; see `STATUS.json`, `results/case_manifest.json` and `docs/opportunity_report.md` for their disposition. For a new rental, follow `RENTAL_RESUME.md` first to select unfinished tasks; this file remains the full methodology. Begin with primary specification Sections 0 and 14. Establish evidence, including failures, before picking an architecture. The historical RTX study does not demonstrate H100 behavior, feasible SRAM area, or energy benefit.
 
+Before profiling/capture, follow `fixed_bandwidth_collection.md`. Its additional quantities and result artifacts are mandatory for testing traffic reduction at fixed bandwidth; unavailable counters remain NA.
+
 ## Phase 0: allocation and reproducibility gate
 
 1. Record rental provider/instance, actual H100 SKU (SXM/PCIe/NVL), physical UUID, HBM size, SM count, clocks/power limits as observed, driver, toolkit, OS, CPU/RAM, free disk, storage throughput, network/transfer constraints, profiler permissions and rental deadline. MIG and multi-GPU studies need separately validated scope. Inventory may inspect other devices; execution must expose only the declared UUID.

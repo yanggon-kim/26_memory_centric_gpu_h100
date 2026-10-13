@@ -4,6 +4,8 @@ A portable package for evidence-driven H100 Phase 0–2 research and Accel-Sim 2
 
 The historical [RTX 5080 findings](docs/rtx5080_findings.md) motivate falsifiable tests: small-batch weight delivery can be busy, larger batches consume compute, ideal pinning differs from naive LRU expansion, and disagreement between energy sensors can invalidate J/token. None transfers automatically to H100.
 
+The next rental must also follow [fixed-bandwidth collection requirements](docs/fixed_bandwidth_collection.md). The [interactive explanation](docs/fixed-bandwidth-serving.html) separates traffic reduction from bandwidth utilization and whole-model gain.
+
 ## Before renting
 
 Reserve an explicitly named H100 GPU and enough CPU, RAM, disk and transfer time. Start with the 1.5B bridge. The 32B model is conditional on actual HBM/workspace fit; Conditional Qwen3-30B-A3B follows dense baselines if memory/runtime budgets permit; active parameters do not determine weight fit. Model downloads resolve immutable HF revisions and respect declared size budgets. Do not start with all models or a full-model large trace.

@@ -4,6 +4,8 @@ For continuation, read `RENTAL_RESUME.md` first. The two-step whole-model HF eag
 
 The installed source inspected for this scaffold is `util/tracer_nvbit/others/torch_hook/pytorch_profiler.py` at the pinned framework SHA. It supplies `TorchModelHookWrapper(model)`, `hook_nvbit_to_layer(wrapper, module_name)`, and exported tracer callbacks `enable_nvbit_instrumentation`, `disable_nvbit_instrumentation`, `set_nvbit_instrumentation_tag`. Hooks silently ignore a missing tracer; our runner checks that the callback library actually loaded. The optional Python `nvtx` dependency must be present.
 
+For fixed-bandwidth analysis, also follow `fixed_bandwidth_collection.md`: preserve full inter-step working sets, collect page/slot and scratch attribution, and distinguish requested trace bytes from measured HBM transactions.
+
 ## Prepare the external pinned source
 
 Clone the release into an external path, verify framework/backend pins, build CPU simulator/postprocessor and NVBit 1.8 under an explicitly selected matching toolkit. The local H100 execution applies only the one-line `patches/accelsim_nvbit_missing_spinlock_entry.patch`: the original optional spinlock lookup dereferenced a missing map entry and reproducibly segfaulted even on the dynamic-input micro kernel. `configs/simulator_pin.json` pins original, patched and patch hashes; setup and capture reject other tracked source differences. No driver is downloaded or built. Example source location in the original workspace was `03_simulation/accel_sim2/vendor/accel-sim-framework`; portability uses an explicit `--accel-root`.

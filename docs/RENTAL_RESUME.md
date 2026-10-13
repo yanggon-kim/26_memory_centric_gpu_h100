@@ -65,6 +65,8 @@ The runner validates completion automatically; it has no `--validate` CLI mode. 
 
 ## 3. Complete Phase 1 models, workloads and counters
 
+Follow `fixed_bandwidth_collection.md` as the mandatory measurement/trace supplement. Collect baseline HBM read/write bytes, effective bandwidth, weight/KV/scratch attribution, actual attention tiles/splits, register spills/shared-memory and occupancy limits, full-step timing, observed clock conditions and cross-token reuse. The requested new artifacts and acceptance rules are listed there. These are future collection requirements, not evidence already obtained.
+
 After smoke, materialize baseline configs and execute staged synthetic cases: bridge/Qwen7B/Mistral7B B1/4/8 × C128/1024/4096; Qwen14B B1/4 × those contexts; conditional-fit Qwen32B B1 × C128/1024. Start every model at B1/C128. Pin each new model revision, record actual layout and memory use, and preserve OOM/failure cases. BF16, one allocated GPU, TP1 remain required. Do not automatically quantize or enlarge GPU scope to obtain fit. Complete the dense portfolio before conditional Qwen3-30B-A3B; report routed-expert behavior using representative prompts, and do not send MoE through the dense reuse adapter.
 
 Run `representative_text_v1` at B1/B4 C128 after synthetic bridge correctness. Build a fresh config from the new local snapshot, set `workload_file` to `configs/representative_text_v1.json`, and retain prompt IDs, truncation policy and hashes. The four saved passages support C128; do not silently pad them into representative C1024/C4096 workloads. Longer real-text contexts require separately versioned data/configs.
@@ -88,6 +90,8 @@ Recovered full HF traces already grouped and passed a one-kernel parser smoke, b
 Derive a separately versioned actual-SKU configuration and perform measured-versus-simulated comparison for the same eager program, model, shape and decode interval. The stock 132-SM config is only parser evidence. Address the instrumented path, gaps and instruction denominators; NVBit warp records differ from simulator active-thread instructions. If semantics require simulator changes, specify and validate a separate corrective patch before architectural experiments; never silently drop barriers or relabel architectures. Accel-Sim H100 power remains uncalibrated.
 
 ## 5. Collect the missing optimized traces and extend Phase 2
+
+Preserve complete inter-layer/weight traffic between successive decode steps for the fixed-bandwidth reuse analysis. Collect actual request-to-KV-page/slot and scratch mappings where accessible, and mark unmapped ranges explicitly. Follow the supplement’s mandatory metadata/export and physical-counter distinction.
 
 Only after valid vLLM smoke/baselines, run the implemented `scripts/run_trace.py --engine vllm` route, beginning with a bounded B1/C128 pilot. It uses eager in-process execution and full-step instrumentation including LM head/sampling; compare against uninstrumented same-shape eager vLLM references. Preserve a separate graph-optimized baseline. Use fresh budgets and `--help` for exact capture/export options.
 
