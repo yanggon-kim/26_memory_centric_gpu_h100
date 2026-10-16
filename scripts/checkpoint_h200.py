@@ -29,6 +29,23 @@ def main():
     lock = (PACKAGE/'.git/h200_checkpoint.lock').open('a')
     fcntl.flock(lock,fcntl.LOCK_EX)
     assert git('branch', '--show-current') == 'codex/h200-phase01'
+    cached_raw = {}
+    for root in a.root:
+        inventory=root/'results/checkpoint_raw_inventory.json'
+        if inventory.exists():
+            cached_raw.update({x['path']:x for x in json.loads(inventory.read_text()).get('raw_artifacts',[])})
+        manifest=root/'results/shoreline_case_manifest.json'
+        if manifest.exists():
+            data=json.loads(manifest.read_text());attempts=[]
+            for source in sorted((root/'results/processes').glob('*.json')):
+                row=json.loads(source.read_text())
+                attempts.append({'id':row['label'],'status':row.get('status','running'),
+                    'source':str(source.relative_to(root)),
+                    'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
+                    'gpu_execution':bool(row.get('monitor')),'exit_code':row.get('exit_code'),
+                    'numerical_source_freeze':row.get('source_freeze_identity')})
+            data['attempts']=attempts
+            manifest.write_text(json.dumps(data,indent=2)+'\n')
     candidates = list((PACKAGE/'scripts').glob('*.py')) + [PACKAGE/'h200/README.md']
     for root in a.root:
         root = root.resolve()
@@ -39,8 +56,10 @@ def main():
         if '__pycache__' in path.parts or '.control' in path.parts or path.name.endswith('.tmp'):
             continue
         if path.suffix not in TEXT | {'.png', '.pdf'} or path.stat().st_size > 8*1024**2:
-            omitted.append({'path':str(path.relative_to(PACKAGE)), 'bytes':path.stat().st_size,
-                            'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+            name=str(path.relative_to(PACKAGE));stat=path.stat();prior=cached_raw.get(name,{})
+            content_hash=prior.get('sha256') if prior.get('bytes')==stat.st_size and prior.get('mtime_ns')==stat.st_mtime_ns else None
+            omitted.append({'path':name, 'bytes':stat.st_size,'mtime_ns':stat.st_mtime_ns,
+                            'sha256':content_hash or hashlib.sha256(path.read_bytes()).hexdigest(),
                             'storage':'persistent workspace; excluded from public Git'})
             continue
         content = path.read_bytes()
