@@ -24,5 +24,50 @@
   "native_micro_attempt": "v1",
   "idle_required_s": 10,
   "profile_protocol": "ticks_only_v4",
-  "native_prediction_max_relative_error": 0.1
+  "native_prediction_max_relative_error": 0.1,
+  "collection_scope_version": "budget_v2",
+  "traffic_layer_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ]
+  ],
+  "kernel_profile_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ],
+    [
+      "mistral7b",
+      1,
+      4096
+    ]
+  ],
+  "native_counter_conditions": [
+    "stream_1mib",
+    "stream_28mib",
+    "stream_32mib",
+    "stream_512mib",
+    "stride17_512mib",
+    "gather_512mib",
+    "paged128_512mib",
+    "pointer_0.03125mib_chains1",
+    "pointer_96mib_chains1",
+    "pointer_96mib_chains32",
+    "fma_blocks528",
+    "bf16_gemm_4096",
+    "softmax_width8192"
+  ]
 }

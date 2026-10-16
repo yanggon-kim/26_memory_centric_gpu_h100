@@ -1,0 +1,83 @@
+{
+  "version": "budget_v2",
+  "recorded_utc": "2026-10-16T17:41:19.658371+00:00",
+  "reason": "Measured whole-range pilot takes about83s plus idle/checkpoint; preserve all J jobs and closeout within existing allocation. No precision/output/clock/repetition gate is reduced. No started case is removed.",
+  "whole_decode_contrasts": "all five graph and eager, three independent acquisitions each",
+  "layer_traffic_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ]
+  ],
+  "deferred_layer_traffic_contrasts": [
+    [
+      "mistral7b",
+      1,
+      4096
+    ],
+    [
+      "mistral7b",
+      8,
+      4096
+    ],
+    [
+      "qwen14b",
+      1,
+      4096
+    ]
+  ],
+  "kernel_profile_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ],
+    [
+      "mistral7b",
+      1,
+      4096
+    ]
+  ],
+  "deferred_kernel_profile_contrasts": [
+    [
+      "mistral7b",
+      8,
+      4096
+    ],
+    [
+      "qwen14b",
+      1,
+      4096
+    ]
+  ],
+  "native_counter_conditions": [
+    "stream_1mib",
+    "stream_28mib",
+    "stream_32mib",
+    "stream_512mib",
+    "stride17_512mib",
+    "gather_512mib",
+    "paged128_512mib",
+    "pointer_0.03125mib_chains1",
+    "pointer_96mib_chains1",
+    "pointer_96mib_chains32",
+    "fma_blocks528",
+    "bf16_gemm_4096",
+    "softmax_width8192"
+  ],
+  "statistical_protocol": "three acquisitions, ten ordinary trials, at least three warmups; separately instrumented counters/timelines retain original scope",
+  "physical_modifications": false,
+  "launch_cutoff": "2026-10-16T19:20:00-04:00",
+  "allocation_end": "2026-10-16T19:50:03-04:00"
+}

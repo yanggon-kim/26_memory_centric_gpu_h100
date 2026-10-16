@@ -156,6 +156,8 @@ def traffic():
     for model,batch,context in CONTRASTS:
         for engine in ('eager','graph'):
             for acq in range(3):results.append(counter_case(model,engine,batch,context,acq))
+        selected=load(ROOT/'session.json').get('traffic_layer_contrasts',CONTRASTS)
+        if [model,batch,context] not in [list(c) for c in selected]:continue
         layout=load(ROOT/'configs'/f'{model}_smoke.json')['layout']
         for layer in sorted(set([0,layout['num_hidden_layers']//2,layout['num_hidden_layers']-1])):
             for acq in range(3):results.append(counter_case(model,'eager',batch,context,acq,'layer'+str(layer),layer))
@@ -309,7 +311,7 @@ def kernel_profiles():
     requested=[m for m in METRICS+extra if re.search(r'^'+re.escape(m)+r'\s',catalog,re.M)]
     unavailable=sorted(set(METRICS+extra)-set(requested))
     results=[]
-    for model,batch,context in CONTRASTS:
+    for model,batch,context in load(ROOT/'session.json').get('kernel_profile_contrasts',CONTRASTS):
         ref=reference(model,'eager',batch,context)
         if ref is None:
             results.append({'model':model,'status':'unavailable','reason':'correct eager baseline unavailable'});continue
