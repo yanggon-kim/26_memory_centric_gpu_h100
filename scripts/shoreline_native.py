@@ -26,7 +26,7 @@ def main(a):
           'versions':{'torch':torch.__version__,'triton':triton.__version__},
           'source_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
               [Path(__file__),Path(__file__).with_name('shoreline_kernels.py'),Path(__file__).with_name('shoreline_green.py')]},
-          'policy':{'warmups':3,'trials':10,'seed':20261013,'memory_load_policy':'transfer .cg; dependent .ca volatile',
+          'policy':{'warmups':3,'trials':10,'seed':20261013,'memory_load_policy':'transfer .cg; dependent .ca; loop-carried read address retained in PTX',
                     'physical_HBM_bytes':None,'missing_reason':'requires separate scope-matched hardware-counter acquisition'}}
     dump(a.output/'run.json',data)
 

@@ -156,7 +156,7 @@ def traffic():
 
 def native():
     campaign.update_job(ROOT,'J4','in_progress')
-    label='J4_native_pilot'
+    label='J4_native_pilot_ptx_v2'
     out=ROOT/'runs'/label
     outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
                                       '--acquisition','0','--pilot'),timeout=300)

@@ -36,7 +36,7 @@ def dependent(NEXT, STARTS, OUT, CYCLES, SMIDS, N:tl.constexpr, CHAINS:tl.conste
     index=tl.load(STARTS+lane,lane<CHAINS,other=0)
     start=tl.inline_asm_elementwise('mov.u64 $0, %clock64;',constraints='=l',args=[],dtype=tl.int64,is_pure=False,pack=1)
     for _ in range(STEPS):
-        index=tl.load(NEXT+index,lane<CHAINS,other=0,cache_modifier='.ca',volatile=True)
+        index=tl.load(NEXT+index,lane<CHAINS,other=0,cache_modifier='.ca')
     end=tl.inline_asm_elementwise('mov.u64 $0, %clock64;',constraints='=l',args=[],dtype=tl.int64,is_pure=False,pack=1)
     tl.store(OUT+lane,index,lane<CHAINS)
     tl.store(CYCLES+lane,end-start,lane<CHAINS)
