@@ -20,6 +20,9 @@ Ordinary, profiled, analytical and historical evidence retain separate scopes. C
 | Capture | Read bytes | Write bytes | D/U tick sum | D/U window unique |
 |---|---:|---:|---:|---:|
 | J2_bridge_eager_b1_c1024_full_acq00_range_api_v2 | 9376289024 | 27790336 | 1.0027354875999734 | 3.00823413516489 |
+| J2_bridge_eager_b1_c1024_full_acq00_ticks_only_v4 | 9376605952 | 28651264 | 1.0027693810680396 | 3.008335816504442 |
+| J2_bridge_eager_b1_c1024_full_acq01_ticks_only_v4 | 9376615680 | 28658176 | 1.0027704214168172 | 3.008338937579485 |
+| J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4 | 9376347136 | 27531520 | 1.002741702315039 | 3.0082527794815928 |
 
 A near-three window ratio can reflect ordinary autoregressive recurrence. Aggregate ratios do not prove per-address exactly-once access or identify a KV hit rate.
 

@@ -36,6 +36,9 @@ def main():
         assert qualify_replays(base,expected,root)['passed']
         pub.write_text(json.dumps({'status':'running','output':str(out)}))
         assert not qualify_replays(base,expected,root)['passed']
+        pub.write_text(json.dumps({'status':'complete','output':str(out)}))
+        (base/'pass001').mkdir()
+        assert not qualify_replays(base,expected,root)['passed']
     # A trace reader must establish actual intersections and reject missing kernels.
     import sqlite3
     from shoreline_timeline import native_overlap
@@ -54,9 +57,6 @@ def main():
         assert len(proof['conditions'])==60 and all(r['same_pass_overlap_ms']>0 for r in proof['conditions'])
         db.execute('DELETE FROM CUPTI_ACTIVITY_KIND_KERNEL WHERE rowid=1');db.commit();db.close()
         rejected(native_overlap,path)
-        pub.write_text(json.dumps({'status':'complete','output':str(out)}))
-        (base/'pass001').mkdir()
-        assert not qualify_replays(base,expected,root)['passed']
     b=latency_bounds(10,2,8)
     assert b['O_interval']==[0,2]
     for e in b['coupled_endpoints']:
