@@ -31,9 +31,9 @@ def transfer(A, B, SMIDS, N:tl.constexpr, PATTERN:tl.constexpr, BLOCK:tl.constex
 
 
 @triton.jit
-def dependent(NEXT, OUT, CYCLES, SMIDS, N:tl.constexpr, CHAINS:tl.constexpr, STEPS:tl.constexpr):
+def dependent(NEXT, STARTS, OUT, CYCLES, SMIDS, N:tl.constexpr, CHAINS:tl.constexpr, STEPS:tl.constexpr):
     lane=tl.arange(0,triton.next_power_of_2(CHAINS))
-    index=(lane.to(tl.int64)*15485863)%N
+    index=tl.load(STARTS+lane,lane<CHAINS,other=0)
     start=tl.inline_asm_elementwise('mov.u64 $0, %clock64;',constraints='=l',args=[],dtype=tl.int64,is_pure=False,pack=1)
     for _ in range(STEPS):
         index=tl.load(NEXT+index,lane<CHAINS,other=0,cache_modifier='.ca',volatile=True)

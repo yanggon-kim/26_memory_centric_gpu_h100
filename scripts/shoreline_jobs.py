@@ -55,7 +55,21 @@ def records(path):
     lines=Path(path).read_text(errors='replace').splitlines()
     i=next((i for i,s in enumerate(lines) if s.startswith('"ID",')),None)
     if i is None:return []
-    return [r for r in csv.DictReader(io.StringIO('\n'.join(lines[i:]))) if r.get('Metric Name')]
+    reader=csv.DictReader(io.StringIO('\n'.join(lines[i:])))
+    rows=list(reader)
+    if 'Metric Name' in (reader.fieldnames or []):return [r for r in rows if r.get('Metric Name')]
+    # Newer Nsight raw CSV is wide: one units row, then one row per result.
+    if not rows:return []
+    units=rows[0] if not rows[0].get('ID') else {}
+    output=[]
+    for row in rows:
+        if not row.get('ID'):continue
+        common={k:row[k] for k in ('ID','Process ID','Kernel Name','Context','Stream') if k in row}
+        for metric in reader.fieldnames:
+            if '__' in metric and not metric.startswith('device__'):
+                output.append({**common,'Metric Name':metric,'Metric Unit':units.get(metric,''),
+                               'Metric Value':row.get(metric),'CSV Layout':'wide normalized to metric rows'})
+    return output
 
 
 def value(raw):
@@ -65,7 +79,7 @@ def value(raw):
 
 def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None):
     label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}_range_api_v2'
-    result_path=ROOT/'profiles'/(label+'.json')
+    result_path=ROOT/'profiles'/(label+'_reader_v3.json')
     if result_path.exists():return load(result_path)
     ref=reference(model,engine,batch,context)
     if ref is None:
@@ -89,8 +103,8 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     passed=replay_proof['passes']
     if not replay_proof['passed']:problems.append('incomplete/mismatched/unpublished application replay')
     if report.exists():
-        attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--csv'],gpu=False,timeout=120)
-    raw=ROOT/'logs'/(label+'_import.log')
+        attempt(label+'_import_base',[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv'],gpu=False,timeout=120)
+    raw=ROOT/'logs'/(label+'_import_base.log')
     rows=records(raw) if raw.exists() else []
     ids=sorted(set(r['ID'] for r in rows))
     counts={}
@@ -111,6 +125,8 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
             'errors':problems,'missing_reason':None if valid else 'counter/replay/output/range qualification failed; raw attempts preserved',
             'clock_join_qualification':'pending pooled per-trial/replay endpoint checks; no timing join inferred',
             'ordinary_latency':None,'ordinary_latency_reason':'profile time is instrumented and not ordinary decode latency'}
+    result['reader_version']=3
+    result['raw_capture_reused_without_recapture']=report.exists()
     dump(result_path,result)
     publish(f'J2 acquisition checkpoint: {label} {result["status"]}')
     return result

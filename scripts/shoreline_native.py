@@ -110,15 +110,17 @@ def main(a):
                 if a.profile_case and identity!=a.profile_case:continue
                 out=torch.empty(chains,device='cuda',dtype=torch.int64)
                 cycles=torch.empty_like(out);smids=torch.empty(1,device='cuda',dtype=torch.int32)
-                steps=1024
-                compiled=dependent[(1,)](next_gpu,out,cycles,smids,n,chains,steps,num_warps=1)
-                def launch():return dependent[(1,)](next_gpu,out,cycles,smids,n,chains,steps,num_warps=1)
-                expected=np.arange(chains,dtype=np.int64)*15485863%n
-                reference=links.numpy()
-                for _ in range(steps):expected=reference[expected]
+                steps=n//chains+17
+                positions=torch.arange(chains,dtype=torch.int64)*(n//chains)
+                starts=order[positions].cuda()
+                compiled=dependent[(1,)](next_gpu,starts,out,cycles,smids,n,chains,steps,num_warps=1)
+                def launch():return dependent[(1,)](next_gpu,starts,out,cycles,smids,n,chains,steps,num_warps=1)
+                expected=order[(positions+steps)%n].numpy()
                 def verify():assert np.array_equal(out.cpu().numpy(),expected),'pointer chain mismatch'
                 metadata={'footprint_bytes':n*8,'dependent_steps':steps,'independent_chains':chains,
-                          'useful_read_bytes_per_launch':chains*steps*8,'cache_level':'conditional; footprint is not residency proof'}
+                          'useful_read_bytes_per_launch':chains*steps*8,
+                          'working_set_proof':'one randomized Hamiltonian cycle; disjoint chain starting positions cover the entire allocation plus 17 links per chain',
+                          'cache_level':'conditional; full traversal is proved, cache-level residency requires counters'}
                 measure(identity,launch,verify,metadata,compiled)
                 if data['cases'] and data['cases'][-1]['id']==identity:
                     data['cases'][-1].update(dependent_clock_cycles=cycles.cpu().tolist(),observed_smids=smids.cpu().tolist())
