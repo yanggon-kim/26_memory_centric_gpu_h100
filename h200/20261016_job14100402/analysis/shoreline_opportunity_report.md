@@ -9,11 +9,11 @@ Ordinary, profiled, analytical and historical evidence retain separate scopes. C
 | bridge | 8 | 4096 | graph | 3 | 3.3870 | False |
 | bridge | 8 | 4096 | eager | 3 | 9.9009 | False |
 | mistral7b | 1 | 4096 | graph | 3 | 5.8015 | False |
-| mistral7b | 1 | 4096 | eager | 0 | NA | False |
-| mistral7b | 8 | 4096 | graph | 0 | NA | False |
-| mistral7b | 8 | 4096 | eager | 0 | NA | False |
-| qwen14b | 1 | 4096 | graph | 0 | NA | False |
-| qwen14b | 1 | 4096 | eager | 0 | NA | False |
+| mistral7b | 1 | 4096 | eager | 3 | 10.4622 | False |
+| mistral7b | 8 | 4096 | graph | 3 | 7.0002 | False |
+| mistral7b | 8 | 4096 | eager | 3 | 10.7322 | False |
+| qwen14b | 1 | 4096 | graph | 3 | 9.9820 | False |
+| qwen14b | 1 | 4096 | eager | 3 | 15.2831 | False |
 
 ## Physical traffic versus logical demand
 
