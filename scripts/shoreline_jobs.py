@@ -387,7 +387,9 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
     result={'id':label,'status':'failed','model':model,'batch':batch,'context':context,'engine':engine,
             'requested_fraction':fraction,'acquisition_id':acq,'instrumented_pilot':pilot}
     allocation=output/'green_allocation.json';native=output/'run.json'
-    if allocation.exists():result['allocation']=load(allocation)
+    if allocation.exists():
+        result['allocation']=load(allocation)
+        result['actual_sm_case_id']=label+'_sm'+str(result['allocation']['allocation']['actual_sm_count'])
     ref=reference(model,engine,batch,context)
     if native.exists() and ref:
         d=load(native);expected=load(ref)['cases'][0]['trials'][0]['output_ids']
@@ -420,6 +422,7 @@ def sm_allocations():
                 results.append(result)
                 if result['status']=='complete':break
             qualified[(engine,b,c)]=result['status']=='complete'
+    counter_proofs={}
     for (engine,b,c),supported in qualified.items():
         if not supported:continue
         for fraction in (.75,.5,.3):
@@ -427,7 +430,10 @@ def sm_allocations():
             proof=restricted_case('bridge',engine,b,c,fraction,0,True)
             results.append(proof)
             if proof['status']!='complete':continue
+            counter_proofs[(b,c,fraction)]=engine if engine=='graph' else counter_proofs.get((b,c,fraction),engine)
             for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
+    for (b,c,fraction),engine in counter_proofs.items():
+        for acq in range(3):results.append(counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction))
     for fraction in (.75,.5,.3):
         for acq in range(3):
             label=f'J5_native_f{int(fraction*100)}_acq{acq:02d}';out=ROOT/'runs'/label
