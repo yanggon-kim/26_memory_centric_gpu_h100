@@ -538,7 +538,7 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
 
 def sm_allocations():
     campaign.update_job(ROOT,'J5','in_progress')
-    results=[];qualified={}
+    results=[];qualified={};qualified_proofs={}
     for b,c in [(1,1024),(8,4096)]:
         for engine in ('graph','eager'):
             for attempt_id in range(2):
@@ -549,12 +549,13 @@ def sm_allocations():
                     disposition('J5','partial','first resource-restriction pilot failed; review actual evidence/adapter before spending the remaining bounded pilot attempt')
                     raise SystemExit(76)
             qualified[(engine,b,c)]=result['status']=='complete'
+            if result['status']=='complete':qualified_proofs[(engine,b,c)]=result
     counter_proofs={}
     for (engine,b,c),supported in qualified.items():
         if not supported:continue
         for fraction in (.75,.5,.3):
             # Each resource setting needs its own all-kernel proof; a 75% pilot does not prove 30%.
-            proof=restricted_case('bridge',engine,b,c,fraction,0,True)
+            proof=qualified_proofs[(engine,b,c)] if fraction==.75 else restricted_case('bridge',engine,b,c,fraction,0,True)
             results.append(proof)
             if proof['status']!='complete':continue
             counter_proofs[(b,c,fraction)]=engine if engine=='graph' else counter_proofs.get((b,c,fraction),engine)
@@ -706,8 +707,8 @@ def competition():
     for batch,context in [(1,1024),(8,4096)]:
         supported=[]
         for engine in ('graph','eager'):
-            proof=ROOT/'profiles'/f'J5_bridge_{engine}_b{batch}_c{context}_f75_acq00_pilot0.json'
-            if proof.exists() and load(proof)['status']=='complete':supported.append(engine)
+            proofs=[ROOT/'profiles'/f'J5_bridge_{engine}_b{batch}_c{context}_f75_acq00_pilot{i}.json' for i in range(2)]
+            if any(p.exists() and load(p)['status']=='complete' for p in proofs):supported.append(engine)
         if not supported:
             results.append({'batch':batch,'context':context,'status':'unavailable',
                 'reason':'no all-kernel decoder restriction proof from J5'});continue
