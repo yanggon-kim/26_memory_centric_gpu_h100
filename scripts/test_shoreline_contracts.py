@@ -36,6 +36,24 @@ def main():
         assert qualify_replays(base,expected,root)['passed']
         pub.write_text(json.dumps({'status':'running','output':str(out)}))
         assert not qualify_replays(base,expected,root)['passed']
+    # A trace reader must establish actual intersections and reject missing kernels.
+    import sqlite3
+    from shoreline_timeline import native_overlap
+    with tempfile.TemporaryDirectory() as directory:
+        path=Path(directory)/'native.sqlite';db=sqlite3.connect(path)
+        db.executescript('CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT); CREATE TABLE StringIds(id INTEGER,value TEXT); CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER,end INTEGER,demangledName INTEGER);')
+        db.executemany('INSERT INTO StringIds VALUES (?,?)',[(1,'transfer'),(2,'arithmetic')])
+        for condition,ratio in enumerate((1,2,4,8,16,32)):
+            for trial in range(10):
+                start=(condition*10+trial)*10000
+                db.execute('INSERT INTO NVTX_EVENTS VALUES (?,?,?)',(start,start+9000,f'overlap_ratio{ratio}_concurrent'))
+                db.executemany('INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (?,?,1)',[(start+10+j*100,start+90+j*100) for j in range(4)])
+                db.executemany('INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES (?,?,2)',[(start+20+j*100,start+80+j*100) for j in range(ratio)])
+        db.commit()
+        proof=native_overlap(path)
+        assert len(proof['conditions'])==60 and all(r['same_pass_overlap_ms']>0 for r in proof['conditions'])
+        db.execute('DELETE FROM CUPTI_ACTIVITY_KIND_KERNEL WHERE rowid=1');db.commit();db.close()
+        rejected(native_overlap,path)
         pub.write_text(json.dumps({'status':'complete','output':str(out)}))
         (base/'pass001').mkdir()
         assert not qualify_replays(base,expected,root)['passed']

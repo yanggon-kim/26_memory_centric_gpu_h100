@@ -49,7 +49,7 @@ def read(path,expected_green_id=None):
         contexts=sorted(set(k['greenContextId'] or 0 for k in kernels))
         cross_context=[(max(a['start'],b['start']),min(a['end'],b['end'])) for i,a in enumerate(kernels)
                        for b in kernels[i+1:] if a['greenContextId'] and b['greenContextId'] and
-                       a['greenContextId']!=b['greenContextId'] and max(a['start'],b['start'])<min(a['end'],b['end'])]
+                       a['greenContextId']!=b['greenContextId'] and max(a['start'],b['start'])<min(a['end'],b['end'])] if len(contexts)>1 else []
         windows.append({'start_ns':start,'end_ns':end,'instrumented_wall_ms':(end-start)/1e6,
             'kernel_union_ms':union_ns([(k['start'],k['end']) for k in kernels])/1e6,
             'kernel_sum_ms':sum(k['end']-k['start'] for k in kernels)/1e6,
