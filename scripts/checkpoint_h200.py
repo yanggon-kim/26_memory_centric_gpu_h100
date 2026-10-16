@@ -33,7 +33,7 @@ def main():
         candidates += [x for x in root.rglob('*') if x.is_file() and not x.is_symlink()]
     selected, omitted = [], []
     for path in sorted(set(candidates)):
-        if '__pycache__' in path.parts or path.name.endswith('.tmp'):
+        if '__pycache__' in path.parts or '.control' in path.parts or path.name.endswith('.tmp'):
             continue
         if path.suffix not in TEXT | {'.png', '.pdf'} or path.stat().st_size > 8*1024**2:
             omitted.append({'path':str(path.relative_to(PACKAGE)), 'bytes':path.stat().st_size,
@@ -66,6 +66,12 @@ def main():
         assert remote == commit, 'remote verification failed'
     print(json.dumps({'commit': commit, 'remote_verified': a.push,
                       'selected_files': len(selected), 'omitted_raw_files': omitted}), flush=True)
+    for root in a.root:
+        pause = root/'.control/pause_after_checkpoint'
+        if pause.exists():
+            pause.unlink()
+            print('Requested safe case boundary reached; checkpoint published before scheduler stop.',flush=True)
+            raise SystemExit(75)
 
 
 if __name__ == '__main__':
