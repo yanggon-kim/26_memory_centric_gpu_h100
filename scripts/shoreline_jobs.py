@@ -77,15 +77,20 @@ def value(raw):
     except (TypeError,ValueError,AttributeError):return None
 
 
-def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None):
+def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None,job='J2',pressure=None,fraction=None):
     protocol=load(ROOT/'session.json').get('profile_protocol','range_api_v2')
-    label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}_{protocol}'
+    treatment=(f'_{pressure}' if pressure else '')+(f'_f{int(fraction*100)}' if fraction is not None else '')
+    label=f'{job}_{model}_{engine}_b{batch}_c{context}_{scope}{treatment}_acq{acquisition:02d}_{protocol}'
     result_path=ROOT/'profiles'/(label+'_reader_v3.json')
     if result_path.exists():return load(result_path)
     ref=reference(model,engine,batch,context)
+    if ref is None and job=='J7':
+        candidate=ROOT/'runs'/f'J7_{model}_eager_b{batch}_c{context}_normal_eventsnone_acq00/run.json'
+        if candidate.exists() and load(candidate)['status']=='complete':ref=candidate
     if ref is None:
         result={'id':label,'status':'unavailable','reason':'no correct full-length baseline for exact output comparison'}
         dump(result_path,result);return result
+    if not (ROOT/'configs'/f'{model}_{engine}_b{batch}_c{context}_t10.json').exists():campaign.make_config(ROOT,model,engine,batch,context)
     config=profile_config(model,engine,batch,context,label)
     base=ROOT/'runs'/label
     report=ROOT/'profiles'/(label+'.ncu-rep')
@@ -96,6 +101,8 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
          '--export',str(report),str(PYTHON),str(PROGRAMS/'shoreline_replay.py'),
          '--config',str(config),'--gpu-uuid',UUID,'--mode','timing','--output',str(base),
          '--external-profiler','--generated-tokens','64']
+    if pressure:cmd+=['--pressure',pressure]
+    if fraction is not None:cmd+=['--fraction',str(fraction)]
     outcome=attempt(label,cmd,timeout=900)
     passed=[];problems=[]
     expected=load(ref)['cases'][0]
@@ -119,6 +126,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     result={'id':label,'status':'complete' if valid else 'failed','model':model,'engine':engine,
             'batch':batch,'context':context,'acquisition_id':acquisition,'scope':scope,'layer':layer,
             'classification':'measured-real-GPU-instrumented','ticks':[4,5,6],'token_denominator':3*batch,
+            'pressure':pressure,'requested_sm_fraction':fraction,
             'source_config_sha256':digest(config),'replay_mode':'app-range','cache_control':'none','clock_control':'none',
             'native_replay_publications':passed,'metrics':rows,'ranges':counts,'expected_range_count':expected_ranges,
             'hbm_read_bytes':sum(v['dram__bytes_read.sum'] for v in counts.values()) if metrics_valid else None,
@@ -130,7 +138,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     result['profile_protocol']=protocol
     result['raw_capture_reused_without_recapture']=report.exists()
     dump(result_path,result)
-    publish(f'J2 acquisition checkpoint: {label} {result["status"]}')
+    publish(f'{job} acquisition checkpoint: {label} {result["status"]}')
     return result
 
 
@@ -189,6 +197,21 @@ def service_extensions():
                      '--output',out,'--acquisition',str(acq)),timeout=600)
         outcomes.append({'id':label,'status':result['status']})
         publish(f'J4 extension acquisition checkpoint: {label} {result["status"]}')
+    label='J4_same_pass_overlap';out=ROOT/'runs'/label;report=ROOT/'profiles'/label
+    result=attempt(label,[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none',
+        '--trace=cuda,nvtx','--cuda-graph-trace=node','--capture-range=cudaProfilerApi',
+        '--capture-range-end=stop','--output='+str(report)]+python_command('shoreline_service_extensions.py',
+        '--gpu-uuid',UUID,'--output',out,'--acquisition','0','--timeline'),timeout=600)
+    proof={'status':'failed','producer_status':result['status']}
+    db=report.with_suffix('.sqlite')
+    if report.with_suffix('.nsys-rep').exists() and not db.exists():
+        attempt(label+'_export',[str(CUDA/'bin/nsys'),'export','--type','sqlite','--output',str(db),str(report.with_suffix('.nsys-rep'))],gpu=False,timeout=120)
+    if db.exists() and result['status']=='complete':
+        from shoreline_timeline import native_overlap
+        try:proof.update(native_overlap(db))
+        except Exception as error:proof['reason']=str(error)
+    dump(ROOT/'results/J4_same_pass_overlap.json',proof)
+    publish(f'J4 same-pass overlap checkpoint: {proof["status"]}')
     physical=[]
     for case in ('read_only_512mib','read_stride17_512mib'):
         for acq in range(3):
@@ -212,6 +235,8 @@ def service_extensions():
             publish(f'J4 physical service checkpoint: {label} {entry["status"]}')
     dump(ROOT/'results/shoreline_service_extension_qualification.json',{'ordinary':outcomes,'physical':physical,
         'native_fit':'requires common-family held-out validation and clock joins; no transfer to decoder assumed'})
+    from shoreline_fit import fit
+    fit(ROOT)
     disposition('J4','partial','native service, read-only physical bytes and overlap-family acquisitions published; derived clock/fit gates tracked separately')
 
 
@@ -437,8 +462,14 @@ def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
     if (out/'run.json').exists():
         d=load(out/'run.json')
         if outcome['status']=='complete' and d['status']=='complete':
+            ref=reference(model,'eager',batch,context)
+            if ref is None:
+                candidate=ROOT/'runs'/f'{job}_{model}_eager_b{batch}_c{context}_normal_eventsnone_acq00/run.json'
+                ref=candidate if candidate.exists() else None
+            expected=load(ref)['cases'][0]['trials'][0]['output_ids'] if ref else None
+            exact=expected is not None and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
             cq=campaign.clock_qualification(d,outcome['monitor']['source'])
-            result.update(status='complete' if cq['passed'] else 'rejected',clock_qualification=cq,
+            result.update(status='complete' if cq['passed'] and exact else 'rejected',clock_qualification=cq,exact_reference_ids=exact,
                           output_ids=d['cases'][0]['trials'][0]['output_ids'],
                           step_ms=[t['wall_ms']/t['decode_iterations'] for t in d['cases'][0]['trials']],
                           run_source=str((out/'run.json').relative_to(ROOT)),run_sha256=digest(out/'run.json'))
@@ -454,8 +485,12 @@ def retention():
             # Predetermined alternating order; never choose by observed latency.
             for pressure in (('normal','pressure') if acq%2==0 else ('pressure','normal')):
                 results.append(treatment_case('J7','bridge',b,c,acq,pressure))
-    dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,
-        'physical_traffic':'pending separately scoped normal/pressure counter captures',
+    physical=[]
+    for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
+        for pressure in ('normal','pressure'):
+            for acq in range(3):physical.append(counter_case('bridge','eager',b,c,acq,job='J7',pressure=pressure))
+    dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,'physical':physical,
+        'physical_traffic':'full decode ticks include pressure and its direct read/write cost; no logical byte subtraction',
         'interpretation':'pressure is cache-history competition; no guaranteed flush or measured larger-SRAM benefit'})
     disposition('J7','partial','matched retention-pressure timing and exact outputs saved; physical read/write attribution remains a separate gate')
 

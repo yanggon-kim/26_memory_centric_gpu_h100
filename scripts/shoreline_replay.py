@@ -33,9 +33,14 @@ def main():
     parser.add_argument('--collect-worker-metadata',action='store_true')
     parser.add_argument('--batch',type=int);parser.add_argument('--context',type=int)
     parser.add_argument('--generated-tokens',type=int,default=64)
+    parser.add_argument('--fraction',type=float)
+    parser.add_argument('--pressure',choices=['normal','pressure'])
     parsed=parser.parse_args(args);parsed.output.mkdir(parents=True,exist_ok=False)
     try:
-        shoreline_decode.main(parsed)
+        if parsed.fraction is not None:
+            import shoreline_restricted_decode
+            shoreline_restricted_decode.main(parsed)
+        else:shoreline_decode.main(parsed)
         dump(publication,{'status':'complete','pass':index,'output':str(output),
                           'finished_unix_ns':time.time_ns()})
     except BaseException as error:
