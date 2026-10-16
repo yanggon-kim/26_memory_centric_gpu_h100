@@ -1,5 +1,7 @@
 # Required H100 evidence: more on-chip memory at fixed bandwidth
 
+**Scope update2026-10-16:** these requirements remain the retention/local-resource branch of [the H200 shoreline assignment](h200_shoreline_jobs.md). They do not replace SM/request-delivery, independent service or joint-bandwidth experiments. Preserve actual H200 baseline/cache identity and collect new matched comparisons under the three-acquisition/ten-trial protocol. Existing evidence is not retroactively qualified.
+
 Read this after `RENTAL_RESUME.md` and before collecting Phase 1 profiles or Phase 2 traces. The companion [HTML explanation](fixed-bandwidth-serving.html) teaches the model. The primary research specification and existing correctness/energy gates still apply. These collection requirements are new; no previously completed run is retroactively declared to satisfy them.
 
 ## Question and mathematical contract

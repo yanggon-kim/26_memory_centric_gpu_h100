@@ -1,5 +1,7 @@
 # Current research assumptions and boundaries
 
+**H200 override2026-10-16:** [the active assignment](h200_shoreline_jobs.md) and [plan2.0](shoreline_aware_research_plan_2.0.md) govern current scope. The H10023GiB/R570 conditions below are historical. Verify the actual H200 allocation/toolchain/deadline and seed20261013. Joint SRAM/bandwidth candidates require independent service and later physical feasibility; no new hardware measurement is implied.
+
 - The named H100 UUID is exclusively allocated by the user. Every GPU run must expose only that physical GPU and repeat a startup contention check.
 - BF16 weights and KV, immutable model revision, seed 20261013, greedy EOS-ignored outputs, and the strict all-request first-token barrier remain fixed. Any runtime adaptation is a newly recorded software configuration, not an alteration of the original baseline.
 - The 23 GiB free-space limit is hard. Keep model, environment, raw/grouped traces and archive budgets explicit; a partial or empty capture is retained as failure evidence.

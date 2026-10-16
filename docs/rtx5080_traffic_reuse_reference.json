@@ -1,0 +1,1794 @@
+{
+  "classification": "historical_RTX5080_measured_and_analytical_reference_not_H100_evidence",
+  "date": "2026-10-15",
+  "models": [
+    {
+      "key": "qwen1.5b",
+      "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+    },
+    {
+      "key": "qwen3b",
+      "model_id": "Qwen/Qwen2.5-3B-Instruct",
+      "revision": "aa8e72537993ba99e69dfaafa59ed015b17504d1"
+    },
+    {
+      "key": "mistral7b",
+      "model_id": "mistralai/Mistral-7B-Instruct-v0.2",
+      "revision": "63a8b081895390a26e140280378bc85ec8bce07a"
+    }
+  ],
+  "seed": 20261014,
+  "generated_tokens": 64,
+  "profile_ticks": [
+    4,
+    5,
+    6
+  ],
+  "trace_ticks": [
+    4,
+    5
+  ],
+  "fingerprint_encoding": "SHA256(row-major signed little-endian int64 token IDs)",
+  "case_fingerprints": [
+    {
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 1024,
+      "prompt_sha256_int64le": "4d0bfea629cb207cee2dbe25141cf0286dcc6d9bcee37db657b5ae526385c362",
+      "output_sha256_int64le": "92eb0a3ba502f244252bd804163ca1e07185b54ad4e328cac533eb5373a00c7a"
+    },
+    {
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 4096,
+      "prompt_sha256_int64le": "9f65a9e98e6b2223207769b640c66e737d5a457af3df127ba7d760a24a2c950a",
+      "output_sha256_int64le": "92eb0a3ba502f244252bd804163ca1e07185b54ad4e328cac533eb5373a00c7a"
+    },
+    {
+      "model": "qwen1.5b",
+      "batch": 8,
+      "context": 4096,
+      "prompt_sha256_int64le": "48fb0050f55944af611c0055751c96d7cfb2dfbab2f3986c69e45ee0bfa72088",
+      "output_sha256_int64le": "d447766ee596c5bccbd3621a90a0a7cb9cead73ef43b184c6906f84233c44c2a"
+    },
+    {
+      "model": "qwen3b",
+      "batch": 1,
+      "context": 4096,
+      "prompt_sha256_int64le": "9f65a9e98e6b2223207769b640c66e737d5a457af3df127ba7d760a24a2c950a",
+      "output_sha256_int64le": "e6b20955baddad7e5883a0e5f3c7bb7a909687f9b38a20abac53e956acb25045"
+    },
+    {
+      "model": "qwen3b",
+      "batch": 8,
+      "context": 4096,
+      "prompt_sha256_int64le": "48fb0050f55944af611c0055751c96d7cfb2dfbab2f3986c69e45ee0bfa72088",
+      "output_sha256_int64le": "3c0672433d8c68096f95d23e990d805ce046849c1874f1efc0e2a401fe18cf47"
+    },
+    {
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "prompt_sha256_int64le": "30ca8dc8dc0296979bde95a39dcd970462577e61f0cc07ef6de6206f7f0545ef",
+      "output_sha256_int64le": "cd15f9b49621a90037334e1ceeccfb303e07895f02e1d4b0b89b1ecfa1128364"
+    }
+  ],
+  "baseline_records": [
+    {
+      "id": "traffic_qwen1.5b_b1_c1024_layer0",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 1024,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          1051648,
+          1052672,
+          1053696
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          3080,
+          3080,
+          3080
+        ],
+        "layer_output_view_bytes_per_tick": [
+          6144,
+          6144,
+          6144
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          94650376,
+          94651400,
+          94652424
+        ],
+        "three_tick_unique_external_inputs_bytes": 94656536,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 280898048.0,
+        "dram_write_bytes": 954624.0,
+        "l2_read_sectors": 9304027.0,
+        "l2_read_miss_sectors": 8775145.0,
+        "global_load_sectors": 13277817.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 424890144.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 297728864.0,
+        "L2_read_miss_sector_bytes": 280804640.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 0.9892371657119352,
+      "DRAM_read_over_three_tick_unique_external_inputs": 2.9675504711053446
+    },
+    {
+      "id": "traffic_qwen1.5b_b1_c1024_layer27",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 1024,
+      "layer": 27,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          1051648,
+          1052672,
+          1053696
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          6152,
+          6152,
+          6152
+        ],
+        "layer_output_view_bytes_per_tick": [
+          6144,
+          6144,
+          6144
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          94653448,
+          94654472,
+          94655496
+        ],
+        "three_tick_unique_external_inputs_bytes": 94665752,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 280780800.0,
+        "dram_write_bytes": 898560.0,
+        "l2_read_sectors": 9208493.0,
+        "l2_read_miss_sectors": 8774433.0,
+        "global_load_sectors": 13278393.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 424908576.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 294671776.0,
+        "L2_read_miss_sector_bytes": 280781856.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 0.988792161874824,
+      "DRAM_read_over_three_tick_unique_external_inputs": 2.9660230238280896
+    },
+    {
+      "id": "traffic_qwen1.5b_b1_c1024_full_decode",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 1024,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 3087428608,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            1028,
+            1029,
+            1030
+          ],
+          "bytes_per_all_layer_token_position": 28672,
+          "per_step_attention_KV_including_current_token_bytes": [
+            29474816,
+            29503488,
+            29532160
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            29446144,
+            29474816,
+            29503488
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 29503488,
+          "three_step_existing_at_range_start_KV_input_bytes": 29446144,
+          "range_new_KV_value_write_bytes": 86016,
+          "range_new_values_read_as_historical_bytes": 57344,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 466747392,
+          "lm_head_bytes": 466747392,
+          "selected_embedding_unique_bytes": 3072,
+          "operation_semantic_demand_bytes": 1400251392,
+          "tied_alias": true,
+          "selected_token_ids": [
+            15
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          3116874752,
+          3116903424,
+          3116932096
+        ],
+        "three_tick_unique_external_inputs_bytes": 3116874752,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 9271697408.0,
+        "dram_write_bytes": 4008448.0,
+        "l2_read_sectors": 302108828.0,
+        "l2_read_miss_sectors": 289688164.0,
+        "global_load_sectors": 437518776.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 14000600832.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 9667482496.0,
+        "L2_read_miss_sector_bytes": 9270021248.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 0.9915500682085512,
+      "DRAM_read_over_three_tick_unique_external_inputs": 2.9746775683080124
+    },
+    {
+      "id": "traffic_qwen1.5b_b1_c4096_layer0",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          4197376,
+          4198400,
+          4199424
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          3080,
+          3080,
+          3080
+        ],
+        "layer_output_view_bytes_per_tick": [
+          6144,
+          6144,
+          6144
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          97796104,
+          97797128,
+          97798152
+        ],
+        "three_tick_unique_external_inputs_bytes": 97802264,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 294407936.0,
+        "dram_write_bytes": 19968.0,
+        "l2_read_sectors": 9613262.0,
+        "l2_read_miss_sectors": 9182227.0,
+        "global_load_sectors": 13595985.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 435071520.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 307624384.0,
+        "L2_read_miss_sector_bytes": 293831264.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0034648324914681,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0102364092512213
+    },
+    {
+      "id": "traffic_qwen1.5b_b1_c4096_layer27",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 27,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          4197376,
+          4198400,
+          4199424
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          6152,
+          6152,
+          6152
+        ],
+        "layer_output_view_bytes_per_tick": [
+          6144,
+          6144,
+          6144
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          97799176,
+          97800200,
+          97801224
+        ],
+        "three_tick_unique_external_inputs_bytes": 97811480,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 293472000.0,
+        "dram_write_bytes": 82944.0,
+        "l2_read_sectors": 9522010.0,
+        "l2_read_miss_sectors": 9171067.0,
+        "global_load_sectors": 13596561.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 435089952.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 304704320.0,
+        "L2_read_miss_sector_bytes": 293474144.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0002433532855761,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.000384004004438
+    },
+    {
+      "id": "traffic_qwen1.5b_b1_c4096_full_decode",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 4096,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 3087428608,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            4100,
+            4101,
+            4102
+          ],
+          "bytes_per_all_layer_token_position": 28672,
+          "per_step_attention_KV_including_current_token_bytes": [
+            117555200,
+            117583872,
+            117612544
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            117526528,
+            117555200,
+            117583872
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 117583872,
+          "three_step_existing_at_range_start_KV_input_bytes": 117526528,
+          "range_new_KV_value_write_bytes": 86016,
+          "range_new_values_read_as_historical_bytes": 57344,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 466747392,
+          "lm_head_bytes": 466747392,
+          "selected_embedding_unique_bytes": 3072,
+          "operation_semantic_demand_bytes": 1400251392,
+          "tied_alias": true,
+          "selected_token_ids": [
+            15
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          3204955136,
+          3204983808,
+          3205012480
+        ],
+        "three_tick_unique_external_inputs_bytes": 3204955136,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 9627963136.0,
+        "dram_write_bytes": 15700480.0,
+        "l2_read_sectors": 311075167.0,
+        "l2_read_miss_sectors": 300811463.0,
+        "global_load_sectors": 446427480.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 14285679360.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 9954405344.0,
+        "L2_read_miss_sector_bytes": 9625966816.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0013532790157964,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.004086711808499
+    },
+    {
+      "id": "traffic_qwen1.5b_b8_c4096_layer0",
+      "model": "qwen1.5b",
+      "batch": 8,
+      "context": 4096,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          33579008,
+          33587200,
+          33595392
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          24640,
+          24640,
+          24640
+        ],
+        "layer_output_view_bytes_per_tick": [
+          49152,
+          49152,
+          49152
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          127199296,
+          127207488,
+          127215680
+        ],
+        "three_tick_unique_external_inputs_bytes": 127248576,
+        "kv_new_value_writes_three_ticks_bytes": 24576,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 382198272.0,
+        "dram_write_bytes": 29289472.0,
+        "l2_read_sectors": 15004505.0,
+        "l2_read_miss_sectors": 11941800.0,
+        "global_load_sectors": 16446024.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 526272768.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 480144160.0,
+        "L2_read_miss_sector_bytes": 382137600.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0015088419952134,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.003556377715378
+    },
+    {
+      "id": "traffic_qwen1.5b_b8_c4096_layer27",
+      "model": "qwen1.5b",
+      "batch": 8,
+      "context": 4096,
+      "layer": 27,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 93595648,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 93595648,
+          "logical_bytes_exact_view_alias_dedup": 93595648,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          33579008,
+          33587200,
+          33595392
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          49216,
+          49216,
+          49216
+        ],
+        "layer_output_view_bytes_per_tick": [
+          49152,
+          49152,
+          49152
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          127223872,
+          127232064,
+          127240256
+        ],
+        "three_tick_unique_external_inputs_bytes": 127322304,
+        "kv_new_value_writes_three_ticks_bytes": 24576,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 382122752.0,
+        "dram_write_bytes": 14376704.0,
+        "l2_read_sectors": 15043570.0,
+        "l2_read_miss_sectors": 11952915.0,
+        "global_load_sectors": 16450632.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 526420224.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 481394240.0,
+        "L2_read_miss_sector_bytes": 382493280.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0011175380025799,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0012239803640375
+    },
+    {
+      "id": "traffic_qwen1.5b_b8_c4096_full_decode",
+      "model": "qwen1.5b",
+      "batch": 8,
+      "context": 4096,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 3087428608,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            4100,
+            4101,
+            4102
+          ],
+          "bytes_per_all_layer_token_position": 229376,
+          "per_step_attention_KV_including_current_token_bytes": [
+            940441600,
+            940670976,
+            940900352
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            940212224,
+            940441600,
+            940670976
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 940670976,
+          "three_step_existing_at_range_start_KV_input_bytes": 940212224,
+          "range_new_KV_value_write_bytes": 688128,
+          "range_new_values_read_as_historical_bytes": 458752,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 466747392,
+          "lm_head_bytes": 466747392,
+          "selected_embedding_unique_bytes": 12288,
+          "operation_semantic_demand_bytes": 1400260608,
+          "tied_alias": true,
+          "selected_token_ids": [
+            4,
+            15,
+            16,
+            220
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          4027640832,
+          4027870208,
+          4028099584
+        ],
+        "three_tick_unique_external_inputs_bytes": 4027640832,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 12121644800.0,
+        "dram_write_bytes": 104033280.0,
+        "l2_read_sectors": 482369198.0,
+        "l2_read_miss_sectors": 378894720.0,
+        "global_load_sectors": 526952124.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 16862467968.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 15435814336.0,
+        "L2_read_miss_sector_bytes": 12124631040.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0031475837134687,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.009614140290849
+    },
+    {
+      "id": "traffic_qwen3b_b1_c4096_layer0",
+      "model": "qwen3b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 154153984,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 154153984,
+          "logical_bytes_exact_view_alias_dedup": 154153984,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          4197376,
+          4198400,
+          4199424
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          4104,
+          4104,
+          4104
+        ],
+        "layer_output_view_bytes_per_tick": [
+          8192,
+          8192,
+          8192
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          158355464,
+          158356488,
+          158357512
+        ],
+        "three_tick_unique_external_inputs_bytes": 158363672,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 475284992.0,
+        "dram_write_bytes": 39424.0,
+        "l2_read_sectors": 15362713.0,
+        "l2_read_miss_sectors": 14871633.0,
+        "global_load_sectors": 24237300.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 775593600.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 491606816.0,
+        "L2_read_miss_sector_bytes": 475892256.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0004536768121977,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0012248768770657
+    },
+    {
+      "id": "traffic_qwen3b_b1_c4096_layer35",
+      "model": "qwen3b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 35,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 154153984,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 154153984,
+          "logical_bytes_exact_view_alias_dedup": 154153984,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          4197376,
+          4198400,
+          4199424
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          8200,
+          8200,
+          8200
+        ],
+        "layer_output_view_bytes_per_tick": [
+          8192,
+          8192,
+          8192
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          158359560,
+          158360584,
+          158361608
+        ],
+        "three_tick_unique_external_inputs_bytes": 158375960,
+        "kv_new_value_writes_three_ticks_bytes": 3072,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 475501568.0,
+        "dram_write_bytes": 9472.0,
+        "l2_read_sectors": 15341856.0,
+        "l2_read_miss_sectors": 14847871.0,
+        "global_load_sectors": 24238068.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 775618176.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 490939392.0,
+        "L2_read_miss_sector_bytes": 475131872.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.000883671069732,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0023594995099003
+    },
+    {
+      "id": "traffic_qwen3b_b1_c4096_full_decode",
+      "model": "qwen3b",
+      "batch": 1,
+      "context": 4096,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 6171877376,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            4100,
+            4101,
+            4102
+          ],
+          "bytes_per_all_layer_token_position": 36864,
+          "per_step_attention_KV_including_current_token_bytes": [
+            151142400,
+            151179264,
+            151216128
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            151105536,
+            151142400,
+            151179264
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 151179264,
+          "three_step_existing_at_range_start_KV_input_bytes": 151105536,
+          "range_new_KV_value_write_bytes": 110592,
+          "range_new_values_read_as_historical_bytes": 73728,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 622329856,
+          "lm_head_bytes": 622329856,
+          "selected_embedding_unique_bytes": 8192,
+          "operation_semantic_demand_bytes": 1867001856,
+          "tied_alias": true,
+          "selected_token_ids": [
+            16,
+            220
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          6322982912,
+          6323019776,
+          6323056640
+        ],
+        "three_tick_unique_external_inputs_bytes": 6322982912,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 18983788032.0,
+        "dram_write_bytes": 16480256.0,
+        "l2_read_sectors": 610415009.0,
+        "l2_read_miss_sectors": 593290164.0,
+        "global_load_sectors": 960173580.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 30725554560.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 19533280288.0,
+        "L2_read_miss_sector_bytes": 18985285248.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0007764593776276,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0023468821925547
+    },
+    {
+      "id": "traffic_qwen3b_b8_c4096_layer0",
+      "model": "qwen3b",
+      "batch": 8,
+      "context": 4096,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 154153984,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 154153984,
+          "logical_bytes_exact_view_alias_dedup": 154153984,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          33579008,
+          33587200,
+          33595392
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          32832,
+          32832,
+          32832
+        ],
+        "layer_output_view_bytes_per_tick": [
+          65536,
+          65536,
+          65536
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          187765824,
+          187774016,
+          187782208
+        ],
+        "three_tick_unique_external_inputs_bytes": 187831488,
+        "kv_new_value_writes_three_ticks_bytes": 24576,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 564016384.0,
+        "dram_write_bytes": 30374400.0,
+        "l2_read_sectors": 22166529.0,
+        "l2_read_miss_sectors": 17621110.0,
+        "global_load_sectors": 24998016.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 799936512.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 709328928.0,
+        "L2_read_miss_sector_bytes": 563875520.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0012325738047447,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0027786608388047
+    },
+    {
+      "id": "traffic_qwen3b_b8_c4096_layer35",
+      "model": "qwen3b",
+      "batch": 8,
+      "context": 4096,
+      "layer": 35,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 154153984,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 154153984,
+          "logical_bytes_exact_view_alias_dedup": 154153984,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          33579008,
+          33587200,
+          33595392
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          65600,
+          65600,
+          65600
+        ],
+        "layer_output_view_bytes_per_tick": [
+          65536,
+          65536,
+          65536
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          187798592,
+          187806784,
+          187814976
+        ],
+        "three_tick_unique_external_inputs_bytes": 187929792,
+        "kv_new_value_writes_three_ticks_bytes": 24576,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 563792128.0,
+        "dram_write_bytes": 15660288.0,
+        "l2_read_sectors": 22233003.0,
+        "l2_read_miss_sectors": 17633054.0,
+        "global_load_sectors": 25004160.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 800133120.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 711456096.0,
+        "L2_read_miss_sector_bytes": 564257728.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0006598554679118,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0000146437665403
+    },
+    {
+      "id": "traffic_qwen3b_b8_c4096_full_decode",
+      "model": "qwen3b",
+      "batch": 8,
+      "context": 4096,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 6171877376,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            4100,
+            4101,
+            4102
+          ],
+          "bytes_per_all_layer_token_position": 294912,
+          "per_step_attention_KV_including_current_token_bytes": [
+            1209139200,
+            1209434112,
+            1209729024
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            1208844288,
+            1209139200,
+            1209434112
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 1209434112,
+          "three_step_existing_at_range_start_KV_input_bytes": 1208844288,
+          "range_new_KV_value_write_bytes": 884736,
+          "range_new_values_read_as_historical_bytes": 589824,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 622329856,
+          "lm_head_bytes": 622329856,
+          "selected_embedding_unique_bytes": 24576,
+          "operation_semantic_demand_bytes": 1867046912,
+          "tied_alias": true,
+          "selected_token_ids": [
+            13,
+            15,
+            16,
+            198,
+            220,
+            34187
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          7380721664,
+          7381016576,
+          7381311488
+        ],
+        "three_tick_unique_external_inputs_bytes": 7380721664,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 22189233408.0,
+        "dram_write_bytes": 136625664.0,
+        "l2_read_sectors": 871495003.0,
+        "l2_read_miss_sectors": 693348234.0,
+        "global_load_sectors": 988367244.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 31627751808.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 27887840096.0,
+        "L2_read_miss_sector_bytes": 22187143488.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0020856964405225,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0063772105415625
+    },
+    {
+      "id": "traffic_mistral7b_b1_c4096_layer0",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 0,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 436224000,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 436224000,
+          "logical_bytes_exact_view_alias_dedup": 436224000,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          16789504,
+          16793600,
+          16797696
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          8200,
+          8200,
+          8200
+        ],
+        "layer_output_view_bytes_per_tick": [
+          16384,
+          16384,
+          16384
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          453021704,
+          453025800,
+          453029896
+        ],
+        "three_tick_unique_external_inputs_bytes": 453038104,
+        "kv_new_value_writes_three_ticks_bytes": 12288,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 1359379456.0,
+        "dram_write_bytes": 31744.0,
+        "l2_read_sectors": 43284402.0,
+        "l2_read_miss_sectors": 42488492.0,
+        "global_load_sectors": 81854712.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 2619350784.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 1385100864.0,
+        "L2_read_miss_sector_bytes": 1359631744.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.000222250771001,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0005852576144454
+    },
+    {
+      "id": "traffic_mistral7b_b1_c4096_layer31",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "layer": 31,
+      "scope": "one_decoder_layer_each_of_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 436224000,
+        "runtime_weight_views": {
+          "view_span_union_bytes": 436224000,
+          "logical_bytes_exact_view_alias_dedup": 436224000,
+          "dtypes": [
+            "torch.bfloat16"
+          ],
+          "noncontiguous_view_present": false,
+          "interpretation": "Allocation/view spans, not requested bytes. Logical sum deduplicates identical views; union additionally handles overlapping views."
+        },
+        "runtime_weight_minus_header_bytes": 0,
+        "kv_layer_preexisting_input_bytes_per_tick": [
+          16789504,
+          16793600,
+          16797696
+        ],
+        "layer_entry_input_value_bytes_per_tick": [
+          16392,
+          16392,
+          16392
+        ],
+        "layer_output_view_bytes_per_tick": [
+          16384,
+          16384,
+          16384
+        ],
+        "per_tick_useful_external_inputs_bytes": [
+          453029896,
+          453033992,
+          453038088
+        ],
+        "three_tick_unique_external_inputs_bytes": 453062680,
+        "kv_new_value_writes_three_ticks_bytes": 12288,
+        "definition": "Layer boundary: positions/hidden/residual input views alias-unioned within each tick; each tick receives a new value version. Static weights counted once across ticks; initial historical KV only. Current and subsequently generated K/V are internal produced values.",
+        "omitted_external_small_tables": "RoPE cached cos/sin and scheduler metadata are not enumerated from headers; their physical traffic remains included in D. Denominator is main-input accounting, not every external allocation.",
+        "runtime_weight_note": "Difference records padding/layout overhead; mathematical useful dense weights remain header-based. Neither allocation spans nor logical footprint is traced requested R."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 1360008448.0,
+        "dram_write_bytes": 7424.0,
+        "l2_read_sectors": 43318172.0,
+        "l2_read_miss_sectors": 42477368.0,
+        "global_load_sectors": 81856248.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 2619399936.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 1386181504.0,
+        "L2_read_miss_sector_bytes": 1359275776.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0006669639335437,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0018108046330365
+    },
+    {
+      "id": "traffic_mistral7b_b1_c4096_full_decode",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "layer": null,
+      "scope": "complete_decode_three_steps",
+      "status": "qualified",
+      "logical": {
+        "weight_unique_bytes": 14221320192,
+        "kv": {
+          "decode_steps": [
+            4,
+            5,
+            6
+          ],
+          "attention_lengths": [
+            4100,
+            4101,
+            4102
+          ],
+          "bytes_per_all_layer_token_position": 131072,
+          "per_step_attention_KV_including_current_token_bytes": [
+            537395200,
+            537526272,
+            537657344
+          ],
+          "per_step_preexisting_KV_input_bytes": [
+            537264128,
+            537395200,
+            537526272
+          ],
+          "three_step_distinct_preexisting_KV_value_bytes": 537526272,
+          "three_step_existing_at_range_start_KV_input_bytes": 537264128,
+          "range_new_KV_value_write_bytes": 393216,
+          "range_new_values_read_as_historical_bytes": 262144,
+          "context_offset_provenance": "profile collector first engine.step is prefill; decode tick j attends C+j including its newly written K/V; scheduler computed-token counters are not used as current KV length",
+          "current_token_note": "Current-step K/V generated inside layer: attention reads them but they are not external input compulsory reads. Later ticks consume prior generated K/V as historical values.",
+          "layout_note": "Logical active elements only; allocated page padding, packed layouts, metadata, sector rounding and intermediate traffic excluded."
+        },
+        "selected_embedding": {
+          "unique_input_bytes": 262168576,
+          "lm_head_bytes": 262144000,
+          "selected_embedding_unique_bytes": 24576,
+          "operation_semantic_demand_bytes": 786456576,
+          "tied_alias": false,
+          "selected_token_ids": [
+            150,
+            151,
+            229
+          ]
+        },
+        "per_tick_useful_external_inputs_bytes": [
+          14758592512,
+          14758723584,
+          14758854656
+        ],
+        "three_tick_unique_external_inputs_bytes": 14758608896,
+        "definition": "Complete decode: external inputs are static dense parameters, selected untied input embedding rows, and KV already present at interval start. Activations and newly produced K/V are internal; their physical reads remain counted in D.",
+        "runtime_weight_reconciliation": "All layer headers and tied/untied head distinction; runtime layer0/final packed weights recorded but fullmodel packed allocation not assumed identical to header input demand."
+      },
+      "physical_range_totals": {
+        "dram_read_bytes": 44297821952.0,
+        "dram_write_bytes": 8644608.0,
+        "l2_read_sectors": 1409125011.0,
+        "l2_read_miss_sectors": 1384234238.0,
+        "global_load_sectors": 2668574712.0,
+        "async_global_load_sectors": 0.0,
+        "local_load_sectors": 0.0,
+        "local_store_sectors": 0.0,
+        "global_L1_load_sector_bytes": 85394390784.0,
+        "async_global_L1_load_sector_bytes": 0.0,
+        "L2_read_sector_bytes": 45092000352.0,
+        "L2_read_miss_sector_bytes": 44295495616.0,
+        "sector_byte_interpretation": "32-byte serviced/requested sector demand at named cache interface. This is not exact logical load payload R, unique data, or per-address DRAM read identity."
+      },
+      "DRAM_read_over_per_tick_useful_input_sum": 1.0004890034443419,
+      "DRAM_read_over_three_tick_unique_external_inputs": 3.0014903344993416
+    }
+  ],
+  "pressure_records": [
+    {
+      "id": "traffic_qwen1.5b_b1_c1024_layer0_pressure256",
+      "model": "qwen1.5b",
+      "batch": 1,
+      "context": 1024,
+      "layer": 0,
+      "status": "qualified",
+      "baseline_dram_read_bytes": 280898048.0,
+      "pressure_dram_read_bytes": 285220608.0,
+      "dram_read_change_bytes": 4322560.0,
+      "dram_read_change_percent": 1.5388358982117323
+    },
+    {
+      "id": "traffic_qwen1.5b_b8_c4096_layer0_pressure256",
+      "model": "qwen1.5b",
+      "batch": 8,
+      "context": 4096,
+      "layer": 0,
+      "status": "qualified",
+      "baseline_dram_read_bytes": 382198272.0,
+      "pressure_dram_read_bytes": 382647040.0,
+      "dram_read_change_bytes": 448768.0,
+      "dram_read_change_percent": 0.11741758999894714
+    }
+  ],
+  "trace_records": [
+    {
+      "id": "traffic_trace_qwen1.5b_b1_c1024_layer0_retry",
+      "status": "qualified",
+      "physical_miss_addresses_measured": false,
+      "complete_executed_memory_coverage_proven": false,
+      "calls": [
+        {
+          "decode_step": 4,
+          "layer_id": 0,
+          "kernel_count": 11,
+          "active_kv_sector_budget": {
+            "status": "exact_packed_page_geometry",
+            "attention_unique_sector_budget": 32896,
+            "preexisting_input_unique_sector_budget": 32864,
+            "sector_bytes": 32,
+            "scope": "CPU current sequence lengths and page mapping, includes current generated KV in attention footprint; excludes it from preexisting-input budget"
+          },
+          "reads": {
+            "activations": {
+              "sector_request_count": 173536,
+              "unique_sector_count": 417,
+              "coalesced_sector_request_bytes": 5553152,
+              "unique_sector_coverage_bytes": 13344,
+              "request_to_unique_ratio": 416.1534772182254,
+              "sector_repetition_histogram": {
+                "1": 16,
+                "2": 16,
+                "5": 96,
+                "10": 96,
+                "16": 1,
+                "768": 96,
+                "1024": 96
+              },
+              "sectors_requested_at_least_twice": 401
+            },
+            "weights": {
+              "sector_request_count": 2925760,
+              "unique_sector_count": 2924864,
+              "coalesced_sector_request_bytes": 93624320,
+              "unique_sector_coverage_bytes": 93595648,
+              "request_to_unique_ratio": 1.0003063390297806,
+              "sector_repetition_histogram": {
+                "1": 2924736,
+                "8": 128
+              },
+              "sectors_requested_at_least_twice": 128
+            },
+            "unmapped_memory": {
+              "sector_request_count": 1327227,
+              "unique_sector_count": 3943,
+              "coalesced_sector_request_bytes": 42471264,
+              "unique_sector_coverage_bytes": 126176,
+              "request_to_unique_ratio": 336.6033477047933,
+              "sector_repetition_histogram": {
+                "1": 49,
+                "2": 1133,
+                "14": 8,
+                "16": 1984,
+                "18": 112,
+                "144": 1,
+                "769": 560,
+                "8961": 96
+              },
+              "sectors_requested_at_least_twice": 3894
+            },
+            "attention_metadata": {
+              "sector_request_count": 152,
+              "unique_sector_count": 11,
+              "coalesced_sector_request_bytes": 4864,
+              "unique_sector_coverage_bytes": 352,
+              "request_to_unique_ratio": 13.818181818181818,
+              "sector_repetition_histogram": {
+                "8": 10,
+                "72": 1
+              },
+              "sectors_requested_at_least_twice": 11
+            },
+            "KV": {
+              "sector_request_count": 32896,
+              "unique_sector_count": 32896,
+              "coalesced_sector_request_bytes": 1052672,
+              "unique_sector_coverage_bytes": 1052672,
+              "request_to_unique_ratio": 1.0,
+              "sector_repetition_histogram": {
+                "1": 32896
+              },
+              "sectors_requested_at_least_twice": 0
+            }
+          }
+        },
+        {
+          "decode_step": 5,
+          "layer_id": 0,
+          "kernel_count": 11,
+          "active_kv_sector_budget": {
+            "status": "exact_packed_page_geometry",
+            "attention_unique_sector_budget": 32928,
+            "preexisting_input_unique_sector_budget": 32896,
+            "sector_bytes": 32,
+            "scope": "CPU current sequence lengths and page mapping, includes current generated KV in attention footprint; excludes it from preexisting-input budget"
+          },
+          "reads": {
+            "activations": {
+              "sector_request_count": 173536,
+              "unique_sector_count": 417,
+              "coalesced_sector_request_bytes": 5553152,
+              "unique_sector_coverage_bytes": 13344,
+              "request_to_unique_ratio": 416.1534772182254,
+              "sector_repetition_histogram": {
+                "1": 16,
+                "2": 16,
+                "5": 96,
+                "10": 96,
+                "16": 1,
+                "768": 96,
+                "1024": 96
+              },
+              "sectors_requested_at_least_twice": 401
+            },
+            "weights": {
+              "sector_request_count": 2925760,
+              "unique_sector_count": 2924864,
+              "coalesced_sector_request_bytes": 93624320,
+              "unique_sector_coverage_bytes": 93595648,
+              "request_to_unique_ratio": 1.0003063390297806,
+              "sector_repetition_histogram": {
+                "1": 2924736,
+                "8": 128
+              },
+              "sectors_requested_at_least_twice": 128
+            },
+            "unmapped_memory": {
+              "sector_request_count": 1327259,
+              "unique_sector_count": 3943,
+              "coalesced_sector_request_bytes": 42472288,
+              "unique_sector_coverage_bytes": 126176,
+              "request_to_unique_ratio": 336.6114633527771,
+              "sector_repetition_histogram": {
+                "1": 49,
+                "2": 1133,
+                "14": 8,
+                "16": 1968,
+                "18": 128,
+                "144": 1,
+                "769": 560,
+                "8961": 96
+              },
+              "sectors_requested_at_least_twice": 3894
+            },
+            "attention_metadata": {
+              "sector_request_count": 152,
+              "unique_sector_count": 11,
+              "coalesced_sector_request_bytes": 4864,
+              "unique_sector_coverage_bytes": 352,
+              "request_to_unique_ratio": 13.818181818181818,
+              "sector_repetition_histogram": {
+                "8": 10,
+                "72": 1
+              },
+              "sectors_requested_at_least_twice": 11
+            },
+            "KV": {
+              "sector_request_count": 32928,
+              "unique_sector_count": 32928,
+              "coalesced_sector_request_bytes": 1053696,
+              "unique_sector_coverage_bytes": 1053696,
+              "request_to_unique_ratio": 1.0,
+              "sector_repetition_histogram": {
+                "1": 32928
+              },
+              "sectors_requested_at_least_twice": 0
+            }
+          }
+        }
+      ],
+      "cross_call_overlap": {
+        "weights": {
+          "overlap_unique_sectors": 2924864,
+          "overlap_bytes": 93595648,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "attention_metadata": {
+          "overlap_unique_sectors": 11,
+          "overlap_bytes": 352,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "KV": {
+          "overlap_unique_sectors": 32896,
+          "overlap_bytes": 1052672,
+          "second_call_unique_fraction_seen_in_first": 0.9990281827016521,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "activations": {
+          "overlap_unique_sectors": 417,
+          "overlap_bytes": 13344,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "unmapped_memory": {
+          "overlap_unique_sectors": 3935,
+          "overlap_bytes": 125920,
+          "second_call_unique_fraction_seen_in_first": 0.9979710880040579,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        }
+      }
+    },
+    {
+      "id": "traffic_trace_qwen1.5b_b8_c4096_layer0",
+      "status": "qualified",
+      "physical_miss_addresses_measured": false,
+      "complete_executed_memory_coverage_proven": false,
+      "calls": [
+        {
+          "decode_step": 4,
+          "layer_id": 0,
+          "kernel_count": 13,
+          "active_kv_sector_budget": {
+            "status": "exact_packed_page_geometry",
+            "attention_unique_sector_budget": 1049600,
+            "preexisting_input_unique_sector_budget": 1049344,
+            "sector_bytes": 32,
+            "scope": "CPU current sequence lengths and page mapping, includes current generated KV in attention footprint; excludes it from preexisting-input budget"
+          },
+          "reads": {
+            "activations": {
+              "sector_request_count": 79616,
+              "unique_sector_count": 2562,
+              "coalesced_sector_request_bytes": 2547712,
+              "unique_sector_coverage_bytes": 81984,
+              "request_to_unique_ratio": 31.075722092115534,
+              "sector_repetition_histogram": {
+                "1": 128,
+                "2": 896,
+                "5": 768,
+                "64": 2,
+                "96": 768
+              },
+              "sectors_requested_at_least_twice": 2434
+            },
+            "weights": {
+              "sector_request_count": 2926208,
+              "unique_sector_count": 2924864,
+              "coalesced_sector_request_bytes": 93638656,
+              "unique_sector_coverage_bytes": 93595648,
+              "request_to_unique_ratio": 1.0004595085446708,
+              "sector_repetition_histogram": {
+                "1": 2924672,
+                "8": 192
+              },
+              "sectors_requested_at_least_twice": 192
+            },
+            "unmapped_memory": {
+              "sector_request_count": 14268888,
+              "unique_sector_count": 26954,
+              "coalesced_sector_request_bytes": 456604416,
+              "unique_sector_coverage_bytes": 862528,
+              "request_to_unique_ratio": 529.3792387029754,
+              "sector_repetition_histogram": {
+                "1": 17428,
+                "2": 768,
+                "3": 108,
+                "72": 1,
+                "97": 4480,
+                "112": 8,
+                "128": 768,
+                "144": 48,
+                "512": 1984,
+                "528": 64,
+                "1080": 1,
+                "1130": 768,
+                "11424": 16,
+                "12864": 16,
+                "22848": 464,
+                "24288": 16,
+                "25728": 16
+              },
+              "sectors_requested_at_least_twice": 9526
+            },
+            "attention_metadata": {
+              "sector_request_count": 4288,
+              "unique_sector_count": 267,
+              "coalesced_sector_request_bytes": 137216,
+              "unique_sector_coverage_bytes": 8544,
+              "request_to_unique_ratio": 16.05992509363296,
+              "sector_repetition_histogram": {
+                "8": 72,
+                "16": 192,
+                "32": 2,
+                "576": 1
+              },
+              "sectors_requested_at_least_twice": 267
+            },
+            "KV": {
+              "sector_request_count": 1049600,
+              "unique_sector_count": 1049600,
+              "coalesced_sector_request_bytes": 33587200,
+              "unique_sector_coverage_bytes": 33587200,
+              "request_to_unique_ratio": 1.0,
+              "sector_repetition_histogram": {
+                "1": 1049600
+              },
+              "sectors_requested_at_least_twice": 0
+            }
+          }
+        },
+        {
+          "decode_step": 5,
+          "layer_id": 0,
+          "kernel_count": 13,
+          "active_kv_sector_budget": {
+            "status": "exact_packed_page_geometry",
+            "attention_unique_sector_budget": 1049856,
+            "preexisting_input_unique_sector_budget": 1049600,
+            "sector_bytes": 32,
+            "scope": "CPU current sequence lengths and page mapping, includes current generated KV in attention footprint; excludes it from preexisting-input budget"
+          },
+          "reads": {
+            "activations": {
+              "sector_request_count": 79616,
+              "unique_sector_count": 2562,
+              "coalesced_sector_request_bytes": 2547712,
+              "unique_sector_coverage_bytes": 81984,
+              "request_to_unique_ratio": 31.075722092115534,
+              "sector_repetition_histogram": {
+                "1": 128,
+                "2": 896,
+                "5": 768,
+                "64": 2,
+                "96": 768
+              },
+              "sectors_requested_at_least_twice": 2434
+            },
+            "weights": {
+              "sector_request_count": 2926208,
+              "unique_sector_count": 2924864,
+              "coalesced_sector_request_bytes": 93638656,
+              "unique_sector_coverage_bytes": 93595648,
+              "request_to_unique_ratio": 1.0004595085446708,
+              "sector_repetition_histogram": {
+                "1": 2924672,
+                "8": 192
+              },
+              "sectors_requested_at_least_twice": 192
+            },
+            "unmapped_memory": {
+              "sector_request_count": 14269144,
+              "unique_sector_count": 26954,
+              "coalesced_sector_request_bytes": 456612608,
+              "unique_sector_coverage_bytes": 862528,
+              "request_to_unique_ratio": 529.3887363656601,
+              "sector_repetition_histogram": {
+                "1": 17428,
+                "2": 768,
+                "3": 108,
+                "72": 1,
+                "97": 4480,
+                "112": 8,
+                "128": 768,
+                "144": 48,
+                "512": 1968,
+                "528": 80,
+                "1080": 1,
+                "1130": 768,
+                "11424": 16,
+                "12864": 16,
+                "22848": 464,
+                "24288": 16,
+                "25728": 16
+              },
+              "sectors_requested_at_least_twice": 9526
+            },
+            "attention_metadata": {
+              "sector_request_count": 4288,
+              "unique_sector_count": 267,
+              "coalesced_sector_request_bytes": 137216,
+              "unique_sector_coverage_bytes": 8544,
+              "request_to_unique_ratio": 16.05992509363296,
+              "sector_repetition_histogram": {
+                "8": 72,
+                "16": 192,
+                "32": 2,
+                "576": 1
+              },
+              "sectors_requested_at_least_twice": 267
+            },
+            "KV": {
+              "sector_request_count": 1049856,
+              "unique_sector_count": 1049856,
+              "coalesced_sector_request_bytes": 33595392,
+              "unique_sector_coverage_bytes": 33595392,
+              "request_to_unique_ratio": 1.0,
+              "sector_repetition_histogram": {
+                "1": 1049856
+              },
+              "sectors_requested_at_least_twice": 0
+            }
+          }
+        }
+      ],
+      "cross_call_overlap": {
+        "KV": {
+          "overlap_unique_sectors": 1049600,
+          "overlap_bytes": 33587200,
+          "second_call_unique_fraction_seen_in_first": 0.9997561570348695,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "weights": {
+          "overlap_unique_sectors": 2924864,
+          "overlap_bytes": 93595648,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "attention_metadata": {
+          "overlap_unique_sectors": 267,
+          "overlap_bytes": 8544,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "unmapped_memory": {
+          "overlap_unique_sectors": 26946,
+          "overlap_bytes": 862272,
+          "second_call_unique_fraction_seen_in_first": 0.9997031980411071,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        },
+        "activations": {
+          "overlap_unique_sectors": 2562,
+          "overlap_bytes": 81984,
+          "second_call_unique_fraction_seen_in_first": 1.0,
+          "scope": "same physical-address sectors requested in both calls, not measured cache hits or DRAM rereads"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Logical U is main external input accounting, not a cold DRAM minimum.",
+    "Trace requests and DRAM counters come from separate matched instrumented executions.",
+    "Trace counts are observed instrumented sector demand; watchdog omissions may exist.",
+    "No per-address DRAM miss identity or larger-cache serving improvement measured."
+  ],
+  "provenance": {
+    "study": "RTX5080 traffic_reuse_study, 2026-10-14",
+    "report_sha256": "507550952d479a9cea2e169cb327073d5bc370fc2f9f2ef99deba3cbd9262f92",
+    "evidence_archive_sha256": "6a7b6b5d691f3b78d0fec2623d1bd98ee2606fcf5e10e12d0fa7f07ab3d0e83e",
+    "baseline_analyzer_sha256": "b46ed6d334f86d7de38d2c53ad45a29379edaf011769e1ca45300cb967ddf465"
+  }
+}

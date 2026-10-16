@@ -1,5 +1,7 @@
 # Prioritized H100 experiment plan
 
+**Priority superseded2026-10-16 for H200:** execute [jobs J0–J11](h200_shoreline_jobs.md), starting with actual local-status reconciliation and reuse of valid Phase0/1 work. The new [governing plan](shoreline_aware_research_plan_2.0.md) compares compute-to-SRAM, compute-to-bandwidth and joint designs. Preserve the original numbered implementation list below as context, not a demand to finish the old portfolio first.
+
 For the next rental, execute the ordered continuation tasks in `RENTAL_RESUME.md`. This original plan is the overall contract, not a claim that every listed step is still unattempted.
 
 1. Complete environment, version, UUID and disk inventory; validate CPU package contracts. Record failures and unavailable tools.

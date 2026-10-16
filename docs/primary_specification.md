@@ -1,5 +1,7 @@
 # Research Handoff: Reallocating GPU Compute Area to On-Chip Memory and Data Movement for Energy-Efficient LLM Decoding
 
+> **Preserved original brief; architecture scope superseded2026-10-16.** Use [shoreline-aware plan2.0](shoreline_aware_research_plan_2.0.md), [the H200 assignment](h200_shoreline_jobs.md) and [common Hopper methods](shoreline_hopper_measurements.md). Keep original methodological/correctness gates. On-chip memory at fixed bandwidth is a sub-study; original Sections0/14 are not the section structure of plan2.0.
+
 > **Status:** Research concept and executable investigation plan; **not** a validated architecture or experimental result.  
 > **Audience:** A Linux-based research/engineering AI agent with access to an NVIDIA GPU, profiling tools, source code, and (potentially) architectural simulators.  
 > **Primary objective:** Minimize **joules per generated token** for LLM decode under a realistic, fixed silicon-area budget and explicit performance/latency constraints.  

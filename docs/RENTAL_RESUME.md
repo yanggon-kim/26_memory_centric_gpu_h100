@@ -1,10 +1,12 @@
 # Resume H100 research on a new rental
 
+**H200 branch priority update2026-10-16:** follow [h200_shoreline_jobs.md](h200_shoreline_jobs.md) and [plan2.0](shoreline_aware_research_plan_2.0.md). The old H100 table below remains historical evidence. Reconcile existing H200 local Phase0/1 work, then prioritize the new compute/SRAM/delivered-bandwidth jobs over old portfolio expansion. Do not reinterpret older partial runs as completed or inherit H100 hardware/permission constraints. The common [Hopper contract](shoreline_hopper_measurements.md) supplies M1–M8/A–F methods; H200-specific scope/seeds/order take precedence.
+
 This handoff records the evidence pulled at commit `48672f7` on 2026-10-13. Continue Phase 0–2 and native trace collection; do not begin physical architecture changes. The question remains whether reducing compute and adding memory resources improves decode under a realistic fixed-area and energy budget. Existing results do not establish that benefit.
 
 ## Read first
 
-Read `AGENTS.md`, primary specification Sections 0 and 14 followed by the full specification, `STATUS.json`, `docs/opportunity_report.md`, `docs/calibration_table.md` and `results/case_manifest.json`. Use `docs/phase02_playbook.md` for measurement methodology and `docs/trace_collection.md` for capture details. Treat tracked run files as evidence and human summaries as interpretations. Do not overwrite historical artifacts.
+Read `AGENTS.md`, the active H200 assignment and plan2.0, then original Sections0/14 as methodological context, `STATUS.json`, `docs/opportunity_report.md`, `docs/calibration_table.md` and `results/case_manifest.json`. Use `docs/phase02_playbook.md` for measurement methodology and `docs/trace_collection.md` for capture details. Treat tracked run files as evidence and human summaries as interpretations. Do not overwrite historical artifacts.
 
 ## What already exists
 

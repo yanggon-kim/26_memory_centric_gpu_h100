@@ -1,5 +1,7 @@
 # Portable dense logical-reuse model
 
+**New direction:** this logical-reuse abstraction remains one sub-study. Follow [the H200 jobs](h200_shoreline_jobs.md) for independent P/beta, useful versus issued work and c/r/f sensitivity. SRAM bytes do not establish eliminated physical traffic, SM fraction does not establish arithmetic-rate fraction, and nominal stack bandwidth does not establish delivered service.
+
 This is an analytical access-order/block-fill study, not a GPU memory trace or simulator. It reads actual safetensors headers and configuration from the selected immutable local snapshot. The current adapter supports dense `qwen2` and `mistral` naming/layout only, rejects active sliding-window attention and MoE, and requires two-byte checkpoint weights for the BF16-size accounting. Unsupported families need a separately validated adapter; absence of an exception is not sufficient evidence of coverage.
 
 Each decode step reads declared layer weights and output projection, one embedding row per request, appends one K/V row and scans valid unique KV heads. Shared-prefix K/V ranges alias across requests. Actual config determines layers/heads/head_dim. An LM-head alias is introduced only when actual tie_word_embeddings is true and the independent head tensor is absent. Tied storage must not be double-counted, but its two access roles remain distinct.

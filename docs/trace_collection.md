@@ -1,5 +1,7 @@
 # Decode-only Hopper trace collection and export
 
+**Current H200 direction:** follow [h200_shoreline_jobs.md](h200_shoreline_jobs.md), especially J11, and [common Hopper methods](shoreline_hopper_measurements.md). Native trace preparation is bounded by correctness, semantic, allocation/storage and closeout gates. Independent SM/service calibration must accompany relevant traces. Requested addresses are not HBM bytes; the stock H100 parser smoke is not H200 timing/power calibration. The old H100 procedures below do not authorize an immediate broad trace campaign.
+
 For continuation, read `RENTAL_RESUME.md` first. The two-step whole-model HF eager capture and verified private archive transfer are complete as recorded in `results/archive_transfer.json`; full semantic/calibrated replay and optimized-vLLM collection are incomplete. Recover existing evidence before considering recapture.
 
 The installed source inspected for this scaffold is `util/tracer_nvbit/others/torch_hook/pytorch_profiler.py` at the pinned framework SHA. It supplies `TorchModelHookWrapper(model)`, `hook_nvbit_to_layer(wrapper, module_name)`, and exported tracer callbacks `enable_nvbit_instrumentation`, `disable_nvbit_instrumentation`, `set_nvbit_instrumentation_tag`. Hooks silently ignore a missing tracer; our runner checks that the callback library actually loaded. The optional Python `nvtx` dependency must be present.

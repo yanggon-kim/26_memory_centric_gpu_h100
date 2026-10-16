@@ -1,5 +1,7 @@
 # Source change map for memory-centric decode research
 
+**Historical fixed-bandwidth simulator map; H200 direction expanded2026-10-16.** Follow [plan2.0](shoreline_aware_research_plan_2.0.md) and [H200 jobs](h200_shoreline_jobs.md). Later candidates must vary compute/request delivery, SRAM service/policy and controllers/delivered bandwidth independently before applying sourced PHY/shoreline/package constraints. This rental requests native evidence and bounded trace preparation, not immediate simulator architecture changes.
+
 Read-only audit of backend `91880c53383d5a6a6742bfb1be2c5f34e39c7871`. This is a prospective map, not implemented architecture changes or proof of benefit. It follows the primary handoff's requirement to establish and calibrate a baseline before changing compute, storage, serving engines and links.
 
 ## Minimal first strawman
