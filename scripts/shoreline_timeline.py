@@ -47,10 +47,14 @@ def read(path,expected_green_id=None):
             name=k['symbol'];v=grouped.setdefault(name,{'launches':0,'duration_ns_sum':0})
             v['launches']+=1;v['duration_ns_sum']+=k['end']-k['start']
         contexts=sorted(set(k['greenContextId'] or 0 for k in kernels))
+        cross_context=[(max(a['start'],b['start']),min(a['end'],b['end'])) for i,a in enumerate(kernels)
+                       for b in kernels[i+1:] if a['greenContextId'] and b['greenContextId'] and
+                       a['greenContextId']!=b['greenContextId'] and max(a['start'],b['start'])<min(a['end'],b['end'])]
         windows.append({'start_ns':start,'end_ns':end,'instrumented_wall_ms':(end-start)/1e6,
             'kernel_union_ms':union_ns([(k['start'],k['end']) for k in kernels])/1e6,
             'kernel_sum_ms':sum(k['end']-k['start'] for k in kernels)/1e6,
             'launches':len(kernels),'green_context_ids':contexts,
+            'distinct_green_context_kernel_overlap_ms':union_ns(cross_context)/1e6,
             'restriction_passed':None if expected_green_id is None else contexts==[expected_green_id],
             'graph_kernel_count':sum(bool(k.get('graphNodeId')) for k in kernels),
             'kernels':grouped,'scope':'instrumented ticks 4/5/6; kernel union excludes copies; wall remainder is not entirely host idle'})

@@ -584,7 +584,8 @@ def competition():
             from shoreline_timeline import read
             timeline=read(db);allocation=load(output/'disjoint_allocation.json')
             expected=sorted([allocation['decoder']['green_context_id'],allocation['competitor']['green_context_id']])
-            valid=pilot['status']=='complete' and all(w['green_context_ids']==expected for w in timeline['windows'])
+            valid=pilot['status']=='complete' and all(w['green_context_ids']==expected and
+                    w['distinct_green_context_kernel_overlap_ms']>0 for w in timeline['windows'])
             if engine=='graph':valid=valid and all(w['graph_kernel_count']>0 for w in timeline['windows'])
             proof={'timeline':timeline,'allocation':allocation,'both_contexts_observed':valid}
         dump(ROOT/'profiles'/(label+'.json'),{'status':'complete' if valid else 'failed',**proof})
@@ -598,8 +599,15 @@ def competition():
                 config=ROOT/'configs'/f'bridge_{engine}_b{batch}_c{context}_t10.json'
                 row=attempt(label,python_command('shoreline_competition.py','--gpu-uuid',UUID,'--output',output,
                     '--config',config,'--treatment',treatment),timeout=600)
-                results.append({'id':label,'status':row['status'],'treatment':treatment})
-                publish(f'J6 acquisition checkpoint: {label} {row["status"]}')
+                result={'id':label,'status':row['status'],'treatment':treatment}
+                if (output/'run.json').exists() and row['status']=='complete':
+                    d=load(output/'run.json');expected=load(reference('bridge',engine,batch,context))['cases'][0]['trials'][0]['output_ids']
+                    result['exact_reference_ids']=d['status']=='complete' and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
+                    result['clock_qualification']=campaign.clock_qualification(d,row['monitor']['source'])
+                    if not result['exact_reference_ids'] or not result['clock_qualification']['passed']:result['status']='rejected'
+                results.append(result)
+                dump(ROOT/'profiles'/(label+'.json'),result)
+                publish(f'J6 acquisition checkpoint: {label} {result["status"]}')
     dump(ROOT/'results/shoreline_competition_qualification.json',{'cases':results,
          'scope':'owned shared-service sensitivity, not added physical memory-interface bandwidth',
          'concurrent_counter_replay':'unvalidated; no physical controller-capacity change inferred'})
