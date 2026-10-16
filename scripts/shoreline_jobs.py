@@ -217,6 +217,7 @@ def service_extensions():
 
 def timeline_case(model,engine,batch,context,acq):
     label=f'J1_timeline_{model}_{engine}_b{batch}_c{context}_acq{acq:02d}'
+    if engine=='graph':label+='_graph_nodes_v2'
     result_path=ROOT/'profiles'/(label+'.json')
     if result_path.exists():return load(result_path)
     ref=reference(model,engine,batch,context)
@@ -225,7 +226,7 @@ def timeline_case(model,engine,batch,context,acq):
         dump(result_path,result);return result
     config=profile_config(model,engine,batch,context,label)
     output=ROOT/'runs'/label;report=ROOT/'profiles'/label
-    command=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+    command=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx','--cuda-graph-trace=node',
              '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report),
              str(PYTHON),str(PROGRAMS/'shoreline_decode.py'),'--config',str(config),
              '--gpu-uuid',UUID,'--output',str(output),'--mode','timing','--external-profiler']
@@ -240,6 +241,8 @@ def timeline_case(model,engine,batch,context,acq):
         from shoreline_timeline import read
         try:
             result.update(read(db))
+            if engine=='graph' and not all(w['graph_kernel_count']>0 for w in result['windows']):
+                result.update(status='failed',reason='graph-node activity missing; outside-graph kernels are not complete decode coverage')
             data=load(output/'run.json');expected=load(ref)['cases'][0]['trials'][0]['output_ids']
             exact=data['status']=='complete' and all(t['output_ids']==expected for c in data['cases'] for t in c['trials'])
             result['exact_reference_ids']=exact
@@ -341,7 +344,7 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
                        '--output',output,'--fraction',str(fraction),'--mode','timing')
     report=ROOT/'profiles'/label
     if pilot:
-        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx','--cuda-graph-trace=node',
              '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report)]+cmd+['--external-profiler']
     outcome=attempt(label,cmd,timeout=600)
     result={'id':label,'status':'failed','model':model,'batch':batch,'context':context,'engine':engine,
@@ -511,7 +514,7 @@ def competition():
         label=f'J6_concurrent_pilot_{engine}_b{batch}_c{context}'
         config=profile_config('bridge',engine,batch,context,label)
         output=ROOT/'runs'/label;report=ROOT/'profiles'/label
-        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx','--cuda-graph-trace=node',
              '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report)]
         cmd+=python_command('shoreline_competition.py','--gpu-uuid',UUID,'--output',output,
                             '--config',config,'--treatment','memory100','--external-profiler')
@@ -525,6 +528,7 @@ def competition():
             timeline=read(db);allocation=load(output/'disjoint_allocation.json')
             expected=sorted([allocation['decoder']['green_context_id'],allocation['competitor']['green_context_id']])
             valid=pilot['status']=='complete' and all(w['green_context_ids']==expected for w in timeline['windows'])
+            if engine=='graph':valid=valid and all(w['graph_kernel_count']>0 for w in timeline['windows'])
             proof={'timeline':timeline,'allocation':allocation,'both_contexts_observed':valid}
         dump(ROOT/'profiles'/(label+'.json'),{'status':'complete' if valid else 'failed',**proof})
         publish(f'J6 concurrency pilot checkpoint: {label} proved={valid}')
