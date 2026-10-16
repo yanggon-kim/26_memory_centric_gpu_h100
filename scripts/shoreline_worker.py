@@ -13,6 +13,7 @@ def install_ranges(worker):
     worker._shoreline_inputs=[]
     worker._shoreline_pressure_ledger=[]
     pressure=os.environ.get('SHORELINE_PRESSURE')
+    worker._shoreline_observation_ticks=tuple(int(t) for t in os.environ.get('SHORELINE_OBSERVATION_TICKS','4,5,6').split(','))
     if pressure in ('normal','pressure'):
         generator=torch.Generator(device='cuda').manual_seed(20261013)
         worker._shoreline_pressure=torch.rand((256*1024**2//4,),generator=generator,device='cuda')
@@ -28,7 +29,7 @@ def install_ranges(worker):
         label=f'operation_layer_{layer}_'+operation.replace('.','_') if operation else f'layer_{layer}'
         is_complete_layer=operation is None and layer in selected
         def before(module,arguments,label=label,layer=layer,whole=is_complete_layer):
-            if worker._shoreline_tick not in (4,5,6):return
+            if worker._shoreline_tick not in worker._shoreline_observation_ticks:return
             if whole and layer==0 and worker._shoreline_tick in (4,5,6) and pressure=='pressure':
                 import time
                 torch.sum(worker._shoreline_pressure,dim=0,out=worker._shoreline_pressure_output)
@@ -37,7 +38,7 @@ def install_ranges(worker):
                     'trial':getattr(worker,'_shoreline_prefix',None),'completed_unix_ns':time.time_ns(),
                     'buffer_bytes':256*1024**2,'placement':'complete before layer_0 NVTX push; charged inside full decode'})
             torch.cuda.nvtx.range_push(label)
-            if whole and worker._shoreline_tick in (4,5,6) and getattr(worker,'_shoreline_enable_events',False):
+            if whole and getattr(worker,'_shoreline_enable_events',False):
                 start=torch.cuda.Event(enable_timing=True);end=torch.cuda.Event(enable_timing=True)
                 start.record()
                 worker._shoreline_events.append({'layer':layer,'tick':worker._shoreline_tick,
@@ -46,8 +47,8 @@ def install_ranges(worker):
                 if getattr(worker,'_shoreline_event_mode','complete')=='empty':
                     end.record();worker._shoreline_events[-1]['closed']=True
         def after(module,arguments,output,label=label,layer=layer,whole=is_complete_layer):
-            if worker._shoreline_tick not in (4,5,6):return
-            if whole and worker._shoreline_tick in (4,5,6) and getattr(worker,'_shoreline_enable_events',False):
+            if worker._shoreline_tick not in worker._shoreline_observation_ticks:return
+            if whole and getattr(worker,'_shoreline_enable_events',False):
                 entry=worker._shoreline_events[-1]
                 assert entry['layer']==layer
                 if not entry['closed']:entry['end'].record();entry['closed']=True
@@ -58,7 +59,7 @@ def install_ranges(worker):
         if operation is None and layer in selected:
             signature=inspect.signature(module.forward)
             def inputs(module,args,kwargs,layer=layer,signature=signature):
-                if worker._shoreline_tick not in (4,5,6):return
+                if worker._shoreline_tick not in worker._shoreline_observation_ticks:return
                 from tensor_manifest import record
                 bound=signature.bind_partial(*args,**kwargs)
                 tensors=[record(key,v) for key,v in bound.arguments.items() if hasattr(v,'untyped_storage')]

@@ -9,7 +9,9 @@ import traceback
 
 
 def main(a):
-    if getattr(a,'ordinary_control',False):a.external_profiler=False
+    if getattr(a,'ordinary_control',False):
+        a.external_profiler=False
+        os.environ['SHORELINE_OBSERVATION_TICKS']='4,5,6,31,32,33,60,61,62'
     os.environ.update(VLLM_ENABLE_V1_MULTIPROCESSING='0',VLLM_ALLOW_INSECURE_SERIALIZATION='1',
                       HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1')
     import controlled_vllm_experiments as baseline

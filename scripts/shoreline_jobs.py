@@ -540,6 +540,8 @@ def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
     base=campaign.make_config(ROOT,model,'eager',batch,context)
     config=load(base);config['shoreline_control']={'pressure':pressure,'complete_layer_events':events,
         'pressure_buffer_bytes':256*1024**2,'pressure_ticks':[4,5,6],
+        'observation_windows':[[4,5,6],[31,32,33],[60,61,62]],
+        'window_scope':'same hooks and event markers across windows; separately instrumented stationarity diagnostic',
         'allocation':'both treatments allocate after engine KV pool creation and before warmup'}
     path=ROOT/'configs'/(label+'.json');dump(path,config)
     out=ROOT/'runs'/label
@@ -594,7 +596,7 @@ def layer_events():
         for acq in range(3):
             for events in (False,'empty',True):results.append(treatment_case('J8',model,b,c,acq,events=events))
     dump(ROOT/'results/shoreline_layer_timing_qualification.json',{'cases':results,
-        'scope':'disjoint first/middle/last complete layers at ticks 4/5/6; ordinary/event controls retain direct costs',
+        'scope':'disjoint first/middle/last complete layers at early4/5/6, middle31/32/33 and late60/61/62; controls retain direct costs',
         'local_event_intrusion':'whole-model perturbation does not bound local layer intrusion',
         'overlap':'service-equivalent bounds require independent physical demand/service and clock joins'})
     disposition('J8','partial','complete-layer event and perturbation controls published; bounded decomposition awaits qualified service/traffic joins')
