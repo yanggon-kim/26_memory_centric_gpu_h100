@@ -1,4 +1,5 @@
 {
+  "reader_version": 2,
   "cases": [
     {
       "source": "profiles/J2_bridge_eager_b1_c1024_full_acq00_range_api_v2_reader_v3.json",
@@ -51,7 +52,10 @@
           }
         ],
         "U_tick_sum": 9350710272,
-        "U_window_unique": 3116874752,
+        "U_window_unique": 3116932096,
+        "U_window_initial_external_main": 3116874752,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
         "geometry": {
           "layers": 28,
           "query_heads": 12,
@@ -63,7 +67,7 @@
         "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
       },
       "D_read_over_U_tick_sum": 1.0027354875999734,
-      "D_read_over_U_window_unique": 3.00823413516489
+      "D_read_over_U_window_unique": 3.008178790944055
     },
     {
       "source": "profiles/J2_bridge_eager_b1_c1024_full_acq00_ticks_only_v4_reader_v3.json",
@@ -116,7 +120,10 @@
           }
         ],
         "U_tick_sum": 9350710272,
-        "U_window_unique": 3116874752,
+        "U_window_unique": 3116932096,
+        "U_window_initial_external_main": 3116874752,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
         "geometry": {
           "layers": 28,
           "query_heads": 12,
@@ -128,7 +135,7 @@
         "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
       },
       "D_read_over_U_tick_sum": 1.0027693810680396,
-      "D_read_over_U_window_unique": 3.008335816504442
+      "D_read_over_U_window_unique": 3.008280470412917
     },
     {
       "source": "profiles/J2_bridge_eager_b1_c1024_full_acq01_ticks_only_v4_reader_v3.json",
@@ -181,7 +188,10 @@
           }
         ],
         "U_tick_sum": 9350710272,
-        "U_window_unique": 3116874752,
+        "U_window_unique": 3116932096,
+        "U_window_initial_external_main": 3116874752,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
         "geometry": {
           "layers": 28,
           "query_heads": 12,
@@ -193,7 +203,7 @@
         "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
       },
       "D_read_over_U_tick_sum": 1.0027704214168172,
-      "D_read_over_U_window_unique": 3.008338937579485
+      "D_read_over_U_window_unique": 3.0082835914305397
     },
     {
       "source": "profiles/J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4_reader_v3.json",
@@ -246,7 +256,10 @@
           }
         ],
         "U_tick_sum": 9350710272,
-        "U_window_unique": 3116874752,
+        "U_window_unique": 3116932096,
+        "U_window_initial_external_main": 3116874752,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
         "geometry": {
           "layers": 28,
           "query_heads": 12,
@@ -258,7 +271,8 @@
         "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
       },
       "D_read_over_U_tick_sum": 1.002741702315039,
-      "D_read_over_U_window_unique": 3.0082527794815928
+      "D_read_over_U_window_unique": 3.008197434917748
     }
-  ]
+  ],
+  "correction": "window-unique historical KV is its union over all selected ticks; initial external-only demand is separately reported; physical counters unchanged"
 }

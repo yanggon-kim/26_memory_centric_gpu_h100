@@ -72,6 +72,17 @@ def main():
         assert u['ticks'][0]['required_weight_bytes']==256,'tied output storage counted once per tick'
         config['sliding_window']=4;(root/'config.json').write_text(json.dumps(config))
         rejected(useful,root,1,8)
+    from trace_raw_audit import audit,instruction
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);path=root/'kernel.trace';prefix='0 '*11
+        wait=prefix+'0000 00000001 0 SYNCS.PHASECHK.TRANS64.TRYWAIT 0 8 1 7ffe00001234 0 0 NoVal\n'
+        arrive=prefix+'0010 00000001 0 SYNCS.ARRIVE 0 8 1 7ffe00001234 0 0 NoVal\n'
+        path.write_text('-binary version = 90\n-enable lineinfo = 0\n'+wait)
+        assert audit(root)['status']=='rejected_wait_pruning_required'
+        path.write_text('-binary version = 90\n-enable lineinfo = 0\n'+wait+arrive)
+        a=audit(root)
+        assert a['status']=='passed_no_wait_pruning' and a['files'][0]['raw_active_lane_record_contributions']==2
+        rejected(instruction,prefix+'0000 ffffffff 0 SYNCS.ARRIVE 0 8 3 7ffe00001234 0 0 NoVal')
     b=latency_bounds(10,2,8)
     assert b['O_interval']==[0,2]
     for e in b['coupled_endpoints']:

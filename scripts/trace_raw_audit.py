@@ -10,6 +10,7 @@ def instruction(line,lineinfo=0):
     assert 0<=mask<2**32
     oi=3+destinations;opcode=parts[oi];sources=int(parts[oi+1]);mi=oi+2+sources
     width=int(parts[mi]);kind=None;address=None
+    if mask==0:return opcode,mask,kind,address
     wait='PHASECHK' in opcode and 'TRYWAIT' in opcode
     tma=opcode.startswith('UTMALDG')
     arrive=opcode.startswith(('SYNCS.ARRIVE','ARRIVES.LDGSTSBAR'))
