@@ -161,9 +161,11 @@ def traffic():
         layout=load(ROOT/'configs'/f'{model}_smoke.json')['layout']
         for layer in sorted(set([0,layout['num_hidden_layers']//2,layout['num_hidden_layers']-1])):
             for acq in range(3):results.append(counter_case(model,'eager',batch,context,acq,'layer'+str(layer),layer))
-    dump(ROOT/'results/shoreline_traffic_qualification.json',{'cases':results})
-    disposition('J2','complete' if all(r['status']=='complete' for r in results) else 'partial',
-                'publish ticks-4/5/6 physical traffic and replay qualification')
+    dump(ROOT/'results/shoreline_traffic_qualification.json',{'cases':results,
+        'capture_coverage_complete':all(r['status']=='complete' for r in results),
+        'comparative_clock_timing_join':'separate pooled clock/source/isolation analysis required'})
+    disposition('J2','partial',
+                'ticks-4/5/6 physical traffic and exact replay qualification published; comparative clock/timing joins remain separate scientific gates')
 
 
 def native():
