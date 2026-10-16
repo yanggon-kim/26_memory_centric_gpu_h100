@@ -116,6 +116,13 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
     end=time.perf_counter()
     torch.cuda.nvtx.range_pop()
     if profile_capture:
+        # Range profilers can intentionally terminate at ProfilerStop. Preserve
+        # the original native output before replay/termination, outside timing.
+        native_ids=[list(completed[rid].outputs[0].token_ids) for rid in external]
+        dump(output_dir/'profile_interval_output.json',{'output_ids':native_ids,
+             'output_sha256':digest(native_ids),'decode_iterations':iterations,
+             'timed_generated_tokens':len(prompts)*iterations,'prefix':prefix,
+             'scope':'native completed decode interval before profiler stop/replay; correctness only'})
         torch.cuda.profiler.stop()
     telemetry=None
     if sensor:

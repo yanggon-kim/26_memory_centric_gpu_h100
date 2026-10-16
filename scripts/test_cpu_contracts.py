@@ -44,6 +44,18 @@ def main(a):
     for name in ('NVIDIA H100 80GB HBM3','NVIDIA H200'):
         verify_cuda(fake_cuda(name=name),fixture_uuid)
     checked.append('accepted explicitly scoped H100/H200 sm_90 device identities')
+    from fa3_metadata import decode as decode_fa3
+    # Active fields only: nonzero/uninitialized padding is not request data.
+    decoded=decode_fa3([6,-91,999,42,8,-100,1234,90,2,77,88,99,0],1)
+    assert decoded['packed_query_lengths']==[6]
+    assert decoded['per_request_dynamic_splits']==[8]
+    assert decoded['num_nheads_in_l2']==[2]
+    assert decode_fa3([6,77,88,99,2,55,66,77,0],1)['per_request_dynamic_splits']==[1]
+    for raw,causal in [([6]*12,True),([6,0,0,0,0,0,0,0,2,0,0,0,0],True),([6]*13,False)]:
+        try:decode_fa3(raw,1,causal)
+        except ValueError:pass
+        else:raise AssertionError('unsupported FA3 metadata accepted')
+    checked.append('FA3 active metadata fields ignore padding; unsupported layout and invalid active splits rejected')
     for label,device in [('wrong CUDA UUID',fake_cuda(uuid='GPU-00000000-0000-0000-0000-000000000002')),
                          ('unsupported GPU family',fake_cuda(name='NVIDIA A100')),
                          ('wrong H200 capability',fake_cuda(capability=(8,0))),
@@ -57,6 +69,55 @@ def main(a):
         else:raise AssertionError('negative capacity accepted')
     with tempfile.TemporaryDirectory(dir=package/'results',prefix='cpu_contract_') as temporary:
         temporary=Path(temporary)
+        # A repository may publish two complete encodings of the same model.
+        # The native alternate must not double the HF download or bypass budget.
+        from unittest.mock import patch
+        import contextlib
+        import io
+        from materialize_config import main as materialize
+        fixture=temporary/'mock_hf_checkpoint'/'1111111111111111111111111111111111111111'
+        fixture.mkdir(parents=True)
+        (fixture/'config.json').write_text(json.dumps({'model_type':'mistral'}))
+        shards=['model-00001-of-00002.safetensors','model-00002-of-00002.safetensors']
+        for shard in shards:(fixture/shard).write_bytes(b'unit-test-only-not-model-weights')
+        (fixture/'model.safetensors.index.json').write_text(json.dumps({'weight_map':{'a':shards[0],'b':shards[1]}}))
+        siblings=[SimpleNamespace(rfilename=name,size=size,lfs=None) for name,size in
+                  [('config.json',32),('model.safetensors.index.json',128),
+                   ('tokenizer.json',1000),('tokenizer.model',130),
+                   (shards[0],7*1024**3),(shards[1],7*1024**3),('consolidated.safetensors',14*1024**3)]]
+        def snapshot_download(model_id,revision,allow_patterns,max_workers):
+            assert set(shards)<=set(allow_patterns) and 'consolidated.safetensors' not in allow_patterns
+            assert 'tokenizer.json' in allow_patterns and 'tokenizer.model' not in allow_patterns
+            return str(fixture)
+        hub=SimpleNamespace(HfApi=lambda:SimpleNamespace(model_info=lambda *a,**k:
+                            SimpleNamespace(sha=fixture.name,siblings=siblings)),
+                            hf_hub_download=lambda *a,**k:str(fixture/'model.safetensors.index.json'),
+                            snapshot_download=snapshot_download)
+        with patch.dict(sys.modules,{'huggingface_hub':hub}),contextlib.redirect_stdout(io.StringIO()):
+            materialize(SimpleNamespace(model='mistral7b',stage='smoke',snapshot=None,download=True,
+                        output=temporary/'selected_hf.json',reuse_output=None))
+        proof=json.loads((temporary/'selected_hf.download_manifest.json').read_text())
+        assert proof['selected_bytes']<20*1024**3 and proof['selected_weights']==shards
+        checked.append('complete HF sharded layout excludes duplicate native weights within unchanged budget')
+        from run_h200_phase01 import config_for
+        selected=config_for(temporary,temporary/'selected_hf.json','unit_test_energy_b8',8,4096)
+        assert json.loads(selected.read_text())['energy_cases']==[[8,4096]]
+        checked.append('per-case energy selection retains requested batch/context')
+        import hashlib
+        from resolve_mistral_tokenizer import resolve
+        native=temporary/'tokenizer.model.v3'
+        native.write_bytes(b'unit-test-tokenizer-artifact-not-a-real-tokenizer')
+        expected=hashlib.sha256(native.read_bytes()).hexdigest()
+        pointer=f'version https://git-lfs.github.com/spec/v1\noid sha256:{expected}\nsize {native.stat().st_size}\n'.encode()
+        config={'model_id':'mistralai/Mistral-7B-Instruct-v0.3','model_revision':fixture.name,'model_path':str(fixture)}
+        with patch.dict(sys.modules,{'huggingface_hub':SimpleNamespace(hf_hub_download=lambda *a,**k:str(native))}),patch('urllib.request.urlopen',return_value=io.BytesIO(pointer)):
+            resolution=resolve(config,probe_tokenizer=False)
+        assert resolution['resolved_sha256']==expected and (fixture/'tokenizer.model').resolve()==native
+        bad_pointer=pointer.replace(expected.encode(),b'0'*64)
+        with patch.dict(sys.modules,{'huggingface_hub':SimpleNamespace(hf_hub_download=lambda *a,**k:str(native))}),patch('urllib.request.urlopen',return_value=io.BytesIO(bad_pointer)):
+            try:resolve(config,probe_tokenizer=False)
+            except AssertionError:checked.append('tokenizer LFS alias SHA256 verified; mismatched payload rejected')
+            else:raise AssertionError('wrong tokenizer alias hash accepted')
         from controlled_vllm_experiments import validate as validate_vllm
         from software_decode_experiments import digest
         contract=temporary/'vllm_contract'

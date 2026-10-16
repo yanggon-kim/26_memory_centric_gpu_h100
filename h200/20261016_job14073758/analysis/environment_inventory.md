@@ -26,3 +26,5 @@ The allocated H200 passed CUDA execution, hardware-counter collection, pinned ru
 The native dynamic-input micro captured 640 warp records, grouped one actual sm_90 kernel, and replayed with 4,121 cycles and 19,456 active-thread instructions. Replay used the pinned stock H100 configuration as a parser smoke. Its memory/cache configuration does not establish H200 timing accuracy.
 
 Raw inventory, CUDA properties, runtime freeze, CPU contracts, micro counter logs, native export manifest, and replay log are retained in `../environment/`. Node-wide RAM and disk availability are not treated as the job allocation or user quota.
+
+The supplementary `platform_tools.json` records the inherited-PATH container, RTL, PPA and NoC tool lookup and candidate repository RTL/library files. This is not a host-wide search or a license availability claim. No private NVIDIA RTL/PDK or validated H200 physical model was supplied. A full-system external energy meter is not configured; NVML board energy excludes host/platform consumption. These limitations prevent physical area or component-energy conclusions.

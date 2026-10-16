@@ -1,0 +1,17 @@
+{
+  "status": "failed",
+  "reference": "results/qwen7b_full_dynamic_reference.json",
+  "reference_program": "independent full-length HF dynamic-cache model.generate",
+  "controls": [
+    {
+      "source": "runs/qwen7b_graph_b1_c128_smoke",
+      "exact_reference_ids": false
+    },
+    {
+      "source": "runs/qwen7b_eager_b1_c128_smoke",
+      "exact_reference_ids": false
+    }
+  ],
+  "policy": "exact IDs across three complete warmups/trials; no tolerance",
+  "historical_static_cache_gate": "preserved separately; a new reference does not repair a failed StaticCache control"
+}

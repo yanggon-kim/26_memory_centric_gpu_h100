@@ -41,6 +41,7 @@ def install_attention_observer(worker):
             if sum(row['module']==_name for row in samples)>=3:return result
             row={'module':_name,'num_actual_tokens':metadata.num_actual_tokens,
                  'max_query_len':metadata.max_query_len,'max_seq_len':metadata.max_seq_len,
+                 'causal':metadata.causal,'use_cascade':metadata.use_cascade,
                  'max_num_splits':metadata.max_num_splits,
                  'split_bound_meaning':'zero delegates to FA3 heuristics; it does not mean zero dynamic splits',
                  'per_request_dynamic_splits':None,
@@ -93,7 +94,8 @@ def snapshot_worker(worker):
         tokens=int(batch.num_tokens_no_spec[index])
         rows.append({'request_id':rid,'row':index,'num_computed_tokens':computed,
                      'num_tokens_without_speculation':tokens,
-                     'pending_query_tokens':tokens-computed})
+                     'cpu_counter_difference':tokens-computed,
+                     'counter_scope':'last prepared input batch; CPU computed counters can lag execution; actual attention metadata supplies executed query/KV lengths'})
     groups=[]
     for index,table in enumerate(batch.block_table.block_tables):
         groups.append({'group':index,'kernel_block_size':table.block_size,
@@ -103,4 +105,4 @@ def snapshot_worker(worker):
                                 'block_ids':table.block_table.np[row['row'],:int(table.num_blocks_per_row[row['row']])].tolist()}
                                for row in rows]})
     return {'requests':rows,'kv_page_groups':groups,
-            'scope':'actual CPU request counters and page-table rows immediately before a decode engine.step; allocation is not traffic'}
+            'scope':'actual last-prepared CPU input counters/page rows before engine.step updates them; allocation is not traffic; executed lengths/page tables are in attention observations'}

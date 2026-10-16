@@ -1,0 +1,308 @@
+[
+  {
+    "label": "roofline_controls",
+    "command": [
+      "/tmp/h200_research_jkim4112_job14073758/runtime/bin/python",
+      "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/measure_roofline_ceilings.py",
+      "--gpu-uuid",
+      "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+      "--output",
+      "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261016_job14073758/results/roofline_controls.json"
+    ]
+  },
+  {
+    "label": "bridge_energy_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "energy",
+      "--model",
+      "bridge"
+    ]
+  },
+  {
+    "label": "bridge_graph_profile_b1_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "bridge",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "bridge_graph_profile_b8_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "bridge",
+      "--batch",
+      "8",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "qwen7b_portfolio_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "portfolio",
+      "--model",
+      "qwen7b"
+    ]
+  },
+  {
+    "label": "mistral7b_portfolio_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "portfolio",
+      "--model",
+      "mistral7b"
+    ]
+  },
+  {
+    "label": "qwen14b_portfolio_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "portfolio",
+      "--model",
+      "qwen14b"
+    ]
+  },
+  {
+    "label": "qwen32b_portfolio_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "portfolio",
+      "--model",
+      "qwen32b"
+    ]
+  },
+  {
+    "label": "dense_energy_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "energy"
+    ]
+  },
+  {
+    "label": "hf_compiled_controls_sequence",
+    "command": [
+      "python3",
+      "scripts/run_h200_phase01.py",
+      "--stage",
+      "controls"
+    ]
+  },
+  {
+    "label": "bridge_profile_b8_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "bridge",
+      "--batch",
+      "8",
+      "--context",
+      "4096",
+      "--extended"
+    ]
+  },
+  {
+    "label": "qwen7b_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "qwen7b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "qwen7b_graph_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "qwen7b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "qwen7b_profile_b8_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "qwen7b",
+      "--batch",
+      "8",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "qwen7b_graph_profile_b8_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "qwen7b",
+      "--batch",
+      "8",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "mistral7b_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "mistral7b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "mistral7b_graph_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "mistral7b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "mistral7b_profile_b8_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "mistral7b",
+      "--batch",
+      "8",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "mistral7b_graph_profile_b8_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "mistral7b",
+      "--batch",
+      "8",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "qwen14b_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "qwen14b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "qwen14b_graph_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "qwen14b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "qwen14b_profile_b4_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "qwen14b",
+      "--batch",
+      "4",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "qwen14b_graph_profile_b4_c4096_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "qwen14b",
+      "--batch",
+      "4",
+      "--context",
+      "4096"
+    ]
+  },
+  {
+    "label": "qwen32b_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200.py",
+      "--model",
+      "qwen32b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  },
+  {
+    "label": "qwen32b_graph_profile_b1_c1024_sequence",
+    "command": [
+      "python3",
+      "scripts/profile_h200_graph.py",
+      "--model",
+      "qwen32b",
+      "--batch",
+      "1",
+      "--context",
+      "1024"
+    ]
+  }
+]

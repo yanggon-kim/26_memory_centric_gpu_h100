@@ -24,12 +24,16 @@ def materialize(root, model, stage):
 
 def config_for(root, base, label, batch, context, eager=False, compile=False, workload=False):
     config=json.loads(Path(base).read_text())
-    config.update(batch_sizes=[batch],context_lengths=[context],compile=compile)
+    config.update(batch_sizes=[batch],context_lengths=[context],compile=compile,
+                  energy_cases=[[batch,context]])
     config['engine']['enforce_eager']=eager
     if eager:
         config['engine']['compilation_config']={'mode':0}
     if workload:
         config['workload_file']='configs/representative_text_v1.json'
+    resolution=root/'configs/mistral7b_tokenizer_resolution.json'
+    if config['model_id'].startswith('mistralai/') and resolution.exists():
+        config['tokenizer_resolution']=json.loads(resolution.read_text())
     target=root/'configs'/(label+'.json')
     if target.exists():
         assert json.loads(target.read_text())==config,'changed config requires a new label'
@@ -72,9 +76,13 @@ def compare(root, label, vllm, hf):
 def model_smoke(root, model):
     smoke=materialize(root,model,'smoke')
     if smoke is None:return None
+    canonical=root/'results'/f'{model}_canonical_hf_smoke_tokens.json'
+    if canonical.exists() and json.loads(canonical.read_text())['status']=='passed':
+        return materialize(root,model,'baseline')
     hf=case(root,model,smoke,1,128,'hf_eager',smoke=True)
     if hf is None:return None
-    graph=case(root,model,smoke,1,128,smoke=True)
+    retry='tokenizer_resolved' if model=='mistral7b' and (root/'configs/mistral7b_tokenizer_resolution.json').exists() else None
+    graph=case(root,model,smoke,1,128,smoke=True,retry=retry)
     if graph is None:return None
     if not compare(root,model+'_graph_hf_smoke_tokens',graph,hf):
         # A distinct eager path is a diagnostic, never a retroactive graph pass.
@@ -87,7 +95,10 @@ def model_smoke(root, model):
 def energy(root,model,base,batch,context):
     for count in (1024,2048,4096):
         if context+count>8192:break
-        output=case(root,model,base,batch,context,mode='energy',count=count)
+        label=f'{model}_graph_b{batch}_c{context}_energy_n{count}'
+        failure=root/'runs'/label/'failure.json'
+        retry='selected_pair' if failure.exists() and json.loads(failure.read_text()).get('message')=='no selected cases' else None
+        output=case(root,model,base,batch,context,mode='energy',count=count,retry=retry)
         if output is None:return
         data=json.loads((output/'run.json').read_text())
         telemetry=[t['telemetry'] for t in data['cases'][0]['trials']]

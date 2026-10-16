@@ -107,7 +107,7 @@ def profile(root,model,batch,context,extended=False):
         if output.exists():continue
         cmd=[NCU,'--profile-from-start','off','--clock-control','none','--cache-control','none',
              '--replay-mode','kernel','--nvtx','--nvtx-include',f'layer_{layer}/',
-             '--kernel-name-base','demangled','--kernel-name','regex:.*(gemv|gemm|cutlass|flash|cache).*',
+             '--kernel-name-base','demangled','--kernel-name','regex:.*(nvjet|gemv|gemm|cutlass|flash|cache).*',
              '--launch-count','8','--section','LaunchStats','--section','Occupancy',
              '--metrics',','.join(requested),'--csv']
         outcome=run(root,label,cmd+command(root,label,config,output),600,gpu=True)

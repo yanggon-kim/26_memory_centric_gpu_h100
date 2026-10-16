@@ -1,0 +1,1102 @@
+{
+  "status": "complete",
+  "mode": "timing",
+  "classification": "measured-real-GPU",
+  "config": {
+    "model_id": "Qwen/Qwen2.5-7B-Instruct",
+    "model_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+    "model_path": "/tmp/h200_research_jkim4112_job14073758/models/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28",
+    "batch_sizes": [
+      1
+    ],
+    "context_lengths": [
+      128
+    ],
+    "precision": "BF16",
+    "generated_tokens": 64,
+    "energy_generated_tokens": 2048,
+    "energy_cases": [
+      [
+        1,
+        128
+      ]
+    ],
+    "warmup_trials": 3,
+    "trials": 3,
+    "seed": 20261013,
+    "compile": false,
+    "maximum_cache_length": 8192,
+    "sensor_interval_s": 0.02,
+    "idle_calibration_s": 5,
+    "minimum_energy_window_s": 5,
+    "copy_buffer_mib": 256,
+    "copy_repetitions": 200,
+    "engine": {
+      "max_model_len": 8192,
+      "max_num_seqs": 1,
+      "max_num_batched_tokens": 8192,
+      "gpu_memory_utilization": 0.8,
+      "enforce_eager": false
+    },
+    "stage": "smoke",
+    "config_sha256": "7463bb0ea78315365e6c6b74de4e73bbcc8359dfb0c5a737584e077d42c0b03c",
+    "layout": {
+      "model_type": "qwen2",
+      "hidden_size": 3584,
+      "num_hidden_layers": 28,
+      "num_attention_heads": 28,
+      "num_key_value_heads": 4,
+      "head_dim": "NA",
+      "sliding_window": 131072
+    }
+  },
+  "hardware": {
+    "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "driver": "615.71.09",
+    "compute_capability": [
+      9,
+      0
+    ],
+    "graphics_processes": [],
+    "preflight_scope": "startup compute-process snapshot; no runtime exclusivity guarantee",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": ""
+  },
+  "versions": {
+    "torch": "2.11.0+cu130",
+    "cuda_runtime": "13.0",
+    "transformers": "4.57.6"
+  },
+  "environment": {
+    "CUDA_HOME": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+    "TORCHINDUCTOR_COMPILE_THREADS": "4",
+    "MAX_JOBS": "4",
+    "OMP_NUM_THREADS": "4"
+  },
+  "timing_scope": "synchronized controlled decode after prefill; first token selected by prefill excluded",
+  "baseline_scope": "software StaticCache and optional compile; no physical GPU modifications",
+  "external_instrumentation": false,
+  "baseline_comparison_eligible": true,
+  "cases": [
+    {
+      "batch_size": 1,
+      "context_length": 128,
+      "generated_tokens": 64,
+      "cache_capacity_tokens": 192,
+      "prompt_sha256": "78d5446a329625e09b90610a00b0c4c72945cb5a61f5b39e02ab0a00e179b603",
+      "trials": [
+        {
+          "timed_decode_steps": 63,
+          "timed_generated_tokens": 63,
+          "wall_ms": 911.6194699890912,
+          "cuda_event_ms": 911.58642578125,
+          "tokens_per_s": 69.10778243991858,
+          "output_ids": [
+            [
+              28100,
+              198,
+              104544,
+              107083,
+              108704,
+              104625,
+              101312,
+              102064,
+              33108,
+              48391,
+              105063,
+              107339,
+              3837,
+              102298,
+              105593,
+              104811,
+              5373,
+              105205,
+              5373,
+              8903,
+              16744,
+              5373,
+              100223,
+              16744,
+              5373,
+              99462,
+              16744,
+              5373,
+              111946,
+              16744,
+              49567,
+              3837,
+              91572,
+              100626,
+              100694,
+              42192,
+              100240,
+              9370,
+              48391,
+              33108,
+              100397,
+              16476,
+              1773,
+              43288,
+              87267,
+              99639,
+              37474,
+              99250,
+              109459,
+              119506,
+              22418,
+              57191,
+              112950,
+              104813,
+              108704,
+              3837,
+              105471,
+              102988,
+              100414,
+              9370,
+              71356,
+              102109,
+              57191,
+              100813
+            ]
+          ],
+          "output_sha256": "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57",
+          "cache_length": 191
+        },
+        {
+          "timed_decode_steps": 63,
+          "timed_generated_tokens": 63,
+          "wall_ms": 912.4117199098691,
+          "cuda_event_ms": 912.3786010742188,
+          "tokens_per_s": 69.04777593850213,
+          "output_ids": [
+            [
+              28100,
+              198,
+              104544,
+              107083,
+              108704,
+              104625,
+              101312,
+              102064,
+              33108,
+              48391,
+              105063,
+              107339,
+              3837,
+              102298,
+              105593,
+              104811,
+              5373,
+              105205,
+              5373,
+              8903,
+              16744,
+              5373,
+              100223,
+              16744,
+              5373,
+              99462,
+              16744,
+              5373,
+              111946,
+              16744,
+              49567,
+              3837,
+              91572,
+              100626,
+              100694,
+              42192,
+              100240,
+              9370,
+              48391,
+              33108,
+              100397,
+              16476,
+              1773,
+              43288,
+              87267,
+              99639,
+              37474,
+              99250,
+              109459,
+              119506,
+              22418,
+              57191,
+              112950,
+              104813,
+              108704,
+              3837,
+              105471,
+              102988,
+              100414,
+              9370,
+              71356,
+              102109,
+              57191,
+              100813
+            ]
+          ],
+          "output_sha256": "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57",
+          "cache_length": 191
+        },
+        {
+          "timed_decode_steps": 63,
+          "timed_generated_tokens": 63,
+          "wall_ms": 913.2704770890996,
+          "cuda_event_ms": 913.2356567382812,
+          "tokens_per_s": 68.98284963815124,
+          "output_ids": [
+            [
+              28100,
+              198,
+              104544,
+              107083,
+              108704,
+              104625,
+              101312,
+              102064,
+              33108,
+              48391,
+              105063,
+              107339,
+              3837,
+              102298,
+              105593,
+              104811,
+              5373,
+              105205,
+              5373,
+              8903,
+              16744,
+              5373,
+              100223,
+              16744,
+              5373,
+              99462,
+              16744,
+              5373,
+              111946,
+              16744,
+              49567,
+              3837,
+              91572,
+              100626,
+              100694,
+              42192,
+              100240,
+              9370,
+              48391,
+              33108,
+              100397,
+              16476,
+              1773,
+              43288,
+              87267,
+              99639,
+              37474,
+              99250,
+              109459,
+              119506,
+              22418,
+              57191,
+              112950,
+              104813,
+              108704,
+              3837,
+              105471,
+              102988,
+              100414,
+              9370,
+              71356,
+              102109,
+              57191,
+              100813
+            ]
+          ],
+          "output_sha256": "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57",
+          "cache_length": 191
+        }
+      ],
+      "warmup_wall_s_including_compile": 2.8634686460718513,
+      "kv_tensor_manifest": [
+        {
+          "layer": 0,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701661936640
+        },
+        {
+          "layer": 0,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701662133248
+        },
+        {
+          "layer": 1,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701662329856
+        },
+        {
+          "layer": 1,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701668999168
+        },
+        {
+          "layer": 2,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701664804864
+        },
+        {
+          "layer": 2,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701665001472
+        },
+        {
+          "layer": 3,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701666246656
+        },
+        {
+          "layer": 3,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701666443264
+        },
+        {
+          "layer": 4,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701670113280
+        },
+        {
+          "layer": 4,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701670309888
+        },
+        {
+          "layer": 5,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701670506496
+        },
+        {
+          "layer": 5,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701670703104
+        },
+        {
+          "layer": 6,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701670899712
+        },
+        {
+          "layer": 6,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701672931328
+        },
+        {
+          "layer": 7,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701666902016
+        },
+        {
+          "layer": 7,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701667098624
+        },
+        {
+          "layer": 8,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701668212736
+        },
+        {
+          "layer": 8,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701668409344
+        },
+        {
+          "layer": 9,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701668737024
+        },
+        {
+          "layer": 9,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701667295232
+        },
+        {
+          "layer": 10,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701667491840
+        },
+        {
+          "layer": 10,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701667688448
+        },
+        {
+          "layer": 11,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701675028480
+        },
+        {
+          "layer": 11,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701667885056
+        },
+        {
+          "layer": 12,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701666639872
+        },
+        {
+          "layer": 12,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701662707712
+        },
+        {
+          "layer": 13,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701663035392
+        },
+        {
+          "layer": 13,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701663232000
+        },
+        {
+          "layer": 14,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701664346112
+        },
+        {
+          "layer": 14,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701664542720
+        },
+        {
+          "layer": 15,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701663428608
+        },
+        {
+          "layer": 15,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701663625216
+        },
+        {
+          "layer": 16,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701663821824
+        },
+        {
+          "layer": 16,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701664018432
+        },
+        {
+          "layer": 17,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701677125632
+        },
+        {
+          "layer": 17,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701669195776
+        },
+        {
+          "layer": 18,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701669392384
+        },
+        {
+          "layer": 18,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701669588992
+        },
+        {
+          "layer": 19,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701669785600
+        },
+        {
+          "layer": 19,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701672013824
+        },
+        {
+          "layer": 20,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701672210432
+        },
+        {
+          "layer": 20,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701672407040
+        },
+        {
+          "layer": 21,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701679222784
+        },
+        {
+          "layer": 21,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701672603648
+        },
+        {
+          "layer": 22,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701671096320
+        },
+        {
+          "layer": 22,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701671292928
+        },
+        {
+          "layer": 23,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701671489536
+        },
+        {
+          "layer": 23,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701671686144
+        },
+        {
+          "layer": 24,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701676208128
+        },
+        {
+          "layer": 24,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701676404736
+        },
+        {
+          "layer": 25,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701676601344
+        },
+        {
+          "layer": 25,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701676797952
+        },
+        {
+          "layer": 26,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701681319936
+        },
+        {
+          "layer": 26,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701674110976
+        },
+        {
+          "layer": 27,
+          "kind": "key",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701674307584
+        },
+        {
+          "layer": 27,
+          "kind": "value",
+          "shape": [
+            1,
+            4,
+            192,
+            128
+          ],
+          "dtype": "torch.bfloat16",
+          "bytes": 196608,
+          "gpu_address": 140701674504192
+        }
+      ],
+      "kv_manifest_scope": "allocated StaticCache storage including unused future slots; not measured accessed bytes",
+      "compiled_correctness": {
+        "passed": true,
+        "eager_ids": [
+          [
+            28100,
+            198,
+            104544,
+            107083
+          ]
+        ],
+        "compiled_ids": [
+          [
+            28100,
+            198,
+            104544,
+            107083
+          ]
+        ]
+      },
+      "warmup_output_sha256": [
+        "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57",
+        "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57",
+        "c43bd3e74648c57badf95a613560134f6cbadc28d68a07eb544a59504bc76d57"
+      ],
+      "outputs_identical": true
+    }
+  ],
+  "correctness": {
+    "passed": true,
+    "reference_ids": [
+      [
+        93,
+        42,
+        93,
+        42
+      ]
+    ],
+    "static_ids": [
+      [
+        93,
+        42,
+        93,
+        42
+      ]
+    ],
+    "scope": "tiny uncompiled static-cache versus model.generate plain greedy"
+  }
+}

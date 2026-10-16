@@ -1,0 +1,38 @@
+Fetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]Fetching 11 files:  18%|█▊        | 2/11 [00:00<00:01,  7.99it/s]Fetching 11 files:  18%|█▊        | 2/11 [00:19<01:29,  9.97s/it]Fetching 11 files:  27%|██▋       | 3/11 [02:09<05:45, 43.22s/it]Fetching 11 files:  36%|███▋      | 4/11 [03:32<06:12, 53.15s/it]Fetching 11 files:  55%|█████▍    | 6/11 [03:32<02:57, 35.46s/it]Fetching 11 files:  73%|███████▎  | 8/11 [03:33<01:19, 26.63s/it]Fetching 11 files:  91%|█████████ | 10/11 [03:33<00:21, 21.36s/it]Fetching 11 files: 100%|██████████| 11/11 [03:34<00:00, 19.54s/it]
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/materialize_config.py", line 95, in <module>
+    p.add_argument('--l2-bytes',type=int)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/materialize_config.py", line 49, in main
+    snapshot=Path(snapshot_download(model['model_id'],revision=sha,allow_patterns=sorted(selected),max_workers=2))
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/_snapshot_download.py", line 332, in snapshot_download
+    thread_map(
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/tqdm/contrib/concurrent.py", line 191, in thread_map
+    return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/tqdm/contrib/concurrent.py", line 163, in _executor_map
+    return list(ex.map(
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/_snapshot_download.py", line 306, in _inner_hf_hub_download
+    return hf_hub_download(
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1175, in _hf_hub_download_to_cache_dir
+    _download_to_tmp_and_move(
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1742, in _download_to_tmp_and_move
+    http_get(
+  File "/tmp/h200_research_jkim4112_job14073758/runtime/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 529, in http_get
+    raise EnvironmentError(
+OSError: Consistency check failed: file should be of size 130 but has size 587404 (tokenizer.model).
+This is usually due to network issues while downloading the file. Please retry with `force_download=True`.

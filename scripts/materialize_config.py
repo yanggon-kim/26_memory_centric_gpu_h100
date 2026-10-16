@@ -25,15 +25,50 @@ def main(args):
             assert proof['config_sha256']==hashlib.sha256((snapshot/'config.json').read_bytes()).hexdigest(),'offline config hash mismatch'
     else:
         assert args.download,'provide --snapshot for offline materialization, or explicitly --download'
-        from huggingface_hub import HfApi,snapshot_download
+        from huggingface_hub import HfApi,snapshot_download,hf_hub_download
         info=HfApi().model_info(model['model_id'],revision=None if expected=='RESOLVE_AND_PIN' else expected,files_metadata=True)
         sha=info.sha
         assert re.fullmatch('[0-9a-f]{40}',sha)
-        siblings=[s for s in info.siblings if s.rfilename.endswith(('.safetensors','.json','.model'))]
+        names={s.rfilename for s in info.siblings}
+        # Some repositories publish both native consolidated and HF sharded
+        # checkpoints. Download exactly the complete HF layout, not duplicates.
+        if 'model.safetensors' in names:
+            weights={'model.safetensors'}
+        elif 'model.safetensors.index.json' in names:
+            index=Path(hf_hub_download(model['model_id'],'model.safetensors.index.json',revision=sha))
+            weights=set(json.loads(index.read_text())['weight_map'].values())
+            assert weights and weights<=names and all(name.endswith('.safetensors') for name in weights),'incomplete HF safetensors index'
+        else:
+            raise ValueError('no supported complete HF safetensors layout; record a separate adapter')
+        metadata={name for name in names if '/' not in name and name.endswith('.json')}
+        # AutoTokenizer's fast JSON is a complete tokenizer encoding. Keep one
+        # encoding instead of downloading optional legacy SentencePiece copies.
+        if 'tokenizer.json' not in names:
+            metadata|={name for name in names if '/' not in name and name.endswith('.model')}
+        mistral_alias=(model['model_id']=='mistralai/Mistral-7B-Instruct-v0.3' and 'tokenizer.model.v3' in names)
+        if mistral_alias:metadata.add('tokenizer.model.v3')
+        selected=weights|metadata
+        siblings=[s for s in info.siblings if s.rfilename in selected]
         assert all(s.size is not None for s in siblings),'download sizes unavailable; manually verify budget before download'
         total=sum(s.size for s in siblings)
         assert total<=model['max_download_gib']*1024**3,'declared model download budget exceeded'
-        snapshot=Path(snapshot_download(model['model_id'],revision=sha,allow_patterns=['*.safetensors','*.json','*.model'],max_workers=2))
+        snapshot=Path(snapshot_download(model['model_id'],revision=sha,allow_patterns=sorted(selected),max_workers=2))
+        resolution=None
+        if mistral_alias:
+            from resolve_mistral_tokenizer import resolve
+            resolution=resolve({'model_id':model['model_id'],'model_revision':sha,'model_path':str(snapshot)},probe_tokenizer=False)
+        download_manifest={'model_id':model['model_id'],'revision':sha,'selected_bytes':total,
+            'max_download_gib':model['max_download_gib'],'selected_weights':sorted(weights),
+            'tokenizer_policy':'original Mistral tokenizer with SHA256-verified SentencePiece LFS alias' if mistral_alias else 'fast tokenizer.json' if 'tokenizer.json' in names else 'repository tokenizer metadata and SentencePiece model',
+            'tokenizer_alias_resolution':resolution,
+            'excluded_alternate_weights':sorted(name for name in names if name.endswith('.safetensors') and name not in weights),
+            'excluded_legacy_tokenizers':sorted(name for name in names if name.endswith('.model') and name not in metadata),
+            'files':[{'path':s.rfilename,'bytes':s.size,
+                      'lfs':s.lfs if isinstance(s.lfs,dict) else vars(s.lfs) if s.lfs else None}
+                     for s in siblings],
+            'selection':'complete HF monolithic or index-declared sharded checkpoint; alternate native layout excluded'}
+        args.output.parent.mkdir(parents=True,exist_ok=True)
+        args.output.with_suffix('.download_manifest.json').write_text(json.dumps(download_manifest,indent=2)+'\n')
     actual=json.loads((snapshot/'config.json').read_text())
     assert actual['model_type']==model['expected_model_type'],'snapshot model architecture differs from declared family'
     assert list(snapshot.glob('*.safetensors')),'no pretrained safetensors found'

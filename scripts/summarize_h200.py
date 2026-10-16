@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 import statistics
 from h200_session import dump, DEFAULT_ROOT
 from consolidate_h100_results import SPEC_COLUMNS, EXTRA_COLUMNS
@@ -23,6 +24,11 @@ def summarize(root):
         vllm = 'engine_settings' in data
         external = data.get('external_instrumentation', False)
         cases = data.get('cases', [])
+        if not cases and data['status']=='failed':
+            match=re.search(r'_energy_n(\d+)',source.parent.name)
+            count=int(match.group(1)) if match else config.get('generated_tokens',64)
+            cases=[{'batch_size':b,'context_length':c,'generated_tokens':count,'trials':[],
+                    'inferred_requested_case':True} for b in config['batch_sizes'] for c in config['context_lengths']]
         digest = hashlib.sha256(source.read_bytes()).hexdigest()
         entry = {'id': source.parent.name, 'status': data['status'], 'source':
                  str(source.relative_to(root)), 'source_sha256': digest,
@@ -32,6 +38,11 @@ def summarize(root):
             identical = case.get('output_digests_identical' if vllm else 'outputs_identical', False)
             correctness = identical and (vllm or (data.get('correctness', {}).get('passed', False)
                                                  and case.get('compiled_correctness', {}).get('passed', False)))
+            cross_gate=root/'results'/(source.parent.name.split('_')[0]+'_graph_hf_smoke_tokens.json')
+            canonical=root/'results'/(source.parent.name.split('_')[0]+'_canonical_hf_smoke_tokens.json')
+            canonical_pass=canonical.exists() and json.loads(canonical.read_text())['status']=='passed'
+            if vllm and cross_gate.exists() and json.loads(cross_gate.read_text())['status']!='passed' and not canonical_pass:
+                correctness=False
             valid = data['status'] == 'complete' and correctness and len(trials) >= 3
             steps = case['generated_tokens']-1
             entry['cases'].append({'batch': case['batch_size'], 'context': case['context_length'],
@@ -41,7 +52,7 @@ def summarize(root):
             design = ('vllm_eager' if eager else 'vllm_graph') if vllm else (
                 'hf_staticcache_compiled' if config.get('compile') else 'hf_staticcache_eager')
             row.update(run_id=source.parent.name, design=design,
-                       classification='measured-real-GPU-instrumented' if external else 'measured-real-GPU',
+                       classification='measured-real-GPU',
                        hardware_or_simulator_version=json.dumps({'hardware': data['hardware']['name'],
                                                                  'versions': data['versions']}),
                        model=config['model_id'], model_revision=config['model_revision'],
@@ -52,7 +63,7 @@ def summarize(root):
                        seed=config['seed'], workload_pattern=case.get('workload_version', 'seeded_synthetic_uniform_ids'),
                        selected_case_status='complete' if valid else data['status'] if data['status'] != 'complete' else 'failed',
                        generated_tokens_per_sequence=case['generated_tokens'],
-                       timed_generated_tokens=case['batch_size']*steps,
+                       timed_generated_tokens=case['batch_size']*steps if valid else 'NA',
                        source_run_json=str(source.relative_to(root)), source_sha256=digest,
                        external_instrumentation=external, timing_scope=data['timing_scope'],
                        energy_scope='whole GPU board; decode only; no idle subtraction' if data['mode']=='energy' else 'NA')
@@ -65,10 +76,12 @@ def summarize(root):
                     row['joules_per_token'] = median([t['telemetry']['joules_per_token'] for t in trials])
                     row['gpu_avg_power_w'] = median([t['telemetry']['integrated_power_j']/t['telemetry']['window_s'] for t in trials])
             row['notes'] = json.dumps({'correctness_passed': bool(correctness),
+                'case_identity_source':'requested configuration; no completed case' if case.get('inferred_requested_case') else 'recorded case',
                 'performance_eligible': bool(valid and not external),
                 'missing_metric_reason': 'traffic/utilization require separately linked counters; architecture/PPA/NoC and component energy remain unmeasured',
                 'energy_qualification': [t.get('telemetry', {}).get('unavailable_reason') for t in trials] if data['mode']=='energy' else 'separate energy run required'})
             rows.append(row)
+        entry['qualification_status']='passed' if entry['cases'] and all(c['valid'] for c in entry['cases']) else 'pending' if data['status']=='running' else 'failed'
         manifest.append(entry)
     for failure in sorted((root/'runs').glob('*/failure.json')):
         if not (failure.parent/'run.json').exists():
@@ -91,8 +104,14 @@ def summarize(root):
     by_id = {x['id']: x for x in manifest}
     for case in expected:
         actual = by_id.get(case['id'])
-        case['status'] = ('complete' if actual and actual['status']=='complete' and actual['cases']
-                          and all(x['valid'] for x in actual['cases']) else actual['status'] if actual else 'pending')
+        if actual:
+            case['status']='complete' if actual.get('qualification_status')=='passed' else actual['status'] if actual['status']!='complete' else 'failed'
+        else:
+            gate=root/'results'/(case['model']+'_graph_hf_smoke_tokens.json')
+            canonical=root/'results'/(case['model']+'_canonical_hf_smoke_tokens.json')
+            blocked=gate.exists() and json.loads(gate.read_text())['status']=='failed' and not (canonical.exists() and json.loads(canonical.read_text())['status']=='passed')
+            case['status']='blocked' if blocked else 'pending'
+            if blocked:case['reason']='model smoke cross-engine exact-ID mismatch; diagnostics preserved; expanded baseline not run'
     dump(result/'fixed_bandwidth_case_manifest.json', {'cases': expected, 'attempts': manifest})
     measurement_path=result/'fixed_bandwidth_measurements.json'
     if not measurement_path.exists():
@@ -122,12 +141,28 @@ def summarize(root):
     def fmt(x):
         return f'{x:.4f}' if isinstance(x, (float, int)) else str(x)
     for row in rows:
+        if row['external_instrumentation']:continue
         lines.append('| '+ ' | '.join([row['run_id'], row['selected_case_status'], fmt(row['latency_ms']), fmt(row['decode_tokens_per_s']), fmt(row['joules_per_token'])])+' |')
     lines += ['', '## Interpretation', '',
               'Graph, eager, HF compiled, energy, and profiled executions have separate identities. Differences between these programs require software and correctness analysis before any architectural interpretation.', '',
               'Qualified board energy uses raw cumulative-counter and sampled-power estimates with at least five seconds, five counter changes, and at most ten percent disagreement. Agreement provides an internal crosscheck; component energy and absolute accuracy remain uncalibrated.', '',
               '## Remaining work', '',
               'See ../STATUS.json and ../results/fixed_bandwidth_case_manifest.json for completed, failed, and pending cases. Hardware-counter attribution, representative kernel coverage, and native trace-tool validation retain their own evidence gates.']
+    failed=[entry for entry in manifest if entry['status'] not in ('complete','running')]
+    attempts=root/'results/experiment_log.jsonl'
+    preparation_failures=[]
+    if attempts.exists():
+        preparation_failures=[json.loads(line) for line in attempts.read_text().splitlines()
+                              if line.strip() and json.loads(line).get('status') in ('failed','timeout')]
+    if failed or preparation_failures:
+        lines += ['', '## Preserved failed attempts', '']
+        for entry in failed:
+            failure=root/'runs'/entry['id']/'failure.json'
+            reason=json.loads(failure.read_text()).get('message','see failure artifact') if failure.exists() else 'see run and profiler logs'
+            lines.append(f"- {entry['id']}: {reason}. Excluded from valid performance comparisons.")
+        for entry in preparation_failures:
+            if entry['label'] in {item['id'] for item in failed}:continue
+            lines.append(f"- {entry['label']}: {entry['status']}; preserved log {entry['log']}. Later attempts retain separate identities.")
     (root/'analysis/intermediate_results.md').write_text('\n'.join(lines)+'\n')
     for name, title, content in [
         ('bottleneck_analysis.md', 'H200 decode bottleneck analysis', 'A bottleneck classification requires observed decode kernel counters and timelines. Timing alone cannot distinguish HBM saturation, latency/MLP, cache/issue, compute, and scheduler overhead. Kernel-counter findings will be added with their sampling and replay scope.'),

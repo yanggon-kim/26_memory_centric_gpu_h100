@@ -29,6 +29,9 @@ def dump(path, value):
 
 def environment():
     env = os.environ.copy()
+    # Reuse the user's existing HF authentication without moving or logging it.
+    token_path=Path(env.get('HF_TOKEN_PATH',str(Path(env.get('HF_HOME',str(Path.home()/'.cache/huggingface')))/'token')))
+    if token_path.is_file():env['HF_TOKEN_PATH']=str(token_path)
     env.update(CUDA_HOME=str(CUDA), CUDA_INSTALL_PATH=str(CUDA), CUDA_DEVICE_ORDER='PCI_BUS_ID',
                CUDA_VISIBLE_DEVICES=UUID, HF_HOME=str(WORKSPACE/'cache/huggingface'),
                HF_HUB_CACHE=str(WORKSPACE/'models/hub'), HF_HUB_DISABLE_TELEMETRY='1',
@@ -64,14 +67,22 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row = {'label': label, 'command': [str(c) for c in command], 'started_utc':
            datetime.datetime.now(datetime.timezone.utc).isoformat(), 'timeout_s': limit,
            'log': str(log.relative_to(root))}
-    row['script_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
-                          for p in (PACKAGE/'scripts').glob('*.py')}
+    row['script_sha256']={}
+    snapshots=root/'environment/source_snapshots'
+    snapshots.mkdir(parents=True,exist_ok=True)
+    for source in (PACKAGE/'scripts').glob('*.py'):
+        content=source.read_bytes();digest=hashlib.sha256(content).hexdigest()
+        row['script_sha256'][source.name]=digest
+        destination=snapshots/(digest+'.py')
+        if not destination.exists():destination.write_bytes(content)
+    row['script_snapshot_root']='environment/source_snapshots'
     print('START', label, flush=True)
     with log.open('w') as stream:
         process = subprocess.Popen(row['command'], cwd=PACKAGE, env=env or environment(),
                                    stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
         row['pid'] = process.pid
-        dump(root/'results/current_process.json', row)
+        dump(root/'results/processes'/(label+'.json'), row)
+        if gpu:dump(root/'results/current_process.json', row)
         try:
             code = process.wait(timeout=limit)
             row.update(exit_code=code, status='complete' if code == 0 else 'failed')
@@ -87,7 +98,8 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row['log_sha256'] = hashlib.sha256(log.read_bytes()).hexdigest()
     with (root/'results/experiment_log.jsonl').open('a') as stream:
         stream.write(json.dumps(row)+'\n')
-    dump(root/'results/current_process.json', {'status': 'idle', 'last_attempt': label})
+    dump(root/'results/processes'/(label+'.json'), row)
+    if gpu:dump(root/'results/current_process.json', {'status': 'idle', 'last_attempt': label})
     print('END', label, row['status'], round(row['elapsed_s'], 2), flush=True)
     return row
 

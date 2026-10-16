@@ -1,0 +1,88 @@
+{
+  "classification": "measured-real-GPU-control",
+  "note": "GEMM operations and copy useful bytes are control ceilings; copy traffic is not measured HBM traffic and neither is an achieved decode roofline point.",
+  "gpu_uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+  "hardware": {
+    "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "compute_capability": [
+      9,
+      0
+    ],
+    "total_memory_bytes": 150156607488,
+    "driver": "615.71.09",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": "",
+    "readout_scope": "capture setup; clocks/power limits observed, not modified",
+    "sm_clock_mhz": 345,
+    "memory_clock_mhz": 3201,
+    "power_limit_w": 700.0,
+    "power_w": 77.78,
+    "temperature_c": 37,
+    "used_memory_bytes": 601620480
+  },
+  "versions": {
+    "torch": "2.11.0+cu130",
+    "cuda_runtime": "13.0"
+  },
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "CUDA_HOME": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3"
+  },
+  "warmups": 3,
+  "trials": 3,
+  "gemm": {
+    "dimension": 8192,
+    "dtype": "bfloat16",
+    "repetitions": 16,
+    "trials": [
+      {
+        "gpu_event_ms": 25.865663528442383,
+        "synchronized_wall_ms": 25.878092041239142,
+        "bf16_flops": 17592186044416,
+        "achieved_tflops": 680.136661681665
+      },
+      {
+        "gpu_event_ms": 25.858848571777344,
+        "synchronized_wall_ms": 25.86923399940133,
+        "bf16_flops": 17592186044416,
+        "achieved_tflops": 680.3159079409406
+      },
+      {
+        "gpu_event_ms": 26.043807983398438,
+        "synchronized_wall_ms": 26.054610963910818,
+        "bf16_flops": 17592186044416,
+        "achieved_tflops": 675.4844013452293
+      }
+    ],
+    "median_tflops": 680.136661681665
+  },
+  "copy": {
+    "buffer_bytes": 1073741824,
+    "repetitions": 64,
+    "trials": [
+      {
+        "gpu_event_ms": 32.188480377197266,
+        "synchronized_wall_ms": 32.20094693824649,
+        "useful_bytes": 137438953472,
+        "useful_gb_per_s": 4269.818017546536
+      },
+      {
+        "gpu_event_ms": 32.19443130493164,
+        "synchronized_wall_ms": 32.20590704586357,
+        "useful_bytes": 137438953472,
+        "useful_gb_per_s": 4269.0287699210485
+      },
+      {
+        "gpu_event_ms": 32.17951965332031,
+        "synchronized_wall_ms": 32.189037068746984,
+        "useful_bytes": 137438953472,
+        "useful_gb_per_s": 4271.006993040026
+      }
+    ],
+    "median_useful_gb_per_s": 4269.818017546536,
+    "dram_bytes_measured": "NA"
+  }
+}
