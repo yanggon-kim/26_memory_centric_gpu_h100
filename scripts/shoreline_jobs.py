@@ -338,9 +338,97 @@ def sm_allocations():
     disposition('J5','partial','publish actual SM allocations, all-kernel restriction proofs and service sweeps; CI/traffic/unsupported gates remain explicit')
 
 
+def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
+    label=f'{job}_{model}_eager_b{batch}_c{context}_{pressure}_events{int(events)}_acq{acq:02d}'
+    target=ROOT/'profiles'/(label+'.json')
+    if target.exists():return load(target)
+    base=campaign.make_config(ROOT,model,'eager',batch,context)
+    config=load(base);config['shoreline_control']={'pressure':pressure,'complete_layer_events':events,
+        'pressure_buffer_bytes':256*1024**2,'pressure_ticks':[4,5,6],
+        'allocation':'both treatments allocate after engine KV pool creation and before warmup'}
+    path=ROOT/'configs'/(label+'.json');dump(path,config)
+    out=ROOT/'runs'/label
+    cmd=python_command('shoreline_decode.py','--config',path,'--gpu-uuid',UUID,'--output',out,
+                        '--mode','timing','--pressure',pressure,'--ordinary-control')
+    if events:cmd+=['--layer-events']
+    outcome=attempt(label,cmd,timeout=600)
+    result={'id':label,'status':'failed','pressure':pressure,'layer_events':events,'model':model,
+            'batch':batch,'context':context,'acquisition_id':acq,
+            'timing_scope':'matched treatment includes full decode and direct intervention/callback/event costs'}
+    if (out/'run.json').exists():
+        d=load(out/'run.json')
+        if outcome['status']=='complete' and d['status']=='complete':
+            cq=campaign.clock_qualification(d,outcome['monitor']['source'])
+            result.update(status='complete' if cq['passed'] else 'rejected',clock_qualification=cq,
+                          output_ids=d['cases'][0]['trials'][0]['output_ids'],
+                          step_ms=[t['wall_ms']/t['decode_iterations'] for t in d['cases'][0]['trials']],
+                          run_source=str((out/'run.json').relative_to(ROOT)),run_sha256=digest(out/'run.json'))
+    dump(target,result);publish(f'{job} acquisition checkpoint: {label} {result["status"]}')
+    return result
+
+
+def retention():
+    campaign.update_job(ROOT,'J7','in_progress')
+    results=[]
+    for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
+        for acq in range(3):
+            # Predetermined alternating order; never choose by observed latency.
+            for pressure in (('normal','pressure') if acq%2==0 else ('pressure','normal')):
+                results.append(treatment_case('J7','bridge',b,c,acq,pressure))
+    dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,
+        'physical_traffic':'pending separately scoped normal/pressure counter captures',
+        'interpretation':'pressure is cache-history competition; no guaranteed flush or measured larger-SRAM benefit'})
+    disposition('J7','partial','matched retention-pressure timing and exact outputs saved; physical read/write attribution remains a separate gate')
+
+
+def layer_events():
+    campaign.update_job(ROOT,'J8','in_progress')
+    results=[]
+    for model,b,c in CONTRASTS:
+        for acq in range(3):
+            for events in (False,True):results.append(treatment_case('J8',model,b,c,acq,events=events))
+    dump(ROOT/'results/shoreline_layer_timing_qualification.json',{'cases':results,
+        'scope':'disjoint first/middle/last complete layers at ticks 4/5/6; ordinary/event controls retain direct costs',
+        'local_event_intrusion':'whole-model perturbation does not bound local layer intrusion',
+        'overlap':'service-equivalent bounds require independent physical demand/service and clock joins'})
+    disposition('J8','partial','complete-layer event and perturbation controls published; bounded decomposition awaits qualified service/traffic joins')
+
+
+def energy():
+    campaign.update_job(ROOT,'J10','in_progress')
+    results=[]
+    for model,b,c in CONTRASTS:
+        if reference(model,'graph',b,c) is None:continue
+        for acq in range(3):
+            for count in ([2048] if model=='bridge' else [1024]):
+                label=f'J10_{model}_graph_b{b}_c{c}_n{count}_acq{acq:02d}'
+                config=campaign.make_config(ROOT,model,'graph',b,c)
+                out=ROOT/'runs'/label
+                outcome=attempt(label,python_command('controlled_vllm_experiments.py','--config',config,
+                      '--gpu-uuid',UUID,'--mode','energy','--output',out,'--generated-tokens',str(count)),timeout=1200)
+                result={'id':label,'command_status':outcome['status'],'qualified_energy':False}
+                if (out/'run.json').exists():
+                    d=load(out/'run.json');trials=[t for case in d['cases'] for t in case['trials']]
+                    result['raw_sensors']=[t.get('telemetry') for t in trials]
+                    result['qualified_energy']=d['status']=='complete' and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
+                results.append(result);publish(f'J10 energy checkpoint: {label} qualified={result["qualified_energy"]}')
+        for acq in range(3):
+            label=f'J10_prefill_{model}_graph_b{b}_c{c}_acq{acq:02d}'
+            out=ROOT/'runs'/label;config=campaign.make_config(ROOT,model,'graph',b,c)
+            outcome=attempt(label,python_command('shoreline_prefill.py','--config',config,'--gpu-uuid',UUID,
+                        '--mode','timing','--output',out),timeout=600)
+            results.append({'id':label,'family':'prefill guardrail','status':outcome['status']})
+            publish(f'J10 prefill checkpoint: {label} {outcome["status"]}')
+    dump(ROOT/'results/shoreline_energy_qualification.json',{'cases':results,
+        'scope':'whole-board energy; raw counter and sampled power retained without rescaling or idle subtraction',
+        'absolute_component_calibration':None})
+    disposition('J10','partial' if any(not r.get('qualified_energy',r.get('status')=='complete') for r in results) else 'complete',
+                'publish qualified-or-NA board energy and separate prefill/first-token guardrails')
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5'],required=True)
+    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J7','J8','J10'],required=True)
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -349,4 +437,5 @@ if __name__=='__main__':
     verify_allocation()
     NCU=str(CUDA/'bin/ncu')
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native,'J5':sm_allocations}[args.job]()
+    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native,'J5':sm_allocations,
+     'J7':retention,'J8':layer_events,'J10':energy}[args.job]()
