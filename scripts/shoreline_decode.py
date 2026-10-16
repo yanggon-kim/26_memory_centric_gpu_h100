@@ -49,6 +49,11 @@ def main(a):
         calls=0;ledger=[];capturing=False
         range_start=torch.cuda.Event(enable_timing=True) if not profile_capture else None
         range_end=torch.cuda.Event(enable_timing=True) if not profile_capture else None
+        ordinary_windows={}
+        if not profile_capture and sampling.max_tokens==64:
+            ordinary_windows={(4,6):(range_start,range_end),
+                (31,33):(torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True)),
+                (60,62):(torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True))}
         selected_result=None
 
         def step():
@@ -57,6 +62,9 @@ def main(a):
             calls+=1
             for worker in shoreline_worker.ACTIVE_WORKERS:
                 worker._shoreline_tick=tick;worker._shoreline_prefix=prefix
+            if not profile_capture:
+                for (first,last),(begin,end) in ordinary_windows.items():
+                    if first!=4 and tick==first:begin.record()
             if tick==4:
                 if profile_capture:
                     dump(output_dir/'selected_interval.json',{'status':'running','pid':os.getpid(),
@@ -67,6 +75,9 @@ def main(a):
                 capturing=True
             if capturing:torch.cuda.nvtx.range_push('tick_'+str(tick))
             outputs=original_step()
+            if not profile_capture:
+                for (first,last),(begin,end) in ordinary_windows.items():
+                    if last!=6 and tick==last:end.record()
             if capturing:
                 torch.cuda.nvtx.range_pop()
                 ledger.append({'tick':tick,'query_tokens_per_request':1,
@@ -101,6 +112,10 @@ def main(a):
                 selected_result['scope_note']='event-marked three-step interval; no synchronous file publication inside timed decode'
                 dump(output_dir/'selected_interval.json',selected_result)
                 result['selected_three_step_event_interval']=selected_result
+                result['ordinary_decode_windows']=[{'ticks':list(range(first,last+1)),
+                    'gpu_event_ms':begin.elapsed_time(end),
+                    'scope':'separate unprofiled but event-instrumented complete-step window; all direct costs retained'}
+                    for (first,last),(begin,end) in ordinary_windows.items()]
             return result
         finally:
             engine.step=original_step
