@@ -17,6 +17,13 @@ def main(a):
     h200_worker_metadata.install_layer_ranges=shoreline_worker.install_ranges
     from software_decode_experiments import dump
     original=baseline.run_trial
+    original_cleanup=baseline.cleanup_owned_engine
+    def cleanup(engine,output):
+        if shoreline_worker.ACTIVE_WORKERS:
+            dump(output/'shoreline_worker_metadata.json',
+                 [shoreline_worker.read_metadata(worker) for worker in shoreline_worker.ACTIVE_WORKERS])
+        original_cleanup(engine,output)
+    baseline.cleanup_owned_engine=cleanup
 
     def trial(engine,prompts,sampling,prefix,torch,output_dir,sensor=None,
               profile_capture=False,observer=None,hardware_sampler=None):

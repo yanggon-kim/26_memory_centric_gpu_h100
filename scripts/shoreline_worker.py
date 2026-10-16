@@ -5,9 +5,11 @@ ACTIVE_WORKERS=[]
 
 
 def install_ranges(worker):
+    import inspect
     import torch
     worker._shoreline_tick=None
     worker._shoreline_events=[]
+    worker._shoreline_inputs=[]
     ACTIVE_WORKERS.append(worker)
     total=worker.model_runner.model.config.num_hidden_layers
     selected={0,total//2,total-1}
@@ -32,6 +34,16 @@ def install_ranges(worker):
             torch.cuda.nvtx.range_pop()
         module.register_forward_pre_hook(before)
         module.register_forward_hook(after)
+        if operation is None and layer in selected:
+            signature=inspect.signature(module.forward)
+            def inputs(module,args,kwargs,layer=layer,signature=signature):
+                if worker._shoreline_tick not in (4,5,6):return
+                from tensor_manifest import record
+                bound=signature.bind_partial(*args,**kwargs)
+                tensors=[record(key,v) for key,v in bound.arguments.items() if hasattr(v,'untyped_storage')]
+                worker._shoreline_inputs.append({'layer':layer,'tick':worker._shoreline_tick,'tensors':tensors,
+                    'value_versions':'input values are distinct across ticks even when allocation addresses recur'})
+            module.register_forward_pre_hook(inputs,with_kwargs=True)
         names.append(label)
     return {'ranges':names,'selected_complete_layers':sorted(selected),
             'scope':'original module forwards; graph replay bypasses Python hooks'}
@@ -43,6 +55,17 @@ def read_events(worker):
     assert all(e['closed'] for e in worker._shoreline_events)
     return [{'layer':e['layer'],'tick':e['tick'],'elapsed_ms':e['start'].elapsed_time(e['end'])}
             for e in worker._shoreline_events]
+
+
+def read_metadata(worker):
+    from tensor_manifest import parameters,vllm_kv
+    from h200_worker_metadata import snapshot_worker
+    return {'layer_inputs':getattr(worker,'_shoreline_inputs',[]),
+            'parameter_storage':parameters(worker.model_runner.model),
+            'kv_storage':vllm_kv(worker,'after_full_output_validation'),
+            'final_cpu_request_page_state':snapshot_worker(worker),
+            'scope':'CPU tensor layout/alias metadata; allocations do not establish accessed/HBM traffic',
+            'layer_events':read_events(worker)}
 
 
 def enable_events(worker):
