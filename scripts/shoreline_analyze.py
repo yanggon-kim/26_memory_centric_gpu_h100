@@ -88,9 +88,12 @@ def main(root):
         d=load(p)
         native.append({'source':str(p.relative_to(root)),'sha256':sha(p),'status':d['status'],
                        'allocation':d['allocation'],'cases':d['cases']})
+    from shoreline_service_analysis import analyze
+    independent=analyze(root)
     dump(root/'results/shoreline_service_calibration.json',{'native_acquisitions':native,
-        'physical_counter_calibration':None,'held_out_prediction':None,
-        'missing_reason':'scope/clock-qualified physical native service and decoder joins must pass before predictions'})
+        'independent_service_qualification':independent,
+        'physical_counter_calibration':'see per-pattern actual DRAM metrics and source/clock joins',
+        'decoder_prediction':None,'missing_reason':independent['missing_reason']})
     bounds=[];scenarios=[]
     # Missing physical service calibration remains missing, even when D/T can be computed.
     for case in baseline:
