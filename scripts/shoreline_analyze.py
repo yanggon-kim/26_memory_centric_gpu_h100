@@ -127,6 +127,8 @@ def main(root):
     (root/'analysis/shoreline_opportunity_report.md').write_text('\n'.join(lines)+'\n')
     from shoreline_measurements import emit
     flat_records=emit(root)
+    from shoreline_treatment_analysis import analyze as treatments
+    treatments(root)
     print(json.dumps({'baseline_conditions':len(baseline),'physical_traffic_captures':len(traffic),
                       'native_acquisitions':len(native),'conditional_scenarios':len(scenarios),'flat_measurements':flat_records}))
 
