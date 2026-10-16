@@ -57,6 +57,21 @@ def main():
         assert len(proof['conditions'])==60 and all(r['same_pass_overlap_ms']>0 for r in proof['conditions'])
         db.execute('DELETE FROM CUPTI_ACTIVITY_KIND_KERNEL WHERE rowid=1');db.commit();db.close()
         rejected(native_overlap,path)
+    from shoreline_accounting import useful
+    import struct
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory)
+        config={'model_type':'qwen2','num_attention_heads':2,'num_key_value_heads':1,'hidden_size':8,
+                'num_hidden_layers':2,'tie_word_embeddings':True}
+        (root/'config.json').write_text(json.dumps(config))
+        header={'model.embed_tokens.weight':{'shape':[16,8],'dtype':'BF16','data_offsets':[0,256]}}
+        payload=json.dumps(header).encode();(root/'model.safetensors').write_bytes(struct.pack('<Q',len(payload))+payload)
+        u=useful(root,1,8)
+        assert u['ticks'][0]['historical_kv_bytes']==2*2*1*11*1*4*2
+        assert u['U_window_unique']-u['U_window_initial_external_main']==2*2*1*2*1*4*2
+        assert u['ticks'][0]['required_weight_bytes']==256,'tied output storage counted once per tick'
+        config['sliding_window']=4;(root/'config.json').write_text(json.dumps(config))
+        rejected(useful,root,1,8)
     b=latency_bounds(10,2,8)
     assert b['O_interval']==[0,2]
     for e in b['coupled_endpoints']:

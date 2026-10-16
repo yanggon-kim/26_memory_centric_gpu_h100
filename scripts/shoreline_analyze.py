@@ -82,7 +82,12 @@ def main(root):
             'D_read':d['hbm_read_bytes'],'D_write':d['hbm_write_bytes'],'logical':u,
             'D_read_over_U_tick_sum':d['hbm_read_bytes']/u['U_tick_sum'] if u['U_tick_sum'] else None,
             'D_read_over_U_window_unique':d['hbm_read_bytes']/u['U_window_unique'] if u['U_window_unique'] else None})
-    dump(root/'results/shoreline_traffic_accounting.json',{'cases':traffic})
+    accounting_path=root/'results/shoreline_traffic_accounting.json'
+    historical=root/'results/shoreline_traffic_accounting_v1.json'
+    if accounting_path.exists() and not historical.exists() and load(accounting_path).get('reader_version',1)==1:
+        historical.write_bytes(accounting_path.read_bytes())
+    dump(accounting_path,{'reader_version':2,'cases':traffic,
+                         'correction':'window-unique historical KV is its union over all selected ticks; initial external-only demand is separately reported; physical counters unchanged'})
     native=[]
     for p in sorted((root/'runs').glob('J4_native_v4_acq*/run.json')):
         d=load(p)

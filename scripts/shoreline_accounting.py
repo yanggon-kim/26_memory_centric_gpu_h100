@@ -54,13 +54,17 @@ def useful(snapshot,batch,context,layer=None,input_bytes=None,input_tokens=None)
             'missing_reason':None if (entry is not None and lookup is not None) else
                'exact layer-entry input aliases or actual selected embedding rows unavailable; subtotal is not complete U'})
     initial_kv=layers*2*batch*(context+3)*hkv*d*2
+    accessed_unique_kv=layers*2*batch*(context+5)*hkv*d*2
     unique_entry=sum(input_bytes.values()) if input_bytes else 0
     if layer is None:unique_entry=0
     lookup_unique=0 if layer is not None or tied else (len(set(t for values in input_tokens.values() for t in values))*config['hidden_size']*2 if input_tokens else None)
     complete=all(r['U_main_bytes'] is not None for r in rows)
     return {'classification':'analytical-useful-input accounting','layer':layer,'batch':batch,'context':context,
             'ticks':rows,'U_tick_sum':sum(r['U_main_bytes'] for r in rows) if complete else None,
-            'U_window_unique':w+initial_kv+unique_entry+(lookup_unique or 0) if complete else None,
+            'U_window_unique':w+accessed_unique_kv+unique_entry+(lookup_unique or 0) if complete else None,
+            'U_window_initial_external_main':w+initial_kv+unique_entry+(lookup_unique or 0) if complete else None,
+            'window_KV_definition':'unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately',
+            'accounting_reader_version':2,
             'geometry':{'layers':layers,'query_heads':hq,'kv_heads':hkv,'head_dim':d},
             'tied_output_head_inferred_from_config_and_absent_independent_tensor':tied,
             'omitted':'RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately',

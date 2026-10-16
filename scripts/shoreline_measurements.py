@@ -7,6 +7,20 @@ def emit(root):
     rows=[]
     def source(path):return {'path':str(path.relative_to(root)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
     def hardware(h):return {k:v for k,v in (h or {}).items() if k in ('uuid','sm_clock_mhz','memory_clock_mhz','temperature_c','power_w')}
+    accounting=root/'results/shoreline_traffic_accounting.json'
+    if accounting.exists():
+        for entry in json.loads(accounting.read_text())['cases']:
+            logical=entry['logical']
+            values={k:logical.get(k) for k in ('U_tick_sum','U_window_unique','U_window_initial_external_main')}
+            values['useful_linear_flops']=sum(t['useful_linear_flops'] for t in logical['ticks'])
+            values['useful_attention_flops']=sum(t['useful_attention_flops'] for t in logical['ticks'])
+            for kind,v in values.items():
+                rows.append({'kind':kind,'value':v,'unit':'FLOP' if 'flops' in kind else 'byte',
+                    'classification':'analytical-logical-demand','case_id':entry['id'],'source':source(accounting),
+                    'geometry':logical['geometry'],'ticks':[t['tick'] for t in logical['ticks']],
+                    'missing_reason':None if v is not None else 'complete logical inputs or aliases unavailable',
+                    'issued_work':None,'issued_work_reason':'useful FLOPs are not dynamic issued tensor work',
+                    'scope':'logical input/value accounting; never substituted for physical traffic'})
     for path in sorted((root/'profiles').glob('*_reader_v3.json')):
         d=json.loads(path.read_text())
         if d.get('status')!='complete':continue
@@ -58,7 +72,7 @@ def emit(root):
                     rows.append({**common,'kind':'whole_board_energy_per_timed_token','unit':'J/token',
                         'value':value if isinstance(value,(int,float)) else None,
                         'missing_reason':None if isinstance(value,(int,float)) else s.get('qualification_reason',s.get('reason','sensor qualification failed')),
-                        'counter_j':s.get('counter_j'),'sampled_power_integral_j':s.get('sampled_power_integral_j'),
+                        'counter_j':s.get('counter_j'),'sampled_power_integral_j':s.get('integrated_power_j'),
                         'rescaled':False,'absolute_component_calibration':False})
         metadata=path.parent/'shoreline_worker_metadata.json'
         if metadata.exists():
