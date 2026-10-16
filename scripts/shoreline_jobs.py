@@ -557,10 +557,11 @@ def layer_events():
 
 def energy():
     campaign.update_job(ROOT,'J10','in_progress')
-    results=[]
+    results=[];energy_sensor_family_allowed=True
     for model,b,c in CONTRASTS:
         if reference(model,'graph',b,c) is None:continue
         for acq in range(3):
+            if not energy_sensor_family_allowed:continue
             for count in ([2048] if model=='bridge' else [1024]):
                 label=f'J10_{model}_graph_b{b}_c{c}_n{count}_acq{acq:02d}'
                 config=campaign.make_config(ROOT,model,'graph',b,c)
@@ -577,6 +578,11 @@ def energy():
                     result['clock_qualification']=campaign.clock_qualification(d,outcome['monitor']['source']) if outcome.get('monitor') and trials else {'passed':False}
                     result['qualified_energy']=outcome['status']=='complete' and d['status']=='complete' and prefix_match and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
                 results.append(result);publish(f'J10 energy checkpoint: {label} qualified={result["qualified_energy"]}')
+                if model=='bridge' and b==1 and acq==0 and not result['qualified_energy']:
+                    diag=attempt('J10_raw_sensor_diagnostic_v1',python_command('shoreline_energy_diagnostic.py',
+                        '--gpu-uuid',UUID,'--output',ROOT/'results/J10_raw_sensor_diagnostic_v1.json'),timeout=120)
+                    energy_sensor_family_allowed=False
+                    publish(f'J10 raw sensor diagnostic: {diag["status"]}; unqualified energy sweep stopped, prefill guardrails continue')
         for acq in range(3):
             label=f'J10_prefill_{model}_graph_b{b}_c{c}_acq{acq:02d}'
             out=ROOT/'runs'/label;config=campaign.make_config(ROOT,model,'graph',b,c)
