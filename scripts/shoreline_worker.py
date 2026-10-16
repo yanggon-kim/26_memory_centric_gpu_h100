@@ -28,6 +28,7 @@ def install_ranges(worker):
         label=f'operation_layer_{layer}_'+operation.replace('.','_') if operation else f'layer_{layer}'
         is_complete_layer=operation is None and layer in selected
         def before(module,arguments,label=label,layer=layer,whole=is_complete_layer):
+            if worker._shoreline_tick not in (4,5,6):return
             if whole and layer==0 and worker._shoreline_tick in (4,5,6) and pressure=='pressure':
                 import time
                 torch.sum(worker._shoreline_pressure,dim=0,out=worker._shoreline_pressure_output)
@@ -42,6 +43,7 @@ def install_ranges(worker):
                 worker._shoreline_events.append({'layer':layer,'tick':worker._shoreline_tick,
                     'trial':getattr(worker,'_shoreline_prefix',None),'start':start,'end':end,'closed':False})
         def after(module,arguments,output,label=label,layer=layer,whole=is_complete_layer):
+            if worker._shoreline_tick not in (4,5,6):return
             if whole and worker._shoreline_tick in (4,5,6) and getattr(worker,'_shoreline_enable_events',False):
                 entry=worker._shoreline_events[-1]
                 assert entry['layer']==layer and not entry['closed']
