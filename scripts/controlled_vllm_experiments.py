@@ -27,6 +27,7 @@ def validate(path):
         assert len(case['trials']) == data['config']['trials']
         assert len(case['prompt_ids']) == case['batch_size'] and all(len(row) == case['context_length'] for row in case['prompt_ids'])
         assert case['output_digests_identical'] == (len(set(case['warmup_output_sha256']) | {t['output_sha256'] for t in case['trials']}) == 1)
+        assert case['output_digests_identical'], 'warmup/trial greedy output IDs differ'
         assert case['prompt_sha256'] == digest(case['prompt_ids'])
         for trial in case['trials']:
             count, batch = case['generated_tokens'], case['batch_size']
@@ -60,7 +61,8 @@ if __name__ == '__main__' and '--validate' in __import__('sys').argv:
     raise SystemExit(0)
 
 
-def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None):
+def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
+              profile_capture=False, observer=None):
     assert not engine.has_unfinished_requests(), 'previous requests not drained'
     external = [f'{prefix}_{i}' for i in range(len(prompts))]
     internal = [engine.add_request(rid, {'prompt_token_ids': ids}, sampling)
@@ -80,6 +82,10 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None)
         dump(output_dir/'prefill_barrier_failure.json', {'requested_ids':external,'internal_ids':internal,'barrier':barrier})
     assert barrier['passed'], 'all-request one-token prefill barrier failed; see prefill_barrier_failure.json'
     torch.cuda.synchronize()
+    if observer:
+        observer(prefix,0)
+    if profile_capture:
+        torch.cuda.profiler.start()
     a,b=torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True)
     if sensor:
         sensor.start()
@@ -90,7 +96,11 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None)
     start=time.perf_counter()
     a.record()
     while engine.has_unfinished_requests():
+        if profile_capture:
+            torch.cuda.nvtx.range_push(f'decode_step_{iterations}')
         outputs=engine.step()
+        if profile_capture:
+            torch.cuda.nvtx.range_pop()
         iterations+=1
         assert outputs and iterations<=sampling.max_tokens-1, 'empty/extra decode scheduler tick'
         # Full cumulative outputs must contain exactly one additional token per tick.
@@ -99,10 +109,14 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None)
         for output in outputs:
             if output.finished:
                 completed[output.request_id]=output
+        if observer and engine.has_unfinished_requests():
+            observer(prefix,iterations)
     b.record()
     torch.cuda.synchronize()
     end=time.perf_counter()
     torch.cuda.nvtx.range_pop()
+    if profile_capture:
+        torch.cuda.profiler.stop()
     telemetry=None
     if sensor:
         after=sensor.read()
@@ -146,15 +160,21 @@ def main(args):
     assert config['warmup_trials']>=3 and config['trials']>=3
     os.environ.update(HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',VLLM_NO_USAGE_STATS='1',DO_NOT_TRACK='1',
                       VLLM_ENABLE_V1_MULTIPROCESSING='0')
+    if args.external_profiler:
+        os.environ['VLLM_ALLOW_INSECURE_SERIALIZATION']='1'
+    if args.collect_worker_metadata:
+        assert args.external_profiler, 'worker snapshots require a separate instrumented run'
+        os.environ['VLLM_ALLOW_INSECURE_SERIALIZATION']='1'
     import pynvml as nvml
     nvml.nvmlInit()
-    from gpu_target import select,verify_cuda
+    from gpu_target import select,verify_cuda,describe
     handle,physical=select(nvml,args.gpu_uuid)
     hardware={'uuid':args.gpu_uuid,'physical_nvml_index':physical,'driver':nvml.nvmlSystemGetDriverVersion(),
               'name':nvml.nvmlDeviceGetName(handle),'graphics_processes':[p.pid for p in nvml.nvmlDeviceGetGraphicsRunningProcesses(handle)],
               'preflight_scope':'startup_exclusivity_snapshot; no runtime exclusivity guarantee'}
     import torch
     verify_cuda(torch,args.gpu_uuid)
+    hardware.update(describe(nvml,handle,torch))
     import vllm
     from vllm.sampling_params import RequestOutputKind
     from vllm_identity import verify as verify_vllm
@@ -166,7 +186,8 @@ def main(args):
               'async_scheduling':False,'distributed_executor_backend':'uni','tensor_parallel_size':1,
               'max_model_len':8192,'max_num_seqs':8,'max_num_batched_tokens':32768,
               'gpu_memory_utilization':0.70,'enforce_eager':False}
-    allowed={'max_model_len','max_num_seqs','max_num_batched_tokens','gpu_memory_utilization'}
+    allowed={'max_model_len','max_num_seqs','max_num_batched_tokens','gpu_memory_utilization',
+             'enforce_eager','compilation_config'}
     assert set(config.get('engine',{}))<=allowed
     settings.update(config.get('engine',{}))
     data={'status':'running','classification':'measured-real-GPU','mode':args.mode,'config':config,
@@ -179,6 +200,8 @@ def main(args):
           'cuda_event_scope':'same-process CUDA-event elapsed decode interval including launch gaps; synchronized wall reported separately',
           'backend_policy':'default optimized vLLM graph/attention kernels; actual engine log preserved externally',
           'sampling_policy':{'temperature':0,'repetition_penalty':1.0,'ignore_eos':True,'detokenize':False,'output_kind':'CUMULATIVE'}}
+    data['script_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                           for p in Path(__file__).resolve().parent.glob('*.py')}
     dump(args.output/'run.json',data)
     assert not torch.distributed.is_initialized(), 'runner requires ownership of newly initialized process groups'
     llm=vllm.LLM(**settings)
@@ -188,6 +211,18 @@ def main(args):
     data['engine_client_class']=type(engine.engine_core).__name__
     data['executor_class']=type(engine.model_executor).__name__ if hasattr(engine,'model_executor') else 'unavailable'
     assert data['engine_client_class']=='InprocClient' and hasattr(engine,'model_executor'), 'engine not in process'
+    observer=None
+    if args.external_profiler and settings['enforce_eager']:
+        from h200_worker_metadata import install_layer_ranges
+        data['profile_layer_ranges']=llm.collective_rpc(install_layer_ranges)[0]
+    if args.collect_worker_metadata:
+        from h200_worker_metadata import describe_worker,snapshot_worker
+        dump(args.output/'worker_metadata.json',llm.collective_rpc(describe_worker)[0])
+        snapshots=[]
+        def observer(prefix,step):
+            snapshots.append({'trial':prefix,'decode_step':step,
+                              'worker':llm.collective_rpc(snapshot_worker)[0]})
+            dump(args.output/'request_kv_snapshots.json',snapshots)
     props=torch.cuda.get_device_properties(0)
     data['hardware'].update(sm_count=props.multi_processor_count,compute_capability=list(torch.cuda.get_device_capability()))
     count=args.generated_tokens or (1024 if args.mode=='energy' else 64)
@@ -227,18 +262,33 @@ def main(args):
             prompts=torch.randint(0,vocabulary,(batch,context),generator=generator).tolist()
         case={'batch_size':batch,'context_length':context,'generated_tokens':count,
               'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[],
-              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids'}
+              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids',
+              'hardware_before':describe(nvml,handle,torch),'warmup_output_ids':[]}
+        data['cases'].append(case)
+        dump(args.output/'run.json',data)
         warmup=[]
         for trial in range(config['warmup_trials']):
-            warmup.append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)['output_sha256'])
+            reference=run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)
+            warmup.append(reference['output_sha256'])
+            case['warmup_output_ids'].append(reference['output_ids'])
+            case['warmup_output_sha256']=list(warmup)
+            dump(args.output/'run.json',data)
+        if args.collect_worker_metadata:
+            from h200_worker_metadata import install_attention_observer,read_attention_observer
+            data['observed_attention_modules']=llm.collective_rpc(install_attention_observer)[0]
         for trial in range(config['trials']):
             sensor=Sensor(nvml,handle,0.02) if args.mode=='energy' else None
-            case['trials'].append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_measured{trial}',torch,args.output,sensor))
+            case['trials'].append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_measured{trial}',torch,args.output,sensor,
+                                           profile_capture=args.external_profiler and trial==0,observer=observer if trial==0 else None))
+            dump(args.output/'run.json',data)
+            if args.collect_worker_metadata and trial==0:
+                dump(args.output/'attention_observations.json',llm.collective_rpc(read_attention_observer)[0])
         case['warmup_output_sha256']=warmup
         case['output_digests_identical']=len(set(warmup)|{t['output_sha256'] for t in case['trials']})==1
         case['determinism_note']='identical output tokens' if case['output_digests_identical'] else 'output token differences preserved; numerical equivalence requires follow-up'
-        data['cases'].append(case)
+        case['hardware_after']=describe(nvml,handle,torch)
         dump(args.output/'run.json',data)
+        assert case['output_digests_identical'], 'same-shape greedy outputs differ across warmups/trials'
         print(f'controlled vLLM B={batch} C={context}: {[round(t["wall_ms"],2) for t in case["trials"]]} ms',flush=True)
     data['status']='complete'
     dump(args.output/'run.json',data)
@@ -255,6 +305,7 @@ if __name__=='__main__':
     p.add_argument('--gpu-uuid',required=True)
     p.add_argument('--mode',choices=['timing','energy'],required=True)
     p.add_argument('--external-profiler',action='store_true',help='exclude all process timings from ordinary baseline comparison')
+    p.add_argument('--collect-worker-metadata',action='store_true',help='instrumented-only request/page and backend snapshots')
     p.add_argument('--batch',type=int)
     p.add_argument('--context',type=int)
     p.add_argument('--generated-tokens',type=int,help='default64 timing,1024 energy; explicit longer energy window if needed')

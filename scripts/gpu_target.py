@@ -33,7 +33,9 @@ def verify_cuda(torch,uuid,require_h100=True):
     actual=str(props.uuid).removeprefix('GPU-')
     assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
     if require_h100:
-        assert 'H100' in props.name and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100 sm_90 allocation'
+        # Keep the existing keyword for callers; H200 is an explicitly supported
+        # Hopper allocation, with separately queried memory/cache properties.
+        assert any(name in props.name for name in ('H100','H200')) and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100/H200 sm_90 allocation'
     return props
 
 
@@ -64,7 +66,10 @@ def describe(nvml,handle,torch):
           'driver':nvml.nvmlSystemGetDriverVersion(),**query_l2(torch),'readout_scope':'capture setup; clocks/power limits observed, not modified'}
     for key,call in {'sm_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_SM),
                      'memory_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_MEM),
-                     'power_limit_w':lambda:nvml.nvmlDeviceGetPowerManagementLimit(handle)/1000}.items():
+                     'power_limit_w':lambda:nvml.nvmlDeviceGetPowerManagementLimit(handle)/1000,
+                     'power_w':lambda:nvml.nvmlDeviceGetPowerUsage(handle)/1000,
+                     'temperature_c':lambda:nvml.nvmlDeviceGetTemperature(handle,nvml.NVML_TEMPERATURE_GPU),
+                     'used_memory_bytes':lambda:nvml.nvmlDeviceGetMemoryInfo(handle).used}.items():
         try:data[key]=call()
         except nvml.NVMLError as error:data[key]='NA';data[key+'_unavailable_reason']=str(error)
     return data

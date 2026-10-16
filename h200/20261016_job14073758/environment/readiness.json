@@ -1,0 +1,198 @@
+{
+  "classification": "measured-environment-and-tool-smoke",
+  "timestamp_utc": "2026-10-16T12:34:41.398580+00:00",
+  "gpu_uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+  "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+  "checks": {
+    "inventory": {
+      "command": [
+        "python3",
+        "scripts/inventory.py",
+        "--gpu-uuid",
+        "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+        "--output",
+        "results/h200_20261016_job14073758_phase0/environment.json"
+      ],
+      "exit_code": 0,
+      "log": "inventory.log"
+    },
+    "allocation": {
+      "command": [
+        "scontrol",
+        "show",
+        "job",
+        "14073758",
+        "-o"
+      ],
+      "exit_code": 0,
+      "log": "allocation.log"
+    },
+    "scratch_quota": {
+      "command": [
+        "lfs",
+        "quota",
+        "-u",
+        "jkim4112",
+        "/storage/scratch1"
+      ],
+      "exit_code": 0,
+      "log": "scratch_quota.log"
+    },
+    "toolkit": {
+      "command": [
+        "nvcc",
+        "--version"
+      ],
+      "exit_code": 0,
+      "log": "toolkit.log"
+    },
+    "gpu_processes_before": {
+      "command": [
+        "nvidia-smi",
+        "--query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory",
+        "--format=csv"
+      ],
+      "exit_code": 0,
+      "log": "gpu_processes_before.log"
+    },
+    "compile_micro": {
+      "command": [
+        "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3/bin/nvcc",
+        "-arch=sm_90",
+        "-O2",
+        "scripts/nvbit_dynamic_micro.cu",
+        "-o",
+        "results/h200_20261016_job14073758_phase0/dynamic_micro"
+      ],
+      "exit_code": 0,
+      "log": "compile_micro.log"
+    },
+    "native_micro": {
+      "command": [
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/results/h200_20261016_job14073758_phase0/dynamic_micro",
+        "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+        "20261013"
+      ],
+      "exit_code": 0,
+      "log": "native_micro.log"
+    },
+    "ncu_micro": {
+      "command": [
+        "ncu",
+        "--clock-control",
+        "none",
+        "--cache-control",
+        "none",
+        "--replay-mode",
+        "kernel",
+        "--launch-count",
+        "1",
+        "--metrics",
+        "dram__bytes_read.sum,dram__bytes_write.sum",
+        "--csv",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/results/h200_20261016_job14073758_phase0/dynamic_micro",
+        "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+        "20261013"
+      ],
+      "exit_code": 0,
+      "log": "ncu_micro.log"
+    },
+    "nsys_micro": {
+      "command": [
+        "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-12.9.1-leytg2766xv4h3xx3vg4rkxawtyj5qvl/bin/nsys",
+        "profile",
+        "--sample=none",
+        "--cpuctxsw=none",
+        "--trace=cuda,nvtx",
+        "--output=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/results/h200_20261016_job14073758_phase0/micro_timeline",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/results/h200_20261016_job14073758_phase0/dynamic_micro",
+        "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+        "20261013"
+      ],
+      "exit_code": 0,
+      "log": "nsys_micro.log"
+    },
+    "gpu_processes_after": {
+      "command": [
+        "nvidia-smi",
+        "--query-compute-apps=gpu_uuid,pid,process_name,used_gpu_memory",
+        "--format=csv"
+      ],
+      "exit_code": 0,
+      "log": "gpu_processes_after.log"
+    },
+    "nsys_kernel_summary": {
+      "exit_code": 0,
+      "log": "nsys_kernel_summary.log",
+      "contains_dynamic_kernel": true
+    }
+  },
+  "scope": "fresh H200 Phase 0; no LLM baseline, energy qualification or simulator calibration",
+  "source_commit": "525942f262d6821051f80e89c73405abc7bf7891",
+  "script_adaptation_required": {
+    "source": "scripts/gpu_target.py:36",
+    "reason": "verify_cuda requires H100 name despite H200 also being sm_90; user authorized H200 scope"
+  },
+  "cpu_checks": {
+    "validate_package": "passed, 23 required files",
+    "test_cpu_contracts": "passed, 7 negative checks; no optional fixture or tensor tests"
+  },
+  "artifacts_sha256": {
+    "gpu_processes_before.log": "185facacd43b2b47152f1040bb6d81a57e8f284965fbf5ff6e6fbf0276871185",
+    "nsys_micro.log": "d86b6321335af4ffff570264dc8f901386710f3d8ad1a235ac99209dacd6a25a",
+    "gpu_processes_after.log": "185facacd43b2b47152f1040bb6d81a57e8f284965fbf5ff6e6fbf0276871185",
+    "toolkit.log": "fc7ce0c80d28ed925fd490dc4e3915ce620fcf115f965189688c6f049243aad5",
+    "ncu_micro.log": "aea405c516aea1b0297360b331ada00abde96bae2a370cba7301c84862dbd2e4",
+    "allocation.log": "140eb3d40281970f86d99053b030aa8d707b5c986ac275630d7c7c0eacde0571",
+    "inventory.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scratch_quota.log": "6694d8730d4ebdd23efe7e8e0b5486b42c1c5c7220a598b6025194be0b0615d6",
+    "nsys_kernel_summary.log": "e50d3bb66111bd7920a0e07bc47f1898eef27ea8cc194267e8fe5fb4a6556c5c",
+    "native_micro.log": "40ae1ba8f34be4a6cdbfaa14129e18569140c32130777e3db7207962ab9121fc",
+    "micro_timeline.sqlite": "dda24a2c78481fb7dc2fc0f1905eced7d24b4264f81add43221d0f4c153d1094",
+    "environment.json": "ba1ed0e26351e5b803f07a4d55677137416485575643fddde4865edf3d3b0371",
+    "energy_sensor_availability.json": "e9e3a41cf27141129898d122041694128993401700136baed6608fc2ea868568",
+    "dynamic_micro": "5cac7502a1e59cae34a055f65583a201338cc9011c1c6bb163baa87bed2b91b5",
+    "cuda_properties.json": "fe86a3cc59376130efe66bf4d5158c24b104e04147abc254a1f620817557592a",
+    "compile_micro.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "micro_timeline.nsys-rep": "bae48d5c47bcef50106af8c737b4954aa09b67e50250eda38a6853bcab654fab"
+  },
+  "energy_sensor_availability": {
+    "total_energy": {
+      "status": 0,
+      "value": 287059651753,
+      "unit": "mJ",
+      "qualification": "availability only; decode energy window/cadence/agreement not tested"
+    },
+    "board_power": {
+      "status": 0,
+      "value": 77848,
+      "unit": "mW",
+      "qualification": "availability only; decode energy window/cadence/agreement not tested"
+    }
+  },
+  "resource_limits": {
+    "allocated_cpu_count": 8,
+    "allocated_ram_gib": 196,
+    "scratch_remaining_file_quota_approx": 25800,
+    "scratch_byte_quota_tib": 15,
+    "scratch_used_gib_approx": 952,
+    "job_end_scheduler_local": "2026-10-16T15:33:58",
+    "qos": "embers",
+    "preemption_eligible_scheduler_local": "2026-10-16T08:33:57",
+    "note": "node-wide free RAM/disk are not allocation or user quotas"
+  },
+  "readiness_decision": "Can begin fresh H200 Phase 0-2; prerequisite runtime installation and explicit H200 guard adaptation remain. Full study completion requires model fit, tracing/replay/calibration, quota and scheduling gates.",
+  "network": {
+    "small_HEAD_requests": {
+      "pypi": 200,
+      "huggingface_pinned_bridge_config": 200,
+      "github_accelsim": 200
+    },
+    "bulk_downloads_and_private_archive_access": "not tested"
+  },
+  "existing_other_envs": "vllm env metadata: Python3.13, vLLM0.27.1, torch2.13.0, transformers5.15.0; differs from pinned research runtime, not validated",
+  "simulator": "not present in repository or inspected conventional external paths; build prerequisites found; no new NVBit capture or simulator build/replay performed",
+  "nsys_version": "2025.1.3",
+  "ncu_version": "2026.3.0",
+  "updated_utc": "2026-10-16T12:35:31.678192+00:00"
+}

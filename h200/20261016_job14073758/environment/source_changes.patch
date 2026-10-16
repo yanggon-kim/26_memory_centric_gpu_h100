@@ -1,0 +1,156 @@
+diff --git a/scripts/controlled_vllm_experiments.py b/scripts/controlled_vllm_experiments.py
+index e404db6..eb714be 100644
+--- a/scripts/controlled_vllm_experiments.py
++++ b/scripts/controlled_vllm_experiments.py
+@@ -27,6 +27,7 @@ def validate(path):
+         assert len(case['trials']) == data['config']['trials']
+         assert len(case['prompt_ids']) == case['batch_size'] and all(len(row) == case['context_length'] for row in case['prompt_ids'])
+         assert case['output_digests_identical'] == (len(set(case['warmup_output_sha256']) | {t['output_sha256'] for t in case['trials']}) == 1)
++        assert case['output_digests_identical'], 'warmup/trial greedy output IDs differ'
+         assert case['prompt_sha256'] == digest(case['prompt_ids'])
+         for trial in case['trials']:
+             count, batch = case['generated_tokens'], case['batch_size']
+@@ -148,13 +149,14 @@ def main(args):
+                       VLLM_ENABLE_V1_MULTIPROCESSING='0')
+     import pynvml as nvml
+     nvml.nvmlInit()
+-    from gpu_target import select,verify_cuda
++    from gpu_target import select,verify_cuda,describe
+     handle,physical=select(nvml,args.gpu_uuid)
+     hardware={'uuid':args.gpu_uuid,'physical_nvml_index':physical,'driver':nvml.nvmlSystemGetDriverVersion(),
+               'name':nvml.nvmlDeviceGetName(handle),'graphics_processes':[p.pid for p in nvml.nvmlDeviceGetGraphicsRunningProcesses(handle)],
+               'preflight_scope':'startup_exclusivity_snapshot; no runtime exclusivity guarantee'}
+     import torch
+     verify_cuda(torch,args.gpu_uuid)
++    hardware.update(describe(nvml,handle,torch))
+     import vllm
+     from vllm.sampling_params import RequestOutputKind
+     from vllm_identity import verify as verify_vllm
+@@ -166,7 +168,8 @@ def main(args):
+               'async_scheduling':False,'distributed_executor_backend':'uni','tensor_parallel_size':1,
+               'max_model_len':8192,'max_num_seqs':8,'max_num_batched_tokens':32768,
+               'gpu_memory_utilization':0.70,'enforce_eager':False}
+-    allowed={'max_model_len','max_num_seqs','max_num_batched_tokens','gpu_memory_utilization'}
++    allowed={'max_model_len','max_num_seqs','max_num_batched_tokens','gpu_memory_utilization',
++             'enforce_eager','compilation_config'}
+     assert set(config.get('engine',{}))<=allowed
+     settings.update(config.get('engine',{}))
+     data={'status':'running','classification':'measured-real-GPU','mode':args.mode,'config':config,
+@@ -227,18 +230,27 @@ def main(args):
+             prompts=torch.randint(0,vocabulary,(batch,context),generator=generator).tolist()
+         case={'batch_size':batch,'context_length':context,'generated_tokens':count,
+               'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[],
+-              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids'}
++              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids',
++              'hardware_before':describe(nvml,handle,torch),'warmup_output_ids':[]}
++        data['cases'].append(case)
++        dump(args.output/'run.json',data)
+         warmup=[]
+         for trial in range(config['warmup_trials']):
+-            warmup.append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)['output_sha256'])
++            reference=run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)
++            warmup.append(reference['output_sha256'])
++            case['warmup_output_ids'].append(reference['output_ids'])
++            case['warmup_output_sha256']=list(warmup)
++            dump(args.output/'run.json',data)
+         for trial in range(config['trials']):
+             sensor=Sensor(nvml,handle,0.02) if args.mode=='energy' else None
+             case['trials'].append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_measured{trial}',torch,args.output,sensor))
++            dump(args.output/'run.json',data)
+         case['warmup_output_sha256']=warmup
+         case['output_digests_identical']=len(set(warmup)|{t['output_sha256'] for t in case['trials']})==1
+         case['determinism_note']='identical output tokens' if case['output_digests_identical'] else 'output token differences preserved; numerical equivalence requires follow-up'
+-        data['cases'].append(case)
++        case['hardware_after']=describe(nvml,handle,torch)
+         dump(args.output/'run.json',data)
++        assert case['output_digests_identical'], 'same-shape greedy outputs differ across warmups/trials'
+         print(f'controlled vLLM B={batch} C={context}: {[round(t["wall_ms"],2) for t in case["trials"]]} ms',flush=True)
+     data['status']='complete'
+     dump(args.output/'run.json',data)
+diff --git a/scripts/gpu_target.py b/scripts/gpu_target.py
+index 65fbfe2..8b6759c 100644
+--- a/scripts/gpu_target.py
++++ b/scripts/gpu_target.py
+@@ -33,7 +33,9 @@ def verify_cuda(torch,uuid,require_h100=True):
+     actual=str(props.uuid).removeprefix('GPU-')
+     assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
+     if require_h100:
+-        assert 'H100' in props.name and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100 sm_90 allocation'
++        # Keep the existing keyword for callers; H200 is an explicitly supported
++        # Hopper allocation, with separately queried memory/cache properties.
++        assert any(name in props.name for name in ('H100','H200')) and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100/H200 sm_90 allocation'
+     return props
+ 
+ 
+@@ -64,7 +66,10 @@ def describe(nvml,handle,torch):
+           'driver':nvml.nvmlSystemGetDriverVersion(),**query_l2(torch),'readout_scope':'capture setup; clocks/power limits observed, not modified'}
+     for key,call in {'sm_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_SM),
+                      'memory_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_MEM),
+-                     'power_limit_w':lambda:nvml.nvmlDeviceGetPowerManagementLimit(handle)/1000}.items():
++                     'power_limit_w':lambda:nvml.nvmlDeviceGetPowerManagementLimit(handle)/1000,
++                     'power_w':lambda:nvml.nvmlDeviceGetPowerUsage(handle)/1000,
++                     'temperature_c':lambda:nvml.nvmlDeviceGetTemperature(handle,nvml.NVML_TEMPERATURE_GPU),
++                     'used_memory_bytes':lambda:nvml.nvmlDeviceGetMemoryInfo(handle).used}.items():
+         try:data[key]=call()
+         except nvml.NVMLError as error:data[key]='NA';data[key+'_unavailable_reason']=str(error)
+     return data
+diff --git a/scripts/test_cpu_contracts.py b/scripts/test_cpu_contracts.py
+index 7f97906..35484d1 100644
+--- a/scripts/test_cpu_contracts.py
++++ b/scripts/test_cpu_contracts.py
+@@ -34,12 +34,55 @@ def main(a):
+         assert not tensors['strided']['contiguous'] and tensors['strided']['storage_nbytes']==48 and tensors['strided']['logical_tensor_bytes']==16
+         checked.append('CPU tensor aliases/noncontiguous storage ranges; no GPU execution')
+     from reuse_analysis import ByteLRU,PolicyCache
++    from types import SimpleNamespace
++    from gpu_target import verify_cuda
++    fixture_uuid='GPU-00000000-0000-0000-0000-000000000001'
++    def fake_cuda(name='NVIDIA H200', capability=(9,0), uuid=fixture_uuid, count=1):
++        return SimpleNamespace(cuda=SimpleNamespace(device_count=lambda:count,
++            get_device_properties=lambda index:SimpleNamespace(name=name,uuid=uuid),
++            get_device_capability=lambda index=0:capability))
++    for name in ('NVIDIA H100 80GB HBM3','NVIDIA H200'):
++        verify_cuda(fake_cuda(name=name),fixture_uuid)
++    checked.append('accepted explicitly scoped H100/H200 sm_90 device identities')
++    for label,device in [('wrong CUDA UUID',fake_cuda(uuid='GPU-00000000-0000-0000-0000-000000000002')),
++                         ('unsupported GPU family',fake_cuda(name='NVIDIA A100')),
++                         ('wrong H200 capability',fake_cuda(capability=(8,0))),
++                         ('multiple visible GPUs',fake_cuda(count=2))]:
++        try:verify_cuda(device,fixture_uuid)
++        except AssertionError:checked.append('rejected '+label)
++        else:raise AssertionError('accepted '+label)
+     for label,constructor in [('negative cache',lambda:ByteLRU(-1)),('negative added storage',lambda:PolicyCache(1024,-1,'lru',set()))]:
+         try:constructor()
+         except ValueError:checked.append('rejected '+label)
+         else:raise AssertionError('negative capacity accepted')
+     with tempfile.TemporaryDirectory(dir=package/'results',prefix='cpu_contract_') as temporary:
+         temporary=Path(temporary)
++        from controlled_vllm_experiments import validate as validate_vllm
++        from software_decode_experiments import digest
++        contract=temporary/'vllm_contract'
++        contract.mkdir()
++        output_ids=[[1,2,3]]
++        output_hash=digest(output_ids)
++        case={'batch_size':1,'context_length':1,'generated_tokens':3,'prompt_ids':[[9]],
++              'prompt_sha256':digest([[9]]),'output_digests_identical':True,
++              'warmup_output_sha256':[output_hash]*3,'trials':[{
++              'prefill_barrier':{'passed':True,'request_count':1,'output_token_counts':{'unit_test_request':1},
++                                 'cache_hits':{'unit_test_request':0},'finished':{'unit_test_request':False}},
++              'decode_iterations':2,'timed_generated_tokens':2,'output_ids':output_ids,
++              'output_sha256':output_hash,'cuda_event_ms':1,'wall_ms':1,'tokens_per_s':2000} for _ in range(3)]}
++        data={'status':'complete','classification':'measured-real-GPU','engine_client_class':'InprocClient',
++              'engine_settings':{'async_scheduling':False,'distributed_executor_backend':'uni'},
++              'environment':{'VLLM_ENABLE_V1_MULTIPROCESSING':'0'},'config':{'warmup_trials':3,'trials':3},
++              'selected_cases':[{'batch_size':1,'context_length':1,'generated_tokens':3}],
++              'cases':[case],'mode':'timing'}
++        (contract/'run.json').write_text(json.dumps(data))
++        assert validate_vllm(contract)==1
++        case['warmup_output_sha256'][0]='unit_test_different_output'
++        case['output_digests_identical']=False
++        (contract/'run.json').write_text(json.dumps(data))
++        try:validate_vllm(contract)
++        except AssertionError:checked.append('rejected nondeterministic controlled vLLM outputs')
++        else:raise AssertionError('nondeterministic vLLM outputs accepted')
+         bad_config=temporary/'negative_cache_config.json'
+         bad_config.write_text(json.dumps({'l2_bytes':1024,'additional_sram_mib':[-0.5]}))
+         bad_run=subprocess.run([sys.executable,str(package/'scripts/reuse_analysis.py'),'--config',str(bad_config),'--output-dir',str(temporary/'invalid_reuse')],capture_output=True,text=True)

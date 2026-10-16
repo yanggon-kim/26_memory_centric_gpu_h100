@@ -34,12 +34,55 @@ def main(a):
         assert not tensors['strided']['contiguous'] and tensors['strided']['storage_nbytes']==48 and tensors['strided']['logical_tensor_bytes']==16
         checked.append('CPU tensor aliases/noncontiguous storage ranges; no GPU execution')
     from reuse_analysis import ByteLRU,PolicyCache
+    from types import SimpleNamespace
+    from gpu_target import verify_cuda
+    fixture_uuid='GPU-00000000-0000-0000-0000-000000000001'
+    def fake_cuda(name='NVIDIA H200', capability=(9,0), uuid=fixture_uuid, count=1):
+        return SimpleNamespace(cuda=SimpleNamespace(device_count=lambda:count,
+            get_device_properties=lambda index:SimpleNamespace(name=name,uuid=uuid),
+            get_device_capability=lambda index=0:capability))
+    for name in ('NVIDIA H100 80GB HBM3','NVIDIA H200'):
+        verify_cuda(fake_cuda(name=name),fixture_uuid)
+    checked.append('accepted explicitly scoped H100/H200 sm_90 device identities')
+    for label,device in [('wrong CUDA UUID',fake_cuda(uuid='GPU-00000000-0000-0000-0000-000000000002')),
+                         ('unsupported GPU family',fake_cuda(name='NVIDIA A100')),
+                         ('wrong H200 capability',fake_cuda(capability=(8,0))),
+                         ('multiple visible GPUs',fake_cuda(count=2))]:
+        try:verify_cuda(device,fixture_uuid)
+        except AssertionError:checked.append('rejected '+label)
+        else:raise AssertionError('accepted '+label)
     for label,constructor in [('negative cache',lambda:ByteLRU(-1)),('negative added storage',lambda:PolicyCache(1024,-1,'lru',set()))]:
         try:constructor()
         except ValueError:checked.append('rejected '+label)
         else:raise AssertionError('negative capacity accepted')
     with tempfile.TemporaryDirectory(dir=package/'results',prefix='cpu_contract_') as temporary:
         temporary=Path(temporary)
+        from controlled_vllm_experiments import validate as validate_vllm
+        from software_decode_experiments import digest
+        contract=temporary/'vllm_contract'
+        contract.mkdir()
+        output_ids=[[1,2,3]]
+        output_hash=digest(output_ids)
+        case={'batch_size':1,'context_length':1,'generated_tokens':3,'prompt_ids':[[9]],
+              'prompt_sha256':digest([[9]]),'output_digests_identical':True,
+              'warmup_output_sha256':[output_hash]*3,'trials':[{
+              'prefill_barrier':{'passed':True,'request_count':1,'output_token_counts':{'unit_test_request':1},
+                                 'cache_hits':{'unit_test_request':0},'finished':{'unit_test_request':False}},
+              'decode_iterations':2,'timed_generated_tokens':2,'output_ids':output_ids,
+              'output_sha256':output_hash,'cuda_event_ms':1,'wall_ms':1,'tokens_per_s':2000} for _ in range(3)]}
+        data={'status':'complete','classification':'measured-real-GPU','engine_client_class':'InprocClient',
+              'engine_settings':{'async_scheduling':False,'distributed_executor_backend':'uni'},
+              'environment':{'VLLM_ENABLE_V1_MULTIPROCESSING':'0'},'config':{'warmup_trials':3,'trials':3},
+              'selected_cases':[{'batch_size':1,'context_length':1,'generated_tokens':3}],
+              'cases':[case],'mode':'timing'}
+        (contract/'run.json').write_text(json.dumps(data))
+        assert validate_vllm(contract)==1
+        case['warmup_output_sha256'][0]='unit_test_different_output'
+        case['output_digests_identical']=False
+        (contract/'run.json').write_text(json.dumps(data))
+        try:validate_vllm(contract)
+        except AssertionError:checked.append('rejected nondeterministic controlled vLLM outputs')
+        else:raise AssertionError('nondeterministic vLLM outputs accepted')
         bad_config=temporary/'negative_cache_config.json'
         bad_config.write_text(json.dumps({'l2_bytes':1024,'additional_sram_mib':[-0.5]}))
         bad_run=subprocess.run([sys.executable,str(package/'scripts/reuse_analysis.py'),'--config',str(bad_config),'--output-dir',str(temporary/'invalid_reuse')],capture_output=True,text=True)
