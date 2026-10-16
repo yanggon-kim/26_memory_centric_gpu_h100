@@ -134,6 +134,21 @@ class ProcessMonitor:
                     if any(v is not True for v in ancestry.values()):
                         self.failure = 'foreign GPU process detected' if any(v is False for v in ancestry.values()) else 'GPU process ancestry unavailable'
                         row['rejection'] = self.failure
+                        chains={}
+                        for candidate,owned in ancestry.items():
+                            if owned is True:continue
+                            pid=int(candidate);seen=set();chain=[]
+                            while pid>1 and pid not in seen and len(chain)<16:
+                                seen.add(pid)
+                                try:
+                                    lines=Path(f'/proc/{pid}/status').read_text().splitlines()
+                                    item={k:next((s.split(':',1)[1].strip() for s in lines if s.startswith(k+':')),None)
+                                          for k in ('Name','Tgid','PPid','Uid')}
+                                    item['pid']=pid;chain.append(item)
+                                    tgid=int(item['Tgid']);pid=tgid if tgid!=pid else int(item['PPid'])
+                                except (OSError,ValueError):break
+                            chains[candidate]=chain
+                        row['rejected_process_ancestry']=chains
                     stream.write(json.dumps(row)+'\n')
                     stream.flush()
                 except Exception as error:
@@ -196,11 +211,17 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row['source_freeze_identity']=SESSION.get('frozen_source_identity')
     row['orchestration_source_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
         for p in (PACKAGE/'scripts').glob('shoreline_*.py') if p.name in ('shoreline_jobs.py','shoreline_campaign.py')}
+    for name in ('h200_session.py','checkpoint_h200.py','shoreline_queue.py'):
+        source=PACKAGE/'scripts'/name
+        if source.exists():row['orchestration_source_sha256'][name]=hashlib.sha256(source.read_bytes()).hexdigest()
     for source in (NUMERICAL_PACKAGE/'scripts').glob('*.py'):
         content=source.read_bytes();digest=hashlib.sha256(content).hexdigest()
         row['script_sha256'][source.name]=digest
         destination=snapshots/(digest+'.py')
         if not destination.exists():destination.write_bytes(content)
+    for name,digest in row['orchestration_source_sha256'].items():
+        target=snapshots/(digest+'.py')
+        if not target.exists():target.write_bytes((PACKAGE/'scripts'/name).read_bytes())
     row['script_snapshot_root']='environment/source_snapshots'
     print('START', label, flush=True)
     with log.open('w') as stream:
