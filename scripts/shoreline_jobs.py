@@ -84,18 +84,10 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     outcome=attempt(label,cmd,timeout=900)
     passed=[];problems=[]
     expected=load(ref)['cases'][0]
-    publications=sorted(base.glob('pass[0-9][0-9][0-9].json')) if base.exists() else []
-    for publication in publications:
-        p=load(publication);out=Path(p['output']);native=out/'run.json';interval=out/'selected_interval.json'
-        valid=p['status']=='complete' and native.exists() and interval.exists()
-        if valid:
-            d=load(native);i=load(interval)
-            valid=(d['status']=='complete' and i['status']=='complete' and i['ticks']==[4,5,6]
-                   and all(c['prompt_sha256']==expected['prompt_sha256'] and
-                           all(t['output_ids']==expected['trials'][0]['output_ids'] for t in c['trials'])
-                           for c in d['cases']))
-        passed.append({'publication':str(publication.relative_to(ROOT)),'sha256':digest(publication),'passed':valid})
-        if not valid:problems.append('incomplete or mismatched replay publication '+publication.name)
+    from shoreline_evidence import qualify_replays
+    replay_proof=qualify_replays(base,expected,ROOT)
+    passed=replay_proof['passes']
+    if not replay_proof['passed']:problems.append('incomplete/mismatched/unpublished application replay')
     if report.exists():
         attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--csv'],gpu=False,timeout=120)
     raw=ROOT/'logs'/(label+'_import.log')
@@ -108,7 +100,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     metrics_valid=(len(ids)==expected_ranges and all(v.get('dram__bytes_read.sum') is not None and
                     v['dram__bytes_read.sum']>0 and v.get('dram__bytes_write.sum') is not None and
                     v['dram__bytes_write.sum']>=0 for v in counts.values()))
-    valid=outcome['status']=='complete' and publications and all(p['passed'] for p in passed) and metrics_valid
+    valid=outcome['status']=='complete' and replay_proof['passed'] and metrics_valid
     result={'id':label,'status':'complete' if valid else 'failed','model':model,'engine':engine,
             'batch':batch,'context':context,'acquisition_id':acquisition,'scope':scope,'layer':layer,
             'classification':'measured-real-GPU-instrumented','ticks':[4,5,6],'token_denominator':3*batch,

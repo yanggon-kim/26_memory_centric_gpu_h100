@@ -11,6 +11,24 @@ def rejected(function,*args):
 
 
 def main():
+    import tempfile,json
+    from pathlib import Path
+    from shoreline_evidence import qualify_replays
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);base=root/'capture';base.mkdir()
+        out=base/'pass000';out.mkdir()
+        pub=base/'pass000.json'
+        expected={'prompt_sha256':'fixed','trials':[{'output_ids':[[1,2,3]]}]}
+        (out/'run.json').write_text(json.dumps({'status':'complete','cases':[{
+            'prompt_sha256':'fixed','trials':[{'output_ids':[[1,2,3]]}]*3}]}))
+        (out/'selected_interval.json').write_text(json.dumps({'status':'complete','ticks':[4,5,6]}))
+        pub.write_text(json.dumps({'status':'complete','output':str(out)}))
+        assert qualify_replays(base,expected,root)['passed']
+        pub.write_text(json.dumps({'status':'running','output':str(out)}))
+        assert not qualify_replays(base,expected,root)['passed']
+        pub.write_text(json.dumps({'status':'complete','output':str(out)}))
+        (base/'pass001').mkdir()
+        assert not qualify_replays(base,expected,root)['passed']
     b=latency_bounds(10,2,8)
     assert b['O_interval']==[0,2]
     for e in b['coupled_endpoints']:
