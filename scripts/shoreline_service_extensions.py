@@ -35,7 +35,8 @@ def main(a):
     from shoreline_green import create
     green,stream,proof=create(torch,a.fraction)
     data={'status':'running','classification':'measured-real-GPU','acquisition_id':a.acquisition,
-          'allocation':proof,'cases':[],'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+          'allocation':proof,'cases':[],'source_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
+              (Path(__file__),Path(__file__).with_name('shoreline_kernels.py'),Path(__file__).with_name('shoreline_green.py'))},
           'physical_bytes':None,'physical_bytes_reason':'separate actual HBM counters required'}
     def measured(name,launch,verify,meta):
         if a.profile_case and name!=a.profile_case:return
@@ -56,6 +57,7 @@ def main(a):
                 dump(a.output/'run.json',data)
             verify();row['correctness']='passed';dump(a.output/'run.json',data)
 
+    if a.timeline:torch.cuda.profiler.start()
     with torch.cuda.stream(stream):
         for mib in ([1,512] if a.pilot else [1,48,60,96,512]):
             n=mib*1024**2//4
@@ -93,11 +95,16 @@ def main(a):
                         md.record(ms);cd.record(cs);stream.wait_event(md);stream.wait_event(cd)
                     def verify(mode=mode):
                         if mode in ('memory','concurrent'):assert torch.equal(mx,my)
-                        if mode in ('compute','concurrent'):assert torch.isfinite(cy).all().item()
+                        if mode in ('compute','concurrent'):
+                            import numpy as np
+                            expected=np.float32(1)
+                            for _ in range(1024):expected=np.float32(float(expected)*float(np.float32(1.0001))+float(np.float32(0.0001)))
+                            assert np.allclose(cy.cpu().numpy(),expected,rtol=2e-6,atol=0),'arithmetic reference mismatch'
                     measured(f'overlap_ratio{ratio}_{mode}',launch,verify,{'family':'six-condition common native overlap family',
                         'ratio':ratio,'mode':mode,'memory_launches':4,'compute_launches':ratio,
                         'private_allocation':'identical in empty/standalone/concurrent treatments',
                         'proof':'actual same-pass NSYS overlap required; stream submission alone is not overlap proof'})
+    if a.timeline:torch.cuda.profiler.stop()
     data['status']='complete';dump(a.output/'run.json',data)
     print(json.dumps({'status':'complete','cases':len(data['cases']),'allocation':proof}))
 
@@ -107,6 +114,7 @@ if __name__=='__main__':
     p.add_argument('--gpu-uuid',required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--acquisition',type=int,required=True);p.add_argument('--fraction',type=float,default=1)
     p.add_argument('--pilot',action='store_true');p.add_argument('--profile-case')
+    p.add_argument('--timeline',action='store_true',help='separate instrumented same-pass overlap proof')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     try:main(a)
     except BaseException as e:

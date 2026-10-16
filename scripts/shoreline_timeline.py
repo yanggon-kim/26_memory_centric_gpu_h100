@@ -11,6 +11,28 @@ def union_ns(intervals):
     return total
 
 
+def native_overlap(path):
+    """Measure simultaneous kernel intervals in the same native NSYS pass."""
+    db=sqlite3.connect('file:'+str(Path(path).resolve())+'?mode=ro',uri=True)
+    db.row_factory=sqlite3.Row
+    ranges=db.execute("SELECT start,end,text FROM NVTX_EVENTS WHERE text LIKE 'overlap_ratio%_concurrent' AND end IS NOT NULL").fetchall()
+    rows=[]
+    for start,end,name in ranges:
+        kernels=[dict(r) for r in db.execute('SELECT k.start,k.end,s.value AS symbol FROM CUPTI_ACTIVITY_KIND_KERNEL k JOIN StringIds s ON k.demangledName=s.id WHERE k.start>=? AND k.end<=?',(start,end))]
+        memory=[(k['start'],k['end']) for k in kernels if 'transfer' in k['symbol']]
+        compute=[(k['start'],k['end']) for k in kernels if 'arithmetic' in k['symbol']]
+        assert len(memory)==4 and len(compute)==int(name.split('_')[1][5:]),'native operation identity/count mismatch'
+        intersections=[(max(a,c),min(b,d)) for a,b in memory for c,d in compute if max(a,c)<min(b,d)]
+        rows.append({'condition':name,'memory_kernel_count':len(memory),'compute_kernel_count':len(compute),
+                     'same_pass_overlap_ms':union_ns(intersections)/1e6,
+                     'memory_union_ms':union_ns(memory)/1e6,'compute_union_ms':union_ns(compute)/1e6,
+                     'scope':'separate instrumented timing, actual same-pass intersections; not ordinary latency'})
+    db.close()
+    assert {r['condition'] for r in rows}=={f'overlap_ratio{i}_concurrent' for i in (1,2,4,8,16,32)}
+    assert all(sum(r['condition']==f'overlap_ratio{i}_concurrent' for r in rows)==10 for i in (1,2,4,8,16,32))
+    return {'status':'complete','conditions':rows,'classification':'measured-real-GPU-instrumented'}
+
+
 def read(path,expected_green_id=None):
     db=sqlite3.connect('file:'+str(Path(path).resolve())+'?mode=ro',uri=True)
     db.row_factory=sqlite3.Row

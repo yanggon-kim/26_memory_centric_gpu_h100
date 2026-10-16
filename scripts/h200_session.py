@@ -116,8 +116,17 @@ class ProcessMonitor:
                 try:
                     pids = [p.pid for p in nv.nvmlDeviceGetComputeRunningProcesses(self.handle)]
                     ancestry = {str(p): self.owned(p) for p in pids}
+                    identities={}
+                    for p in pids:
+                        try:
+                            status=Path(f'/proc/{p}/status').read_text().splitlines()
+                            identities[str(p)]={k:next((s.split(':',1)[1].strip() for s in status if s.startswith(k+':')),None)
+                                                for k in ('Name','Tgid','PPid','Uid')}
+                            identities[str(p)].update(session_id=os.getsid(p),process_group=os.getpgid(p))
+                        except (OSError,ValueError):identities[str(p)]={'unavailable':True}
                     row = {'unix_ns': time.time_ns(), 'gpu_uuid': UUID, 'pids': pids,
                            'owned_ancestry': ancestry,
+                           'process_identities':identities,
                            'sm_clock_mhz': nv.nvmlDeviceGetClockInfo(self.handle, nv.NVML_CLOCK_SM),
                            'memory_clock_mhz': nv.nvmlDeviceGetClockInfo(self.handle, nv.NVML_CLOCK_MEM),
                            'temperature_c': nv.nvmlDeviceGetTemperature(self.handle, nv.NVML_TEMPERATURE_GPU),

@@ -218,8 +218,15 @@ def service_extensions():
 def timeline_case(model,engine,batch,context,acq):
     label=f'J1_timeline_{model}_{engine}_b{batch}_c{context}_acq{acq:02d}'
     if engine=='graph':label+='_graph_nodes_v2'
-    result_path=ROOT/'profiles'/(label+'.json')
-    if result_path.exists():return load(result_path)
+    original=label
+    for retry in range(3):
+        label=original+(f'_attempt{retry}' if retry else '')
+        result_path=ROOT/'profiles'/(label+'.json')
+        if not result_path.exists():break
+        previous=load(result_path)
+        producer=ROOT/'results/processes'/(label+'.json')
+        if previous['status']=='complete' or not producer.exists() or not load(producer).get('monitor',{}).get('failure') or retry==2:
+            return previous
     ref=reference(model,engine,batch,context)
     if ref is None:
         result={'status':'unavailable','id':label,'reason':'correct baseline unavailable'}
@@ -310,7 +317,9 @@ def kernel_profiles():
                 command+=[str(PYTHON),str(PROGRAMS/'shoreline_decode.py'),'--config',str(config),
                           '--gpu-uuid',UUID,'--mode','timing','--output',str(output),'--external-profiler']
                 outcome=attempt(label,command,timeout=600)
-                if report.exists():attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--csv'],gpu=False,timeout=120)
+                if report.exists():
+                    attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv'],gpu=False,timeout=120)
+                    attempt(label+'_sass',[NCU,'--import',str(report),'--page','source','--print-source','sass'],gpu=False,timeout=120)
                 raw=ROOT/'logs'/(label+'_import.log');rows=records(raw) if raw.exists() else []
                 symbols_observed=sorted(set(r.get('Kernel Name','') for r in rows))
                 exact=False
@@ -328,6 +337,9 @@ def kernel_profiles():
                     'scope':'one observed operation/layer launch at early decode; kernel replay changes cache state',
                     'dynamic_tensor_work':None,'dynamic_work_reason':'static tile names and occupancy do not establish dynamic issued work',
                     'full_step_totals':None,'full_step_reason':'bounded kernel samples are not whole-model traffic'}
+                sass=ROOT/'logs'/(label+'_sass.log')
+                result['loaded_source_export']={'path':str(sass.relative_to(ROOT)),'sha256':digest(sass),
+                    'semantic_validation':'pending instruction/async coverage review; text export alone is not dynamic work'} if sass.exists() else None
                 dump(target,result);results.append(result)
                 publish(f'J3 acquisition checkpoint: {label} {result["status"]}')
     dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results})

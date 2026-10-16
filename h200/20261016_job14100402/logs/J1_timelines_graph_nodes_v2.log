@@ -1,2 +1,18 @@
 START J1_timeline_bridge_graph_b1_c1024_acq00_graph_nodes_v2
 END J1_timeline_bridge_graph_b1_c1024_acq00_graph_nodes_v2 rejected 7.6
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   5787205..5620fae  HEAD -> codex/h200-phase01
+{"commit": "5620faeff395031ee599164d8c6b469c7fb05674", "remote_verified": true, "selected_files": 1027, "omitted_raw_file_count": 15}
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 613, in <module>
+    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 261, in timelines
+    for acq in range(3):outcomes.append(timeline_case(model,engine,b,c,acq))
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 233, in timeline_case
+    outcome=attempt(label,command,timeout=600)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 21, in attempt
+    return load(saved) if saved.exists() else run(ROOT,label,command,timeout,gpu=gpu)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/h200_session.py", line 171, in run
+    raise RuntimeError('selected GPU did not remain idle; no foreign process terminated')
+RuntimeError: selected GPU did not remain idle; no foreign process terminated
