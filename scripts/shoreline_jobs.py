@@ -11,6 +11,8 @@ import re
 import subprocess
 import sys
 
+SOURCE_AT_IMPORT=Path(__file__).read_bytes()
+
 
 def load(path):return json.loads(Path(path).read_text())
 def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -18,7 +20,13 @@ def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 def attempt(label,command,gpu=True,timeout=900):
     saved=ROOT/'results/processes'/(label+'.json')
-    return load(saved) if saved.exists() else run(ROOT,label,command,timeout,gpu=gpu)
+    outcome=load(saved) if saved.exists() else run(ROOT,label,command,timeout,gpu=gpu)
+    if outcome.get('status')=='pending':
+        dump(saved,outcome)
+        campaign.update_job(ROOT,args.job,'partial','allocation closeout cutoff reached; completed evidence retained and unstarted cases pending')
+        publish(f'{args.job}: closeout cutoff reached; stop expansion and preserve completed evidence')
+        raise SystemExit(77)
+    return outcome
 
 
 def publish(message):campaign.checkpoint(ROOT,message)

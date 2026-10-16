@@ -10,6 +10,8 @@ import subprocess
 import sys
 import time
 
+SOURCE_AT_IMPORT = Path(__file__).read_bytes()
+
 PACKAGE = Path(__file__).resolve().parents[1]
 DEFAULT_ROOT = PACKAGE / 'h200/20261016_job14073758'
 WORKSPACE = Path('/tmp/h200_research_jkim4112_job14073758')
@@ -211,6 +213,10 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
                                                   '--format=csv,noheader'], text=True).strip()
             if processes:
                 raise RuntimeError('GPU is not idle before '+label+': '+processes)
+    if gpu:allocation_proof=verify_allocation()
+    if time.time()>=LAUNCH_CUTOFF:
+        return {'label':label,'status':'pending','reason':'allocation closeout cutoff reached after startup guards'}
+    limit=min(timeout,max(1,int(LAUNCH_CUTOFF-time.time())))
     started = time.time()
     row = {'label': label, 'command': [str(c) for c in command], 'started_utc':
            datetime.datetime.now(datetime.timezone.utc).isoformat(), 'timeout_s': limit,
@@ -219,6 +225,16 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row['script_sha256']={}
     snapshots=root/'environment/source_snapshots'
     snapshots.mkdir(parents=True,exist_ok=True)
+    supervisor_sha=hashlib.sha256(SOURCE_AT_IMPORT).hexdigest()
+    row['actual_loaded_supervisor_source_sha256']=supervisor_sha
+    supervisor_snapshot=snapshots/(supervisor_sha+'.py')
+    if not supervisor_snapshot.exists():supervisor_snapshot.write_bytes(SOURCE_AT_IMPORT)
+    driver_source=getattr(sys.modules.get('__main__'),'SOURCE_AT_IMPORT',None)
+    if isinstance(driver_source,bytes):
+        driver_sha=hashlib.sha256(driver_source).hexdigest();row['actual_loaded_driver_source_sha256']=driver_sha
+        driver_snapshot=snapshots/(driver_sha+'.py')
+        if not driver_snapshot.exists():driver_snapshot.write_bytes(driver_source)
+    row['orchestration_source_scope']='workspace files at command start; loaded driver/supervisor hashes separately identify executed imports; numerical tree remains immutable'
     row['numerical_source_root']=str(NUMERICAL_PACKAGE)
     row['source_freeze_identity']=SESSION.get('frozen_source_identity')
     row['orchestration_source_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
@@ -235,6 +251,12 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
         target=snapshots/(digest+'.py')
         if not target.exists():target.write_bytes((PACKAGE/'scripts'/name).read_bytes())
     row['script_snapshot_root']='environment/source_snapshots'
+    if time.time()>=LAUNCH_CUTOFF:
+        row.update(status='pending',reason='allocation closeout cutoff reached before process spawn')
+        dump(root/'results/processes'/(label+'.json'),row)
+        return row
+    limit=min(timeout,max(1,int(LAUNCH_CUTOFF-time.time())))
+    row['timeout_s']=limit
     print('START', label, flush=True)
     with log.open('w') as stream:
         process = subprocess.Popen(row['command'], cwd=PACKAGE, env=env or environment(),

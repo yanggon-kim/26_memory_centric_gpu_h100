@@ -24,6 +24,22 @@ def main():
     thread=threading.Thread(target=thread_identity);thread.start();thread.join()
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
+    from unittest.mock import patch
+    import h200_session,subprocess,socket
+    host=socket.gethostname();session={'slurm_job_id':'unit-test-only','expected_hostname':host}
+    with patch.object(h200_session,'SESSION',session),patch.dict(os.environ,{'SLURM_JOB_ID':'unit-test-only'}),patch.object(h200_session.time,'sleep'):
+        with patch.object(h200_session.subprocess,'check_output',side_effect=[subprocess.TimeoutExpired('scontrol',15),'JobState=RUNNING NodeList='+host.split('.')[0]]) as query:
+            assert h200_session.verify_allocation()['state']=='RUNNING' and query.call_count==2
+        with patch.object(h200_session.subprocess,'check_output',return_value='JobState=COMPLETED NodeList='+host.split('.')[0]) as query:
+            rejected(h200_session.verify_allocation);assert query.call_count==1
+        with patch.object(h200_session.subprocess,'check_output',side_effect=subprocess.TimeoutExpired('scontrol',15)) as query:
+            try:h200_session.verify_allocation()
+            except RuntimeError:pass
+            else:raise AssertionError('unavailable allocation authorized launch')
+            assert query.call_count==3
+    with tempfile.TemporaryDirectory() as directory,patch.object(h200_session,'SESSION',{}),patch.object(h200_session,'LAUNCH_CUTOFF',0),patch.object(h200_session.subprocess,'Popen') as launch:
+        assert h200_session.run(Path(directory),'cutoff_fixture',['never-run'],gpu=False)['status']=='pending'
+        launch.assert_not_called()
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);base=root/'capture';base.mkdir()
         out=base/'pass000';out.mkdir()
