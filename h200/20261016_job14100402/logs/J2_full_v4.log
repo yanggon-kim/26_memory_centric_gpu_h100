@@ -18,3 +18,22 @@ START J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4
 END J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4 complete 82.88
 START J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4_import_base
 END J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4_import_base complete 0.54
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   3ae501b..88fd529  HEAD -> codex/h200-phase01
+{"commit": "88fd5292fb1019d8127044bf07813e161bcb0955", "remote_verified": true, "selected_files": 1070, "omitted_raw_file_count": 18}
+Requested safe case boundary reached; checkpoint published before scheduler stop.
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 613, in <module>
+    # Separate eager same-program semantic pilot before any complete-model capture.
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 150, in traffic
+    disposition('J2','partial','whole-range pilot failed; raw failure retained; further range expansion deferred pending diagnosis')
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 133, in counter_case
+    'hbm_write_bytes':sum(v['dram__bytes_write.sum'] for v in counts.values()) if metrics_valid else None,
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 24, in publish
+    def publish(message):campaign.checkpoint(ROOT,message)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 24, in checkpoint
+    subprocess.run([sys.executable, str(PACKAGE/'scripts/checkpoint_h200.py'),
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/h200_research_jkim4112_job14100402/runtime/bin/python', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/checkpoint_h200.py', '--root', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261016_job14100402', '--message', 'J2 acquisition checkpoint: J2_bridge_eager_b1_c1024_full_acq02_ticks_only_v4 complete', '--push']' returned non-zero exit status 75.
