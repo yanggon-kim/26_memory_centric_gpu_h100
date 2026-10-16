@@ -6,6 +6,7 @@ import json
 def emit(root):
     rows=[]
     def source(path):return {'path':str(path.relative_to(root)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()}
+    def hardware(h):return {k:v for k,v in (h or {}).items() if k in ('uuid','sm_clock_mhz','memory_clock_mhz','temperature_c','power_w')}
     for path in sorted((root/'profiles').glob('*_reader_v3.json')):
         d=json.loads(path.read_text())
         if d.get('status')!='complete':continue
@@ -36,7 +37,7 @@ def emit(root):
                     'warmup_trials':3,'timed_trials_in_acquisition':len(case['trials']),
                     'full_output_reference_qualification':'see matched profile/qualification record',
                     'clock_join_qualification':'separate pooled endpoint/interior monitor gate',
-                    'hardware_before':t.get('hardware_before'),'hardware_after':t.get('hardware_after'),
+                    'hardware_before':hardware(t.get('hardware_before')),'hardware_after':hardware(t.get('hardware_after')),
                     'actual_sm_count':d.get('allocation',{}).get('actual_sm_count'),
                     'scope':'independent native pattern' if native else 'full decoder treatment with intervention costs',
                     'repetitions':repetitions,'decode_ticks':t.get('decode_iterations'),
@@ -69,5 +70,9 @@ def emit(root):
                         'acquisition_name':name,'layer':e['layer'],'tick':e['tick'],'trial':e['trial'],'event_mode':e['mode'],
                         'scope':'one contiguous layer invocation; local event intrusion not automatically bounded by whole-model controls'})
     out=root/'results/shoreline_measurements.jsonl'
-    out.write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows))
+    out.write_text(''.join(json.dumps(r,sort_keys=True,separators=(',',':'))+'\n' for r in rows))
+    # Bounded shards remain reviewable in Git even after the full export grows.
+    shards=out.parent/'measurement_shards';shards.mkdir(exist_ok=True)
+    for index in range(0,len(rows),1000):
+        (shards/f'measurements_{index//1000:04d}.jsonl').write_text(''.join(json.dumps(r,sort_keys=True,separators=(',',':'))+'\n' for r in rows[index:index+1000]))
     return len(rows)
