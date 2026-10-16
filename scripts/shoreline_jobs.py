@@ -408,6 +408,10 @@ def kernel_profiles():
                     'semantic_validation':'pending instruction/async coverage review; text export alone is not dynamic work'} if sass.exists() else None
                 dump(target,result);results.append(result)
                 publish(f'J3 acquisition checkpoint: {label} {result["status"]}')
+                if model=='bridge' and batch==1 and context==1024 and role=='qkv' and acq==0 and result['status']!='complete':
+                    dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results,'pilot_passed':False})
+                    disposition('J3','partial','bounded operation-range producer/reader pilot failed; preserve failure and diagnose before expansion')
+                    return
     dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results})
     disposition('J3','partial','operation-verified kernel evidence published; dynamic SASS/work and unavailable paths remain explicit')
 
