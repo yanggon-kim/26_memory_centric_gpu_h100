@@ -1,26 +1,32 @@
 {
   "cases": [
     {
+      "source": "profiles/J1_timeline_bridge_graph_b8_c4096_acq00.json",
+      "status": "partial",
+      "native_outputs": true,
+      "reason": "graph-level capture omits internal graph-node kernels; old kernel-union shares excluded",
+      "replacement_protocol": "graph_nodes_v2, explicit --cuda-graph-trace=node"
+    },
+    {
       "source": "profiles/J1_timeline_bridge_graph_b1_c1024_acq00.json",
       "status": "partial",
       "native_outputs": true,
-      "reason": "Nsight graph-level tracing omitted internal graph-node kernels; kernel union covers outside-graph work only",
-      "replacement_protocol": "explicit --cuda-graph-trace=node, graph_nodes_v2 namespace"
+      "reason": "graph-level capture omits internal graph-node kernels; old kernel-union shares excluded",
+      "replacement_protocol": "graph_nodes_v2, explicit --cuda-graph-trace=node"
     },
     {
       "source": "profiles/J1_timeline_bridge_graph_b1_c1024_acq02.json",
       "status": "partial",
       "native_outputs": true,
-      "reason": "Nsight graph-level tracing omitted internal graph-node kernels; kernel union covers outside-graph work only",
-      "replacement_protocol": "explicit --cuda-graph-trace=node, graph_nodes_v2 namespace"
+      "reason": "graph-level capture omits internal graph-node kernels; old kernel-union shares excluded",
+      "replacement_protocol": "graph_nodes_v2, explicit --cuda-graph-trace=node"
     },
     {
       "source": "profiles/J1_timeline_bridge_graph_b1_c1024_acq01.json",
       "status": "partial",
       "native_outputs": true,
-      "reason": "Nsight graph-level tracing omitted internal graph-node kernels; kernel union covers outside-graph work only",
-      "replacement_protocol": "explicit --cuda-graph-trace=node, graph_nodes_v2 namespace"
+      "reason": "graph-level capture omits internal graph-node kernels; old kernel-union shares excluded",
+      "replacement_protocol": "graph_nodes_v2, explicit --cuda-graph-trace=node"
     }
-  ],
-  "scientific_gate": "old partial graph kernel shares excluded; native output proof retained"
+  ]
 }

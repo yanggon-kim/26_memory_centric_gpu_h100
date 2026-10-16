@@ -50,3 +50,22 @@ START J1_timeline_bridge_graph_b8_c4096_acq00
 END J1_timeline_bridge_graph_b8_c4096_acq00 complete 35.05
 START J1_timeline_bridge_graph_b8_c4096_acq00_export
 END J1_timeline_bridge_graph_b8_c4096_acq00_export complete 0.09
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   3088bdb..5787205  HEAD -> codex/h200-phase01
+{"commit": "57872059878d78631597c7413ebcd83786b7eaf7", "remote_verified": true, "selected_files": 1019, "omitted_raw_file_count": 15}
+Requested safe case boundary reached; checkpoint published before scheduler stop.
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 607, in <module>
+    for key in ('PACKAGE','PYTHON','UUID','dump','run','python_command'):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 258, in timelines
+    outcomes=[]
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 249, in timeline_case
+    if not exact or outcome['status']!='complete':result['status']='failed'
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 24, in publish
+    def publish(message):campaign.checkpoint(ROOT,message)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 24, in checkpoint
+    subprocess.run([sys.executable, str(PACKAGE/'scripts/checkpoint_h200.py'),
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/h200_research_jkim4112_job14100402/runtime/bin/python', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/checkpoint_h200.py', '--root', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261016_job14100402', '--message', 'J1 timeline checkpoint: J1_timeline_bridge_graph_b8_c4096_acq00 complete', '--push']' returned non-zero exit status 75.
