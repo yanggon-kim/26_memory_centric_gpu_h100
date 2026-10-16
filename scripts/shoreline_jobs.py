@@ -137,6 +137,17 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None,
     result['reader_version']=3
     result['profile_protocol']=protocol
     result['raw_capture_reused_without_recapture']=report.exists()
+    if fraction is not None:
+        allocation_proofs=[]
+        for publication in passed:
+            native_output=Path(load(ROOT/publication['publication'])['output'])
+            proof=native_output/'green_allocation.json'
+            if proof.exists():allocation_proofs.append(load(proof))
+        counts={p['allocation']['actual_sm_count'] for p in allocation_proofs}
+        result['replay_allocation_proofs']=allocation_proofs
+        result['actual_sm_count']=next(iter(counts)) if len(counts)==1 else None
+        result['actual_sm_case_id']=label+'_sm'+str(result['actual_sm_count'])
+        result['restriction_scope']='driver stream resources per replay; all-kernel NSYS proof is separate and counter replay can perturb execution'
     dump(result_path,result)
     publish(f'{job} acquisition checkpoint: {label} {result["status"]}')
     return result

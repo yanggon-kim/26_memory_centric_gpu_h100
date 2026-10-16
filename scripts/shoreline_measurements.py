@@ -32,6 +32,16 @@ def emit(root):
                 'replay_mode':d['replay_mode'],'cache_control':d['cache_control'],'clock_control':d['clock_control'],
                 'full_output_replay_qualified':True,'clock_join_qualified':False,
                 'clock_join_missing_reason':d['clock_join_qualification'],'source':source(path)})
+    for pattern in ('J3_*.json','J4_native_counter_*.json','J4_counter_*.json','J5_native_counter_*.json'):
+        for path in sorted((root/'profiles').glob(pattern)):
+            d=json.loads(path.read_text())
+            for metric in d.get('metrics',[]):
+                rows.append({'kind':'raw_hardware_metric','metric_name':metric['Metric Name'],
+                    'value_raw':metric.get('Metric Value'),'unit':metric.get('Metric Unit'),
+                    'classification':'measured-real-GPU-instrumented','capture_qualification':d['status'],
+                    'case_id':d.get('actual_sm_case_id',d['id']),'source':source(path),
+                    'scope':d['scope'],'metric_result_id':metric['ID'],
+                    'wall_time_partition':None,'wall_time_missing_reason':'raw activity, stall and occupancy ratios are not exact wall-time partitions'})
     prefixes=('J4_native_v4_acq','J4_service_extension_acq','J5_native_f','J5_bridge_',
               'J7_bridge_eager_','J8_','J10_','J6_graph_','J6_eager_')
     for path in sorted((root/'runs').glob('*/run.json')):
@@ -41,21 +51,25 @@ def emit(root):
         if d.get('status')!='complete':continue
         src=source(path)
         native='allocation' in d and name.startswith(('J4_','J5_native'))
+        allocation=d.get('allocation',{})
+        green=path.parent/'green_allocation.json'
+        if green.exists():allocation=json.loads(green.read_text())['allocation']
+        actual_sms=allocation.get('actual_sm_count',d.get('hardware',{}).get('sm_count'))
         for case in d['cases']:
             for trial_id,t in enumerate(case['trials']):
                 repetitions=t.get('repetitions',1)
-                event=t.get('gpu_event_ms',t.get('gpu_ms'))
+                event=t.get('gpu_event_ms',t.get('cuda_event_ms',t.get('gpu_ms')))
                 wall=t.get('wall_ms')
-                common={'case_id':case.get('id',name),'acquisition_name':name,'trial':trial_id,
+                common={'case_id':case.get('id',name)+(f'_sm{actual_sms}' if actual_sms else ''),'acquisition_name':name,'trial':trial_id,
                     'source':src,'classification':'measured-real-GPU',
                     'warmup_trials':3,'timed_trials_in_acquisition':len(case['trials']),
                     'full_output_reference_qualification':'see matched profile/qualification record',
                     'clock_join_qualification':'separate pooled endpoint/interior monitor gate',
                     'hardware_before':hardware(t.get('hardware_before')),'hardware_after':hardware(t.get('hardware_after')),
-                    'actual_sm_count':d.get('allocation',{}).get('actual_sm_count'),
+                    'actual_sm_count':actual_sms,
                     'scope':'independent native pattern' if native else 'full decoder treatment with intervention costs',
                     'repetitions':repetitions,'decode_ticks':t.get('decode_iterations'),
-                    'aggregate_generated_tokens':t.get('generated_tokens'),
+                    'aggregate_generated_tokens':t.get('generated_tokens',len(t.get('output_ids',[]))*case.get('generated_tokens',0) if 'output_ids' in t else None),
                     'timed_generated_tokens':t.get('timed_generated_tokens')}
                 for kind,v in [('gpu_event_elapsed',event),('synchronized_wall_elapsed',wall)]:
                     if v is not None:rows.append({**common,'kind':kind,'value':v,'unit':'ms'})
@@ -67,6 +81,10 @@ def emit(root):
                     rows.append({**common,'kind':'prefill_and_first_selected_token','unit':'ms',
                         'value':t['prefill_and_first_token']['gpu_event_ms'],
                         'scope':t['prefill_and_first_token']['scope']})
+                for window in t.get('ordinary_decode_windows',[]):
+                    rows.append({**common,'kind':'early_middle_late_decode_window','unit':'ms',
+                        'classification':'measured-real-GPU-event-instrumented','value':window['gpu_event_ms'],
+                        'ticks':window['ticks'],'scope':window['scope']})
                 if 'telemetry' in t:
                     s=t['telemetry'];value=s.get('joules_per_token')
                     rows.append({**common,'kind':'whole_board_energy_per_timed_token','unit':'J/token',
