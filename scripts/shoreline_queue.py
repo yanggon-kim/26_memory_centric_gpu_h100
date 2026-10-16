@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import json
+import hashlib
 from pathlib import Path
 import subprocess
 import sys
@@ -11,15 +12,26 @@ import time
 
 def main(a):
     root=a.session.resolve().parent;package=Path(__file__).resolve().parents[1]
-    state_path=root/'results/campaign_queue.json';state={'status':'running','steps':[]}
+    state_path=root/'results/campaign_queue.json'
+    queue_attempt=0
+    if state_path.exists():
+        for number in range(100):
+            previous=root/'results'/f'campaign_queue_attempt{number:02d}.json'
+            if not previous.exists():
+                previous.write_bytes(state_path.read_bytes());queue_attempt=number+1;break
+        else:raise RuntimeError('queue history limit reached')
+    content=Path(__file__).read_bytes();sha=hashlib.sha256(content).hexdigest()
+    snapshot=root/'environment/source_snapshots'/(sha+'.py');snapshot.write_bytes(content)
+    state={'status':'running','steps':[],'queue_source_sha256':sha,'start_at':a.start_at,'queue_attempt':queue_attempt}
     def save():state_path.write_text(json.dumps(state,indent=2)+'\n')
     def execute(name,command):
         session=json.loads(a.session.read_text())
         if time.time()>=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp():
             state['steps'].append({'id':name,'status':'pending','reason':'launch cutoff preserves closeout buffer'});save();return False
-        row={'id':name,'status':'running','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':command}
+        log_path=root/'logs'/f'queue_{name}_attempt{queue_attempt:02d}.log'
+        row={'id':name,'status':'running','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':command,'log':str(log_path.relative_to(root))}
         state['steps'].append(row);save();print('QUEUE_START',name,flush=True)
-        with (root/'logs'/('queue_'+name+'.log')).open('w') as log:
+        with log_path.open('x') as log:
             code=subprocess.call(command,stdout=log,stderr=subprocess.STDOUT,cwd=package)
         row.update(exit_code=code,status='command_complete' if code==0 else 'command_failed',
                    ended_utc=datetime.datetime.now(datetime.timezone.utc).isoformat());save()

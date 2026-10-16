@@ -182,9 +182,9 @@ def metadata_probes():
             expected=load(ref)['cases'][0]['trials'][0]['output_ids'] if ref else None
             exact=expected is not None and d['status']=='complete' and all(t['output_ids']==expected for case in d['cases'] for t in case['trials'])
             lengths=all(x['decode_tick'] in (4,5,6) and x['max_query_len']==1 and
-                x['seq_lens']==[c+x['decode_tick']]*b for x in observed)
+                x['seq_lens'][:b]==[c+x['decode_tick']]*b and x['query_start_loc'][:b+1]==list(range(b+1)) for x in observed)
             modules={x['module'] for x in observed}
-            complete=bool(observed) and all({x['decode_tick'] for x in observed if x['module']==module}=={4,5,6} for module in modules)
+            complete=len(modules)==3 and all({x['decode_tick'] for x in observed if x['module']==module}=={4,5,6} for module in modules)
             entry.update(status='complete' if exact and lengths and complete else 'failed',
                 exact_reference_ids=exact,actual_lengths_match=lengths,selected_tick_coverage=complete,
                 raw_metadata_source=str(path.relative_to(ROOT)),raw_metadata_sha256=digest(path),
