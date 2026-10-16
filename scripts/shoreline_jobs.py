@@ -347,6 +347,36 @@ def timelines():
                 'focused ordinary baselines and actual decode timelines published; rejected clocks/outputs remain excluded')
 
 
+def representative_text():
+    """Small functional saved-text pilot; no three-acquisition timing claim."""
+    results=[];expected=None
+    for engine in ('graph','eager'):
+        label=f'J1_text_bridge_{engine}_b1_c128_pilot_v1';base=campaign.make_config(ROOT,'bridge',engine,1,128,3)
+        config=load(base);config['workload_file']='configs/representative_text_v1.json'
+        config['shoreline_protocol']['scope']='functional saved-text pilot only; not a3x10 timing comparison'
+        config.pop('config_sha256',None);config['config_sha256']=hashlib.sha256(json.dumps(config,sort_keys=True).encode()).hexdigest()
+        path=ROOT/'configs'/(label+'.json');dump(path,config);out=ROOT/'runs'/label
+        row=attempt(label,python_command('controlled_vllm_experiments.py','--config',path,'--gpu-uuid',UUID,
+                    '--mode','timing','--output',out),timeout=300)
+        result={'id':label,'status':row['status'],'scope':'functional saved-text exact-output pilot; timing not a qualified comparison'}
+        if (out/'run.json').exists() and row['status']=='complete':
+            d=load(out/'run.json');ids=d['cases'][0]['trials'][0]['output_ids']
+            if expected is None:expected=ids
+            result['exact_mode_match']=all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
+            if not result['exact_mode_match']:result['status']='failed'
+            reference_path=ROOT/'results'/(label+'_hf_dynamic.json')
+            ref=attempt(label+'_hf_dynamic',python_command('hf_full_reference.py','--source-run',out/'run.json',
+                        '--gpu-uuid',UUID,'--output',reference_path),timeout=300)
+            result['dynamic_reference_status']=ref['status']
+            if ref['status']!='complete':result['status']='failed'
+            result['static_cache_scope']='existing synthetic model smoke gate retained; this additional reference is explicitly dynamic and correctness-only'
+        dump(ROOT/'profiles'/(label+'.json'),result);results.append(result)
+        publish(f'J1 saved-text functional checkpoint: {label} {result["status"]}')
+    dump(ROOT/'results/shoreline_representative_text_qualification.json',{'cases':results,
+        'scope':'saved original text, B1/C128, BF16, fixed64 outputs; three trials are a functional pilot and not quantitative acquisition replication'})
+    publish('J1: preserve saved-text functional controls and separate reference scope')
+
+
 def kernel_profiles():
     campaign.update_job(ROOT,'J3','in_progress')
     from profile_h200 import METRICS,BASE_METRICS
@@ -736,6 +766,7 @@ if __name__=='__main__':
     p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
     p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
     p.add_argument('--micro-only',action='store_true',help='J11 early bounded native tracer feasibility check')
+    p.add_argument('--representative-only',action='store_true',help='J1 bounded saved-text functional control')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -745,5 +776,5 @@ if __name__=='__main__':
     NCU=str(CUDA/'bin/ncu')
     PROGRAMS=Path(load(args.session).get('frozen_source_root',PACKAGE))/'scripts'
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
+    {'J1':representative_text if args.representative_only else timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
      'J6':competition,'J7':retention,'J8':layer_events,'J10':energy,'J11':traces}[args.job]()
