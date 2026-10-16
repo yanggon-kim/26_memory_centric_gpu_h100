@@ -775,6 +775,29 @@ def traces():
     if args.micro_only:
         publish('J11 checkpoint: early native trace/postprocess/replay pilot passed; model semantic pilot remains pending')
         return
+    calibration=[]
+    native_config=campaign.make_config(ROOT,'bridge','eager',1,128,10)
+    smoke=ROOT/'results/qualifications/bridge_graph_b1_c128_smoke.json'
+    expected=None
+    if smoke.exists():
+        smoke_data=load(ROOT/load(smoke)['output']/'run.json')
+        expected=[ids[:3] for ids in smoke_data['cases'][0]['trials'][0]['output_ids']]
+    for acq in range(3):
+        label=f'J11_eager_bridge_b1_c128_n3_acq{acq:02d}';out=ROOT/'runs'/label
+        target=ROOT/'profiles'/(label+'.json')
+        if target.exists():calibration.append(load(target));continue
+        outcome=attempt(label,python_command('controlled_vllm_experiments.py','--config',native_config,
+            '--gpu-uuid',UUID,'--mode','timing','--output',out,'--generated-tokens','3'),timeout=300)
+        entry={'id':label,'status':'failed','scope':'standalone no-injection complete-model eager control, B1/C128, 2 pure decode ticks; 3 warmups and10trials per process'}
+        if outcome['status']=='complete' and (out/'run.json').exists():
+            d=load(out/'run.json');exact=expected is not None and d['status']=='complete' and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
+            cq=campaign.clock_qualification(d,outcome['monitor']['source'])
+            entry.update(status='complete' if exact and cq['passed'] else 'rejected',exact_reference_prefix=exact,clock_qualification=cq,
+                source=str((out/'run.json').relative_to(ROOT)),source_sha256=digest(out/'run.json'))
+        dump(target,entry);calibration.append(entry);publish(f'J11 standalone eager calibration checkpoint: {label} {entry["status"]}')
+    dump(ROOT/'results/shoreline_trace_eager_calibration.json',{'cases':calibration,
+        'scope':'ordinary standalone same model/revision/geometry/greedy-prefix/engine settings; tracer and hook overhead are separate',
+        'simulation_timing_calibration':None,'missing_reason':'positive stock H100 parser counters do not calibrate H200 timing/power'})
     session=load(ROOT/'session.json');accel=Path(session['accel_root'])
     # Separate eager same-program semantic pilot before any complete-model capture.
     config=campaign.make_config(ROOT,'bridge','eager',1,128,3)

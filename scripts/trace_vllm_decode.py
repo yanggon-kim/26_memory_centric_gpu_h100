@@ -57,8 +57,12 @@ def main(a):
         prompts=torch.randint(0,vocabulary,(a.batch,a.context),generator=generator).tolist()
         params=vllm.SamplingParams(temperature=0,repetition_penalty=1.0,ignore_eos=True,detokenize=False,
                                   max_tokens=a.steps+1,seed=config['seed'],output_kind=RequestOutputKind.CUMULATIVE)
-        reference=None
-        for i in range(3):reference=run_trial(engine,prompts,params,f'untraced_reference_{i}',torch,a.output)
+        reference=None;references=[]
+        for i in range(3):
+            reference=run_trial(engine,prompts,params,f'untraced_reference_{i}',torch,a.output)
+            references.append(reference)
+        dump(a.output/'injection_disabled_references.json',{'classification':'measured-real-GPU-in-injected-process',
+            'scope':'instrumentation-disabled in injected process; distinct from standalone no-injection eager calibration','trials':references})
         request_ids=[f'capture_{i}' for i in range(a.batch)]
         for rid,prompt in zip(request_ids,prompts):engine.add_request(rid,{'prompt_token_ids':prompt},params)
         first=engine.step()

@@ -43,7 +43,8 @@ def emit(root):
                     'scope':d['scope'],'metric_result_id':metric['ID'],
                     'wall_time_partition':None,'wall_time_missing_reason':'raw activity, stall and occupancy ratios are not exact wall-time partitions'})
     prefixes=('J4_native_v4_acq','J4_service_extension_acq','J5_native_f','J5_bridge_',
-              'J7_bridge_eager_','J8_','J10_','J6_graph_','J6_eager_')
+              'J7_bridge_eager_','J8_','J10_','J6_graph_','J6_eager_','J11_eager_bridge_',
+              'bridge_graph_b','bridge_eager_b','mistral7b_graph_b','mistral7b_eager_b','qwen14b_graph_b','qwen14b_eager_b')
     for path in sorted((root/'runs').glob('*/run.json')):
         name=path.parent.name
         if not name.startswith(prefixes) or 'pilot' in name:continue
@@ -67,7 +68,7 @@ def emit(root):
                     'clock_join_qualification':'separate pooled endpoint/interior monitor gate',
                     'hardware_before':hardware(t.get('hardware_before')),'hardware_after':hardware(t.get('hardware_after')),
                     'actual_sm_count':actual_sms,
-                    'scope':'independent native pattern' if native else 'full decoder treatment with intervention costs',
+                    'scope':'independent native pattern' if native else 'complete-model decode after one-token barrier; see source for ordinary/intervention/trace-control variant',
                     'repetitions':repetitions,'decode_ticks':t.get('decode_iterations'),
                     'aggregate_generated_tokens':t.get('generated_tokens',len(t.get('output_ids',[]))*case.get('generated_tokens',0) if 'output_ids' in t else None),
                     'timed_generated_tokens':t.get('timed_generated_tokens')}
