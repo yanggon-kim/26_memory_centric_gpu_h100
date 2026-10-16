@@ -80,9 +80,14 @@ def value(raw):
 def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None,job='J2',pressure=None,fraction=None):
     protocol=load(ROOT/'session.json').get('profile_protocol','range_api_v2')
     treatment=(f'_{pressure}' if pressure else '')+(f'_f{int(fraction*100)}' if fraction is not None else '')
-    label=f'{job}_{model}_{engine}_b{batch}_c{context}_{scope}{treatment}_acq{acquisition:02d}_{protocol}'
-    result_path=ROOT/'profiles'/(label+'_reader_v3.json')
-    if result_path.exists():return load(result_path)
+    original=f'{job}_{model}_{engine}_b{batch}_c{context}_{scope}{treatment}_acq{acquisition:02d}'
+    for retry in range(3):
+        label=original+(f'_attempt{retry}' if retry else '')+'_'+protocol
+        result_path=ROOT/'profiles'/(label+'_reader_v3.json')
+        if not result_path.exists():break
+        previous=load(result_path);producer=ROOT/'results/processes'/(label+'.json')
+        failure=load(producer).get('monitor',{}).get('failure') if producer.exists() else None
+        if previous['status']=='complete' or failure not in ('foreign GPU process detected','GPU process ancestry unavailable') or retry==2:return previous
     ref=reference(model,engine,batch,context)
     if ref is None and job=='J7':
         candidate=ROOT/'runs'/f'J7_{model}_eager_b{batch}_c{context}_normal_eventsnone_acq00/run.json'
@@ -135,6 +140,8 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None,
             'clock_join_qualification':'pending pooled per-trial/replay endpoint checks; no timing join inferred',
             'ordinary_latency':None,'ordinary_latency_reason':'profile time is instrumented and not ordinary decode latency'}
     result['reader_version']=3
+    result['attempt_index']=retry
+    result['logical_acquisition_id']=original+'_'+protocol
     result['profile_protocol']=protocol
     result['raw_capture_reused_without_recapture']=report.exists()
     if fraction is not None:
