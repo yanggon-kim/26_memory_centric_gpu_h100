@@ -51,6 +51,8 @@ def environment():
                MAX_JOBS='4', TORCHINDUCTOR_COMPILE_THREADS='4', OMP_NUM_THREADS='4',
                DO_NOT_TRACK='1', VLLM_NO_USAGE_STATS='1', TOKENIZERS_PARALLELISM='false')
     env['PATH'] = str(PYTHON.parent) + os.pathsep + str(CUDA/'bin') + os.pathsep + env['PATH']
+    if SESSION.get('accel_root'):
+        env['H200_ACCEL_ROOT']=SESSION['accel_root']
     # Avoid the inherited CUDA 12.9 module overriding wheel CUDA 13 libraries.
     for key in ('LD_LIBRARY_PATH', 'LIBRARY_PATH', 'CPATH'):
         env[key] = os.pathsep.join(p for p in env.get(key, '').split(os.pathsep)
