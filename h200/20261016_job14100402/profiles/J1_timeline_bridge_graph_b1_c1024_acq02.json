@@ -1,0 +1,96 @@
+{
+  "id": "J1_timeline_bridge_graph_b1_c1024_acq02",
+  "status": "complete",
+  "model": "bridge",
+  "engine": "graph",
+  "batch": 1,
+  "context": 1024,
+  "acquisition_id": 2,
+  "classification": "measured-real-GPU-instrumented",
+  "ticks": [
+    4,
+    5,
+    6
+  ],
+  "windows": [
+    {
+      "start_ns": 32174604,
+      "end_ns": 42655425,
+      "instrumented_wall_ms": 10.480821,
+      "kernel_union_ms": 0.425408,
+      "kernel_sum_ms": 0.425408,
+      "launches": 51,
+      "green_context_ids": [
+        0
+      ],
+      "restriction_passed": null,
+      "graph_kernel_count": 0,
+      "kernels": {
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>>(int, T2, T3)": {
+          "launches": 3,
+          "duration_ns_sum": 2048
+        },
+        "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)4>>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)": {
+          "launches": 3,
+          "duration_ns_sum": 5792
+        },
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 4)]::operator ()() const::[lambda(long) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+          "launches": 9,
+          "duration_ns_sum": 11392
+        },
+        "void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUDAFunctor_add<long>, std::array<char *, (unsigned long)3>>(int, T2, T3)": {
+          "launches": 3,
+          "duration_ns_sum": 3392
+        },
+        "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctor_add<int>, std::array<char *, (unsigned long)3>>(int, T2, T3)": {
+          "launches": 3,
+          "duration_ns_sum": 3744
+        },
+        "void at::native::unrolled_elementwise_kernel<at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>, (int)4, TrivialOffsetCalculator<(int)0, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)": {
+          "launches": 6,
+          "duration_ns_sum": 4128
+        },
+        "_compute_slot_mapping_kernel": {
+          "launches": 3,
+          "duration_ns_sum": 7264
+        },
+        "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctorOnSelf_add<int>, std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)": {
+          "launches": 3,
+          "duration_ns_sum": 2528
+        },
+        "void flash::prepare_varlen_num_blocks_kernel<(int)1, (bool)0>(int, int, int, const int *, const int *, const int *, const int *, const int *, const int *, int, int, int, int, int, cutlass::FastDivmod, cutlass::FastDivmod, int *, int *, int *, int *, int *, bool, bool, bool, int)": {
+          "launches": 3,
+          "duration_ns_sum": 5248
+        },
+        "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)2>>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)": {
+          "launches": 3,
+          "duration_ns_sum": 9408
+        },
+        "nvjet_sm90_tst_384x8_64x4_2x1_v_bz_TNT": {
+          "launches": 3,
+          "duration_ns_sum": 331680
+        },
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+          "launches": 3,
+          "duration_ns_sum": 11360
+        },
+        "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)": {
+          "launches": 3,
+          "duration_ns_sum": 23776
+        },
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 3)]::operator ()() const::[lambda(int) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+          "launches": 3,
+          "duration_ns_sum": 3648
+        }
+      },
+      "scope": "instrumented ticks 4/5/6; kernel union excludes copies; wall remainder is not entirely host idle"
+    }
+  ],
+  "expected_green_context_id": null,
+  "restriction_passed": null,
+  "exact_reference_ids": true,
+  "database": {
+    "path": "profiles/J1_timeline_bridge_graph_b1_c1024_acq02.sqlite",
+    "sha256": "69366482133197de28768bf2748f928543cae700c51f53f7163d36e2b1e33e22"
+  }
+}
