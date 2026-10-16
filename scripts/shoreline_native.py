@@ -154,6 +154,50 @@ def main(a):
                 measure(identity,launch,verify,{'matrix_shape':[n,n,n],'dtype':'bfloat16',
                           'useful_flops_per_launch':2*n**3,'input':'ones; library receives runtime tensors',
                           'instruction_route':'library kernel; requires separate counter/SASS attribution'})
+            for width in (1024,8192):
+                identity=f'softmax_width{width}'
+                if a.profile_case and identity!=a.profile_case:continue
+                x=torch.zeros((132,width),device='cuda',dtype=torch.float32)
+                y=torch.empty_like(x)
+                def launch():return torch.softmax(x,dim=-1,out=y)
+                def verify():assert torch.equal(y,torch.full_like(y,1/width)),'softmax exact power-of-two reference mismatch'
+                measure(identity,launch,verify,{'rows':132,'width':width,'dtype':'float32',
+                    'operation':'framework softmax/reduction','useful_flops_per_launch':None,
+                    'flop_reason':'exp/reduction arithmetic is not represented by a dense FMA count'})
+
+            if a.fraction==1:
+                # Identical buffers, instruction paths and stream joins in standalone/concurrent controls.
+                n=96*1024**2//4;blocks=132;cn=blocks*256;steps=1024
+                mx=torch.ones(n,device='cuda');my=torch.empty_like(mx)
+                cx=torch.ones(cn,device='cuda');cy=torch.empty_like(cx)
+                mids=torch.empty(triton.cdiv(n,4096),device='cuda',dtype=torch.int32)
+                cids=torch.empty(blocks,device='cuda',dtype=torch.int32)
+                memory_stream=torch.cuda.Stream();compute_stream=torch.cuda.Stream()
+                start_gate=torch.cuda.Event();memory_done=torch.cuda.Event();compute_done=torch.cuda.Event()
+                for ratio in (1,4,16):
+                    for mode in ('memory','compute','concurrent'):
+                        identity=f'mixed_ratio{ratio}_{mode}'
+                        if a.profile_case and identity!=a.profile_case:continue
+                        def launch(mode=mode,ratio=ratio):
+                            start_gate.record(stream)
+                            memory_stream.wait_event(start_gate);compute_stream.wait_event(start_gate)
+                            if mode in ('memory','concurrent'):
+                                with torch.cuda.stream(memory_stream):
+                                    for _ in range(4):transfer[(triton.cdiv(n,4096),)](mx,my,mids,n,0,4096)
+                            if mode in ('compute','concurrent'):
+                                with torch.cuda.stream(compute_stream):
+                                    for _ in range(ratio):arithmetic[(blocks,)](cx,cy,cids,cn,steps,False,256)
+                            memory_done.record(memory_stream);compute_done.record(compute_stream)
+                            stream.wait_event(memory_done);stream.wait_event(compute_done)
+                        def verify(mode=mode):
+                            if mode in ('memory','concurrent'):assert torch.equal(mx,my)
+                            if mode in ('compute','concurrent'):assert torch.isfinite(cy).all().item()
+                        measure(identity,launch,verify,{'family':'paired standalone/concurrent',
+                            'mode':mode,'compute_launches':ratio if mode!='memory' else 0,
+                            'memory_launches':4 if mode!='compute' else 0,'memory_footprint_bytes':n*4,
+                            'memory_useful_read_write_bytes':n*8*4 if mode!='compute' else 0,
+                            'compute_useful_flops':cn*steps*2*ratio if mode!='memory' else 0,
+                            'concurrency_proof':'stream/event dependency graph; actual kernel overlap requires separate same-pass NSYS evidence'})
     data['status']='complete';data['hardware_after']=describe(nvml,handle,torch)
     dump(a.output/'run.json',data)
     print(json.dumps({'status':'complete','cases':len(data['cases']),'allocation':proof}))
