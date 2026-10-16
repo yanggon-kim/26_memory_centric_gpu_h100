@@ -123,6 +123,9 @@ def traffic():
     if first['status']!='complete':
         disposition('J2','partial','whole-range pilot failed; raw failure retained; further range expansion deferred pending diagnosis')
         return
+    if args.pilot:
+        publish('J2 checkpoint: bounded whole-decode producer/reader pilot passed; expansion pending')
+        return
     results=[first]
     for model,batch,context in CONTRASTS:
         for engine in ('eager','graph'):
@@ -429,6 +432,7 @@ def energy():
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J7','J8','J10'],required=True)
+    p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign

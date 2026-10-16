@@ -240,3 +240,20 @@ To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
 {"commit": "4537ae3f5e73bfba8f0ba254fae2595bbe4ba3a2", "remote_verified": true, "selected_files": 426, "omitted_raw_files": []}
 START mistral7b_eager_b1_c4096_acq00_attempt0
 END mistral7b_eager_b1_c4096_acq00_attempt0 complete 25.3
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   4537ae3..119104c  HEAD -> codex/h200-phase01
+{"commit": "119104ca6df9017e146ced95717d4a9bdd77570e", "remote_verified": true, "selected_files": 435, "omitted_raw_files": []}
+Requested safe case boundary reached; checkpoint published before scheduler stop.
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 241, in <module>
+    (inventory if args.job=='J0' else baselines)(DEFAULT_ROOT)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 197, in baselines
+    acquisition(root,model,engine,b,c,index)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 170, in acquisition
+    checkpoint(root, f'J1 acquisition checkpoint: {label} {result["status"]}')
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 24, in checkpoint
+    subprocess.run([sys.executable, str(PACKAGE/'scripts/checkpoint_h200.py'),
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/h200_research_jkim4112_job14100402/runtime/bin/python', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/checkpoint_h200.py', '--root', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261016_job14100402', '--message', 'J1 acquisition checkpoint: mistral7b_eager_b1_c4096_acq00_attempt0 rejected', '--push']' returned non-zero exit status 75.
