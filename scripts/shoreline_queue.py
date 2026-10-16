@@ -30,9 +30,9 @@ def main(a):
     python=str(Path(sys.executable));jobs=str(package/'scripts/shoreline_jobs.py')
     base=[python,jobs,'--session',str(a.session.resolve())]
     # J1 is completed/supervised by the caller before this queue begins.
-    steps=[('J11_semantic_pilot',base+['--job','J11']),('J2',base+['--job','J2']),('J3',base+['--job','J3']),
+    steps=[('J2',base+['--job','J2']),('J3',base+['--job','J3']),
            ('freeze_new_treatments',[python,str(package/'scripts/freeze_shoreline.py'),'--session',str(a.session.resolve()),'--activate']),
-           ('J4_extensions',base+['--job','J4','--extensions']),('J5',base+['--job','J5']),
+           ('J4_extensions',base+['--job','J4','--extensions']),('J11_semantic_pilot',base+['--job','J11']),('J5',base+['--job','J5']),
            ('J8',base+['--job','J8']),('J9_analysis',[python,str(package/'scripts/shoreline_analyze.py'),'--root',str(root)]),
            ('J7',base+['--job','J7']),('J10',base+['--job','J10']),('J6',base+['--job','J6']),
            ('J11_closeout',base+['--job','J11']),

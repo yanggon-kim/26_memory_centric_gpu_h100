@@ -24,6 +24,12 @@ def replay_evidence(log,expected):
 
 
 def export(root,accel,replay=False,timeout=300):
+    # The pinned upstream postprocessor unconditionally drops orphan TRYWAITs.
+    # Refuse such input before invoking it; raw waits must never be silently removed.
+    from trace_raw_audit import audit
+    preflight=audit(root)
+    dump(root/'raw_trace_audit.json',preflight)
+    assert preflight['status']=='passed_no_wait_pruning','raw TRYWAIT pruning would be required; preserve raw evidence without changing synchronization semantics'
     stats=[p for p in root.rglob('stats*') if p.is_file()]
     instruction_count=0
     traced_kernels=0
