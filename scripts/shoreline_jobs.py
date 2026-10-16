@@ -269,9 +269,78 @@ def kernel_profiles():
     disposition('J3','partial','operation-verified kernel evidence published; dynamic SASS/work and unavailable paths remain explicit')
 
 
+def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_id=0):
+    label=f'J5_{model}_{engine}_b{batch}_c{context}_f{int(fraction*100)}_acq{acq:02d}'+(f'_pilot{attempt_id}' if pilot else '')
+    target=ROOT/'profiles'/(label+'.json')
+    if target.exists():return load(target)
+    config=profile_config(model,engine,batch,context,label) if pilot else ROOT/'configs'/f'{model}_{engine}_b{batch}_c{context}_t10.json'
+    output=ROOT/'runs'/label
+    cmd=python_command('shoreline_restricted_decode.py','--config',config,'--gpu-uuid',UUID,
+                       '--output',output,'--fraction',str(fraction),'--mode','timing')
+    report=ROOT/'profiles'/label
+    if pilot:
+        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+             '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report)]+cmd+['--external-profiler']
+    outcome=attempt(label,cmd,timeout=600)
+    result={'id':label,'status':'failed','model':model,'batch':batch,'context':context,'engine':engine,
+            'requested_fraction':fraction,'acquisition_id':acq,'instrumented_pilot':pilot}
+    allocation=output/'green_allocation.json';native=output/'run.json'
+    if allocation.exists():result['allocation']=load(allocation)
+    ref=reference(model,engine,batch,context)
+    if native.exists() and ref:
+        d=load(native);expected=load(ref)['cases'][0]['trials'][0]['output_ids']
+        result['exact_reference_ids']=d['status']=='complete' and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
+    if pilot and report.with_suffix('.nsys-rep').exists():
+        db=report.with_suffix('.sqlite')
+        if not db.exists():attempt(label+'_export',[str(CUDA/'bin/nsys'),'export','--type','sqlite','--output',str(db),str(report.with_suffix('.nsys-rep'))],gpu=False,timeout=120)
+        if db.exists() and allocation.exists():
+            from shoreline_timeline import read
+            try:
+                result['timeline']=read(db,load(allocation)['allocation']['green_context_id'])
+                graph_proof=engine!='graph' or all(w['graph_kernel_count']>0 for w in result['timeline']['windows'])
+                result['status']='complete' if outcome['status']=='complete' and result.get('exact_reference_ids') and result['timeline']['restriction_passed'] and graph_proof else 'failed'
+            except Exception as error:result['reason']=str(error)
+    elif not pilot and outcome['status']=='complete' and result.get('exact_reference_ids'):
+        result['status']='complete'
+        result['clock_qualification']=campaign.clock_qualification(load(native),outcome['monitor']['source'])
+        if not result['clock_qualification']['passed']:result['status']='rejected'
+    dump(target,result);publish(f'J5 checkpoint: {label} {result["status"]}')
+    return result
+
+
+def sm_allocations():
+    campaign.update_job(ROOT,'J5','in_progress')
+    results=[];qualified={}
+    for b,c in [(1,1024),(8,4096)]:
+        for engine in ('graph','eager'):
+            for attempt_id in range(2):
+                result=restricted_case('bridge',engine,b,c,.75,0,True,attempt_id)
+                results.append(result)
+                if result['status']=='complete':break
+            qualified[(engine,b,c)]=result['status']=='complete'
+    for (engine,b,c),supported in qualified.items():
+        if not supported:continue
+        for fraction in (.75,.5,.3):
+            # Each resource setting needs its own all-kernel proof; a 75% pilot does not prove 30%.
+            proof=restricted_case('bridge',engine,b,c,fraction,0,True)
+            results.append(proof)
+            if proof['status']!='complete':continue
+            for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
+    for fraction in (.75,.5,.3):
+        for acq in range(3):
+            label=f'J5_native_f{int(fraction*100)}_acq{acq:02d}';out=ROOT/'runs'/label
+            outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
+                         '--acquisition',str(acq),'--fraction',str(fraction)),timeout=900)
+            results.append({'id':label,'status':outcome['status'],'family':'independent service under allocation'})
+            publish(f'J5 service checkpoint: {label} {outcome["status"]}')
+    dump(ROOT/'results/shoreline_sm_allocation_qualification.json',{'cases':results,
+         'interpretation':'software SM restriction removes arithmetic, issue, LSU and MLP together; it creates no SRAM or physical area'})
+    disposition('J5','partial','publish actual SM allocations, all-kernel restriction proofs and service sweeps; CI/traffic/unsupported gates remain explicit')
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4'],required=True)
+    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5'],required=True)
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -280,4 +349,4 @@ if __name__=='__main__':
     verify_allocation()
     NCU=str(CUDA/'bin/ncu')
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native}[args.job]()
+    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native,'J5':sm_allocations}[args.job]()
