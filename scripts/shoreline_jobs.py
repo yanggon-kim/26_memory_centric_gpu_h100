@@ -172,6 +172,47 @@ def native():
     disposition('J4','partial','native service acquisitions saved; physical-counter, mixed/reduction and clock joins retain separate qualification')
 
 
+def service_extensions():
+    campaign.update_job(ROOT,'J4','in_progress','read-only service and six-condition overlap calibration extension')
+    label='J4_service_extension_pilot_v1';out=ROOT/'runs'/label
+    result=attempt(label,python_command('shoreline_service_extensions.py','--gpu-uuid',UUID,
+                 '--output',out,'--acquisition','0','--pilot'),timeout=300)
+    publish(f'J4 extension pilot checkpoint: {result["status"]}')
+    if result['status']!='complete':
+        disposition('J4','partial','read-only native extension pilot failed; raw failure retained before expansion');return
+    outcomes=[]
+    for acq in range(3):
+        label=f'J4_service_extension_acq{acq:02d}';out=ROOT/'runs'/label
+        result=attempt(label,python_command('shoreline_service_extensions.py','--gpu-uuid',UUID,
+                     '--output',out,'--acquisition',str(acq)),timeout=600)
+        outcomes.append({'id':label,'status':result['status']})
+        publish(f'J4 extension acquisition checkpoint: {label} {result["status"]}')
+    physical=[]
+    for case in ('read_only_512mib','read_stride17_512mib'):
+        for acq in range(3):
+            label=f'J4_counter_{case}_acq{acq:02d}';out=ROOT/'runs'/label;report=ROOT/'profiles'/(label+'.ncu-rep')
+            command=[NCU,'--replay-mode','kernel','--profile-from-start','off','--clock-control','none',
+                     '--cache-control','none','--nvtx','--nvtx-include',case+'/',
+                     '--launch-count','1','--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum',
+                     '--export',str(report)]+python_command('shoreline_service_extensions.py','--gpu-uuid',UUID,
+                     '--output',out,'--acquisition',str(acq),'--profile-case',case)
+            result=attempt(label,command,timeout=300)
+            if report.exists():attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv'],gpu=False,timeout=120)
+            csv_path=ROOT/'logs'/(label+'_import.log');rows=records(csv_path) if csv_path.exists() else []
+            selected={r['Metric Name']:value(r.get('Metric Value')) for r in rows}
+            valid=result['status']=='complete' and len(set(r['ID'] for r in rows))==1 and selected.get('dram__bytes_read.sum',0)>0
+            entry={'id':label,'status':'complete' if valid else 'failed','case':case,'acquisition_id':acq,
+                   'metrics':rows,'physical_read_bytes':selected.get('dram__bytes_read.sum'),
+                   'physical_write_bytes':selected.get('dram__bytes_write.sum'),
+                   'classification':'measured-real-GPU-instrumented','scope':'single independent native service launch; kernel replay cache none',
+                   'ordinary_time':'separate native acquisition; profiled duration excluded'}
+            dump(ROOT/'profiles'/(label+'.json'),entry);physical.append(entry)
+            publish(f'J4 physical service checkpoint: {label} {entry["status"]}')
+    dump(ROOT/'results/shoreline_service_extension_qualification.json',{'ordinary':outcomes,'physical':physical,
+        'native_fit':'requires common-family held-out validation and clock joins; no transfer to decoder assumed'})
+    disposition('J4','partial','native service, read-only physical bytes and overlap-family acquisitions published; derived clock/fit gates tracked separately')
+
+
 def timeline_case(model,engine,batch,context,acq):
     label=f'J1_timeline_{model}_{engine}_b{batch}_c{context}_acq{acq:02d}'
     result_path=ROOT/'profiles'/(label+'.json')
@@ -449,6 +490,7 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J7','J8','J10'],required=True)
     p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
+    p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -458,5 +500,5 @@ if __name__=='__main__':
     NCU=str(CUDA/'bin/ncu')
     PROGRAMS=Path(load(args.session).get('frozen_source_root',PACKAGE))/'scripts'
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native,'J5':sm_allocations,
+    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
      'J7':retention,'J8':layer_events,'J10':energy}[args.job]()
