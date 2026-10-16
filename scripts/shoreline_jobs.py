@@ -524,7 +524,11 @@ def energy():
                 if (out/'run.json').exists():
                     d=load(out/'run.json');trials=[t for case in d['cases'] for t in case['trials']]
                     result['raw_sensors']=[t.get('telemetry') for t in trials]
-                    result['qualified_energy']=d['status']=='complete' and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
+                    expected=load(reference(model,'graph',b,c))['cases'][0]['trials'][0]['output_ids']
+                    prefix_match=all([row[:64] for row in t['output_ids']]==expected for t in trials)
+                    result['exact_64_token_baseline_prefix']=prefix_match
+                    result['clock_qualification']=campaign.clock_qualification(d,outcome['monitor']['source']) if outcome.get('monitor') and trials else {'passed':False}
+                    result['qualified_energy']=outcome['status']=='complete' and d['status']=='complete' and prefix_match and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
                 results.append(result);publish(f'J10 energy checkpoint: {label} qualified={result["qualified_energy"]}')
         for acq in range(3):
             label=f'J10_prefill_{model}_graph_b{b}_c{c}_acq{acq:02d}'
@@ -602,6 +606,9 @@ def traces():
     publish(f'J11 native micro checkpoint: {micro["status"]}')
     if micro['status']!='complete':
         disposition('J11','partial','native micro capture/postprocess/replay failed; preserve evidence before model tracing');return
+    if args.micro_only:
+        publish('J11 checkpoint: early native trace/postprocess/replay pilot passed; model semantic pilot remains pending')
+        return
     session=load(ROOT/'session.json');accel=Path(session['accel_root'])
     # Separate eager same-program semantic pilot before any complete-model capture.
     config=campaign.make_config(ROOT,'bridge','eager',1,128,3)
@@ -619,7 +626,10 @@ def traces():
         warnings += [line for line in text.splitlines() if any(word in line.lower() for word in
                       ('unsupported','dropping','not implemented','trywait','warning'))]
     pilot={'status':outcome['status'],'semantic_warnings':warnings,'full_model_gate':'pending'}
-    if outcome['status']=='complete' and not warnings:
+    semantic_review=output/'semantic_review.json'
+    review=load(semantic_review) if semantic_review.exists() else {'status':'pending','reason':'async descriptors, waits, masks and opcode mapping require actual trace/source review'}
+    pilot['semantic_review']=review
+    if outcome['status']=='complete' and not warnings and review.get('status')=='passed':
         import time,datetime
         cutoff=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp()
         if cutoff-time.time()>2400:
@@ -632,6 +642,7 @@ def traces():
             pilot['full_model_gate']=result['status'];publish(f'J11 full-model trace checkpoint: {result["status"]}')
         else:pilot['full_model_gate']='pending: insufficient capture/postprocess/transfer closeout budget'
     elif warnings:pilot['full_model_gate']='pending: native semantic warnings require investigation; no calibrated full-model claim'
+    elif review.get('status')!='passed':pilot['full_model_gate']='pending: explicit trace semantic coverage gate has not passed'
     dump(ROOT/'results/shoreline_trace_qualification.json',pilot)
     for archive in [ROOT/'environment/native_trace_micro_v1.tar',*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
         if not archive.exists():continue
@@ -648,6 +659,7 @@ if __name__=='__main__':
     p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J6','J7','J8','J10','J11'],required=True)
     p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
     p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
+    p.add_argument('--micro-only',action='store_true',help='J11 early bounded native tracer feasibility check')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
