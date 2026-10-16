@@ -4,6 +4,14 @@ import triton.language as tl
 
 
 @triton.jit
+def condition(A,B,N:tl.constexpr,STEPS:tl.constexpr,BLOCK:tl.constexpr):
+    i=tl.program_id(0)*BLOCK+tl.arange(0,BLOCK)
+    x=tl.load(A+i,i<N,other=0)
+    for _ in range(STEPS):x=tl.fma(x,0.9999999,0.0000001)
+    tl.store(B+i,x,i<N)
+
+
+@triton.jit
 def transfer(A, B, SMIDS, N:tl.constexpr, PATTERN:tl.constexpr, BLOCK:tl.constexpr):
     pid=tl.program_id(0)
     lane=tl.arange(0,BLOCK)

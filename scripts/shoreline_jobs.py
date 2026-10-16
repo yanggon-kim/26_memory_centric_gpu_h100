@@ -64,7 +64,7 @@ def value(raw):
 
 
 def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None):
-    label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}'
+    label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}_range_api_v2'
     result_path=ROOT/'profiles'/(label+'.json')
     if result_path.exists():return load(result_path)
     ref=reference(model,engine,batch,context)
@@ -75,7 +75,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     base=ROOT/'runs'/label
     report=ROOT/'profiles'/(label+'.ncu-rep')
     include='shoreline_ticks_4_6/' if scope=='full' else f'layer_{layer}/'
-    cmd=[NCU,'--replay-mode','app-range','--profile-from-start','off','--clock-control','none',
+    cmd=[NCU,'--replay-mode','app-range','--clock-control','none',
          '--cache-control','none','--nvtx','--nvtx-include',include,
          '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum',
          '--export',str(report),str(PYTHON),str(PACKAGE/'scripts/shoreline_replay.py'),
