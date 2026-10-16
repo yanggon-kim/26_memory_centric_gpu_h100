@@ -200,9 +200,78 @@ def timelines():
                 'focused ordinary baselines and actual decode timelines published; rejected clocks/outputs remain excluded')
 
 
+def kernel_profiles():
+    campaign.update_job(ROOT,'J3','in_progress')
+    from profile_h200 import METRICS,BASE_METRICS
+    extra=['smsp__issue_active.avg.pct_of_peak_sustained_active',
+           'smsp__warps_eligible.avg.per_cycle_active']
+    catalog_label='J3_metric_catalog'
+    attempt(catalog_label,[NCU,'--query-metrics','--query-metrics-mode','suffix','--metrics',
+                          ','.join(BASE_METRICS+['smsp__issue_active','smsp__warps_eligible'])],gpu=False,timeout=120)
+    catalog=(ROOT/'logs'/(catalog_label+'.log')).read_text()
+    requested=[m for m in METRICS+extra if re.search(r'^'+re.escape(m)+r'\s',catalog,re.M)]
+    unavailable=sorted(set(METRICS+extra)-set(requested))
+    results=[]
+    for model,batch,context in CONTRASTS:
+        ref=reference(model,'eager',batch,context)
+        if ref is None:
+            results.append({'model':model,'status':'unavailable','reason':'correct eager baseline unavailable'});continue
+        timeline=timeline_case(model,'eager',batch,context,0)
+        symbols=[s for w in timeline.get('windows',[]) for s in w['kernels']]
+        layers=load(ROOT/'configs'/f'{model}_smoke.json')['layout']['num_hidden_layers']
+        mid=layers//2
+        roles=[('qkv',f'operation_layer_{mid}_self_attn_qkv_proj/',None),
+               ('gate_up',f'operation_layer_{mid}_mlp_gate_up_proj/',None),
+               ('down',f'operation_layer_{mid}_mlp_down_proj/',None)]
+        for role,pattern in [('attention_forward',lambda s:('flash' in s.lower() or 'attn' in s.lower()) and 'combine' not in s.lower()),
+                             ('attention_combine',lambda s:'combine' in s.lower()),
+                             ('kv_update',lambda s:'reshape_and_cache' in s.lower())]:
+            symbol=next((s for s in symbols if pattern(s)),None)
+            if symbol:roles.append((role,f'layer_{mid}/',symbol))
+            else:results.append({'model':model,'role':role,'status':'unavailable','reason':'not observed in current decode timeline'})
+        for role,nvtx,symbol in roles:
+            for acq in range(3):
+                label=f'J3_{model}_b{batch}_c{context}_{role}_acq{acq:02d}'
+                target=ROOT/'profiles'/(label+'.json')
+                if target.exists():results.append(load(target));continue
+                config=profile_config(model,'eager',batch,context,label)
+                output=ROOT/'runs'/label;report=ROOT/'profiles'/(label+'.ncu-rep')
+                command=[NCU,'--replay-mode','kernel','--profile-from-start','off',
+                         '--clock-control','none','--cache-control','none','--nvtx','--nvtx-include',nvtx,
+                         '--launch-count','1','--kernel-name-base','demangled',
+                         '--section','LaunchStats','--section','Occupancy','--metrics',','.join(requested),
+                         '--export',str(report)]
+                if symbol:command+=['--kernel-name','regex:^'+re.escape(symbol)+'$']
+                command+=[str(PYTHON),str(PACKAGE/'scripts/shoreline_decode.py'),'--config',str(config),
+                          '--gpu-uuid',UUID,'--mode','timing','--output',str(output),'--external-profiler']
+                outcome=attempt(label,command,timeout=600)
+                if report.exists():attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--csv'],gpu=False,timeout=120)
+                raw=ROOT/'logs'/(label+'_import.log');rows=records(raw) if raw.exists() else []
+                symbols_observed=sorted(set(r.get('Kernel Name','') for r in rows))
+                exact=False
+                if (output/'run.json').exists():
+                    d=load(output/'run.json');expected=load(ref)['cases'][0]['trials'][0]['output_ids']
+                    exact=d['status']=='complete' and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
+                role_ok=(bool(symbols_observed) and (symbol is None or symbols_observed==[symbol]))
+                if role in ('qkv','gate_up','down'):
+                    role_ok=role_ok and not any('flash' in s.lower() or 'attn' in s.lower() or 'combine' in s.lower() for s in symbols_observed)
+                result={'id':label,'status':'complete' if outcome['status']=='complete' and rows and exact and role_ok else 'failed',
+                    'model':model,'batch':batch,'context':context,'engine':'eager','layer':mid,'role':role,
+                    'acquisition_id':acq,'actual_nvtx_filter':nvtx,'symbols':symbols_observed,'exact_reference_ids':exact,
+                    'metrics':rows,'unavailable_metrics':unavailable,'cache_control':'none','clock_control':'none',
+                    'replay_mode':'kernel','classification':'measured-real-GPU-instrumented',
+                    'scope':'one observed operation/layer launch at early decode; kernel replay changes cache state',
+                    'dynamic_tensor_work':None,'dynamic_work_reason':'static tile names and occupancy do not establish dynamic issued work',
+                    'full_step_totals':None,'full_step_reason':'bounded kernel samples are not whole-model traffic'}
+                dump(target,result);results.append(result)
+                publish(f'J3 acquisition checkpoint: {label} {result["status"]}')
+    dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results})
+    disposition('J3','partial','operation-verified kernel evidence published; dynamic SASS/work and unavailable paths remain explicit')
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J4'],required=True)
+    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4'],required=True)
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -211,4 +280,4 @@ if __name__=='__main__':
     verify_allocation()
     NCU=str(CUDA/'bin/ncu')
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':timelines,'J2':traffic,'J4':native}[args.job]()
+    {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native}[args.job]()
