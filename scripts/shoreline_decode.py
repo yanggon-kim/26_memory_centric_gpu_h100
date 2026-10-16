@@ -12,6 +12,9 @@ def main(a):
     os.environ.update(VLLM_ENABLE_V1_MULTIPROCESSING='0',VLLM_ALLOW_INSECURE_SERIALIZATION='1',
                       HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1')
     import controlled_vllm_experiments as baseline
+    import h200_worker_metadata
+    import shoreline_worker
+    h200_worker_metadata.install_layer_ranges=shoreline_worker.install_ranges
     from software_decode_experiments import dump
     original=baseline.run_trial
 
@@ -27,6 +30,7 @@ def main(a):
             nonlocal calls,capturing
             tick=calls
             calls+=1
+            for worker in shoreline_worker.ACTIVE_WORKERS:worker._shoreline_tick=tick
             if tick==4:
                 dump(output_dir/'selected_interval.json',{'status':'running','pid':os.getpid(),
                     'ticks':[4,5,6],'scope':'three complete engine.step calls; prefill/first selected token excluded'})
@@ -66,6 +70,7 @@ def main(a):
             return result
         finally:
             engine.step=original_step
+            for worker in shoreline_worker.ACTIVE_WORKERS:worker._shoreline_tick=None
             if capturing:
                 torch.cuda.profiler.stop()
 
