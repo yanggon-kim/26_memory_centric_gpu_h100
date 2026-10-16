@@ -36,8 +36,9 @@ def main():
         result=run(DEFAULT_ROOT,'native_trace_capture_'+tag,[binary,UUID,'20261013'],120,gpu=True,env=env)
         assert result['status']=='complete'
         summary=export(output,accel,True,120)
-        dump(DEFAULT_ROOT/'environment/native_trace_micro.json',summary)
-        destination=DEFAULT_ROOT/'environment/native_trace_micro.tar'
+        suffix='_'+tag if SESSION else ''
+        dump(DEFAULT_ROOT/'environment'/('native_trace_micro'+suffix+'.json'),summary)
+        destination=DEFAULT_ROOT/'environment'/('native_trace_micro'+suffix+'.tar')
         archive_verified(output,destination)
         # Independently verify the persistent archive before accepting transfer.
         proof=json.loads(destination.with_suffix('.tar.sha256.json').read_text())
@@ -45,7 +46,7 @@ def main():
         proof['persistent_readback_sha256']=proof['sha256']
         dump(destination.with_suffix('.tar.sha256.json'),proof)
     except Exception as error:
-        dump(DEFAULT_ROOT/'environment/native_trace_failure.json',{'type':type(error).__name__,
+        dump(DEFAULT_ROOT/'environment'/('native_trace_failure_'+tag+'.json'),{'type':type(error).__name__,
              'message':str(error),'retained_partial_path':str(output)})
         raise
 

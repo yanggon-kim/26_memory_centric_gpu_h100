@@ -66,7 +66,7 @@ def main(a):
                  'cache_hits':[o.num_cached_tokens for o in first]}
         assert set(barrier['ids'])==set(request_ids) and all(n==1 for n in barrier['counts']) and all(n==0 for n in barrier['cache_hits']),'prefill barrier failed'
         torch.cuda.synchronize()
-        lib=CDLL(os.environ['CUDA_INJECTION64_PATH'])
+        lib=CDLL(os.environ['CUDA_INJECTION64_PATH'],mode=os.RTLD_NOLOAD|os.RTLD_NOW)
         for name in ['enable_nvbit_instrumentation','disable_nvbit_instrumentation','set_nvbit_instrumentation_tag']:
             getattr(lib,name).restype=None
         lib.set_nvbit_instrumentation_tag.argtypes=[c_char_p]
