@@ -168,6 +168,35 @@ def traffic():
                 'ticks-4/5/6 physical traffic and exact replay qualification published; comparative clock/timing joins remain separate scientific gates')
 
 
+def metadata_probes():
+    outcomes=[]
+    for model,b,c in CONTRASTS:
+        label=f'J2_metadata_{model}_eager_b{b}_c{c}_ticks456_v1'
+        config=profile_config(model,'eager',b,c,label);out=ROOT/'runs'/label
+        row=attempt(label,python_command('shoreline_decode.py','--config',config,'--gpu-uuid',UUID,
+            '--output',out,'--mode','timing','--ordinary-control','--pressure','normal','--collect-worker-metadata'),timeout=600)
+        entry={'id':label,'status':'failed','scope':'functional-only metadata with GPU copies; timing/physical bytes excluded'}
+        path=out/'attention_observations.json'
+        if row['status']=='complete' and path.exists():
+            observed=load(path);ref=reference(model,'eager',b,c);d=load(out/'run.json')
+            expected=load(ref)['cases'][0]['trials'][0]['output_ids'] if ref else None
+            exact=expected is not None and d['status']=='complete' and all(t['output_ids']==expected for case in d['cases'] for t in case['trials'])
+            lengths=all(x['decode_tick'] in (4,5,6) and x['max_query_len']==1 and
+                x['seq_lens']==[c+x['decode_tick']]*b for x in observed)
+            modules={x['module'] for x in observed}
+            complete=bool(observed) and all({x['decode_tick'] for x in observed if x['module']==module}=={4,5,6} for module in modules)
+            entry.update(status='complete' if exact and lengths and complete else 'failed',
+                exact_reference_ids=exact,actual_lengths_match=lengths,selected_tick_coverage=complete,
+                raw_metadata_source=str(path.relative_to(ROOT)),raw_metadata_sha256=digest(path),
+                source_config_sha256=digest(config),actual_request_pages='request_kv_snapshots.json in same run',
+                graph_transfer='not directly observed; this is an explicitly separate eager metadata control')
+        dump(ROOT/'profiles'/(label+'.json'),entry);outcomes.append(entry)
+        publish(f'J2 functional metadata checkpoint: {label} {entry["status"]}')
+        if len(outcomes)==1 and entry['status']!='complete':break
+    dump(ROOT/'results/shoreline_attention_metadata_qualification.json',{'cases':outcomes,
+        'interpretation':'observed query/sequence/scheduler/page metadata; no dynamic split/productive-worker inference from grid or heuristic bound'})
+
+
 def native():
     campaign.update_job(ROOT,'J4','in_progress')
     label='J4_native_pilot_indices_v4'
@@ -769,6 +798,7 @@ if __name__=='__main__':
     p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
     p.add_argument('--micro-only',action='store_true',help='J11 early bounded native tracer feasibility check')
     p.add_argument('--representative-only',action='store_true',help='J1 bounded saved-text functional control')
+    p.add_argument('--metadata-only',action='store_true',help='J2 separate functional executed-length/page metadata controls')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -778,5 +808,5 @@ if __name__=='__main__':
     NCU=str(CUDA/'bin/ncu')
     PROGRAMS=Path(load(args.session).get('frozen_source_root',PACKAGE))/'scripts'
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    {'J1':representative_text if args.representative_only else timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
+    {'J1':representative_text if args.representative_only else timelines,'J2':metadata_probes if args.metadata_only else traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
      'J6':competition,'J7':retention,'J8':layer_events,'J10':energy,'J11':traces}[args.job]()

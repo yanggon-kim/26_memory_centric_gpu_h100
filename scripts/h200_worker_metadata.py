@@ -34,12 +34,16 @@ def install_attention_observer(worker):
         signature=inspect.signature(original)
         def observed(*args,_original=original,_signature=signature,_name=name,**kwargs):
             result=_original(*args,**kwargs)
+            tick=getattr(worker,'_shoreline_tick',None)
+            if hasattr(worker,'_shoreline_tick') and tick not in (4,5,6):return result
             bound=_signature.bind_partial(*args,**kwargs)
             metadata=bound.arguments.get('attn_metadata')
             if metadata is None or metadata.max_query_len!=1:return result
             samples=worker._h200_attention_samples
             if sum(row['module']==_name for row in samples)>=3:return result
-            row={'module':_name,'num_actual_tokens':metadata.num_actual_tokens,
+            row={'module':_name,'decode_tick':tick,'trial':getattr(worker,'_shoreline_prefix',None),
+                 'measurement_scope':'separate functional metadata probe; GPU copies contaminate timing/traffic and are never counter or ordinary baselines',
+                 'num_actual_tokens':metadata.num_actual_tokens,
                  'max_query_len':metadata.max_query_len,'max_seq_len':metadata.max_seq_len,
                  'causal':metadata.causal,'use_cascade':metadata.use_cascade,
                  'max_num_splits':metadata.max_num_splits,

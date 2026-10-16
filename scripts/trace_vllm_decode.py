@@ -91,8 +91,12 @@ def main(a):
         dump(a.output/'trace_metadata.json',metadata)
         completed={}
         kv_lifecycle=[]
+        request_pages=[]
+        from h200_worker_metadata import snapshot_worker
         for step in range(a.steps):
             kv_lifecycle.append(llm.collective_rpc(vllm_kv,args=(f'before_decode_step_{step}',))[0])
+            request_pages.append({'step':step,'phase':'before','worker':llm.collective_rpc(snapshot_worker)[0],
+                'scope':'actual last-prepared CPU page mappings; computed counters may lag execution'})
             torch.cuda.nvtx.range_push(f'decode_step_{step}')
             if not layers:
                 # A model.forward hook alone omits vLLM's separate LM-head logits path.
@@ -103,11 +107,14 @@ def main(a):
             lib.disable_nvbit_instrumentation()
             torch.cuda.nvtx.range_pop()
             kv_lifecycle.append(llm.collective_rpc(vllm_kv,args=(f'after_decode_step_{step}',))[0])
+            request_pages.append({'step':step,'phase':'after','worker':llm.collective_rpc(snapshot_worker)[0],
+                'scope':'actual CPU page mappings after this step; no GPU copies added inside instrumentation'})
             assert len(outputs)==a.batch and {o.request_id for o in outputs}==set(request_ids)
             assert all(len(o.outputs[0].token_ids)==step+2 for o in outputs),'non-single-token progression'
             for out in outputs:
                 if out.finished:completed[out.request_id]=out
         dump(a.output/'kv_storage_lifecycle.json',kv_lifecycle)
+        dump(a.output/'request_page_lifecycle.json',request_pages)
         assert not engine.has_unfinished_requests() and set(completed)==set(request_ids)
         ids=[list(completed[rid].outputs[0].token_ids) for rid in request_ids]
         matched=ids==reference['output_ids']
