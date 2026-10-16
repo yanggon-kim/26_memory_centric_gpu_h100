@@ -122,8 +122,10 @@ def main(root):
             '', '## Remaining gates','',
             'Independent physical-service and clock joins, actual resource restriction/concurrency proofs, retention attribution, bounded overlap, energy qualification and trace semantics/transfer remain individually indexed in the case ledger. No physical compute/SRAM/PHY/package benefit is established.']
     (root/'analysis/shoreline_opportunity_report.md').write_text('\n'.join(lines)+'\n')
+    from shoreline_measurements import emit
+    flat_records=emit(root)
     print(json.dumps({'baseline_conditions':len(baseline),'physical_traffic_captures':len(traffic),
-                      'native_acquisitions':len(native),'conditional_scenarios':len(scenarios)}))
+                      'native_acquisitions':len(native),'conditional_scenarios':len(scenarios),'flat_measurements':flat_records}))
 
 
 if __name__=='__main__':
