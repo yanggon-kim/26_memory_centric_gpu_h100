@@ -169,5 +169,7 @@ if __name__=='__main__':
     try:main(a)
     except Exception as error:
         from software_decode_experiments import dump
+        if (a.output/'run.json').exists():
+            data=json.loads((a.output/'run.json').read_text());data['status']='failed';dump(a.output/'run.json',data)
         dump(a.output/'failure.json',{'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
         raise

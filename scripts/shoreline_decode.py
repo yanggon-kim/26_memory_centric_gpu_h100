@@ -9,6 +9,7 @@ import traceback
 
 
 def main(a):
+    if getattr(a,'ordinary_control',False):a.external_profiler=False
     os.environ.update(VLLM_ENABLE_V1_MULTIPROCESSING='0',VLLM_ALLOW_INSECURE_SERIALIZATION='1',
                       HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1')
     import controlled_vllm_experiments as baseline
@@ -110,6 +111,7 @@ if __name__=='__main__':
     p.add_argument('--generated-tokens',type=int,default=64)
     p.add_argument('--pressure',choices=['normal','pressure'])
     p.add_argument('--layer-events',action='store_true')
+    p.add_argument('--ordinary-control',action='store_true',help='no external profiler; separately labeled matched treatment timing')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     try:main(a)
     except Exception as error:
