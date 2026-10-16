@@ -75,7 +75,7 @@ def main(a):
             dump(a.output/'run.json',data)
 
     with torch.cuda.stream(stream):
-        footprints=[96] if a.pilot else [1,48,60,96,512]
+        footprints=[96] if a.pilot else [1,28,32,48,60,96,512]
         patterns=[('stream',0),('stride17',1),('gather',2),('paged128',3)]
         for mib in footprints:
             n=mib*1024**2//4
@@ -91,7 +91,9 @@ def main(a):
                     i=torch.arange(n,device='cuda',dtype=torch.int64)
                     index=i if pattern==0 else i*17%n if pattern==1 else (i*1103515245+12345)%n if pattern==2 else ((i//128*17)%(n//128))*128+i%128
                     assert torch.equal(y,x[index]),'transfer reference mismatch'
-                metadata={'footprint_bytes':n*4,'pattern':name,'useful_read_bytes_per_launch':n*4,
+                metadata={'footprint_bytes':n*4,'total_input_output_footprint_bytes':n*8,
+                          'footprint_definition':'input bytes; input+output footprint is separately recorded',
+                          'pattern':name,'useful_read_bytes_per_launch':n*4,
                           'useful_write_bytes_per_launch':n*4,'additional_smid_writes':smids.numel()*4,
                           'blocks':smids.numel(),'threads_per_block':128,'block_elements':4096}
                 measure(identity,launch,verify,metadata,compiled)
