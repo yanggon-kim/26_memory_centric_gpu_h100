@@ -8,7 +8,7 @@ import re
 import subprocess
 
 PACKAGE = Path(__file__).resolve().parents[1]
-TEXT = {'.py', '.sh', '.json', '.jsonl', '.csv', '.md', '.log', '.txt', '.cmake', '.cu', '.h', '.cpp', '.patch', '.sha256', '.sass', '.config'}
+TEXT = {'.py', '.sh', '.json', '.jsonl', '.csv', '.md', '.log', '.txt', '.cmake', '.cu', '.h', '.cpp', '.patch', '.sha256', '.sass', '.ptx', '.config'}
 SECRETS = [re.compile(rb'hf_[A-Za-z0-9]{25,}'),
            re.compile(rb'gh[pousr]_[A-Za-z0-9]{25,}'),
            re.compile(rb'github_pat_[A-Za-z0-9_]{30,}'),
@@ -65,7 +65,7 @@ def main():
         remote = git('ls-remote', 'origin', 'refs/heads/codex/h200-phase01').split()[0]
         assert remote == commit, 'remote verification failed'
     print(json.dumps({'commit': commit, 'remote_verified': a.push,
-                      'selected_files': len(selected), 'omitted_raw_files': omitted}), flush=True)
+                      'selected_files': len(selected), 'omitted_raw_file_count': len(omitted)}), flush=True)
     for root in a.root:
         pause = root/'.control/pause_after_checkpoint'
         if pause.exists():

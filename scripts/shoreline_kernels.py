@@ -19,7 +19,7 @@ def transfer(A, B, SMIDS, N:tl.constexpr, PATTERN:tl.constexpr, BLOCK:tl.constex
     if PATTERN == 0:
         source=i
     elif PATTERN == 1:
-        source=(i*17)%N
+        source=((i.to(tl.int64)*17)%N).to(tl.int32)
     elif PATTERN == 2:
         source=((i.to(tl.int64)*1103515245+12345)%N).to(tl.int32)
     else:

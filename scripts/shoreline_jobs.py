@@ -156,7 +156,7 @@ def traffic():
 
 def native():
     campaign.update_job(ROOT,'J4','in_progress')
-    label='J4_native_pilot_ptx_v2'
+    label='J4_native_pilot_indices_v4'
     out=ROOT/'runs'/label
     outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
                                       '--acquisition','0','--pilot'),timeout=300)
@@ -165,7 +165,7 @@ def native():
         return
     publish('J4 checkpoint: native service producer and reference pilot passed')
     for acq in range(3):
-        label=f'J4_native_acq{acq:02d}';out=ROOT/'runs'/label
+        label=f'J4_native_v4_acq{acq:02d}';out=ROOT/'runs'/label
         outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
                                             '--acquisition',str(acq)),timeout=900)
         publish(f'J4 acquisition checkpoint: {label} {outcome["status"]}')

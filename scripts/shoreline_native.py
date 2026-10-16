@@ -75,13 +75,13 @@ def main(a):
             dump(a.output/'run.json',data)
 
     with torch.cuda.stream(stream):
-        footprints=[96] if a.pilot else [1,28,32,48,60,96,512]
+        footprints=[1,512] if a.pilot else [1,28,32,48,60,96,512]
         patterns=[('stream',0),('stride17',1),('gather',2),('paged128',3)]
         for mib in footprints:
             n=mib*1024**2//4
             x=(torch.arange(n,device='cuda',dtype=torch.int32)%65521).to(torch.float32)
             y=torch.empty_like(x);smids=torch.empty((triton.cdiv(n,4096),),device='cuda',dtype=torch.int32)
-            for name,pattern in patterns[:1] if a.pilot else patterns:
+            for name,pattern in patterns:
                 identity=f'{name}_{mib}mib'
                 if a.profile_case and identity!=a.profile_case:continue
                 compiled=transfer[(triton.cdiv(n,4096),)](x,y,smids,n,pattern,4096)
