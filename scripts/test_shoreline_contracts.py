@@ -14,6 +14,16 @@ def main():
     import tempfile,json
     from pathlib import Path
     from shoreline_evidence import qualify_replays
+    import os,threading
+    from types import SimpleNamespace
+    from h200_session import ProcessMonitor
+    monitor=ProcessMonitor.__new__(ProcessMonitor);monitor.process=SimpleNamespace(pid=os.getpid())
+    assert monitor.owned(os.getpid()) is True
+    observed=[]
+    def thread_identity():observed.append(monitor.owned(threading.get_native_id()))
+    thread=threading.Thread(target=thread_identity);thread.start();thread.join()
+    assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
+    assert monitor.owned(1) is False
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);base=root/'capture';base.mkdir()
         out=base/'pass000';out.mkdir()
