@@ -68,8 +68,19 @@ def verify_allocation():
     import socket
     assert os.environ.get('SLURM_JOB_ID') == SESSION['slurm_job_id'], 'allocation changed'
     assert socket.gethostname() == SESSION['expected_hostname'], 'allocation node changed'
-    state = subprocess.check_output(['scontrol', 'show', 'job', '-o', SESSION['slurm_job_id']], text=True)
+    failures=[]
+    for attempt in range(3):
+        try:
+            state=subprocess.check_output(['scontrol','show','job','-o',SESSION['slurm_job_id']],
+                text=True,stderr=subprocess.STDOUT,timeout=15)
+            break
+        except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as error:
+            failures.append({'attempt':attempt,'type':type(error).__name__})
+            if attempt==2:raise RuntimeError('allocation status unavailable after three bounded read-only queries; no GPU launch authorized') from error
+            time.sleep(1)
     assert 'JobState=RUNNING' in state and 'NodeList='+socket.gethostname().split('.')[0] in state
+    return {'job_id':SESSION['slurm_job_id'],'hostname':socket.gethostname(),'state':'RUNNING',
+            'verified_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'transient_query_failures':failures}
 
 
 class ProcessMonitor:
@@ -169,7 +180,7 @@ class ProcessMonitor:
 
 
 def run(root, label, command, timeout=900, gpu=False, env=None):
-    verify_allocation()
+    allocation_proof=verify_allocation()
     root = Path(root)
     if time.time() >= LAUNCH_CUTOFF:
         return {'label': label, 'status': 'pending', 'reason': 'allocation closeout cutoff reached'}
@@ -204,6 +215,7 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row = {'label': label, 'command': [str(c) for c in command], 'started_utc':
            datetime.datetime.now(datetime.timezone.utc).isoformat(), 'timeout_s': limit,
            'log': str(log.relative_to(root))}
+    row['allocation_verification']=allocation_proof
     row['script_sha256']={}
     snapshots=root/'environment/source_snapshots'
     snapshots.mkdir(parents=True,exist_ok=True)

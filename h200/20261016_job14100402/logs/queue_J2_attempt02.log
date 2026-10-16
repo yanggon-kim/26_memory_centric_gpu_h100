@@ -50,3 +50,26 @@ START J2_mistral7b_graph_b8_c4096_full_acq01_ticks_only_v4
 END J2_mistral7b_graph_b8_c4096_full_acq01_ticks_only_v4 complete 51.16
 START J2_mistral7b_graph_b8_c4096_full_acq01_ticks_only_v4_import_base
 END J2_mistral7b_graph_b8_c4096_full_acq01_ticks_only_v4_import_base complete 0.54
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   937e42d..3d4b470  HEAD -> codex/h200-phase01
+{"commit": "3d4b4701a757b1d00414aa849eaf09605b3b2ba0", "remote_verified": true, "selected_files": 1971, "omitted_raw_file_count": 122}
+slurm_load_jobs error: Socket timed out on send/recv operation
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 840, in <module>
+    for archive in [*sorted((ROOT/'environment').glob('native_trace_micro_*.tar')),*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 176, in traffic
+    for acq in range(3):results.append(counter_case(model,engine,batch,context,acq))
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 111, in counter_case
+    outcome=attempt(label,cmd,timeout=900)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 21, in attempt
+    return load(saved) if saved.exists() else run(ROOT,label,command,timeout,gpu=gpu)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/h200_session.py", line 172, in run
+    verify_allocation()
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/h200_session.py", line 71, in verify_allocation
+    state = subprocess.check_output(['scontrol', 'show', 'job', '-o', SESSION['slurm_job_id']], text=True)
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 421, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['scontrol', 'show', 'job', '-o', '14100402']' returned non-zero exit status 1.
