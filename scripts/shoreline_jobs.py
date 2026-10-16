@@ -153,9 +153,56 @@ def native():
     disposition('J4','partial','native service acquisitions saved; physical-counter, mixed/reduction and clock joins retain separate qualification')
 
 
+def timeline_case(model,engine,batch,context,acq):
+    label=f'J1_timeline_{model}_{engine}_b{batch}_c{context}_acq{acq:02d}'
+    result_path=ROOT/'profiles'/(label+'.json')
+    if result_path.exists():return load(result_path)
+    ref=reference(model,engine,batch,context)
+    if ref is None:
+        result={'status':'unavailable','id':label,'reason':'correct baseline unavailable'}
+        dump(result_path,result);return result
+    config=profile_config(model,engine,batch,context,label)
+    output=ROOT/'runs'/label;report=ROOT/'profiles'/label
+    command=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+             '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report),
+             str(PYTHON),str(PACKAGE/'scripts/shoreline_decode.py'),'--config',str(config),
+             '--gpu-uuid',UUID,'--output',str(output),'--mode','timing','--external-profiler']
+    outcome=attempt(label,command,timeout=600)
+    db=report.with_suffix('.sqlite')
+    if report.with_suffix('.nsys-rep').exists() and not db.exists():
+        attempt(label+'_export',[str(CUDA/'bin/nsys'),'export','--type','sqlite','--output',str(db),
+                                str(report.with_suffix('.nsys-rep'))],gpu=False,timeout=180)
+    result={'id':label,'status':'failed','model':model,'engine':engine,'batch':batch,'context':context,
+            'acquisition_id':acq,'classification':'measured-real-GPU-instrumented','ticks':[4,5,6]}
+    if db.exists() and (output/'run.json').exists():
+        from shoreline_timeline import read
+        try:
+            result.update(read(db))
+            data=load(output/'run.json');expected=load(ref)['cases'][0]['trials'][0]['output_ids']
+            exact=data['status']=='complete' and all(t['output_ids']==expected for c in data['cases'] for t in c['trials'])
+            result['exact_reference_ids']=exact
+            if not exact or outcome['status']!='complete':result['status']='failed'
+            result['database']={'path':str(db.relative_to(ROOT)),'sha256':digest(db)}
+        except Exception as error:result.update(status='failed',reason=str(error))
+    dump(result_path,result);publish(f'J1 timeline checkpoint: {label} {result["status"]}')
+    return result
+
+
+def timelines():
+    campaign.update_job(ROOT,'J1','in_progress','collect bounded actual decode timelines; ordinary acquisitions already preserved')
+    outcomes=[]
+    for model,b,c in CONTRASTS:
+        for engine in ('graph','eager'):
+            for acq in range(3):outcomes.append(timeline_case(model,engine,b,c,acq))
+    dump(ROOT/'results/shoreline_timeline_qualification.json',{'cases':outcomes})
+    ordinary=load(ROOT/'results/baseline_qualification.json')
+    disposition('J1','complete' if ordinary['all_conditions_qualified'] and all(r['status']=='complete' for r in outcomes) else 'partial',
+                'focused ordinary baselines and actual decode timelines published; rejected clocks/outputs remain excluded')
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J2','J4'],required=True)
+    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J4'],required=True)
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign
@@ -164,4 +211,4 @@ if __name__=='__main__':
     verify_allocation()
     NCU=str(CUDA/'bin/ncu')
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
-    (traffic if args.job=='J2' else native)()
+    {'J1':timelines,'J2':traffic,'J4':native}[args.job]()
