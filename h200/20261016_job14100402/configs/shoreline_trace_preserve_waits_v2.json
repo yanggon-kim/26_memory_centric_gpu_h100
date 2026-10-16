@@ -1,0 +1,19 @@
+{
+  "classification": "producer configuration review; not a new measurement",
+  "spinlock_handling_mode": 0,
+  "enable_watchdog": 0,
+  "skip_tma_mem": 0,
+  "allow_reg_val_tracing": 1,
+  "reason": "pinned mode2 elides repeated spinlock instructions and watchdog1 excludes WARPSYNC.COLLECTIVE regions; new model traces must preserve all waits/regions",
+  "retained_prior_micro": "v1 has no async/wait opcodes and an independent640-record audit; original unchanged",
+  "new_micro": "v2 no-skip configuration must pass before model capture",
+  "model_semantic_pilot": {
+    "steps": 2,
+    "layers": [
+      "model.layers.0"
+    ],
+    "budget_gib": 4,
+    "timeout_s": 180
+  },
+  "full_model_gate": "explicit validated semantics review required; no-warning/exit0 is insufficient"
+}

@@ -22,7 +22,7 @@ def main():
     tracer=accel/'util/tracer_nvbit/tracer_tool/tracer_tool.so'
     env=environment()
     env.update(CUDA_INJECTION64_PATH=str(tracer),NVBIT_INSTRUMENTATION_ENABLED='1',ACTIVE_FROM_START='1',
-               ALLOW_REG_VAL_TRACING='1',SKIP_TMA_MEM='0',SPINLOCK_HANDLING_MODE='2',ENABLE_WATCHDOG='1',
+               ALLOW_REG_VAL_TRACING='1',SKIP_TMA_MEM='0',SPINLOCK_HANDLING_MODE='0',ENABLE_WATCHDOG='0',
                TRACE_FILE_COMPRESS='1',USER_DEFINED_FOLDERS='1',TRACES_FOLDER=str(output/'raw'))
     env.pop('DYNAMIC_KERNEL_RANGE',None)
     dump(output/'launch_manifest.json',{'classification':'measured-real-GPU-instrumented',

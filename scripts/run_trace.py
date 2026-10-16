@@ -40,7 +40,7 @@ def main(a):
     env.update(PATH=str(toolkit/'bin')+os.pathsep+env.get('PATH',''),
                PYTHONPATH=str(a.accel_root/'util/tracer_nvbit/others')+os.pathsep+env.get('PYTHONPATH',''),
                CUDA_INJECTION64_PATH=str(tool),NVBIT_INSTRUMENTATION_ENABLED='0',ACTIVE_FROM_START='1',
-               ALLOW_REG_VAL_TRACING='1',SKIP_TMA_MEM='0',SPINLOCK_HANDLING_MODE='2',ENABLE_WATCHDOG='1',
+               ALLOW_REG_VAL_TRACING='1',SKIP_TMA_MEM='0',SPINLOCK_HANDLING_MODE='0',ENABLE_WATCHDOG='0',
                TRACE_FILE_COMPRESS='1',USER_DEFINED_FOLDERS='1',TRACES_FOLDER=str(raw),
                HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',VLLM_ENABLE_V1_MULTIPROCESSING='0')
     env.pop('DYNAMIC_KERNEL_RANGE',None) # runtime hooks provide the exact decode/layer boundary.

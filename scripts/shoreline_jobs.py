@@ -768,7 +768,8 @@ def competition():
 
 def traces():
     campaign.update_job(ROOT,'J11','in_progress')
-    micro=attempt('J11_native_micro_v1',python_command('h200_native_micro.py'),gpu=False,timeout=600)
+    micro_tag=load(ROOT/'session.json').get('native_micro_attempt','v1')
+    micro=attempt('J11_native_micro_'+micro_tag,python_command('h200_native_micro.py'),gpu=False,timeout=600)
     publish(f'J11 native micro checkpoint: {micro["status"]}')
     if micro['status']!='complete':
         disposition('J11','partial','native micro capture/postprocess/replay failed; preserve evidence before model tracing');return
@@ -798,6 +799,9 @@ def traces():
     dump(ROOT/'results/shoreline_trace_eager_calibration.json',{'cases':calibration,
         'scope':'ordinary standalone same model/revision/geometry/greedy-prefix/engine settings; tracer and hook overhead are separate',
         'simulation_timing_calibration':None,'missing_reason':'positive stock H100 parser counters do not calibrate H200 timing/power'})
+    if not any(e.get('exact_reference_prefix') for e in calibration):
+        disposition('J11','partial','no standalone eager control passed exact reference-prefix gate; model instruction capture deferred pending diagnosis')
+        return
     session=load(ROOT/'session.json');accel=Path(session['accel_root'])
     # Separate eager same-program semantic pilot before any complete-model capture.
     config=campaign.make_config(ROOT,'bridge','eager',1,128,3)
@@ -806,7 +810,7 @@ def traces():
     label='J11_bridge_layer0_semantic_v1'
     outcome=attempt(label,python_command('run_trace.py','--accel-root',accel,'--config',config,
         '--gpu-uuid',UUID,'--engine','vllm','--output',output,'--batch','1','--context','128',
-        '--steps','2','--layers','model.layers.0','--budget-gib','4','--timeout-s','900',
+        '--steps','2','--layers','model.layers.0','--budget-gib','4','--timeout-s','180',
         '--replay-smoke','--replay-timeout-s','300','--archive-path',archive),timeout=1500)
     publish(f'J11 semantic pilot checkpoint: {outcome["status"]}')
     warnings=[]
@@ -833,7 +837,7 @@ def traces():
     elif warnings:pilot['full_model_gate']='pending: native semantic warnings require investigation; no calibrated full-model claim'
     elif review.get('status')!='passed':pilot['full_model_gate']='pending: explicit trace semantic coverage gate has not passed'
     dump(ROOT/'results/shoreline_trace_qualification.json',pilot)
-    for archive in [ROOT/'environment/native_trace_micro_v1.tar',*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
+    for archive in [*sorted((ROOT/'environment').glob('native_trace_micro_*.tar')),*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
         if not archive.exists():continue
         label='J11_upload_'+archive.stem
         proof=ROOT/'results'/(label+'.json')
