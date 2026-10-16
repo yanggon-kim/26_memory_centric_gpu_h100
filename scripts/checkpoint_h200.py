@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Publish compact H200 evidence; keep raw databases and archives outside Git."""
 import argparse
+import fcntl
 import hashlib
 import json
 from pathlib import Path
@@ -25,6 +26,8 @@ def main():
     p.add_argument('--message', required=True)
     p.add_argument('--push', action='store_true')
     a = p.parse_args()
+    lock = (PACKAGE/'.git/h200_checkpoint.lock').open('a')
+    fcntl.flock(lock,fcntl.LOCK_EX)
     assert git('branch', '--show-current') == 'codex/h200-phase01'
     candidates = list((PACKAGE/'scripts').glob('*.py')) + [PACKAGE/'h200/README.md']
     for root in a.root:
