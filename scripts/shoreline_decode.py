@@ -24,10 +24,23 @@ def main(a):
                  [shoreline_worker.read_metadata(worker) for worker in shoreline_worker.ACTIVE_WORKERS])
         original_cleanup(engine,output)
     baseline.cleanup_owned_engine=cleanup
+    if getattr(a,'pressure',None) or getattr(a,'layer_events',False):
+        if getattr(a,'pressure',None):os.environ['SHORELINE_PRESSURE']=a.pressure
+        import vllm
+        original_llm=vllm.LLM
+        class ObservedLLM(original_llm):
+            def __init__(self,*args,**kwargs):
+                super().__init__(*args,**kwargs)
+                assert kwargs['enforce_eager'],'layer/treatment callbacks require eager execution'
+                self.collective_rpc(shoreline_worker.install_ranges)
+                if getattr(a,'layer_events',False):self.collective_rpc(shoreline_worker.enable_events)
+        vllm.LLM=ObservedLLM
+        # Our factory installs once even when the ordinary runner also requests ranges.
+        h200_worker_metadata.install_layer_ranges=lambda worker:{'ranges':'installed by observed factory'}
 
     def trial(engine,prompts,sampling,prefix,torch,output_dir,sensor=None,
               profile_capture=False,observer=None,hardware_sampler=None):
-        if not profile_capture:
+        if not profile_capture and not getattr(a,'pressure',None) and not getattr(a,'layer_events',False):
             return original(engine,prompts,sampling,prefix,torch,output_dir,sensor,
                             False,observer,hardware_sampler)
         original_step=engine.step
@@ -37,12 +50,13 @@ def main(a):
             nonlocal calls,capturing
             tick=calls
             calls+=1
-            for worker in shoreline_worker.ACTIVE_WORKERS:worker._shoreline_tick=tick
+            for worker in shoreline_worker.ACTIVE_WORKERS:
+                worker._shoreline_tick=tick;worker._shoreline_prefix=prefix
             if tick==4:
                 dump(output_dir/'selected_interval.json',{'status':'running','pid':os.getpid(),
                     'ticks':[4,5,6],'scope':'three complete engine.step calls; prefill/first selected token excluded'})
                 torch.cuda.synchronize()
-                torch.cuda.profiler.start()
+                if profile_capture:torch.cuda.profiler.start()
                 torch.cuda.nvtx.range_push('shoreline_ticks_4_6')
                 capturing=True
             if capturing:torch.cuda.nvtx.range_push('tick_'+str(tick))
@@ -58,7 +72,7 @@ def main(a):
             if tick==6:
                 torch.cuda.synchronize()
                 torch.cuda.nvtx.range_pop()
-                torch.cuda.profiler.stop()
+                if profile_capture:torch.cuda.profiler.stop()
                 capturing=False
                 assert [r['tick'] for r in ledger]==[4,5,6]
                 assert all(r['output_token_counts']==[r['tick']+1]*len(prompts) for r in ledger)
@@ -78,7 +92,7 @@ def main(a):
         finally:
             engine.step=original_step
             for worker in shoreline_worker.ACTIVE_WORKERS:worker._shoreline_tick=None
-            if capturing:
+            if capturing and profile_capture:
                 torch.cuda.profiler.stop()
 
     baseline.run_trial=trial
@@ -94,6 +108,8 @@ if __name__=='__main__':
     p.add_argument('--collect-worker-metadata',action='store_true')
     p.add_argument('--batch',type=int);p.add_argument('--context',type=int)
     p.add_argument('--generated-tokens',type=int,default=64)
+    p.add_argument('--pressure',choices=['normal','pressure'])
+    p.add_argument('--layer-events',action='store_true')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     try:main(a)
     except Exception as error:
