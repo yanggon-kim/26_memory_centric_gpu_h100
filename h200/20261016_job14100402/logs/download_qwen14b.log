@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/tmp/h200_research_jkim4112_job14100402/runtime/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 403, in hf_raise_for_status
+    response.raise_for_status()
+  File "/tmp/h200_research_jkim4112_job14100402/runtime/lib/python3.10/site-packages/requests/models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://huggingface.co/api/models/Qwen/Qwen2.5-14B-Instruct/revision/7cdf5e3c8e4e53c4a631dcdf33d006db6e927277?blobs=True
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/materialize_config.py", line 116, in <module>
+    main(p.parse_args())
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/materialize_config.py", line 33, in main
+    info=HfApi().model_info(model['model_id'],revision=None if expected=='RESOLVE_AND_PIN' else expected,files_metadata=True)
+  File "/tmp/h200_research_jkim4112_job14100402/runtime/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/tmp/h200_research_jkim4112_job14100402/runtime/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 2661, in model_info
+    hf_raise_for_status(r)
+  File "/tmp/h200_research_jkim4112_job14100402/runtime/lib/python3.10/site-packages/huggingface_hub/utils/_http.py", line 410, in hf_raise_for_status
+    raise _format(RevisionNotFoundError, message, response) from e
+huggingface_hub.errors.RevisionNotFoundError: 404 Client Error. (Request ID: Root=1-6ad255ea-190e0e674dc73f782aff6b24;29b9ec98-875e-4a72-bb4e-b3df55d42c7a)
+
+Revision Not Found for url: https://huggingface.co/api/models/Qwen/Qwen2.5-14B-Instruct/revision/7cdf5e3c8e4e53c4a631dcdf33d006db6e927277?blobs=True.
+Invalid rev id: 7cdf5e3c8e4e53c4a631dcdf33d006db6e927277

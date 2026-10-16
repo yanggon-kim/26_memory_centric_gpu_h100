@@ -144,7 +144,8 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
     if qualification.exists():
         return load(qualification)
     outcome = None
-    for attempt in range(3):
+    retry_limit=load(root/'session.json').get('rejected_acquisition_retry_limit',2)
+    for attempt in range(retry_limit+1):
         label = identity+f'_attempt{attempt}'
         output = root/'runs'/label
         script = 'software_decode_experiments.py' if engine == 'hf_eager' else 'controlled_vllm_experiments.py'
@@ -166,6 +167,8 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
                 else:
                     cq = clock_qualification(data,outcome['monitor']['source'])
                     result.update(clock_qualification=cq,status='passed' if cq['passed'] else 'rejected')
+                    if smoke:
+                        result.update(status='passed',qualification_scope='correctness-only smoke; clock failure cannot qualify a timing join')
         dump(root/'results/qualifications'/(label+'.json'), result)
         checkpoint(root, f'J1 acquisition checkpoint: {label} {result["status"]}')
         if result['status'] == 'passed' or outcome['status'] == 'pending' or engine == 'hf_eager':
