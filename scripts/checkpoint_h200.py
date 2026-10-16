@@ -26,7 +26,7 @@ def main():
     p.add_argument('--push', action='store_true')
     a = p.parse_args()
     assert git('branch', '--show-current') == 'codex/h200-phase01'
-    candidates = list((PACKAGE/'scripts').glob('*.py'))
+    candidates = list((PACKAGE/'scripts').glob('*.py')) + [PACKAGE/'h200/README.md']
     for root in a.root:
         root = root.resolve()
         assert root.is_relative_to(PACKAGE/'h200'), 'H200 root required'
