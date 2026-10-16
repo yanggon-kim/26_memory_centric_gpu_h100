@@ -54,7 +54,13 @@ if __name__=='__main__':
     try:main(a)
     except Exception as error:
         from software_decode_experiments import dump
+        # HTTP errors may contain signed download URLs. Keep status/type without
+        # leaking query credentials into the compact public evidence log.
+        response=getattr(error,'response',None)
         previous=json.loads(a.proof.read_text()) if a.proof.exists() else {}
-        previous.update(status='failed',error_type=type(error).__name__,reason=str(error))
+        previous.update(status='failed',error_type=type(error).__name__,
+                        http_status=getattr(response,'status_code',None),
+                        reason='private archive access/upload/readback failed; no credentials or signed URLs recorded')
         dump(a.proof,previous)
-        raise
+        print(json.dumps(previous))
+        raise SystemExit(1)
