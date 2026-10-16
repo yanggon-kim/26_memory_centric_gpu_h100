@@ -101,7 +101,8 @@ def main(a):
                             for _ in range(1024):expected=np.float32(float(expected)*float(np.float32(1.0001))+float(np.float32(0.0001)))
                             assert np.allclose(cy.cpu().numpy(),expected,rtol=2e-6,atol=0),'arithmetic reference mismatch'
                     measured(f'overlap_ratio{ratio}_{mode}',launch,verify,{'family':'six-condition common native overlap family',
-                        'ratio':ratio,'mode':mode,'memory_launches':4,'compute_launches':ratio,
+                        'ratio':ratio,'mode':mode,'memory_launches':4 if mode in ('memory','concurrent') else 0,
+                        'compute_launches':ratio if mode in ('compute','concurrent') else 0,
                         'private_allocation':'identical in empty/standalone/concurrent treatments',
                         'proof':'actual same-pass NSYS overlap required; stream submission alone is not overlap proof'})
     if a.timeline:torch.cuda.profiler.stop()

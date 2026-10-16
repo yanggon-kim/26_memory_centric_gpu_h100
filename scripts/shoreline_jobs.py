@@ -545,6 +545,9 @@ def sm_allocations():
                 result=restricted_case('bridge',engine,b,c,.75,0,True,attempt_id)
                 results.append(result)
                 if result['status']=='complete':break
+                if attempt_id==0 and not load(ROOT/'session.json').get('sm_pilot_reviewed',False):
+                    disposition('J5','partial','first resource-restriction pilot failed; review actual evidence/adapter before spending the remaining bounded pilot attempt')
+                    raise SystemExit(76)
             qualified[(engine,b,c)]=result['status']=='complete'
     counter_proofs={}
     for (engine,b,c),supported in qualified.items():
@@ -675,8 +678,15 @@ def energy():
             out=ROOT/'runs'/label;config=campaign.make_config(ROOT,model,'graph',b,c)
             outcome=attempt(label,python_command('shoreline_prefill.py','--config',config,'--gpu-uuid',UUID,
                         '--mode','timing','--output',out),timeout=600)
-            results.append({'id':label,'family':'prefill guardrail','status':outcome['status']})
-            publish(f'J10 prefill checkpoint: {label} {outcome["status"]}')
+            result={'id':label,'family':'prefill guardrail','status':outcome['status']}
+            if (out/'run.json').exists() and outcome['status']=='complete':
+                d=load(out/'run.json');expected=load(reference(model,'graph',b,c))['cases'][0]['trials'][0]['output_ids']
+                exact=d['status']=='complete' and all(t['output_ids']==expected for case in d['cases'] for t in case['trials'])
+                result['exact_reference_ids']=exact
+                result['clock_qualification']=campaign.clock_qualification(d,outcome['monitor']['source'])
+                result['status']='complete' if exact and result['clock_qualification']['passed'] else 'rejected'
+            results.append(result);dump(ROOT/'profiles'/(label+'.json'),result)
+            publish(f'J10 prefill checkpoint: {label} {result["status"]}')
     dump(ROOT/'results/shoreline_energy_qualification.json',{'cases':results,
         'scope':'whole-board energy; raw counter and sampled power retained without rescaling or idle subtraction',
         'absolute_component_calibration':None})

@@ -12,14 +12,16 @@ def analyze(root):
     results=[]
     first=root/'results/shoreline_native_counter_qualification.json'
     selected=load(first).get('selection',[]) if first.exists() else []
-    for condition in selected:
+    definitions=[(c,'J4_native_v4_acq','J4_native_counter_') for c in selected]
+    definitions += [(c,'J4_service_extension_acq','J4_counter_') for c in ('read_only_512mib','read_stride17_512mib')]
+    for condition,ordinary_prefix,counter_prefix in definitions:
         entry={'condition':condition,'sources':[],'clock_qualified':False,'physical_service_bytes_per_second':None,
                'classification':'independently measured native-pattern service; no automatic decoder transfer'}
         timings=[];reads=[];writes=[];clock_checks=[];hashes=[];operations=[]
         for acq in range(3):
-            ordinary=root/'runs'/f'J4_native_v4_acq{acq:02d}/run.json'
-            profile=root/'profiles'/f'J4_native_counter_{condition}_acq{acq:02d}.json'
-            profiled_run=root/'runs'/f'J4_native_counter_{condition}_acq{acq:02d}/run.json'
+            ordinary=root/'runs'/f'{ordinary_prefix}{acq:02d}/run.json'
+            profile=root/'profiles'/f'{counter_prefix}{condition}_acq{acq:02d}.json'
+            profiled_run=root/'runs'/f'{counter_prefix}{condition}_acq{acq:02d}/run.json'
             if not all(p.exists() for p in (ordinary,profile,profiled_run)):continue
             d,p,pd=load(ordinary),load(profile),load(profiled_run)
             if d['status']!='complete' or p['status']!='complete' or pd['status']!='complete':continue
@@ -27,7 +29,7 @@ def analyze(root):
             pcase=next(c for c in pd['cases'] if c['id']==condition)
             if case.get('correctness')!='passed' or pcase.get('correctness')!='passed':continue
             hashes.extend(json.dumps(x['source_sha256'],sort_keys=True) for x in (d,pd))
-            timings.append([t['gpu_event_ms']/t['repetitions'] for t in case['trials']])
+            timings.append([t['gpu_event_ms']/t.get('repetitions',1) for t in case['trials']])
             reads.append(p['physical_read_bytes']);writes.append(p['physical_write_bytes'])
             operations.append(case['metadata'].get('useful_flops_per_launch',case['metadata'].get('useful_operations_per_launch')))
             for path,selected_case in ((ordinary,case),(profiled_run,pcase)):
