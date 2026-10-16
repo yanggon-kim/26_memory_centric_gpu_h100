@@ -401,7 +401,8 @@ def sm_allocations():
 
 
 def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
-    label=f'{job}_{model}_eager_b{batch}_c{context}_{pressure}_events{int(events)}_acq{acq:02d}'
+    event_mode='complete' if events is True else 'empty' if events=='empty' else 'none'
+    label=f'{job}_{model}_eager_b{batch}_c{context}_{pressure}_events{event_mode}_acq{acq:02d}'
     target=ROOT/'profiles'/(label+'.json')
     if target.exists():return load(target)
     base=campaign.make_config(ROOT,model,'eager',batch,context)
@@ -412,7 +413,8 @@ def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
     out=ROOT/'runs'/label
     cmd=python_command('shoreline_decode.py','--config',path,'--gpu-uuid',UUID,'--output',out,
                         '--mode','timing','--pressure',pressure,'--ordinary-control')
-    if events:cmd+=['--layer-events']
+    if events is True:cmd+=['--layer-events']
+    elif events=='empty':cmd+=['--empty-layer-events']
     outcome=attempt(label,cmd,timeout=600)
     result={'id':label,'status':'failed','pressure':pressure,'layer_events':events,'model':model,
             'batch':batch,'context':context,'acquisition_id':acq,
@@ -448,7 +450,7 @@ def layer_events():
     results=[]
     for model,b,c in CONTRASTS:
         for acq in range(3):
-            for events in (False,True):results.append(treatment_case('J8',model,b,c,acq,events=events))
+            for events in (False,'empty',True):results.append(treatment_case('J8',model,b,c,acq,events=events))
     dump(ROOT/'results/shoreline_layer_timing_qualification.json',{'cases':results,
         'scope':'disjoint first/middle/last complete layers at ticks 4/5/6; ordinary/event controls retain direct costs',
         'local_event_intrusion':'whole-model perturbation does not bound local layer intrusion',

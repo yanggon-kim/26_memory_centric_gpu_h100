@@ -41,13 +41,17 @@ def install_ranges(worker):
                 start=torch.cuda.Event(enable_timing=True);end=torch.cuda.Event(enable_timing=True)
                 start.record()
                 worker._shoreline_events.append({'layer':layer,'tick':worker._shoreline_tick,
-                    'trial':getattr(worker,'_shoreline_prefix',None),'start':start,'end':end,'closed':False})
+                    'trial':getattr(worker,'_shoreline_prefix',None),'start':start,'end':end,'closed':False,
+                    'mode':getattr(worker,'_shoreline_event_mode','complete')})
+                if getattr(worker,'_shoreline_event_mode','complete')=='empty':
+                    end.record();worker._shoreline_events[-1]['closed']=True
         def after(module,arguments,output,label=label,layer=layer,whole=is_complete_layer):
             if worker._shoreline_tick not in (4,5,6):return
             if whole and worker._shoreline_tick in (4,5,6) and getattr(worker,'_shoreline_enable_events',False):
                 entry=worker._shoreline_events[-1]
-                assert entry['layer']==layer and not entry['closed']
-                entry['end'].record();entry['closed']=True
+                assert entry['layer']==layer
+                if not entry['closed']:entry['end'].record();entry['closed']=True
+                else:assert entry['mode']=='empty'
             torch.cuda.nvtx.range_pop()
         module.register_forward_pre_hook(before)
         module.register_forward_hook(after)
@@ -70,7 +74,7 @@ def read_events(worker):
     import torch
     torch.cuda.synchronize()
     assert all(e['closed'] for e in worker._shoreline_events)
-    return [{'layer':e['layer'],'tick':e['tick'],'trial':e['trial'],'elapsed_ms':e['start'].elapsed_time(e['end'])}
+    return [{'layer':e['layer'],'tick':e['tick'],'trial':e['trial'],'mode':e['mode'],'elapsed_ms':e['start'].elapsed_time(e['end'])}
             for e in worker._shoreline_events]
 
 
@@ -88,6 +92,8 @@ def read_metadata(worker):
             'layer_events':read_events(worker)}
 
 
-def enable_events(worker):
+def enable_events(worker,mode='complete'):
+    assert mode in ('complete','empty')
     worker._shoreline_enable_events=True
+    worker._shoreline_event_mode=mode
     return {'enabled':True}
