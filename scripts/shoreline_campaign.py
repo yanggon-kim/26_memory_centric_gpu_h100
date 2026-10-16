@@ -141,11 +141,18 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
     config = make_config(root,model,engine,batch,context,3 if smoke else 10)
     identity = f'{model}_{engine}_b{batch}_c{context}'+('_smoke' if smoke else f'_acq{index:02d}')
     qualification = root/'results/qualifications'/(identity+'.json')
+    first_attempt=0;replacement=None
     if qualification.exists():
-        return load(qualification)
+        previous=load(qualification)
+        prior_process=root/'results/processes'/(identity+f'_attempt{previous["attempt"]}.json')
+        contaminated=(previous.get('command_status')=='rejected' and prior_process.exists()
+                      and load(prior_process).get('monitor',{}).get('failure')=='foreign GPU process detected')
+        if contaminated and previous['attempt']<2:
+            first_attempt=previous['attempt']+1;replacement=previous
+        else:return previous
     outcome = None
     retry_limit=load(root/'session.json').get('rejected_acquisition_retry_limit',2)
-    for attempt in range(retry_limit+1):
+    for attempt in range(first_attempt,min(3,first_attempt+retry_limit+1)):
         label = identity+f'_attempt{attempt}'
         output = root/'runs'/label
         script = 'software_decode_experiments.py' if engine == 'hf_eager' else 'controlled_vllm_experiments.py'
@@ -157,6 +164,9 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
                           '--mode','timing','--output',output,'--batch',str(batch),'--context',str(context)),1200,gpu=True)
         result = {'id':identity,'attempt':attempt,'output':str(output.relative_to(root)),
                   'status':'failed','source_config_sha256':sha(config),'command_status':outcome['status']}
+        if replacement:
+            result['replaces_contaminated_attempt']=replacement
+            result['selection_rule']='replacement for detected interference, never selected by latency; prior raw attempt retained'
         path = output/'run.json'
         if path.exists():
             data = load(path)

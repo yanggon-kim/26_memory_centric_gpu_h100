@@ -78,3 +78,17 @@ To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
 {"commit": "60c7ae2859f7a7b7e1f2cda8a6cadecd9d1cfe30", "remote_verified": true, "selected_files": 879, "omitted_raw_file_count": 1}
 START qwen14b_graph_b1_c4096_acq02_attempt0
 END qwen14b_graph_b1_c4096_acq02_attempt0 rejected 7.95
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   60c7ae2..6fbff1d  HEAD -> codex/h200-phase01
+{"commit": "6fbff1d6ebe3d640ea11e745206062b377607c34", "remote_verified": true, "selected_files": 884, "omitted_raw_file_count": 1}
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 244, in <module>
+    (inventory if args.job=='J0' else baselines)(DEFAULT_ROOT)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 200, in baselines
+    acquisition(root,model,engine,b,c,index)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 156, in acquisition
+    outcome = run(root,label,python_command(script,'--config',config,'--gpu-uuid',UUID,
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/h200_session.py", line 151, in run
+    '--format=csv,noheader'], text=True).strip()
+RuntimeError: GPU is not idle before qwen14b_eager_b1_c4096_acq00_attempt0: GPU-567384ae-5a3d-7d51-84f6-19cb41e0f93d, 2156461

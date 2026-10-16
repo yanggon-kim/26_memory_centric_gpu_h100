@@ -78,7 +78,8 @@ def value(raw):
 
 
 def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None):
-    label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}_range_api_v2'
+    protocol=load(ROOT/'session.json').get('profile_protocol','range_api_v2')
+    label=f'J2_{model}_{engine}_b{batch}_c{context}_{scope}_acq{acquisition:02d}_{protocol}'
     result_path=ROOT/'profiles'/(label+'_reader_v3.json')
     if result_path.exists():return load(result_path)
     ref=reference(model,engine,batch,context)
@@ -126,6 +127,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
             'clock_join_qualification':'pending pooled per-trial/replay endpoint checks; no timing join inferred',
             'ordinary_latency':None,'ordinary_latency_reason':'profile time is instrumented and not ordinary decode latency'}
     result['reader_version']=3
+    result['profile_protocol']=protocol
     result['raw_capture_reused_without_recapture']=report.exists()
     dump(result_path,result)
     publish(f'J2 acquisition checkpoint: {label} {result["status"]}')
@@ -486,9 +488,111 @@ def energy():
                 'publish qualified-or-NA board energy and separate prefill/first-token guardrails')
 
 
+def competition():
+    campaign.update_job(ROOT,'J6','in_progress')
+    probe=ROOT/'runs/J6_disjoint_probe_v1'
+    outcome=attempt('J6_disjoint_probe_v1',python_command('shoreline_competition.py','--gpu-uuid',UUID,
+                    '--output',probe,'--probe'),timeout=180)
+    publish(f'J6 resource probe checkpoint: {outcome["status"]}')
+    if outcome['status']!='complete':
+        disposition('J6','unavailable','native disjoint-context allocation probe failed; owned competition not expanded');return
+    results=[]
+    for batch,context in [(1,1024),(8,4096)]:
+        supported=[]
+        for engine in ('graph','eager'):
+            proof=ROOT/'profiles'/f'J5_bridge_{engine}_b{batch}_c{context}_f75_acq00_pilot0.json'
+            if proof.exists() and load(proof)['status']=='complete':supported.append(engine)
+        if not supported:
+            results.append({'batch':batch,'context':context,'status':'unavailable',
+                'reason':'no all-kernel decoder restriction proof from J5'});continue
+        engine=supported[0]
+        label=f'J6_concurrent_pilot_{engine}_b{batch}_c{context}'
+        config=profile_config('bridge',engine,batch,context,label)
+        output=ROOT/'runs'/label;report=ROOT/'profiles'/label
+        cmd=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
+             '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report)]
+        cmd+=python_command('shoreline_competition.py','--gpu-uuid',UUID,'--output',output,
+                            '--config',config,'--treatment','memory100','--external-profiler')
+        pilot=attempt(label,cmd,timeout=600)
+        db=report.with_suffix('.sqlite')
+        if report.with_suffix('.nsys-rep').exists() and not db.exists():
+            attempt(label+'_export',[str(CUDA/'bin/nsys'),'export','--type','sqlite','--output',str(db),str(report.with_suffix('.nsys-rep'))],gpu=False,timeout=120)
+        valid=False;proof={}
+        if db.exists() and (output/'disjoint_allocation.json').exists():
+            from shoreline_timeline import read
+            timeline=read(db);allocation=load(output/'disjoint_allocation.json')
+            expected=sorted([allocation['decoder']['green_context_id'],allocation['competitor']['green_context_id']])
+            valid=pilot['status']=='complete' and all(w['green_context_ids']==expected for w in timeline['windows'])
+            proof={'timeline':timeline,'allocation':allocation,'both_contexts_observed':valid}
+        dump(ROOT/'profiles'/(label+'.json'),{'status':'complete' if valid else 'failed',**proof})
+        publish(f'J6 concurrency pilot checkpoint: {label} proved={valid}')
+        if not valid:
+            results.append({'id':label,'status':'unavailable','reason':'actual disjoint concurrent decode not proved'});continue
+        for acq in range(3):
+            for treatment in ('idle','memory50','memory100','arithmetic50','arithmetic100'):
+                label=f'J6_{engine}_b{batch}_c{context}_{treatment}_acq{acq:02d}'
+                output=ROOT/'runs'/label
+                config=ROOT/'configs'/f'bridge_{engine}_b{batch}_c{context}_t10.json'
+                row=attempt(label,python_command('shoreline_competition.py','--gpu-uuid',UUID,'--output',output,
+                    '--config',config,'--treatment',treatment),timeout=600)
+                results.append({'id':label,'status':row['status'],'treatment':treatment})
+                publish(f'J6 acquisition checkpoint: {label} {row["status"]}')
+    dump(ROOT/'results/shoreline_competition_qualification.json',{'cases':results,
+         'scope':'owned shared-service sensitivity, not added physical memory-interface bandwidth',
+         'concurrent_counter_replay':'unvalidated; no physical controller-capacity change inferred'})
+    disposition('J6','partial','publish owned disjoint-allocation/concurrency outcomes and service-sensitivity limits')
+
+
+def traces():
+    campaign.update_job(ROOT,'J11','in_progress')
+    micro=attempt('J11_native_micro_v1',python_command('h200_native_micro.py'),gpu=False,timeout=600)
+    publish(f'J11 native micro checkpoint: {micro["status"]}')
+    if micro['status']!='complete':
+        disposition('J11','partial','native micro capture/postprocess/replay failed; preserve evidence before model tracing');return
+    session=load(ROOT/'session.json');accel=Path(session['accel_root'])
+    # Separate eager same-program semantic pilot before any complete-model capture.
+    config=campaign.make_config(ROOT,'bridge','eager',1,128,3)
+    output=ROOT/'traces/bridge_layer0_semantic_v1'
+    archive=ROOT/'profiles/bridge_layer0_semantic_v1.tar'
+    label='J11_bridge_layer0_semantic_v1'
+    outcome=attempt(label,python_command('run_trace.py','--accel-root',accel,'--config',config,
+        '--gpu-uuid',UUID,'--engine','vllm','--output',output,'--batch','1','--context','128',
+        '--steps','2','--layers','model.layers.0','--budget-gib','4','--timeout-s','900',
+        '--replay-smoke','--replay-timeout-s','300','--archive-path',archive),timeout=1500)
+    publish(f'J11 semantic pilot checkpoint: {outcome["status"]}')
+    warnings=[]
+    for path in output.rglob('*.log') if output.exists() else []:
+        text=path.read_text(errors='replace')
+        warnings += [line for line in text.splitlines() if any(word in line.lower() for word in
+                      ('unsupported','dropping','not implemented','trywait','warning'))]
+    pilot={'status':outcome['status'],'semantic_warnings':warnings,'full_model_gate':'pending'}
+    if outcome['status']=='complete' and not warnings:
+        import time,datetime
+        cutoff=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp()
+        if cutoff-time.time()>2400:
+            full=ROOT/'traces/bridge_full_two_steps_v1';full_archive=ROOT/'profiles/bridge_full_two_steps_v1.tar'
+            result=attempt('J11_bridge_full_two_steps_v1',python_command('run_trace.py',
+                '--accel-root',accel,'--config',config,'--gpu-uuid',UUID,'--engine','vllm',
+                '--output',full,'--batch','1','--context','128','--steps','2','--layers','full',
+                '--budget-gib','10','--timeout-s','1800','--replay-smoke','--replay-timeout-s','600',
+                '--archive-path',full_archive),timeout=2400)
+            pilot['full_model_gate']=result['status'];publish(f'J11 full-model trace checkpoint: {result["status"]}')
+        else:pilot['full_model_gate']='pending: insufficient capture/postprocess/transfer closeout budget'
+    elif warnings:pilot['full_model_gate']='pending: native semantic warnings require investigation; no calibrated full-model claim'
+    dump(ROOT/'results/shoreline_trace_qualification.json',pilot)
+    for archive in [ROOT/'environment/native_trace_micro_v1.tar',*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
+        if not archive.exists():continue
+        label='J11_upload_'+archive.stem
+        proof=ROOT/'results'/(label+'.json')
+        outcome=attempt(label,python_command('shoreline_archive.py','--file',archive,'--proof',proof,
+            '--remote-path','archives/20261016_job14100402/'+archive.name),gpu=False,timeout=1200)
+        publish(f'J11 archive readback checkpoint: {label} {outcome["status"]}')
+    disposition('J11','partial','native trace/parser, semantic warnings, recurrence and durable readback individually recorded; H200 timing/power calibration remains separate')
+
+
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J7','J8','J10'],required=True)
+    p.add_argument('--session',type=Path,required=True);p.add_argument('--job',choices=['J1','J2','J3','J4','J5','J6','J7','J8','J10','J11'],required=True)
     p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
     p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
@@ -501,4 +605,4 @@ if __name__=='__main__':
     PROGRAMS=Path(load(args.session).get('frozen_source_root',PACKAGE))/'scripts'
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
     {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
-     'J7':retention,'J8':layer_events,'J10':energy}[args.job]()
+     'J6':competition,'J7':retention,'J8':layer_events,'J10':energy,'J11':traces}[args.job]()

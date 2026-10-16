@@ -95,6 +95,13 @@ class ProcessMonitor:
                 return True
             seen.add(pid)
             try:
+                # CUDA/NVML may report a thread ID. Resolve its thread group
+                # before following process parents; a thread's PPID can skip its own group leader.
+                status=Path(f'/proc/{pid}/status').read_text()
+                tgid=int(next(line.split()[1] for line in status.splitlines() if line.startswith('Tgid:')))
+                if tgid!=pid:
+                    pid=tgid
+                    continue
                 # /proc comm may contain spaces; fields after its final ')' are stable.
                 fields = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
                 pid = int(fields[1])
@@ -115,8 +122,8 @@ class ProcessMonitor:
                            'memory_clock_mhz': nv.nvmlDeviceGetClockInfo(self.handle, nv.NVML_CLOCK_MEM),
                            'temperature_c': nv.nvmlDeviceGetTemperature(self.handle, nv.NVML_TEMPERATURE_GPU),
                            'power_w': nv.nvmlDeviceGetPowerUsage(self.handle)/1000}
-                    if any(v is False for v in ancestry.values()):
-                        self.failure = 'foreign GPU process detected'
+                    if any(v is not True for v in ancestry.values()):
+                        self.failure = 'foreign GPU process detected' if any(v is False for v in ancestry.values()) else 'GPU process ancestry unavailable'
                         row['rejection'] = self.failure
                     stream.write(json.dumps(row)+'\n')
                     stream.flush()
@@ -147,10 +154,28 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     if log.exists():
         raise FileExistsError('attempt label already exists: '+str(log))
     if gpu:
-        processes = subprocess.check_output(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid',
-                                              '--format=csv,noheader'], text=True).strip()
-        if processes:
-            raise RuntimeError('GPU is not idle before '+label+': '+processes)
+        if SESSION:
+            import fcntl
+            producer_lock=(WORKSPACE/'producer.lock').open('a')
+            fcntl.flock(producer_lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            import pynvml
+            pynvml.nvmlInit();handle=pynvml.nvmlDeviceGetHandleByUUID(UUID)
+            required=SESSION.get('idle_required_s',10)
+            idle_start=time.monotonic();deadline=time.monotonic()+60;checks=[]
+            while time.monotonic()-idle_start<required:
+                pids=[p.pid for p in pynvml.nvmlDeviceGetComputeRunningProcesses(handle)]
+                checks.append({'unix_ns':time.time_ns(),'pids':pids})
+                if pids:idle_start=time.monotonic()
+                if time.monotonic()>deadline:
+                    dump(root/'results/idle_checks'/(label+'.json'),{'passed':False,'samples':checks})
+                    raise RuntimeError('selected GPU did not remain idle; no foreign process terminated')
+                time.sleep(.25)
+            dump(root/'results/idle_checks'/(label+'.json'),{'passed':True,'required_idle_s':required,'samples':checks})
+        else:
+            processes = subprocess.check_output(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid',
+                                                  '--format=csv,noheader'], text=True).strip()
+            if processes:
+                raise RuntimeError('GPU is not idle before '+label+': '+processes)
     started = time.time()
     row = {'label': label, 'command': [str(c) for c in command], 'started_utc':
            datetime.datetime.now(datetime.timezone.utc).isoformat(), 'timeout_s': limit,
