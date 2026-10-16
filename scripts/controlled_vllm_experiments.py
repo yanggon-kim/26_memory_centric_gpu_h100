@@ -62,7 +62,7 @@ if __name__ == '__main__' and '--validate' in __import__('sys').argv:
 
 
 def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
-              profile_capture=False, observer=None):
+              profile_capture=False, observer=None, hardware_sampler=None):
     assert not engine.has_unfinished_requests(), 'previous requests not drained'
     external = [f'{prefix}_{i}' for i in range(len(prompts))]
     internal = [engine.add_request(rid, {'prompt_token_ids': ids}, sampling)
@@ -92,7 +92,9 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
         before=sensor.read()
     completed={}
     iterations=0
+    hardware_before = hardware_sampler() if hardware_sampler else None
     torch.cuda.nvtx.range_push('decode')
+    wall_start_unix_ns=time.time_ns()
     start=time.perf_counter()
     a.record()
     while engine.has_unfinished_requests():
@@ -114,6 +116,8 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
     b.record()
     torch.cuda.synchronize()
     end=time.perf_counter()
+    wall_end_unix_ns=time.time_ns()
+    hardware_after = hardware_sampler() if hardware_sampler else None
     torch.cuda.nvtx.range_pop()
     if profile_capture:
         # Range profilers can intentionally terminate at ProfilerStop. Preserve
@@ -136,6 +140,8 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
             'decode_iterations':iterations,'timed_generated_tokens':len(prompts)*iterations,
             'cuda_event_ms':a.elapsed_time(b),'wall_ms':(end-start)*1000,
             'tokens_per_s':len(prompts)*iterations/(end-start),'output_ids':ids,'output_sha256':digest(ids)}
+    result.update(wall_start_unix_ns=wall_start_unix_ns,wall_end_unix_ns=wall_end_unix_ns,
+                  hardware_before=hardware_before,hardware_after=hardware_after)
     if telemetry:
         result['telemetry']=telemetry
     return result
@@ -286,7 +292,8 @@ def main(args):
         for trial in range(config['trials']):
             sensor=Sensor(nvml,handle,0.02) if args.mode=='energy' else None
             case['trials'].append(run_trial(engine,prompts,sampling,f'B{batch}C{context}_measured{trial}',torch,args.output,sensor,
-                                           profile_capture=args.external_profiler and trial==0,observer=observer if trial==0 else None))
+                                           profile_capture=args.external_profiler and trial==0,observer=observer if trial==0 else None,
+                                           hardware_sampler=lambda:describe(nvml,handle,torch)))
             dump(args.output/'run.json',data)
             if args.collect_worker_metadata and trial==0:
                 dump(args.output/'attention_observations.json',llm.collective_rpc(read_attention_observer)[0])

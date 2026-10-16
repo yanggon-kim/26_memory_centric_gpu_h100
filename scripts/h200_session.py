@@ -17,6 +17,15 @@ CUDA = Path('/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none
 UUID = 'GPU-a613c806-89b1-05d1-f71c-3d52ab46d246'
 PYTHON = WORKSPACE / 'runtime/bin/python'
 LAUNCH_CUTOFF = datetime.datetime.fromisoformat('2026-10-16T15:03:00-04:00').timestamp()
+SESSION = {}
+if os.environ.get('H200_SESSION_CONFIG'):
+    SESSION = json.loads(Path(os.environ['H200_SESSION_CONFIG']).read_text())
+    DEFAULT_ROOT = Path(os.environ['H200_SESSION_CONFIG']).resolve().parent
+    WORKSPACE = Path(SESSION['workspace'])
+    CUDA = Path(SESSION['cuda_home'])
+    UUID = SESSION['gpu_uuid']
+    PYTHON = Path(SESSION['python'])
+    LAUNCH_CUTOFF = datetime.datetime.fromisoformat(SESSION['launch_cutoff']).timestamp()
 
 
 def dump(path, value):
@@ -50,7 +59,83 @@ def environment():
     return env
 
 
+def verify_allocation():
+    if not SESSION:
+        return
+    import socket
+    assert os.environ.get('SLURM_JOB_ID') == SESSION['slurm_job_id'], 'allocation changed'
+    assert socket.gethostname() == SESSION['expected_hostname'], 'allocation node changed'
+    state = subprocess.check_output(['scontrol', 'show', 'job', '-o', SESSION['slurm_job_id']], text=True)
+    assert 'JobState=RUNNING' in state and 'NodeList='+socket.gethostname().split('.')[0] in state
+
+
+class ProcessMonitor:
+    """Sample only the selected physical device and reject foreign ancestry."""
+    def __init__(self, root, label, process):
+        import threading
+        import pynvml
+        self.nvml = pynvml
+        pynvml.nvmlInit()
+        self.handle = pynvml.nvmlDeviceGetHandleByUUID(UUID)
+        self.process = process
+        self.stop = threading.Event()
+        self.failure = None
+        self.path = Path(root)/'results/monitors'/(label+'.jsonl')
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.thread = threading.Thread(target=self.sample, daemon=True)
+        self.thread.start()
+
+    def owned(self, pid):
+        seen = set()
+        while pid > 1 and pid not in seen:
+            if pid == self.process.pid:
+                return True
+            seen.add(pid)
+            try:
+                # /proc comm may contain spaces; fields after its final ')' are stable.
+                fields = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
+                pid = int(fields[1])
+            except (OSError, ValueError):
+                return None  # process disappeared between NVML and ancestry lookup
+        return False
+
+    def sample(self):
+        nv = self.nvml
+        with self.path.open('w') as stream:
+            while not self.stop.is_set():
+                try:
+                    pids = [p.pid for p in nv.nvmlDeviceGetComputeRunningProcesses(self.handle)]
+                    ancestry = {str(p): self.owned(p) for p in pids}
+                    row = {'unix_ns': time.time_ns(), 'gpu_uuid': UUID, 'pids': pids,
+                           'owned_ancestry': ancestry,
+                           'sm_clock_mhz': nv.nvmlDeviceGetClockInfo(self.handle, nv.NVML_CLOCK_SM),
+                           'memory_clock_mhz': nv.nvmlDeviceGetClockInfo(self.handle, nv.NVML_CLOCK_MEM),
+                           'temperature_c': nv.nvmlDeviceGetTemperature(self.handle, nv.NVML_TEMPERATURE_GPU),
+                           'power_w': nv.nvmlDeviceGetPowerUsage(self.handle)/1000}
+                    if any(v is False for v in ancestry.values()):
+                        self.failure = 'foreign GPU process detected'
+                        row['rejection'] = self.failure
+                    stream.write(json.dumps(row)+'\n')
+                    stream.flush()
+                except Exception as error:
+                    self.failure = 'isolation monitor error: '+str(error)
+                if self.failure:
+                    try:
+                        os.killpg(self.process.pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                    break
+                self.stop.wait(SESSION.get('monitor_period_s', 0.05))
+
+    def finish(self):
+        self.stop.set()
+        self.thread.join(timeout=5)
+        return {'source': str(self.path), 'failure': self.failure,
+                'coverage': 'sampled process ancestry and hardware state; arbitrarily short interference cannot be excluded'}
+
+
 def run(root, label, command, timeout=900, gpu=False, env=None):
+    verify_allocation()
     root = Path(root)
     if time.time() >= LAUNCH_CUTOFF:
         return {'label': label, 'status': 'pending', 'reason': 'allocation closeout cutoff reached'}
@@ -81,6 +166,7 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
         process = subprocess.Popen(row['command'], cwd=PACKAGE, env=env or environment(),
                                    stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
         row['pid'] = process.pid
+        monitor = ProcessMonitor(root, label, process) if gpu and SESSION else None
         dump(root/'results/processes'/(label+'.json'), row)
         if gpu:dump(root/'results/current_process.json', row)
         try:
@@ -94,6 +180,10 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
             row.update(status='timeout', exit_code=process.returncode)
+        if monitor:
+            row['monitor'] = monitor.finish()
+            if monitor.failure:
+                row.update(status='rejected', reason=monitor.failure)
     row['elapsed_s'] = time.time()-started
     row['log_sha256'] = hashlib.sha256(log.read_bytes()).hexdigest()
     with (root/'results/experiment_log.jsonl').open('a') as stream:

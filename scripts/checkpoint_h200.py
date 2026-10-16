@@ -8,7 +8,7 @@ import re
 import subprocess
 
 PACKAGE = Path(__file__).resolve().parents[1]
-TEXT = {'.py', '.sh', '.json', '.jsonl', '.csv', '.md', '.log', '.txt', '.cmake', '.cu', '.h', '.cpp'}
+TEXT = {'.py', '.sh', '.json', '.jsonl', '.csv', '.md', '.log', '.txt', '.cmake', '.cu', '.h', '.cpp', '.patch', '.sha256', '.sass', '.config'}
 SECRETS = [re.compile(rb'hf_[A-Za-z0-9]{25,}'),
            re.compile(rb'gh[pousr]_[A-Za-z0-9]{25,}'),
            re.compile(rb'github_pat_[A-Za-z0-9_]{30,}'),
@@ -36,12 +36,19 @@ def main():
         if '__pycache__' in path.parts or path.name.endswith('.tmp'):
             continue
         if path.suffix not in TEXT | {'.png', '.pdf'} or path.stat().st_size > 8*1024**2:
-            omitted.append(str(path.relative_to(PACKAGE)))
+            omitted.append({'path':str(path.relative_to(PACKAGE)), 'bytes':path.stat().st_size,
+                            'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                            'storage':'persistent workspace; excluded from public Git'})
             continue
         content = path.read_bytes()
         if path.suffix in TEXT and any(s.search(content) for s in SECRETS):
             raise RuntimeError('Secret pattern found; publication refused: '+str(path.relative_to(PACKAGE)))
         selected.append(str(path.relative_to(PACKAGE)))
+    for root in a.root:
+        inventory = root/'results/checkpoint_raw_inventory.json'
+        inventory.parent.mkdir(parents=True, exist_ok=True)
+        inventory.write_text(json.dumps({'raw_artifacts':omitted},indent=2)+'\n')
+        selected.append(str(inventory.resolve().relative_to(PACKAGE)))
     # Explicit paths permit compact JSON in historically ignored results directories.
     for start in range(0, len(selected), 100):
         git('add', '-f', '--', *selected[start:start+100])
@@ -51,7 +58,7 @@ def main():
         if any(s.search(content) for s in SECRETS):
             raise RuntimeError('Secret pattern in staged file; publication refused: '+name)
     if staged:
-        print(git('commit', '-m', a.message), flush=True)
+        print(git('commit', '-q', '-m', a.message), flush=True)
     commit = git('rev-parse', 'HEAD')
     if a.push:
         subprocess.run(['git', 'push', 'origin', 'HEAD:refs/heads/codex/h200-phase01'], cwd=PACKAGE, check=True)

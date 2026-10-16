@@ -12,6 +12,10 @@ def main(args):
     model=json.loads((package/'configs/models.json').read_text())['models'][args.model]
     assert not (model['stage']=='conditional' and args.reuse_output),'MoE timing/trace allowed within budget; dense logical reuse adapter unsupported'
     expected=model['revision']
+    if getattr(args,'revision',None):
+        assert re.fullmatch('[0-9a-f]{40}',args.revision),'revision must be immutable'
+        assert expected=='RESOLVE_AND_PIN' or args.revision==expected,'registry revision mismatch'
+        expected=args.revision
     if args.snapshot:
         snapshot=args.snapshot.resolve()
         sha=snapshot.name
@@ -104,6 +108,7 @@ if __name__=='__main__':
     p.add_argument('--snapshot',type=Path,help='local immutable snapshot, no downloads')
     p.add_argument('--provenance-json',type=Path,help='trusted model/revision/config hash for custom offline snapshot')
     p.add_argument('--download',action='store_true',help='explicit bounded download and immutable revision resolution')
+    p.add_argument('--revision',help='explicit immutable revision, including an already measured portfolio identity')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--reuse-output',type=Path)
     p.add_argument('--l2-bytes',type=int)
