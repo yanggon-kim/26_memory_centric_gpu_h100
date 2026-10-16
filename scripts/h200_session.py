@@ -26,6 +26,7 @@ if os.environ.get('H200_SESSION_CONFIG'):
     UUID = SESSION['gpu_uuid']
     PYTHON = Path(SESSION['python'])
     LAUNCH_CUTOFF = datetime.datetime.fromisoformat(SESSION['launch_cutoff']).timestamp()
+NUMERICAL_PACKAGE = Path(SESSION.get('frozen_source_root', PACKAGE))
 
 
 def dump(path, value):
@@ -155,7 +156,11 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
     row['script_sha256']={}
     snapshots=root/'environment/source_snapshots'
     snapshots.mkdir(parents=True,exist_ok=True)
-    for source in (PACKAGE/'scripts').glob('*.py'):
+    row['numerical_source_root']=str(NUMERICAL_PACKAGE)
+    row['source_freeze_identity']=SESSION.get('frozen_source_identity')
+    row['orchestration_source_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in (PACKAGE/'scripts').glob('shoreline_*.py') if p.name in ('shoreline_jobs.py','shoreline_campaign.py')}
+    for source in (NUMERICAL_PACKAGE/'scripts').glob('*.py'):
         content=source.read_bytes();digest=hashlib.sha256(content).hexdigest()
         row['script_sha256'][source.name]=digest
         destination=snapshots/(digest+'.py')
@@ -195,7 +200,7 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
 
 
 def python_command(script, *arguments):
-    return [PYTHON, PACKAGE/'scripts'/script, *arguments]
+    return [PYTHON, NUMERICAL_PACKAGE/'scripts'/script, *arguments]
 
 
 if __name__ == '__main__':

@@ -92,7 +92,7 @@ def counter_case(model,engine,batch,context,acquisition,scope='full',layer=None)
     cmd=[NCU,'--replay-mode','app-range','--clock-control','none',
          '--cache-control','none','--nvtx','--nvtx-include',include,
          '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum',
-         '--export',str(report),str(PYTHON),str(PACKAGE/'scripts/shoreline_replay.py'),
+         '--export',str(report),str(PYTHON),str(PROGRAMS/'shoreline_replay.py'),
          '--config',str(config),'--gpu-uuid',UUID,'--mode','timing','--output',str(base),
          '--external-profiler','--generated-tokens','64']
     outcome=attempt(label,cmd,timeout=900)
@@ -184,7 +184,7 @@ def timeline_case(model,engine,batch,context,acq):
     output=ROOT/'runs'/label;report=ROOT/'profiles'/label
     command=[str(CUDA/'bin/nsys'),'profile','--sample=none','--cpuctxsw=none','--trace=cuda,nvtx',
              '--capture-range=cudaProfilerApi','--capture-range-end=stop','--output='+str(report),
-             str(PYTHON),str(PACKAGE/'scripts/shoreline_decode.py'),'--config',str(config),
+             str(PYTHON),str(PROGRAMS/'shoreline_decode.py'),'--config',str(config),
              '--gpu-uuid',UUID,'--output',str(output),'--mode','timing','--external-profiler']
     outcome=attempt(label,command,timeout=600)
     db=report.with_suffix('.sqlite')
@@ -261,7 +261,7 @@ def kernel_profiles():
                          '--section','LaunchStats','--section','Occupancy','--metrics',','.join(requested),
                          '--export',str(report)]
                 if symbol:command+=['--kernel-name','regex:^'+re.escape(symbol)+'$']
-                command+=[str(PYTHON),str(PACKAGE/'scripts/shoreline_decode.py'),'--config',str(config),
+                command+=[str(PYTHON),str(PROGRAMS/'shoreline_decode.py'),'--config',str(config),
                           '--gpu-uuid',UUID,'--mode','timing','--output',str(output),'--external-profiler']
                 outcome=attempt(label,command,timeout=600)
                 if report.exists():attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--csv'],gpu=False,timeout=120)
@@ -456,6 +456,7 @@ if __name__=='__main__':
         setattr(campaign,key,globals()[key])
     verify_allocation()
     NCU=str(CUDA/'bin/ncu')
+    PROGRAMS=Path(load(args.session).get('frozen_source_root',PACKAGE))/'scripts'
     CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
     {'J1':timelines,'J2':traffic,'J3':kernel_profiles,'J4':native,'J5':sm_allocations,
      'J7':retention,'J8':layer_events,'J10':energy}[args.job]()

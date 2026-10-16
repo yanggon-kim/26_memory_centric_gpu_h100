@@ -25,7 +25,8 @@ def headers(snapshot):
 def useful(snapshot,batch,context,layer=None,input_bytes=None,input_tokens=None):
     snapshot=Path(snapshot);config=json.loads((snapshot/'config.json').read_text())
     assert config['model_type'] in ('qwen2','mistral'),'dense accounting adapter only'
-    assert not config.get('sliding_window'),'active sliding window requires a separately validated adapter'
+    active_sliding=(config.get('sliding_window') is not None and config.get('use_sliding_window',True)) or any('sliding' in x for x in config.get('layer_types',[]))
+    assert not active_sliding,'active sliding window requires a separately validated adapter'
     tensors=headers(snapshot)
     assert all(t['dtype']=='BF16' for t in tensors),'BF16 checkpoint accounting required'
     hq=config['num_attention_heads'];hkv=config.get('num_key_value_heads',hq)
