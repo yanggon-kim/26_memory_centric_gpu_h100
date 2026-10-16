@@ -243,11 +243,12 @@ def service_extensions():
     disposition('J4','partial','native service, read-only physical bytes and overlap-family acquisitions published; derived clock/fit gates tracked separately')
 
 
-def native_counter_suite():
+def native_counter_suite(job='J4',fraction=1,selected=None):
     results=[]
-    selected=load(ROOT/'session.json').get('native_counter_conditions',['stream_512mib','gather_512mib'])
+    selected=selected or load(ROOT/'session.json').get('native_counter_conditions',['stream_512mib','gather_512mib'])
+    suffix=f'_f{int(fraction*100)}' if fraction!=1 else ''
     for case,acq in [('stream_512mib',0)]+[(case,acq) for case in selected for acq in range(3)]:
-        label=f'J4_native_counter_{case}_acq{acq:02d}'
+        label=f'{job}_native_counter_{case}{suffix}_acq{acq:02d}'
         target=ROOT/'profiles'/(label+'.json')
         if target.exists():results.append(load(target));continue
         out=ROOT/'runs'/label;report=ROOT/'profiles'/(label+'.ncu-rep')
@@ -257,6 +258,7 @@ def native_counter_suite():
              '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum',
              '--export',str(report)]+python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
                 '--acquisition',str(acq),'--profile-case',case)
+        if fraction!=1:cmd+=['--fraction',str(fraction)]
         outcome=attempt(label,cmd,timeout=600)
         if report.exists():
             attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv'],gpu=False,timeout=120)
@@ -270,14 +272,19 @@ def native_counter_suite():
             d=load(native)
             valid=valid and d['status']=='complete' and len(d['cases'])==1 and d['cases'][0].get('correctness')=='passed'
         entry={'id':label,'case':case,'acquisition_id':acq,'status':'complete' if valid else 'failed',
+               'requested_sm_fraction':fraction,
                'classification':'measured-real-GPU-instrumented','metrics':rows,
                'scope':'one native launch, kernel replay cache/clock none; ordinary time comes from independent native suite',
                'physical_read_bytes':metrics.get('dram__bytes_read.sum'),'physical_write_bytes':metrics.get('dram__bytes_write.sum'),
                'loaded_symbols':sorted({r.get('Kernel Name','') for r in rows}),
                'dynamic_issued_work':None,'issued_work_reason':'loaded SASS export and useful operation counts do not prove issued dynamic tensor work'}
-        dump(target,entry);results.append(entry);publish(f'J4 native counter checkpoint: {label} {entry["status"]}')
+        if native.exists():
+            entry['allocation']=load(native)['allocation']
+            entry['actual_sm_case_id']=label+'_sm'+str(entry['allocation']['actual_sm_count'])
+        dump(target,entry);results.append(entry);publish(f'{job} native counter checkpoint: {label} {entry["status"]}')
         if len(results)==1 and not valid:break
-    dump(ROOT/'results/shoreline_native_counter_qualification.json',{'cases':results,
+    target_name='shoreline_native_counter_qualification'+(f'_{job}'+suffix if job!='J4' else '')+'.json'
+    dump(ROOT/'results'/target_name,{'cases':list({r['id']:r for r in results}.values()),
          'selection':selected,'residency_interpretation':'zero physical reads are permitted for warmed below-L2 controls; never substitute logical payload bytes'})
 
 
@@ -486,6 +493,8 @@ def sm_allocations():
                          '--acquisition',str(acq),'--fraction',str(fraction)),timeout=900)
             results.append({'id':label,'status':outcome['status'],'family':'independent service under allocation'})
             publish(f'J5 service checkpoint: {label} {outcome["status"]}')
+        native_counter_suite('J5',fraction,load(ROOT/'session.json').get('native_sm_counter_conditions',
+                             ['stream_512mib','gather_512mib','pointer_96mib_chains1']))
     dump(ROOT/'results/shoreline_sm_allocation_qualification.json',{'cases':results,
          'interpretation':'software SM restriction removes arithmetic, issue, LSU and MLP together; it creates no SRAM or physical area'})
     disposition('J5','partial','publish actual SM allocations, all-kernel restriction proofs and service sweeps; CI/traffic/unsupported gates remain explicit')

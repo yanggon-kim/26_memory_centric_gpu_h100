@@ -43,11 +43,13 @@ def fit(root):
                 all_clock_checks=all_clock_checks and q['passed']
                 for metric,extrema in q.get('clocks',{}).items():
                     clocks.append((metric,extrema['minimum'],extrema['maximum']))
-            modes[mode]={'raw_acquisitions':acquisitions,'summary':hierarchical_interval(acquisitions)}
+            positive=all(v>0 for values in acquisitions for v in values)
+            modes[mode]={'raw_acquisitions':acquisitions,'summary':hierarchical_interval(acquisitions) if positive else None,
+                         'missing_reason':None if positive else 'nonpositive event duration; raw values retained without a positive-latency interval'}
         pooled={metric:max(x[2] for x in clocks if x[0]==metric)/min(x[1] for x in clocks if x[0]==metric)
                 if any(x[0]==metric for x in clocks) else None
                 for metric in ('sm_clock_mhz','memory_clock_mhz')}
-        valid=all_clock_checks and all(v is not None and v<=1.05 for v in pooled.values())
+        valid=all_clock_checks and all(v is not None and v<=1.05 for v in pooled.values()) and all(modes[m]['summary'] is not None for m in ('compute','memory','concurrent'))
         conditions.append({'ratio':ratio,'modes':modes,'clock_qualified_endpoints':valid,
                            'pooled_clock_ratios_including_interior_samples':pooled})
     eligible=[c for c in conditions if c['clock_qualified_endpoints']]
