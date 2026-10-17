@@ -1,0 +1,57 @@
+{
+  "id": "J5_bridge_eager_b1_c1024_f100_acq02",
+  "status": "complete",
+  "model": "bridge",
+  "batch": 1,
+  "context": 1024,
+  "engine": "eager",
+  "requested_fraction": 1,
+  "acquisition_id": 2,
+  "instrumented_pilot": false,
+  "allocation": {
+    "status": "complete",
+    "allocation": {
+      "stream_handle": 0,
+      "actual_sm_count": 132,
+      "green_context_handle": 0,
+      "green_context_id": null,
+      "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx"
+    },
+    "all_kernel_restriction_proof": "requires matching NSYS kernel greenContextId; stream endpoints alone are insufficient"
+  },
+  "actual_sm_case_id": "J5_bridge_eager_b1_c1024_f100_acq02_sm132",
+  "exact_reference_ids": true,
+  "clock_qualification": {
+    "passed": true,
+    "clocks": {
+      "sm_clock_mhz": {
+        "minimum": 1980,
+        "maximum": 1980,
+        "max_min_ratio": 1.0,
+        "samples": 145
+      },
+      "memory_clock_mhz": {
+        "minimum": 3201,
+        "maximum": 3201,
+        "max_min_ratio": 1.0,
+        "samples": 145
+      }
+    },
+    "reason": "predeclared <=5% clock envelope; all trials retained"
+  },
+  "run_source": "runs/J5_bridge_eager_b1_c1024_f100_acq02/run.json",
+  "run_sha256": "2d23fe3736fe6a79d4e5da20bdeaa34ed7ce1486f2786143c14cb3f92c5ab170",
+  "step_ms": [
+    9.865454253962351,
+    9.899701745737167,
+    9.936682619376196,
+    9.902698253946644,
+    9.85683791989845,
+    9.866163524473825,
+    10.004606110871666,
+    9.809723207061845,
+    10.004021888894458,
+    9.940005046138097
+  ],
+  "harness": "shoreline_restricted_decode.py; VLLM_ENABLE_V1_MULTIPROCESSING=0; identical stream wrapper for fraction1 and restricted arms"
+}
