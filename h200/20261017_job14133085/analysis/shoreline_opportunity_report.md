@@ -4,10 +4,10 @@ Ordinary, profiled, analytical and historical evidence retain separate scopes. C
 
 | Model | B | C | Engine | Acquisitions | Raw median step ms | Clock-qualified |
 |---|---:|---:|---|---:|---:|---|
-| bridge | 1 | 1024 | graph | 0 | NA | False |
-| bridge | 1 | 1024 | eager | 0 | NA | False |
-| bridge | 8 | 4096 | graph | 0 | NA | False |
-| bridge | 8 | 4096 | eager | 0 | NA | False |
+| bridge | 1 | 1024 | graph | 3 | 2.8437 | True |
+| bridge | 1 | 1024 | eager | 3 | 9.6590 | True |
+| bridge | 8 | 4096 | graph | 3 | 3.3765 | False |
+| bridge | 8 | 4096 | eager | 3 | 10.0052 | False |
 | mistral7b | 1 | 4096 | graph | 0 | NA | False |
 | mistral7b | 1 | 4096 | eager | 0 | NA | False |
 | mistral7b | 8 | 4096 | graph | 0 | NA | False |
