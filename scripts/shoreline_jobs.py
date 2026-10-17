@@ -837,7 +837,7 @@ def traces():
     label='J11_bridge_layer0_semantic_v1'
     outcome=attempt(label,python_command('run_trace.py','--accel-root',accel,'--config',config,
         '--gpu-uuid',UUID,'--engine','vllm','--output',output,'--batch','1','--context','128',
-        '--steps','2','--layers','model.layers.0','--budget-gib','4','--timeout-s','180',
+        '--steps','2','--layers','model.layers.0','--budget-gib','4','--budget-files','256','--timeout-s','180',
         '--replay-smoke','--replay-timeout-s','300','--archive-path',archive),timeout=1500)
     publish(f'J11 semantic pilot checkpoint: {outcome["status"]}')
     warnings=[]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pending H100 eager-vLLM capture through public RPC and exact decode barrier."""
+"""Eager-vLLM capture and ordinary harness controls with exact decode barriers."""
 import argparse
 from ctypes import CDLL,c_char_p
 import json
