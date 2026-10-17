@@ -47,9 +47,10 @@ def main(root):
             for engine,b,c in sorted({(r['engine'],r['batch'],r['context']) for r in rows}):
                 selected=sorted([r for r in rows if (r['engine'],r['batch'],r['context'])==(engine,b,c)],key=lambda r:r['actual_sm_count'])
                 values=[r['ratio_ci95']['value'] for r in selected]
-                errors=[[v-r['ratio_ci95']['ci95'][0] for v,r in zip(values,selected)],
-                        [r['ratio_ci95']['ci95'][1]-v for v,r in zip(values,selected)]]
-                ax.errorbar([r['actual_sm_count'] for r in selected],values,yerr=errors,marker='o',label=f'{engine} B{b}/C{c}')
+                counts=[r['actual_sm_count'] for r in selected]
+                line,=ax.plot(counts,values,'o-',label=f'{engine} B{b}/C{c}')
+                ax.vlines(counts,[r['ratio_ci95']['ci95'][0] for r in selected],
+                          [r['ratio_ci95']['ci95'][1] for r in selected],color=line.get_color())
             ax.axhline(1.05,color='r',linestyle=':',label='5% regression envelope')
             ax.axhline(1,color='k',linestyle=':')
             ax.set(xlabel='Actual allocated SM count',ylabel='Latency / matched unrestricted latency',title='Qualified same-harness decoder ratios, 95% intervals')
