@@ -209,7 +209,7 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
                 time.sleep(.25)
             dump(root/'results/idle_checks'/(label+'.json'),{'passed':True,'required_idle_s':required,'samples':checks})
         else:
-            processes = subprocess.check_output(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid',
+            processes = subprocess.check_output(['nvidia-smi', '-i', UUID, '--query-compute-apps=gpu_uuid,pid',
                                                   '--format=csv,noheader'], text=True).strip()
             if processes:
                 raise RuntimeError('GPU is not idle before '+label+': '+processes)

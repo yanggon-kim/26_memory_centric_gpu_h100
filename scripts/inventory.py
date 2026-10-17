@@ -21,10 +21,12 @@ def command(args):
 
 
 def main(args):
+    gpu_commands={'gpu_list':['nvidia-smi','-i',args.gpu_uuid,'--query-gpu=uuid,name','--format=csv,noheader'],
+                  'gpu_details':['nvidia-smi','-i',args.gpu_uuid,'-q']} if args.gpu_uuid else {}
     data={'classification':'environment-inventory','platform':platform.platform(),'python':platform.python_version(),
           'target_uuid':args.gpu_uuid,'CUDA_HOME':os.environ.get('CUDA_HOME','unset'),
           'commands':{name:command(cmd) for name,cmd in {
-           'gpu_list':['nvidia-smi','-L'],'gpu_details':['nvidia-smi','-q'],'nvcc':['nvcc','--version'],
+           **gpu_commands,'nvcc':['nvcc','--version'],
            'ncu':['ncu','--version'],'nsys':['nsys','--version'],'cpu':['lscpu'],'ram':['free','-h'],
            'storage':['df','-h',str(args.output.parent)],'os':['uname','-a']}.items()},'packages':{}}
     for package in ['torch','vllm','transformers','nvidia-ml-py','triton','huggingface-hub']:
