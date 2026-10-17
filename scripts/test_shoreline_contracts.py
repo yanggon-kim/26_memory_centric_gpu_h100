@@ -25,6 +25,20 @@ def main():
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
     from unittest.mock import patch
+    from shoreline_treatment_analysis import provenance
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'results/processes').mkdir(parents=True);(root/'environment').mkdir()
+        run=root/'run.json';run.write_text('{}')
+        import hashlib
+        identity='1'*64;manifest=root/'environment'/('source_freeze_'+identity[:12]+'.json')
+        manifest.write_text(json.dumps({'identity':identity}))
+        process=root/'results/processes/fixture.json'
+        process.write_text(json.dumps({'status':'complete','monitor':{'failure':None},'source_freeze_identity':identity}))
+        row={'id':'fixture','run_source':'run.json','run_sha256':hashlib.sha256(run.read_bytes()).hexdigest()}
+        assert provenance(root,row)==identity
+        assert provenance(root,{**row,'run_sha256':'0'*64}) is None
+        process.write_text(json.dumps({'status':'rejected','source_freeze_identity':identity}))
+        assert provenance(root,row) is None
     import shoreline_reuse
     with tempfile.TemporaryDirectory() as directory:
         package=Path(directory);old=package/'h200/old';current=package/'h200/new'
