@@ -11,6 +11,9 @@ def rejected(function,*args):
 
 
 def main():
+    from shoreline_kernel_analysis import static_opcodes
+    assert static_opcodes('Header\n0x1234 @!P0 LDG.E R1, [R2]\n0x1244 HGMMA.64X8X16.F32.BF16 R0\n0x1254 EXIT\n')=={'LDG.E':1,'HGMMA.64X8X16.F32.BF16':1,'EXIT':1}
+    assert static_opcodes('Warning: no loaded source\n')=={}
     import tempfile,json
     from pathlib import Path
     from shoreline_evidence import qualify_replays

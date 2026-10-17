@@ -146,6 +146,8 @@ def main(root):
     flat_records=emit(root)
     from shoreline_treatment_analysis import analyze as treatments
     treatments(root)
+    from shoreline_kernel_analysis import analyze as kernels
+    kernels(root)
     print(json.dumps({'baseline_conditions':len(baseline),'physical_traffic_captures':len(traffic),
                       'native_acquisitions':len(native),'conditional_scenarios':len(scenarios),'flat_measurements':flat_records}))
 
