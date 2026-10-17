@@ -3,10 +3,11 @@
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
+      "status": "complete",
+      "scientific_gate": "passed",
       "prior_evidence": "h200/20261017_job14131987/STATUS.json",
-      "reason": "Fresh GPU allocation; prior evidence preserved without quantitative cohort pooling"
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-17T14:57:09.573033+00:00"
     },
     {
       "id": "J1",
@@ -1737,7 +1738,44 @@
       "status": "planned"
     }
   ],
-  "attempts": [],
+  "attempts": [
+    {
+      "id": "cpu_contracts",
+      "status": "complete",
+      "source": "results/processes/cpu_contracts.json",
+      "source_sha256": "e08122ef759944b084672ca22dbb86186d760888ed9f59a67763b5a2a760c87b",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644"
+    },
+    {
+      "id": "inventory",
+      "status": "complete",
+      "source": "results/processes/inventory.json",
+      "source_sha256": "b01956a12fe5d46066cb3cb2d7e8c60a4d15ae040551d68a2825d917e6c64ba0",
+      "gpu_execution": true,
+      "exit_code": 0,
+      "numerical_source_freeze": "1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644"
+    },
+    {
+      "id": "ncu_catalog",
+      "status": "complete",
+      "source": "results/processes/ncu_catalog.json",
+      "source_sha256": "d30c72a0a9ff6dc2a480bd953d3b2def74a13efd49847e0d069e98f23e99a97e",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644"
+    },
+    {
+      "id": "pip_freeze",
+      "status": "complete",
+      "source": "results/processes/pip_freeze.json",
+      "source_sha256": "68b5d5354c35b184044546ce9db80d915542f6d259f25e1291516fdda971425e",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644"
+    }
+  ],
   "historical_session": "h200/20261017_job14131987",
   "scope_declaration": {
     "path": "results/condition_scope_declaration_v3.json",

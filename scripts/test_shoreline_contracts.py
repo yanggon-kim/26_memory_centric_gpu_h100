@@ -66,6 +66,14 @@ def main():
         state=json.loads((root/'results/campaign_queue.json').read_text())
         assert state['status']=='launch_cutoff_reached' and state['steps'][0]['status']=='pending'
         assert all(item['exit_code']==0 for item in state['cpu_closeout'])
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'results').mkdir();(root/'logs').mkdir();(root/'environment/source_snapshots').mkdir(parents=True)
+        session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2100-01-01T00:00:00+00:00'}))
+        calls=[]
+        with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw: calls.append(command) or 0):
+            shoreline_queue.main(SimpleNamespace(session=session,start_at='J11_semantic_pilot'))
+        tracing=[command for command in calls if '--job' in command and command[command.index('--job')+1]=='J11']
+        assert len(tracing)==2 and '--semantic-pilot-only' in tracing[0] and '--semantic-pilot-only' not in tracing[1]
     from shoreline_treatment_analysis import provenance
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);(root/'results/processes').mkdir(parents=True);(root/'environment').mkdir()

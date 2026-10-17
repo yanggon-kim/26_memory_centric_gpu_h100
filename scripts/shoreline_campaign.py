@@ -253,6 +253,7 @@ if __name__ == '__main__':
     args=parser.parse_args()
     os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,environment,verify_allocation
-    from profile_h200 import NCU
+    from h200_session import CUDA
+    NCU=str(CUDA/'bin/ncu')
     verify_allocation()
     (inventory if args.job=='J0' else baselines)(DEFAULT_ROOT)
