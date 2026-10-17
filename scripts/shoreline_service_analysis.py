@@ -24,7 +24,7 @@ def analyze(root):
         entry={'condition':condition,'sources':[],'clock_qualified':False,'physical_service_bytes_per_second':None,
                'job':job,'requested_sm_fraction':fraction,
                'classification':'independently measured native-pattern service; no automatic decoder transfer'}
-        timings=[];reads=[];writes=[];clock_checks=[];hashes=[];operations=[]
+        timings=[];reads=[];writes=[];clock_checks=[];hashes=[];operations=[];sm_counts=[]
         for acq in range(3):
             ordinary=root/'runs'/f'{ordinary_prefix}{acq:02d}/run.json'
             profile=root/'profiles'/f'{counter_stem}{acq:02d}.json'
@@ -40,6 +40,7 @@ def analyze(root):
                 profiled_sms=pd.get('allocation',{}).get('actual_sm_count')
                 if not ordinary_sms or ordinary_sms!=profiled_sms:continue
                 entry['actual_sm_count']=ordinary_sms
+                sm_counts.append(ordinary_sms)
             hashes.extend(json.dumps(x['source_sha256'],sort_keys=True) for x in (d,pd))
             timings.append([t['gpu_event_ms']/t.get('repetitions',1) for t in case['trials']])
             reads.append(p['physical_read_bytes']);writes.append(p['physical_write_bytes'])
@@ -52,6 +53,7 @@ def analyze(root):
         entry.update(acquisition_count=len(timings),raw_event_ms_acquisitions=timings,
                      physical_read_bytes_acquisitions=reads,physical_write_bytes_acquisitions=writes)
         valid=(len(timings)==3 and len(hashes)==6 and len(set(hashes))==1 and len(clock_checks)==6 and all(q['passed'] for q in clock_checks))
+        if job=='J5':valid=valid and len(sm_counts)==3 and len(set(sm_counts))==1
         pooled={}
         if valid:
             pooled={m:max(q['clocks'][m]['maximum'] for q in clock_checks)/min(q['clocks'][m]['minimum'] for q in clock_checks)

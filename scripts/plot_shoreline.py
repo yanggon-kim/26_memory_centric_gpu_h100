@@ -39,6 +39,32 @@ def main(root):
         axes[1].axvline(60,color='k',linestyle=':');axes[1].legend(fontsize=8)
         fig.suptitle('Raw native measurements: clock/physical-service joins are separate gates',fontsize=11)
         save(fig,'native_service_raw')
+    sm_path=root/'results/shoreline_sm_statistics.json'
+    if sm_path.exists():
+        rows=[r for r in json.loads(sm_path.read_text())['comparisons'] if r['qualified']]
+        if rows:
+            fig,ax=plt.subplots(figsize=(7,4))
+            for engine,b,c in sorted({(r['engine'],r['batch'],r['context']) for r in rows}):
+                selected=sorted([r for r in rows if (r['engine'],r['batch'],r['context'])==(engine,b,c)],key=lambda r:r['actual_sm_count'])
+                values=[r['ratio_ci95']['value'] for r in selected]
+                errors=[[v-r['ratio_ci95']['ci95'][0] for v,r in zip(values,selected)],
+                        [r['ratio_ci95']['ci95'][1]-v for v,r in zip(values,selected)]]
+                ax.errorbar([r['actual_sm_count'] for r in selected],values,yerr=errors,marker='o',label=f'{engine} B{b}/C{c}')
+            ax.axhline(1.05,color='r',linestyle=':',label='5% regression envelope')
+            ax.axhline(1,color='k',linestyle=':')
+            ax.set(xlabel='Actual allocated SM count',ylabel='Latency / matched unrestricted latency',title='Qualified same-harness decoder ratios, 95% intervals')
+            ax.legend(fontsize=8);save(fig,'sm_decode_qualified')
+    service_path=root/'results/shoreline_independent_service_qualification.json'
+    if service_path.exists():
+        rows=[r for r in json.loads(service_path.read_text())['patterns'] if r.get('job')=='J5' and r.get('physical_service_bytes_per_second')]
+        if rows:
+            fig,ax=plt.subplots(figsize=(7,4))
+            for condition in sorted({r['condition'] for r in rows}):
+                selected=sorted([r for r in rows if r['condition']==condition],key=lambda r:r['actual_sm_count'])
+                values=[r['physical_service_bytes_per_second']['value']/1e12 for r in selected]
+                ax.plot([r['actual_sm_count'] for r in selected],values,'o-',label=condition)
+            ax.set(xlabel='Actual allocated SM count',ylabel='Physical read + write service (TB/s)',title='Qualified native service; physical interfaces unchanged')
+            ax.legend(fontsize=8);save(fig,'sm_native_service_qualified')
     from shoreline_statistics import latency_bounds,sensitivity
     fig,axes=plt.subplots(1,3,figsize=(12,3.8));tables=[]
     for ax,(name,C,M) in zip(axes,[('Memory-heavy',.1,.9),('Balanced',.55,.55),('Compute-heavy',.9,.1)]):
