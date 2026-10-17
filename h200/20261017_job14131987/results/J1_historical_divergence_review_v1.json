@@ -1,0 +1,29 @@
+{
+  "status": "historical_exact_output_failure_preserved",
+  "reviewed_utc": "2026-10-17T12:27:40.640637+00:00",
+  "source": "h200/20261016_job14100402/results/J1_mistral_b8_graph_output_divergence.json",
+  "sha256": "4ed51c17e1f5fa799c516eb1787743e5f54248f6e6ddc6c7cdff37e9b92c7e86",
+  "facts": {
+    "status": "rejected_exact_output_gate",
+    "scope": "one independent NSYS graph process; own warmups/trials agree but full64-token output differs from ordinary baseline",
+    "differences": [
+      {
+        "request_index": 5,
+        "generated_token_index_zero_based": 8,
+        "baseline_token_id": 3055,
+        "observed_token_id": 14708
+      }
+    ],
+    "baseline_source": "runs/mistral7b_graph_b8_c4096_acq00_attempt0/run.json",
+    "baseline_sha256": "ebd7958a33c7fcb83d68d779a49969226656035165c9e124917999e3d424189b",
+    "observed_source": "runs/J1_timeline_mistral7b_graph_b8_c4096_acq00_graph_nodes_v2/run.json",
+    "observed_sha256": "e38f62ebac3523fe062ce38b282316ed3d1f25ae98b5642bfac4fa8bf8a3685e",
+    "same_prompt": true,
+    "same_engine_settings": true,
+    "other_profile_acquisitions": "acq01 and02 match baseline; none replaces or erases this failed acquisition",
+    "selected_window_symbol_launch_counts_match_acq01": true,
+    "root_cause": "unresolved; within-process determinism does not establish cross-process identity",
+    "policy": "no output tolerance relaxation and no failed acquisition dropped from a pooled comparison"
+  },
+  "disposition": "One process-dependent discrepancy remains unresolved. No precision/tolerance relaxation, no recapture to erase this failure. Fresh current-node smoke and independent families proceed separately; affected historical comparison remains rejected."
+}
