@@ -12,3 +12,20 @@ To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
 {"commit": "efcd0fb4770aa1259735a2e3474dcd47e3f87183", "remote_verified": true, "selected_files": 1400, "omitted_raw_file_count": 64}
 START J4_native_v4_acq01
 END J4_native_v4_acq01 complete 117.78
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   efcd0fb..b541414  HEAD -> codex/h200-phase01
+{"commit": "b541414cb0e4544517b1f2579c31f3ee55758580", "remote_verified": true, "selected_files": 1450, "omitted_raw_file_count": 64}
+Requested safe case boundary reached; checkpoint published before scheduler stop.
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 897, in <module>
+    CONTRASTS=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 243, in native
+    '--acquisition',str(acq)),timeout=900)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 32, in publish
+    def publish(message):campaign.checkpoint(ROOT,message)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 24, in checkpoint
+    subprocess.run([sys.executable, str(PACKAGE/'scripts/checkpoint_h200.py'),
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/h200_research_jkim4112_job14131987/runtime/bin/python', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/checkpoint_h200.py', '--root', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261017_job14131987', '--message', 'J4 acquisition checkpoint: J4_native_v4_acq01 complete', '--push']' returned non-zero exit status 75.
