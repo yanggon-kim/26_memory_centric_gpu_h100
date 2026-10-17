@@ -112,3 +112,20 @@ To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
 {"commit": "1b092b360ff188a61ad04d72a837eade50ed11d3", "remote_verified": true, "selected_files": 613, "omitted_raw_file_count": 15}
 START J3_bridge_b1_c1024_attention_forward_acq02
 END J3_bridge_b1_c1024_attention_forward_acq02 complete 36.02
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   1b092b3..c1edc01  HEAD -> codex/h200-phase01
+{"commit": "c1edc0172b6b9f1b0d30522fdccd45eed3d27c70", "remote_verified": true, "selected_files": 623, "omitted_raw_file_count": 15}
+Requested safe case boundary reached; checkpoint published before scheduler stop.
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 878, in <module>
+    {'J1':representative_text if args.representative_only else timelines,'J2':metadata_probes if args.metadata_only else traffic,'J3':kernel_profiles,'J4':service_extensions if args.extensions else native,'J5':sm_allocations,
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 507, in kernel_profiles
+    publish(f'J3 acquisition checkpoint: {label} {result["status"]}')
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py", line 32, in publish
+    def publish(message):campaign.checkpoint(ROOT,message)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 24, in checkpoint
+    subprocess.run([sys.executable, str(PACKAGE/'scripts/checkpoint_h200.py'),
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/tmp/h200_research_jkim4112_job14131987/runtime/bin/python', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/checkpoint_h200.py', '--root', '/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261017_job14131987', '--message', 'J3 acquisition checkpoint: J3_bridge_b1_c1024_attention_forward_acq02 failed', '--push']' returned non-zero exit status 75.

@@ -11,6 +11,12 @@ def rejected(function,*args):
 
 
 def main():
+    from shoreline_kernel_identity import attention_role
+    assert attention_role('void flash::prepare_varlen_num_blocks_kernel<int>()')=='attention_scheduler'
+    assert attention_role('void vllm::reshape_and_cache_flash_kernel<BF16>()')=='kv_update'
+    assert attention_role('void cutlass::device_kernel<flash::FlashAttnFwdSm90<params>>')=='attention_forward'
+    assert attention_role('void cutlass::device_kernel<flash::FlashAttnFwdCombine<params>>')=='attention_combine'
+    assert attention_role('void flashinfer::sampling_kernel<params>()') is None
     from shoreline_kernel_analysis import static_opcodes
     assert static_opcodes('Header\n0x1234 @!P0 LDG.E R1, [R2]\n0x1244 HGMMA.64X8X16.F32.BF16 R0\n0x1254 EXIT\n')=={'LDG.E':1,'HGMMA.64X8X16.F32.BF16':1,'EXIT':1}
     assert static_opcodes('Warning: no loaded source\n')=={}

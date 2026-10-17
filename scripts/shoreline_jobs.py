@@ -437,6 +437,10 @@ def representative_text():
 
 def kernel_profiles():
     campaign.update_job(ROOT,'J3','in_progress')
+    from shoreline_kernel_identity import attention_role,SOURCE_AT_IMPORT as selector_source
+    selector_hash=hashlib.sha256(selector_source).hexdigest()
+    dump_path=ROOT/'environment/source_snapshots'/(selector_hash+'.py')
+    if not dump_path.exists():dump_path.write_bytes(selector_source)
     from profile_h200 import METRICS,BASE_METRICS
     extra=['smsp__issue_active.avg.pct_of_peak_sustained_active',
            'smsp__warps_eligible.avg.per_cycle_active']
@@ -458,15 +462,15 @@ def kernel_profiles():
         roles=[('qkv',f'operation_layer_{mid}_self_attn_qkv_proj/',None),
                ('gate_up',f'operation_layer_{mid}_mlp_gate_up_proj/',None),
                ('down',f'operation_layer_{mid}_mlp_down_proj/',None)]
-        for role,pattern in [('attention_forward',lambda s:('flash' in s.lower() or 'attn' in s.lower()) and 'combine' not in s.lower()),
-                             ('attention_combine',lambda s:'combine' in s.lower()),
-                             ('kv_update',lambda s:'reshape_and_cache' in s.lower())]:
-            symbol=next((s for s in symbols if pattern(s)),None)
+        for role in ('attention_forward','attention_combine','kv_update'):
+            symbol=next((s for s in symbols if attention_role(s)==role),None)
             if symbol:roles.append((role,f'layer_{mid}/',symbol))
             else:results.append({'model':model,'role':role,'status':'unavailable','reason':'not observed in current decode timeline'})
         for role,nvtx,symbol in roles:
             for acq in range(3):
                 label=f'J3_{model}_b{batch}_c{context}_{role}_acq{acq:02d}'
+                protocol=load(ROOT/'session.json').get('kernel_filter_protocols',{}).get(role)
+                if protocol:label+='_'+protocol
                 target=ROOT/'profiles'/(label+'.json')
                 if target.exists():results.append(load(target));continue
                 config=profile_config(model,'eager',batch,context,label)
@@ -495,6 +499,7 @@ def kernel_profiles():
                 result={'id':label,'status':'complete' if outcome['status']=='complete' and rows and exact and role_ok else 'failed',
                     'model':model,'batch':batch,'context':context,'engine':'eager','layer':mid,'role':role,
                     'acquisition_id':acq,'actual_nvtx_filter':nvtx,'symbols':symbols_observed,'exact_reference_ids':exact,
+                    'expected_symbol':symbol,'selector_source_sha256':selector_hash,'selection_protocol':protocol or 'operation_nvtx_v1',
                     'metrics':rows,'unavailable_metrics':unavailable,'cache_control':'none','clock_control':'none',
                     'replay_mode':'kernel','classification':'measured-real-GPU-instrumented',
                     'scope':'one observed operation/layer launch at early decode; kernel replay changes cache state',
@@ -505,10 +510,10 @@ def kernel_profiles():
                     'semantic_validation':'pending instruction/async coverage review; text export alone is not dynamic work'} if sass.exists() else None
                 dump(target,result);results.append(result)
                 publish(f'J3 acquisition checkpoint: {label} {result["status"]}')
-                if model=='bridge' and batch==1 and context==1024 and role=='qkv' and acq==0 and result['status']!='complete':
+                if acq==0 and result['status']!='complete':
                     dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results,'pilot_passed':False})
                     disposition('J3','partial','bounded operation-range producer/reader pilot failed; preserve failure and diagnose before expansion')
-                    return
+                    raise SystemExit(76)
     dump(ROOT/'results/shoreline_kernel_qualification.json',{'cases':results})
     disposition('J3','partial','operation-verified kernel evidence published; dynamic SASS/work and unavailable paths remain explicit')
 

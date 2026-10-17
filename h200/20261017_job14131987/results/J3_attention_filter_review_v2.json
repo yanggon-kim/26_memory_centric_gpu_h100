@@ -1,0 +1,20 @@
+{
+  "status": "selector_adapter_reviewed; fresh pilot required",
+  "reviewed_utc": "2026-10-17T13:03:38.184106+00:00",
+  "failure": "Broad flash/attn substring selected global prepare_varlen_num_blocks_kernel, absent from the layer14 NVTX range. NCU produced no report; native full64 outputs remained correct.",
+  "retained_failed_ids": [
+    "J3_bridge_b1_c1024_attention_forward_acq00",
+    "J3_bridge_b1_c1024_attention_forward_acq01",
+    "J3_bridge_b1_c1024_attention_forward_acq02"
+  ],
+  "fix": "Classify exact observed FA3 implementation families and profile actual FlashAttnFwdSm90 inside layer NVTX; exclude scheduler/cache-update/FlashInfer sampling from forward. New filter_v2 labels; reuse nine passing linear captures. Stop at first failed acquisition0 for each new role.",
+  "actual_selected_symbols": {
+    "attention_forward": "void cutlass::device_kernel<flash::enable_sm90_or_later<flash::FlashAttnFwdSm90<flash::CollectiveMainloopFwdSm90<(int)2, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cute::tuple<cute::C<(int)64>, cute::C<(int)128>, cute::C<(int)128>>, (int)128, cutlass::bfloat16_t, float, cutlass::arch::Sm90, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)1, (bool)1, (bool)0, cutlass::bfloat16_t, (int)1>, flash::CollectiveEpilogueFwd<cute::tuple<cute::C<(int)64>, cute::C<(int)128>, cute::C<(int)128>>, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cutlass::bfloat16_t, cutlass::arch::Sm90, (int)128, (bool)1, (bool)1, (bool)1, (bool)0, (int)1>, flash::VarlenDynamicPersistentTileScheduler<(int)64, (int)128, (int)128, (int)128, (bool)1, (bool)1, (bool)1, (bool)1, (bool)0, (bool)1>>>>(T1::Params)",
+    "attention_combine": "void cutlass::device_kernel<flash::FlashAttnFwdCombine<cute::tuple<cute::C<(int)8>, cute::C<(int)128>>, (int)5, (int)256, (int)1, (bool)0, (bool)1, cutlass::bfloat16_t, float, cutlass::arch::Sm90>>(T1::Params)",
+    "kv_update": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(const T1 *, const T1 *, T2 *, T2 *, const long *, long, long, long, long, long, int, int, int, const float *, const float *, int)"
+  },
+  "numerical_program_changed": false,
+  "frozen_numerical_source": "9d128197fa7c22ca89d5974ab6849242895fadc2f7239cf515441f2a2ede0e3d",
+  "selector_source_sha256": "7e43eb7d6b049c0fece7d9da513acf1c27a4c8e3d3fffc4259869d59250fbd37",
+  "capture_policy": "one reviewed replacement for each failed logical acquisition; do not erase failed captures or loosen exact outputs"
+}
