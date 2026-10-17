@@ -52,6 +52,7 @@ def reference(model,engine,batch,context):
 
 def profile_config(model,engine,batch,context,label):
     base=ROOT/'configs'/f'{model}_{engine}_b{batch}_c{context}_t10.json'
+    if not base.exists():campaign.make_config(ROOT,model,engine,batch,context)
     config=load(base);config['trials']=3
     config['shoreline_protocol'].update(trials_per_acquisition=3,
         scope='instrumented counter/timeline process; not ordinary timing; first measured trial ticks 4/5/6 selected')

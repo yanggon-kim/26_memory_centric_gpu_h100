@@ -3,6 +3,35 @@ import json
 import math
 from pathlib import Path
 import struct
+import hashlib
+
+
+def archive_headers(root, model, config):
+    """Keep immutable analytical inputs after node-local checkpoint eviction."""
+    snapshot=Path(config['model_path'])
+    target=Path(root)/'environment/model_headers'/(model+'_v2.json')
+    if target.exists():
+        data=json.loads(target.read_text())
+        assert data['model_revision']==config['model_revision']
+        assert data['model_id']==config['model_id']
+        assert data['model_config_sha256']==hashlib.sha256((snapshot/'config.json').read_bytes()).hexdigest()
+        return target
+    data={'schema_version':2,'classification':'checkpoint headers; analytical inputs, not traffic',
+          'model_id':config['model_id'],'model_revision':config['model_revision'],
+          'model_config_sha256':hashlib.sha256((snapshot/'config.json').read_bytes()).hexdigest(),
+          'model_config_json_text':(snapshot/'config.json').read_text(),
+          'model_config':json.loads((snapshot/'config.json').read_text()),
+          'safetensors_headers':headers(snapshot)}
+    download=Path(root)/'configs'/(model+'_smoke.download_manifest.json')
+    assert download.exists(), 'header provenance requires pinned checkpoint download manifest'
+    proof=json.loads(download.read_text())
+    assert proof['revision']==config['model_revision'] and proof['model_id']==config['model_id']
+    data['download_manifest']={'path':str(download.relative_to(root)),
+        'sha256':hashlib.sha256(download.read_bytes()).hexdigest()}
+    data['checkpoint_files']=proof['files']
+    target.parent.mkdir(parents=True,exist_ok=True)
+    target.write_text(json.dumps(data,indent=2)+'\n')
+    return target
 
 
 def headers(snapshot):
@@ -23,11 +52,18 @@ def headers(snapshot):
 
 
 def useful(snapshot,batch,context,layer=None,input_bytes=None,input_tokens=None):
-    snapshot=Path(snapshot);config=json.loads((snapshot/'config.json').read_text())
+    snapshot=Path(snapshot)
+    if snapshot.is_file():
+        manifest=json.loads(snapshot.read_text())
+        assert manifest['schema_version']==2 and manifest['model_revision']
+        assert hashlib.sha256(manifest['model_config_json_text'].encode()).hexdigest()==manifest['model_config_sha256']
+        assert json.loads(manifest['model_config_json_text'])==manifest['model_config']
+        config=manifest['model_config'];tensors=manifest['safetensors_headers']
+    else:
+        config=json.loads((snapshot/'config.json').read_text());tensors=headers(snapshot)
     assert config['model_type'] in ('qwen2','mistral'),'dense accounting adapter only'
     active_sliding=(config.get('sliding_window') is not None and config.get('use_sliding_window',True)) or any('sliding' in x for x in config.get('layer_types',[]))
     assert not active_sliding,'active sliding window requires a separately validated adapter'
-    tensors=headers(snapshot)
     assert all(t['dtype']=='BF16' for t in tensors),'BF16 checkpoint accounting required'
     hq=config['num_attention_heads'];hkv=config.get('num_key_value_heads',hq)
     d=config.get('head_dim') or config['hidden_size']//hq

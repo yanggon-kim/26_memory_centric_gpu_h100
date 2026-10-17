@@ -83,6 +83,8 @@ def materialize(root, model):
     target = root/'configs'/f'{model}_smoke.json'
     if target.exists():
         assert Path(load(target)['model_path']).is_dir(), 'recorded model cache unavailable; rematerialize with a new attempt'
+        from shoreline_accounting import archive_headers
+        archive_headers(root,model,load(target))
         return target
     prior = load(PACKAGE/'h200/20261016_job14073758/configs'/f'{model}_smoke.json')
     outcome = run(root, f'download_{model}', python_command('materialize_config.py', '--model', model,
@@ -91,6 +93,8 @@ def materialize(root, model):
     if model == 'mistral7b':
         outcome = run(root, 'mistral_tokenizer_proof', python_command('resolve_mistral_tokenizer.py'), 120)
         assert outcome['status'] == 'complete'
+    from shoreline_accounting import archive_headers
+    archive_headers(root,model,load(target))
     checkpoint(root, f'J1 checkpoint: preserve pinned {model} materialization')
     return target
 

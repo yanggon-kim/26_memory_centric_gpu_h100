@@ -56,6 +56,12 @@ def main(root):
         if ref.exists():
             outputs=load(root/load(ref)['output']/'run.json')['cases'][0]['trials'][0]['output_ids']
             tokens={tick:[row[tick-1] for row in outputs] for tick in (4,5,6)}
+        else:
+            from shoreline_reuse import output_reference
+            prior=output_reference(root,f'{d["model"]}_{d["engine"]}_b{d["batch"]}_c{d["context"]}_acq00')
+            if prior:
+                outputs=load(prior)['cases'][0]['trials'][0]['output_ids']
+                tokens={tick:[row[tick-1] for row in outputs] for tick in (4,5,6)}
         inputs=None
         if d['layer'] is not None:
             # Runtime input ranges are collected outside counter intervals, with value versions per tick.
@@ -76,8 +82,14 @@ def main(root):
                     from shoreline_timeline import union_ns
                     candidate[row['tick']]=union_ns(ranges)
             if set(candidate)=={4,5,6}:inputs=candidate
-        u=useful(cfg['model_path'],d['batch'],d['context'],d['layer'],inputs,tokens)
+        header=root/'environment/model_headers'/(d['model']+'_v2.json')
+        if header.exists():
+            manifest=load(header)
+            assert manifest['model_id']==cfg['model_id'] and manifest['model_revision']==cfg['model_revision']
+            assert manifest['model_config_sha256']==cfg['config_sha256']
+        u=useful(header if header.exists() else cfg['model_path'],d['batch'],d['context'],d['layer'],inputs,tokens)
         traffic.append({'source':str(p.relative_to(root)),'sha256':sha(p),'id':d['id'],
+            'analytical_header_source':{'path':str(header.relative_to(root)),'sha256':sha(header)} if header.exists() else None,
             'classification':'measured physical bytes plus separately analytical logical demand',
             'D_read':d['hbm_read_bytes'],'D_write':d['hbm_write_bytes'],'logical':u,
             'D_read_over_U_tick_sum':d['hbm_read_bytes']/u['U_tick_sum'] if u['U_tick_sum'] else None,

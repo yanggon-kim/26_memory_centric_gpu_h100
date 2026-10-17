@@ -104,6 +104,15 @@ def main():
         header={'model.embed_tokens.weight':{'shape':[16,8],'dtype':'BF16','data_offsets':[0,256]}}
         payload=json.dumps(header).encode();(root/'model.safetensors').write_bytes(struct.pack('<Q',len(payload))+payload)
         u=useful(root,1,8)
+        from shoreline_accounting import headers
+        raw=(root/'config.json').read_text()
+        manifest=root/'headers.json'
+        manifest.write_text(json.dumps({'schema_version':2,'model_revision':'1'*40,
+            'model_config_json_text':raw,'model_config_sha256':hashlib.sha256(raw.encode()).hexdigest(),
+            'model_config':config,'safetensors_headers':headers(root)}))
+        assert useful(manifest,1,8)==u, 'durable header accounting must equal actual checkpoint headers'
+        damaged=json.loads(manifest.read_text());damaged['model_config_sha256']='0'*64
+        manifest.write_text(json.dumps(damaged));rejected(useful,manifest,1,8)
         assert u['ticks'][0]['historical_kv_bytes']==2*2*1*11*1*4*2
         assert u['U_window_unique']-u['U_window_initial_external_main']==2*2*1*2*1*4*2
         assert u['ticks'][0]['required_weight_bytes']==256,'tied output storage counted once per tick'
