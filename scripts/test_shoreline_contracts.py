@@ -11,6 +11,19 @@ def rejected(function,*args):
 
 
 def main():
+    from shoreline_jobs import bounded_acquisitions,sensor_diagnostic_passed
+    assert sensor_diagnostic_passed({'status':'complete','windows':[{'treatment':'owned_bf16_gemm','telemetry':{'unavailable_reason':''}}]})
+    assert not sensor_diagnostic_passed({'status':'complete','windows':[]})
+    assert not sensor_diagnostic_passed({'status':'complete','windows':[{'treatment':'owned_bf16_gemm','telemetry':{'unavailable_reason':'counter disagreement'}}]})
+    acquired=[]
+    def collect(index):acquired.append(index);return {'status':'complete'}
+    assert len(bounded_acquisitions(collect))==3 and acquired==[0,1,2]
+    acquired=[]
+    def failed(index):acquired.append(index);return {'status':'failed'}
+    assert len(bounded_acquisitions(failed))==1 and acquired==[0]
+    acquired=[]
+    def partial(index):acquired.append(index);return {'status':'complete' if index==0 else 'rejected'}
+    assert len(bounded_acquisitions(partial))==2 and acquired==[0,1]
     from trace_vllm_decode import ordinary_control_guard
     ordinary_control_guard({},3,10)
     rejected(ordinary_control_guard,{'CUDA_INJECTION64_PATH':'unit-test-tracer.so'},3,10)

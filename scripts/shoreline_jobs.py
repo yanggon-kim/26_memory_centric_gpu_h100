@@ -37,6 +37,21 @@ def disposition(job,status,reason):
     publish(f'{job}: {reason}')
 
 
+def bounded_acquisitions(produce):
+    """Prove a new producer route before expanding its independent triplet."""
+    rows=[]
+    for acquisition in range(3):
+        row=produce(acquisition);rows.append(row)
+        if row.get('status')!='complete':break
+    return rows
+
+
+def sensor_diagnostic_passed(data):
+    windows=[w for w in data.get('windows',[]) if w.get('treatment')=='owned_bf16_gemm']
+    return (data.get('status')=='complete' and len(windows)==1 and
+            windows[0].get('telemetry',{}).get('unavailable_reason')=='')
+
+
 def functional_smoke_reference(root,model,engine,batch,context):
     """A local exact HF/engine smoke pair supplies outputs, never timing."""
     native=load(root/'configs'/f'{model}_smoke.json')
@@ -601,9 +616,11 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
 
 def sm_allocations():
     campaign.update_job(ROOT,'J5','in_progress')
+    engines=load(ROOT/'session.json').get('sm_engines',('graph','eager'))
+    assert engines and set(engines)<=set(('graph','eager'))
     results=[];qualified={};qualified_proofs={}
     for b,c in [(1,1024),(8,4096)]:
-        for engine in ('graph','eager'):
+        for engine in engines:
             for attempt_id in range(2):
                 result=restricted_case('bridge',engine,b,c,.75,0,True,attempt_id)
                 results.append(result)
@@ -626,6 +643,7 @@ def sm_allocations():
         primary=restricted_case('bridge',engine,b,c,1,0,True)
         results.append(primary)
         if primary['status']!='complete':continue
+        counter_proofs[(b,c,1)]=engine if engine=='graph' else counter_proofs.get((b,c,1),engine)
         for acq in range(3):results.append(restricted_case('bridge',engine,b,c,1,acq))
         for fraction in (.75,.5,.3):
             # Each resource setting needs its own all-kernel proof; a 75% pilot does not prove 30%.
@@ -635,14 +653,16 @@ def sm_allocations():
             counter_proofs[(b,c,fraction)]=engine if engine=='graph' else counter_proofs.get((b,c,fraction),engine)
             for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
     for (b,c,fraction),engine in counter_proofs.items():
-        for acq in range(3):results.append(counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction))
+        results.extend(bounded_acquisitions(lambda acq:counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction)))
     for fraction in (1,.75,.5,.3):
-        for acq in range(3):
+        def acquire_native(acq):
             label=f'J5_native_f{int(fraction*100)}_acq{acq:02d}';out=ROOT/'runs'/label
             outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
                          '--acquisition',str(acq),'--fraction',str(fraction)),timeout=900)
-            results.append({'id':label,'status':outcome['status'],'family':'independent service under allocation'})
             publish(f'J5 service checkpoint: {label} {outcome["status"]}')
+            return {'id':label,'status':outcome['status'],'family':'independent service under allocation'}
+        native_rows=bounded_acquisitions(acquire_native);results.extend(native_rows)
+        if len(native_rows)!=3 or any(row['status']!='complete' for row in native_rows):continue
         native_counter_suite('J5',fraction,load(ROOT/'session.json').get('native_sm_counter_conditions',
                              ['stream_512mib','gather_512mib','pointer_96mib_chains1']))
     dump(ROOT/'results/shoreline_sm_allocation_qualification.json',{'cases':results,
@@ -734,7 +754,12 @@ def layer_events():
 
 def energy():
     campaign.update_job(ROOT,'J10','in_progress')
-    results=[];energy_sensor_family_allowed=True
+    diagnostic=ROOT/'results/J10_raw_sensor_diagnostic_v2.json'
+    diag=attempt('J10_raw_sensor_diagnostic_v2',python_command('shoreline_energy_diagnostic.py',
+        '--gpu-uuid',UUID,'--output',diagnostic),timeout=120)
+    energy_sensor_family_allowed=(diag['status']=='complete' and diagnostic.exists() and sensor_diagnostic_passed(load(diagnostic)))
+    publish(f'J10 sensor preflight checkpoint: long-window family allowed={energy_sensor_family_allowed}')
+    results=[]
     for model,b,c in CONTRASTS:
         if reference(model,'graph',b,c) is None:continue
         for acq in range(3):
@@ -753,7 +778,7 @@ def energy():
                     prefix_match=all([row[:64] for row in t['output_ids']]==expected for t in trials)
                     result['exact_64_token_baseline_prefix']=prefix_match
                     result['clock_qualification']=campaign.clock_qualification(d,outcome['monitor']['source']) if outcome.get('monitor') and trials else {'passed':False}
-                    result['qualified_energy']=outcome['status']=='complete' and d['status']=='complete' and prefix_match and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
+                    result['qualified_energy']=outcome['status']=='complete' and d['status']=='complete' and prefix_match and result['clock_qualification']['passed'] and len(trials)==10 and all(isinstance(t.get('telemetry',{}).get('joules_per_token'),(int,float)) for t in trials)
                 results.append(result);publish(f'J10 energy checkpoint: {label} qualified={result["qualified_energy"]}')
                 if model=='bridge' and b==1 and acq==0 and not result['qualified_energy']:
                     diag=attempt('J10_raw_sensor_diagnostic_v1',python_command('shoreline_energy_diagnostic.py',
@@ -775,9 +800,10 @@ def energy():
             results.append(result);dump(ROOT/'profiles'/(label+'.json'),result)
             publish(f'J10 prefill checkpoint: {label} {result["status"]}')
     dump(ROOT/'results/shoreline_energy_qualification.json',{'cases':results,
+        'long_window_sensor_preflight_passed':energy_sensor_family_allowed,
         'scope':'whole-board energy; raw counter and sampled power retained without rescaling or idle subtraction',
         'absolute_component_calibration':None})
-    disposition('J10','partial' if any(not r.get('qualified_energy',r.get('status')=='complete') for r in results) else 'complete',
+    disposition('J10','partial' if not energy_sensor_family_allowed or not results or any(not r.get('qualified_energy',r.get('status')=='complete') for r in results) else 'complete',
                 'publish qualified-or-NA board energy and separate prefill/first-token guardrails')
 
 
@@ -847,6 +873,23 @@ def competition():
 
 def traces():
     campaign.update_job(ROOT,'J11','in_progress')
+    retained=load(ROOT/'session.json').get('retained_trace_blocker')
+    if retained:
+        path=(PACKAGE/retained['path']).resolve()
+        assert path.is_relative_to(PACKAGE/'h200') and digest(path)==retained['sha256']
+        review=load(path)
+        assert review['full_model_capture_allowed'] is False
+        dump(ROOT/'results/shoreline_trace_qualification.json',{'status':'blocked',
+            'retained_semantic_review':retained,'semantic_review':review,
+            'new_trace_capture':False,'full_model_gate':'blocked: preserve waits; no safe semantic implementation yet'})
+        archive=PACKAGE/retained['archive']
+        assert digest(archive)==retained['archive_sha256']
+        outcome=attempt('J11_retained_archive_readback_v1',python_command('shoreline_archive.py',
+            '--file',archive,'--proof',ROOT/'results/J11_retained_archive_readback_v1.json',
+            '--remote-path','archives/'+path.parents[1].name+'/'+archive.name),gpu=False,timeout=1200)
+        publish(f'J11 retained private archive checkpoint: {outcome["status"]}')
+        disposition('J11','partial','hash-verified prior semantic blocker retained; full-model trace not expanded; private archive readback independently attempted')
+        return
     micro_tag=load(ROOT/'session.json').get('native_micro_attempt','v1')
     micro=attempt('J11_native_micro_'+micro_tag,python_command('h200_native_micro.py'),gpu=False,timeout=600)
     publish(f'J11 native micro checkpoint: {micro["status"]}')
