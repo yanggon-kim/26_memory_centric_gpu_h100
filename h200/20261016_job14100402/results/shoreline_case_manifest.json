@@ -17,10 +17,10 @@
     },
     {
       "id": "J2",
-      "status": "in_progress",
+      "status": "partial",
       "scientific_gate": "incomplete",
-      "reason": null,
-      "updated_utc": "2026-10-16T19:03:30.679943+00:00"
+      "reason": "46/48 selected ticks_only_v4 captures complete and exact replay publications rechecked; Qwen14B graph acq01 interrupted and acq02 not started; metadata and comparative clock/timing joins pending",
+      "updated_utc": "2026-10-17T12:18:44.330728+00:00"
     },
     {
       "id": "J3",
@@ -74,10 +74,10 @@
     },
     {
       "id": "J11",
-      "status": "in_progress",
+      "status": "partial",
       "scientific_gate": "incomplete",
-      "reason": null,
-      "updated_utc": "2026-10-16T17:34:54.957896+00:00"
+      "reason": "Pinned tools and native micro v1 capture/postprocess/positive sm_90 replay saved; no-skip v2, model semantic pilot, H200 calibration and independently verified private archive transfer pending",
+      "updated_utc": "2026-10-17T12:18:44.330728+00:00"
     }
   ],
   "conditions": [
@@ -2839,6 +2839,15 @@
       "numerical_source_freeze": "6ab7be444a8b82d4443f39b4e9acf45b69e82666d2e416395f816e00ffbcbb14"
     },
     {
+      "id": "J2_qwen14b_graph_b1_c4096_full_acq01_ticks_only_v4",
+      "status": "running",
+      "source": "results/processes/J2_qwen14b_graph_b1_c4096_full_acq01_ticks_only_v4.json",
+      "source_sha256": "8c3f80f5f6fc9a4f50f78051823328176208c49175a61551e958b1eb809379b2",
+      "gpu_execution": false,
+      "exit_code": null,
+      "numerical_source_freeze": "6ab7be444a8b82d4443f39b4e9acf45b69e82666d2e416395f816e00ffbcbb14"
+    },
+    {
       "id": "J4_native_acq00",
       "status": "failed",
       "source": "results/processes/J4_native_acq00.json",
@@ -3551,5 +3560,24 @@
     }
   ],
   "ledger_update_utc": "2026-10-16T16:53:55.863825+00:00",
-  "ledger_note": "Detailed condition ledger added during initial pilot work; existing raw attempt identities and initial source declarations are preserved, not retroactively relabeled."
+  "ledger_note": "Detailed condition ledger added during initial pilot work; existing raw attempt identities and initial source declarations are preserved, not retroactively relabeled.",
+  "recovery": {
+    "status": "interrupted",
+    "audited_utc": "2026-10-17T12:18:44.330728+00:00",
+    "allocation_state": "PREEMPTED",
+    "scheduler_evidence": "logs/recovery_20261017_sacct.txt",
+    "current_hostname": "atl1-1-02-012-9-0.pace.gatech.edu",
+    "old_runtime_available_here": false,
+    "no_new_gpu_jobs_launched": true,
+    "report": "analysis/recovery_20261017.md"
+  },
+  "attempt_recovery_overrides": [
+    {
+      "id": "J2_qwen14b_graph_b1_c4096_full_acq01_ticks_only_v4",
+      "effective_status": "interrupted",
+      "original_status": "running",
+      "original_record_preserved": true,
+      "evidence": "results/recovery_20261017.json"
+    }
+  ]
 }

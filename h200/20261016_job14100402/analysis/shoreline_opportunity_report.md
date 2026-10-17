@@ -1,5 +1,7 @@
 # H200 shoreline evidence progress
 
+Recovery update 2026-10-17: this generated table is an earlier 14-capture accounting snapshot. See [recovery audit](recovery_20261017.md) for 46/48 completed selected captures, interrupted allocation and all remaining gates.
+
 Ordinary, profiled, analytical and historical evidence retain separate scopes. Clock-rejected rows have raw values and no qualified matched confidence interval.
 
 | Model | B | C | Engine | Acquisitions | Raw median step ms | Clock-qualified |
