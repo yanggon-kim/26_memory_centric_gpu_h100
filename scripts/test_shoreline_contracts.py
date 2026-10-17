@@ -104,8 +104,14 @@ def main():
     import h200_session,subprocess,socket
     host=socket.gethostname();session={'slurm_job_id':'unit-test-only','expected_hostname':host}
     with patch.object(h200_session,'SESSION',session),patch.dict(os.environ,{'SLURM_JOB_ID':'unit-test-only'}),patch.object(h200_session.time,'sleep'):
-        with patch.object(h200_session.subprocess,'check_output',side_effect=[subprocess.TimeoutExpired('scontrol',15),'JobState=RUNNING NodeList='+host.split('.')[0]]) as query:
+        with patch.object(h200_session.subprocess,'check_output',side_effect=[subprocess.TimeoutExpired('scontrol',15),'JobState=RUNNING EndTime=2030-01-01T00:00:00 NodeList='+host.split('.')[0]]) as query:
             assert h200_session.verify_allocation()['state']=='RUNNING' and query.call_count==2
+    import datetime
+    scheduled=datetime.datetime.fromisoformat('2030-01-01T00:00:00').timestamp()
+    assert h200_session.allocation_cutoff('EndTime=2030-01-01T00:00:00',scheduled+3600)==(scheduled-1800,scheduled)
+    assert h200_session.allocation_cutoff('EndTime=2030-01-01T00:00:00',scheduled-7200)==(scheduled-7200,scheduled)
+    rejected(h200_session.allocation_cutoff,'EndTime=Unknown',scheduled)
+    with patch.object(h200_session,'SESSION',session),patch.dict(os.environ,{'SLURM_JOB_ID':'unit-test-only'}),patch.object(h200_session.time,'sleep'):
         with patch.object(h200_session.subprocess,'check_output',return_value='JobState=COMPLETED NodeList='+host.split('.')[0]) as query:
             rejected(h200_session.verify_allocation);assert query.call_count==1
         with patch.object(h200_session.subprocess,'check_output',side_effect=subprocess.TimeoutExpired('scontrol',15)) as query:

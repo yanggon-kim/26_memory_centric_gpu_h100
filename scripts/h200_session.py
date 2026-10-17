@@ -64,6 +64,12 @@ def environment():
     return env
 
 
+def allocation_cutoff(state, configured, closeout_buffer=1800):
+    fields=dict(item.split('=',1) for item in state.split() if '=' in item)
+    end=datetime.datetime.fromisoformat(fields['EndTime']).timestamp()
+    return min(configured,end-closeout_buffer),end
+
+
 def verify_allocation():
     if not SESSION:
         return
@@ -81,7 +87,9 @@ def verify_allocation():
             if attempt==2:raise RuntimeError('allocation status unavailable after three bounded read-only queries; no GPU launch authorized') from error
             time.sleep(1)
     assert 'JobState=RUNNING' in state and 'NodeList='+socket.gethostname().split('.')[0] in state
+    cutoff,end=allocation_cutoff(state,LAUNCH_CUTOFF,SESSION.get('closeout_buffer_s',1800))
     return {'job_id':SESSION['slurm_job_id'],'hostname':socket.gethostname(),'state':'RUNNING',
+            'scheduler_end_unix_s':end,'effective_launch_cutoff_unix_s':cutoff,
             'verified_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'transient_query_failures':failures}
 
 
@@ -183,10 +191,11 @@ class ProcessMonitor:
 
 def run(root, label, command, timeout=900, gpu=False, env=None):
     allocation_proof=verify_allocation()
+    cutoff=allocation_proof['effective_launch_cutoff_unix_s'] if allocation_proof else LAUNCH_CUTOFF
     root = Path(root)
-    if time.time() >= LAUNCH_CUTOFF:
+    if time.time() >= cutoff:
         return {'label': label, 'status': 'pending', 'reason': 'allocation closeout cutoff reached'}
-    limit = min(timeout, max(1, int(LAUNCH_CUTOFF-time.time())))
+    limit = min(timeout, max(1, int(cutoff-time.time())))
     log = root/'logs'/(label+'.log')
     if log.exists():
         raise FileExistsError('attempt label already exists: '+str(log))
@@ -213,10 +222,12 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
                                                   '--format=csv,noheader'], text=True).strip()
             if processes:
                 raise RuntimeError('GPU is not idle before '+label+': '+processes)
-    if gpu:allocation_proof=verify_allocation()
-    if time.time()>=LAUNCH_CUTOFF:
+    if gpu:
+        allocation_proof=verify_allocation()
+        if allocation_proof:cutoff=min(cutoff,allocation_proof['effective_launch_cutoff_unix_s'])
+    if time.time()>=cutoff:
         return {'label':label,'status':'pending','reason':'allocation closeout cutoff reached after startup guards'}
-    limit=min(timeout,max(1,int(LAUNCH_CUTOFF-time.time())))
+    limit=min(timeout,max(1,int(cutoff-time.time())))
     started = time.time()
     row = {'label': label, 'command': [str(c) for c in command], 'started_utc':
            datetime.datetime.now(datetime.timezone.utc).isoformat(), 'timeout_s': limit,
@@ -251,11 +262,11 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
         target=snapshots/(digest+'.py')
         if not target.exists():target.write_bytes((PACKAGE/'scripts'/name).read_bytes())
     row['script_snapshot_root']='environment/source_snapshots'
-    if time.time()>=LAUNCH_CUTOFF:
+    if time.time()>=cutoff:
         row.update(status='pending',reason='allocation closeout cutoff reached before process spawn')
         dump(root/'results/processes'/(label+'.json'),row)
         return row
-    limit=min(timeout,max(1,int(LAUNCH_CUTOFF-time.time())))
+    limit=min(timeout,max(1,int(cutoff-time.time())))
     row['timeout_s']=limit
     print('START', label, flush=True)
     with log.open('w') as stream:
@@ -266,7 +277,22 @@ def run(root, label, command, timeout=900, gpu=False, env=None):
         dump(root/'results/processes'/(label+'.json'), row)
         if gpu:dump(root/'results/current_process.json', row)
         try:
-            code = process.wait(timeout=limit)
+            deadline=started+limit
+            while True:
+                try:
+                    code=process.wait(timeout=max(.01,min(15,deadline-time.time())))
+                    break
+                except subprocess.TimeoutExpired:
+                    if SESSION:
+                        try:
+                            proof=verify_allocation()
+                            deadline=min(deadline,proof['effective_launch_cutoff_unix_s'])
+                            row['latest_allocation_verification']=proof
+                        except (AssertionError,RuntimeError,KeyError,ValueError) as error:
+                            row['allocation_stop_reason']=type(error).__name__+': '+str(error)
+                            raise subprocess.TimeoutExpired(row['command'],limit)
+                    if time.time()>=deadline:
+                        raise subprocess.TimeoutExpired(row['command'],limit)
             row.update(exit_code=code, status='complete' if code == 0 else 'failed')
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGTERM)

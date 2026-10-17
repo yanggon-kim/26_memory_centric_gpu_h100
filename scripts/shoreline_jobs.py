@@ -853,7 +853,9 @@ def traces():
     semantic_review=output/'semantic_review.json'
     review=load(semantic_review) if semantic_review.exists() else {'status':'pending','reason':'async descriptors, waits, masks and opcode mapping require actual trace/source review'}
     pilot['semantic_review']=review
-    if outcome['status']=='complete' and pilot['exact_standalone_reference_ids'] and not warnings and review.get('status')=='passed':
+    if args.semantic_pilot_only:
+        pilot['full_model_gate']='deferred: early semantic-pilot-only stage; core jobs run before full capture'
+    elif outcome['status']=='complete' and pilot['exact_standalone_reference_ids'] and not warnings and review.get('status')=='passed':
         import time,datetime
         cutoff=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp()
         if cutoff-time.time()>2400:
@@ -884,6 +886,7 @@ if __name__=='__main__':
     p.add_argument('--pilot',action='store_true',help='stop J2 after its bounded full-decode pilot')
     p.add_argument('--extensions',action='store_true',help='J4 read-only/overlap and physical-service extension')
     p.add_argument('--micro-only',action='store_true',help='J11 early bounded native tracer feasibility check')
+    p.add_argument('--semantic-pilot-only',action='store_true',help='J11 native/calibration/semantic pilot without full-model expansion')
     p.add_argument('--representative-only',action='store_true',help='J1 bounded saved-text functional control')
     p.add_argument('--metadata-only',action='store_true',help='J2 separate functional executed-length/page metadata controls')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
