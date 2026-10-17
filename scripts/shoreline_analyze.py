@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import statistics
+import datetime
 
 
 def load(p):return json.loads(Path(p).read_text())
@@ -148,6 +149,23 @@ def main(root):
     treatments(root)
     from shoreline_kernel_analysis import analyze as kernels
     kernels(root)
+    manifest_path=root/'results/shoreline_case_manifest.json'
+    if manifest_path.exists():
+        import fcntl
+        package=Path(__file__).resolve().parents[1]
+        with (package/'.git/h200_checkpoint.lock').open('a') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX)
+            manifest=load(manifest_path)
+            job=next((j for j in manifest['jobs'] if j['id']=='J9'),None)
+            if job is not None:
+                job.update(status='partial',scientific_gate='incomplete',
+                    updated_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    reason=f'{len(scenarios)} conditional analytical scenarios saved; decoder P/beta transfer and physical area/PHY/package feasibility remain unvalidated',
+                    evidence={'path':'results/shoreline_joint_sensitivity.json','sha256':sha(root/'results/shoreline_joint_sensitivity.json')})
+                dump(manifest_path,manifest)
+                status_path=root/'STATUS.json'
+                if status_path.exists():
+                    status=load(status_path);status['jobs']=manifest['jobs'];dump(status_path,status)
     print(json.dumps({'baseline_conditions':len(baseline),'physical_traffic_captures':len(traffic),
                       'native_acquisitions':len(native),'conditional_scenarios':len(scenarios),'flat_measurements':flat_records}))
 
