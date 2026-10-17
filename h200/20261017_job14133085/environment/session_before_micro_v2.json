@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "slurm_job_id": "14133085",
+  "gpu_uuid": "GPU-49116497-5f1d-d130-c01b-e2e19509e8d6",
+  "expected_hostname": "atl1-1-02-012-9-0.pace.gatech.edu",
+  "workspace": "/tmp/h200_research_jkim4112_job14133085",
+  "python": "/tmp/h200_research_jkim4112_job14133085/runtime/bin/python",
+  "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+  "launch_cutoff": "2026-10-17T18:07:30-04:00",
+  "allocation_end": "2026-10-17T18:37:30-04:00",
+  "warmup_trials": 3,
+  "trials": 10,
+  "acquisitions": 3,
+  "seed": 20261013,
+  "retry_limit": 2,
+  "monitor_period_s": 0.05,
+  "clock_envelope_max_ratio": 1.05,
+  "old_session": "h200/20261017_job14131987",
+  "rejected_acquisition_retry_limit": 0,
+  "retry_policy_reason": "two separately versioned conditioning pilots failed the same clock envelope; preserve all raw trials and collect remaining independent acquisitions once; clock gate unchanged",
+  "accel_root": "/tmp/h200_research_jkim4112_job14133085/tools/accel-sim-framework",
+  "native_micro_attempt": "v1",
+  "idle_required_s": 10,
+  "profile_protocol": "ticks_only_v4",
+  "native_prediction_max_relative_error": 0.1,
+  "collection_scope_version": "continuation_v1",
+  "traffic_layer_contrasts": [],
+  "kernel_profile_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ],
+    [
+      "mistral7b",
+      1,
+      4096
+    ]
+  ],
+  "native_counter_conditions": [
+    "stream_1mib",
+    "stream_28mib",
+    "stream_32mib",
+    "stream_512mib",
+    "stride17_512mib",
+    "gather_512mib",
+    "paged128_512mib",
+    "pointer_0.03125mib_chains1",
+    "pointer_96mib_chains1",
+    "pointer_96mib_chains32",
+    "fma_blocks528",
+    "bf16_gemm_4096",
+    "softmax_width8192"
+  ],
+  "native_sm_counter_conditions": [
+    "stream_512mib",
+    "gather_512mib",
+    "pointer_96mib_chains1"
+  ],
+  "trace_preserve_waits": true,
+  "trace_semantic_pilot_timeout_s": 180,
+  "traffic_contrasts": [
+    [
+      "qwen14b",
+      1,
+      4096
+    ]
+  ],
+  "traffic_engines": [
+    "graph"
+  ],
+  "baseline_contrasts": [
+    [
+      "bridge",
+      1,
+      1024
+    ],
+    [
+      "bridge",
+      8,
+      4096
+    ]
+  ],
+  "kernel_filter_protocols": {
+    "attention_forward": "filter_v2",
+    "attention_combine": "filter_v2",
+    "kv_update": "filter_v2"
+  },
+  "kernel_reader_protocol": "identity_v3",
+  "metadata_probe_protocol": "v2",
+  "closeout_buffer_s": 1800,
+  "frozen_source_root": "/tmp/h200_research_jkim4112_job14133085/frozen/1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644",
+  "frozen_source_identity": "1028cffaa36cd237fa95917795ac36561343adf945730854411929453b674644"
+}
