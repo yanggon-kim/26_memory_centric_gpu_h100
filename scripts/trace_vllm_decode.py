@@ -102,6 +102,7 @@ def main(a):
             references.append(reference)
         dump(a.output/'injection_disabled_references.json',{'classification':'measured-real-GPU-in-injected-process',
             'scope':'instrumentation-disabled in injected process; distinct from standalone no-injection eager calibration','trials':references})
+        assert len({row['output_sha256'] for row in references})==1, 'injected-process disabled references disagree; preserve failure before tracing'
         request_ids=[f'capture_{i}' for i in range(a.batch)]
         for rid,prompt in zip(request_ids,prompts):engine.add_request(rid,{'prompt_token_ids':prompt},params)
         first=engine.step()

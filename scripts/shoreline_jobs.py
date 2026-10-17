@@ -846,10 +846,13 @@ def traces():
         warnings += [line for line in text.splitlines() if any(word in line.lower() for word in
                       ('unsupported','dropping','not implemented','trywait','warning'))]
     pilot={'status':outcome['status'],'semantic_warnings':warnings,'full_model_gate':'pending'}
+    trace_metadata=output/'metadata/trace_metadata.json'
+    pilot['exact_standalone_reference_ids']=(trace_metadata.exists() and expected is not None and
+        load(trace_metadata).get('output_ids')==expected and load(trace_metadata).get('correctness_passed') is True)
     semantic_review=output/'semantic_review.json'
     review=load(semantic_review) if semantic_review.exists() else {'status':'pending','reason':'async descriptors, waits, masks and opcode mapping require actual trace/source review'}
     pilot['semantic_review']=review
-    if outcome['status']=='complete' and not warnings and review.get('status')=='passed':
+    if outcome['status']=='complete' and pilot['exact_standalone_reference_ids'] and not warnings and review.get('status')=='passed':
         import time,datetime
         cutoff=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp()
         if cutoff-time.time()>2400:
