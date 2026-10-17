@@ -75,18 +75,7 @@
     "traffic_engines": [
       "graph"
     ],
-    "baseline_contrasts": [
-      [
-        "bridge",
-        1,
-        1024
-      ],
-      [
-        "bridge",
-        8,
-        4096
-      ]
-    ],
+    "baseline_contrasts": [],
     "kernel_filter_protocols": {
       "attention_forward": "filter_v2",
       "attention_combine": "filter_v2",
@@ -101,14 +90,24 @@
     "reused_graph_limitation": {
       "review": "h200/20261017_job14133085/results/J5_graph_scope_review_v3.json",
       "reason": "Reviewed corrected green-context graph route unsupported; unchanged numerical green adapter; eager supported route only"
-    }
+    },
+    "retained_trace_blocker": {
+      "path": "h200/20261017_job14133085/results/J11_semantic_review_v1.json",
+      "sha256": "c660faf0a4786a31332b9e3e19702705259abf78e95e2196bd4da8d5d3af50c5",
+      "archive": "h200/20261017_job14133085/environment/native_trace_micro_v2.tar",
+      "archive_sha256": "54c3ecd5df0ec95881b5c6156cccb0ee49fc36378e11362cc6d2e4d408a23fa2"
+    },
+    "frozen_source_root": "/tmp/h200_research_jkim4112_job14134786/frozen/c36b85de6cec5f9a4e4d063c25cb35adab3c57410518c3731504d7ae092fd6ff",
+    "frozen_source_identity": "c36b85de6cec5f9a4e4d063c25cb35adab3c57410518c3731504d7ae092fd6ff"
   },
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
-      "prior_evidence": "h200/20261017_job14133085/STATUS.json"
+      "status": "complete",
+      "scientific_gate": "passed",
+      "prior_evidence": "h200/20261017_job14133085/STATUS.json",
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-17T21:42:10.379268+00:00"
     },
     {
       "id": "J1",
@@ -176,5 +175,6 @@
       "scientific_gate": "pending",
       "prior_evidence": "h200/20261017_job14133085/STATUS.json"
     }
-  ]
+  ],
+  "historical_data": "previous session retained; no pooling across allocations"
 }
