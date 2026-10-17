@@ -1,0 +1,20 @@
+{
+  "status": "failed",
+  "semantic_warnings": [
+    "ACK_CTX_INIT_LIMITATION = 0 - if set, no warning will be printed for nvbit_at_ctx_init()",
+    "WARNING 10-17 11:48:24 [config.py:70] Support for Transformers v4 is deprecated. The Transformers v4 codepath will become unmaintained in vLLM v0.22.0 and will be removed in vLLM v0.24.0. Please upgrade to Transformers v5: pip install --upgrade transformers",
+    "WARNING 10-17 11:48:26 [arg_utils.py:1552] The global random seed is set to 20261013. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.",
+    "WARNING 10-17 11:48:26 [vllm.py:1033] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none",
+    "WARNING 10-17 11:48:26 [vllm.py:1058] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.",
+    "WARNING: Do not call CUDA memory allocation in nvbit_at_ctx_init(). It will cause deadlocks. Do them in nvbit_tool_init(). If you encounter deadlocks, remove CUDA API calls to debug.",
+    "INFO 10-17 11:48:51 [jit_monitor.py:54] Kernel JIT monitor activated \u2014 Triton JIT compilations during inference will be logged as warnings.",
+    "WARNING 10-17 11:48:51 [input_processor.py:274] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().",
+    "WARNING 10-17 11:48:53 [jit_monitor.py:103] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config."
+  ],
+  "full_model_gate": "deferred: early semantic-pilot-only stage; core jobs run before full capture",
+  "exact_standalone_reference_ids": true,
+  "semantic_review": {
+    "status": "pending",
+    "reason": "async descriptors, waits, masks and opcode mapping require actual trace/source review"
+  }
+}
