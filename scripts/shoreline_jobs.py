@@ -37,12 +37,37 @@ def disposition(job,status,reason):
     publish(f'{job}: {reason}')
 
 
+def functional_smoke_reference(root,model,engine,batch,context):
+    """A local exact HF/engine smoke pair supplies outputs, never timing."""
+    native=load(root/'configs'/f'{model}_smoke.json')
+    outputs=[];prompts=[];selected=None
+    for mode in ('hf_eager',engine):
+        q=root/'results/qualifications'/f'{model}_{mode}_b{batch}_c{context}_smoke.json'
+        if not q.exists():return None
+        row=load(q)
+        if row.get('status')!='passed' or row.get('command_status')!='complete':return None
+        path=(root/row['output']/'run.json').resolve()
+        assert path.is_relative_to(root.resolve()),'smoke reference escapes session'
+        assert digest(path)==row['run_sha256'],'smoke reference hash mismatch'
+        data=load(path);assert data['status']=='complete' and len(data['cases'])==1
+        config=data['config'];case=data['cases'][0]
+        assert all(config[k]==native[k] for k in ('model_id','model_revision','seed','precision'))
+        assert case['batch_size']==batch and case['context_length']==context and case['generated_tokens']==64
+        assert len(case['trials'])>=3
+        ids=[t['output_ids'] for t in case['trials']]
+        assert all(x==ids[0] and len(x)==batch and all(len(y)==64 for y in x) for x in ids)
+        outputs.append(ids[0]);prompts.append(case['prompt_sha256']);selected=path
+    assert outputs[0]==outputs[1] and prompts[0]==prompts[1],'HF/engine smoke output mismatch'
+    return selected
+
+
 def reference(model,engine,batch,context):
     name=f'{model}_{engine}_b{batch}_c{context}_acq00.json'
     q=ROOT/'results/qualifications'/name
     if not q.exists():
         from shoreline_reuse import output_reference
-        return output_reference(ROOT, name.removesuffix('.json'))
+        prior=output_reference(ROOT, name.removesuffix('.json'))
+        return prior if prior else functional_smoke_reference(ROOT,model,engine,batch,context)
     row=load(q);p=ROOT/row['output']/'run.json'
     if not p.exists():return None
     data=load(p)
@@ -651,14 +676,26 @@ def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
 
 def retention():
     campaign.update_job(ROOT,'J7','in_progress')
-    results=[]
+    results=[];selected=[];reference_gates=[]
     for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
+        if reference('bridge','eager',b,c) is None:
+            campaign.acquisition(ROOT,'bridge','hf_eager',b,c,0,smoke=True)
+            campaign.acquisition(ROOT,'bridge','eager',b,c,0,smoke=True)
+        try:ref=reference('bridge','eager',b,c)
+        except (AssertionError,KeyError,ValueError) as error:
+            ref=None;reference_gates.append({'batch':b,'context':c,'status':'failed','reason':str(error)})
+        if ref is None:
+            reference_gates.append({'batch':b,'context':c,'status':'unavailable','reason':'independent exact-output reference gate failed; treatment not expanded'})
+        else:selected.append((b,c))
+    dump(ROOT/'results/J7_functional_reference_gates.json',{'failures':reference_gates,'qualified_shapes':selected,'scope':'functional references only; smoke timings excluded'})
+    publish('J7 checkpoint: establish independent exact-output references before treatment comparisons')
+    for b,c in selected:
         for acq in range(3):
             # Predetermined alternating order; never choose by observed latency.
             for pressure in (('normal','pressure') if acq%2==0 else ('pressure','normal')):
                 results.append(treatment_case('J7','bridge',b,c,acq,pressure))
     physical=[]
-    for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
+    for b,c in selected:
         for pressure in ('normal','pressure'):
             for acq in range(3):physical.append(counter_case('bridge','eager',b,c,acq,job='J7',pressure=pressure))
     dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,'physical':physical,

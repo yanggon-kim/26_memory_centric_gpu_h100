@@ -1,0 +1,92 @@
+------------------ --------------------------------------------------------
+Kernel Name        transfer                                                
+------------------ --------------------------------------------------------
+Address            Source                                                  
+0x100057dad00            LDC R1, c[0x0][0x28]                              
+0x100057dad10            S2R R42, SR_TID.X                                 
+0x100057dad20            LDC.64 R38, c[0x0][0x210]                         
+0x100057dad30            CS2R R24, SRZ                                     
+0x100057dad40            CS2R R26, SRZ                                     
+0x100057dad50            S2R R0, SR_CTAID.X                                
+0x100057dad60            CS2R R20, SRZ                                     
+0x100057dad70            CS2R R22, SRZ                                     
+0x100057dad80            CS2R R16, SRZ                                     
+0x100057dad90            CS2R R18, SRZ                                     
+0x100057dada0            CS2R R12, SRZ                                     
+0x100057dadb0            CS2R R14, SRZ                                     
+0x100057dadc0            CS2R R8, SRZ                                      
+0x100057dadd0            CS2R R10, SRZ                                     
+0x100057dade0            CS2R R4, SRZ                                      
+0x100057dadf0            CS2R R6, SRZ                                      
+0x100057dae00            CS2R R32, SRZ                                     
+0x100057dae10            CS2R R34, SRZ                                     
+0x100057dae20            CS2R R28, SRZ                                     
+0x100057dae30            CS2R R30, SRZ                                     
+0x100057dae40            ULDC.64 UR4, c[0x0][0x208]                        
+0x100057dae50            IMAD.SHL.U32 R2, R42, 0x4, RZ                     
+0x100057dae60            IMAD.SHL.U32 R3, R0, 0x1000, RZ                   
+0x100057dae70            LOP3.LUT R37, R3, 0x1fc, R2, 0xf8, !PT            
+0x100057dae80            IADD3 R3, R2, 0xe00, R3                           
+0x100057dae90            ISETP.GE.AND P0, PT, R37, 0x40000, PT             
+0x100057daea0            IMAD.WIDE R36, R37, 0x4, R38                      
+0x100057daeb0            IMAD.WIDE R38, R3, 0x4, R38                       
+0x100057daec0            LDC.64 R2, c[0x0][0x218]                          
+0x100057daed0      @!P0  LDG.E.128.STRONG.GPU R24, desc[UR4][R36.64]       
+0x100057daee0      @!P0  LDG.E.128.STRONG.GPU R20, desc[UR4][R36.64+0x800] 
+0x100057daef0      @!P0  LDG.E.128.STRONG.GPU R16, desc[UR4][R36.64+0x1000]
+0x100057daf00      @!P0  LDG.E.128.STRONG.GPU R12, desc[UR4][R36.64+0x1800]
+0x100057daf10      @!P0  LDG.E.128.STRONG.GPU R8, desc[UR4][R36.64+0x2000] 
+0x100057daf20      @!P0  LDG.E.128.STRONG.GPU R4, desc[UR4][R36.64+0x2800] 
+0x100057daf30      @!P0  LDG.E.128.STRONG.GPU R32, desc[UR4][R36.64+0x3000]
+0x100057daf40      @!P0  LDG.E.128.STRONG.GPU R28, desc[UR4][R38.64]       
+0x100057daf50            IMAD.SHL.U32 R40, R0, 0x1000, RZ                  
+0x100057daf60            BSSY B0, 0x100057daff0                            
+0x100057daf70            IMAD.SHL.U32 R41, R42, 0x4, RZ                    
+0x100057daf80            LOP3.LUT R43, R40, 0x1fc, R41, 0xf8, !PT          
+0x100057daf90            IADD3 R45, R41, 0xe00, R40                        
+0x100057dafa0            IMAD.WIDE R40, R43, 0x4, R2                       
+0x100057dafb0      @P0   BRA 0x100057dafe0                                 
+0x100057dafc0            STG.E.128 desc[UR4][R40.64], R24                  
+0x100057dafd0            STG.E.128 desc[UR4][R40.64+0x800], R20            
+0x100057dafe0            BSYNC B0                                          
+0x100057daff0            BSSY B0, 0x100057db100                            
+0x100057db000            BSSY B1, 0x100057db0e0                            
+0x100057db010            IMAD.WIDE R2, R45, 0x4, R2                        
+0x100057db020      @P0   BRA 0x100057db060                                 
+0x100057db030            STG.E.128 desc[UR4][R40.64+0x1000], R16           
+0x100057db040      @P0   BRA 0x100057db080                                 
+0x100057db050            STG.E.128 desc[UR4][R40.64+0x1800], R12           
+0x100057db060      @P0   BRA 0x100057db0a0                                 
+0x100057db070            STG.E.128 desc[UR4][R40.64+0x2000], R8            
+0x100057db080      @P0   BRA 0x100057db0d0                                 
+0x100057db090            STG.E.128 desc[UR4][R40.64+0x2800], R4            
+0x100057db0a0      @P0   BREAK B1                                          
+0x100057db0b0      @P0   BRA 0x100057db0f0                                 
+0x100057db0c0            STG.E.128 desc[UR4][R40.64+0x3000], R32           
+0x100057db0d0            BSYNC B1                                          
+0x100057db0e0      @!P0  STG.E.128 desc[UR4][R2.64], R28                   
+0x100057db0f0            BSYNC B0                                          
+0x100057db100            WARPSYNC.ALL                                      
+0x100057db110            NOP                                               
+0x100057db120            LDC.64 R2, c[0x0][0x220]                          
+0x100057db130            S2R R5, SR_VIRTUALSMID                            
+0x100057db140            LOP3.LUT P0, RZ, R42, 0x7f, RZ, 0xc0, !PT         
+0x100057db150            LEA R2, P1, R0, R2, 0x2                           
+0x100057db160            LEA.HI.X R3, R0, R3, RZ, 0x2, P1                  
+0x100057db170      @P0   EXIT                                              
+0x100057db180            STG.E desc[UR4][R2.64], R5                        
+0x100057db190            EXIT                                              
+0x100057db1a0            BRA `(.L_x_0) 0x100057db1a0                       
+0x100057db1b0            NOP                                               
+0x100057db1c0            NOP                                               
+0x100057db1d0            NOP                                               
+0x100057db1e0            NOP                                               
+0x100057db1f0            NOP                                               
+0x100057db200            NOP                                               
+0x100057db210            NOP                                               
+0x100057db220            NOP                                               
+0x100057db230            NOP                                               
+0x100057db240            NOP                                               
+0x100057db250            NOP                                               
+0x100057db260            NOP                                               
+0x100057db270            NOP                                               
