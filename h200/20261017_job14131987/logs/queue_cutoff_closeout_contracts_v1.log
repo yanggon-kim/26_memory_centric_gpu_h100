@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/test_shoreline_contracts.py", line 181, in <module>
+    if __name__=='__main__':main()
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/test_shoreline_contracts.py", line 37, in main
+    shoreline_queue.main(SimpleNamespace(session=session,start_at='J2'))
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_queue.py", line 69, in main
+    if not execute(name,command):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_queue.py", line 30, in execute
+    state['steps'].append({'id':name,'status':'pending','reason':'launch cutoff preserves closeout buffer'});save();return False
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_queue.py", line 26, in save
+    def save():state_path.write_text(json.dumps(state,indent=2)+'\n')
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/pathlib.py", line 1154, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/pathlib.py", line 1119, in open
+    return self._accessor.open(self, mode, buffering, encoding, errors,
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpvfqfk7ei/results/campaign_queue.json'

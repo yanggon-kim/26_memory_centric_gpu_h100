@@ -41,6 +41,19 @@ def main(a):
         return True
     python=str(Path(sys.executable));jobs=str(package/'scripts/shoreline_jobs.py')
     base=[python,jobs,'--session',str(a.session.resolve())]
+    def closeout_cpu():
+        # These fixed commands analyze saved files only; no GPU or new allocation.
+        commands=[('analysis',[python,str(package/'scripts/shoreline_analyze.py'),'--root',str(root)]),
+                  ('figures',[python,str(package/'scripts/plot_shoreline.py'),'--root',str(root)]),
+                  ('checkpoint',[python,str(package/'scripts/checkpoint_h200.py'),'--root',str(root),
+                    '--message','Preserve interrupted/deadline campaign snapshot; scientific gates remain explicit','--push'])]
+        state['cpu_closeout']=[]
+        for name,command in commands:
+            log=root/'logs'/f'queue_cpu_closeout_{name}_attempt{queue_attempt:02d}.log'
+            with log.open('x') as stream:
+                code=subprocess.call(command,stdout=stream,stderr=subprocess.STDOUT,cwd=package)
+            state['cpu_closeout'].append({'id':name,'exit_code':code,'log':str(log.relative_to(root))})
+            save()
     # J1 is completed/supervised by the caller before this queue begins.
     steps=[('J1_saved_text',base+['--job','J1','--representative-only']),('J2',base+['--job','J2']),('J3',base+['--job','J3']),
            ('freeze_new_treatments',[python,str(package/'scripts/freeze_shoreline.py'),'--session',str(a.session.resolve()),'--activate']),
@@ -53,7 +66,9 @@ def main(a):
            ('final_figures',[python,str(package/'scripts/plot_shoreline.py'),'--root',str(root)])]
     if a.start_at:steps=steps[next(i for i,(name,_) in enumerate(steps) if name==a.start_at):]
     for name,command in steps:
-        if not execute(name,command):return
+        if not execute(name,command):
+            if state['status']=='running':state['status']='launch_cutoff_reached';save()
+            closeout_cpu();return
     state['status']='commands_finished_scientific_gates_separate';save()
 
 

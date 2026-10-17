@@ -28,6 +28,17 @@ def main():
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
     from unittest.mock import patch
+    import shoreline_queue
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
+        session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2000-01-01T00:00:00+00:00'}))
+        calls=[]
+        with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw: calls.append(command) or 0):
+            shoreline_queue.main(SimpleNamespace(session=session,start_at='J2'))
+        assert [Path(cmd[1]).name for cmd in calls]==['shoreline_analyze.py','plot_shoreline.py','checkpoint_h200.py']
+        state=json.loads((root/'results/campaign_queue.json').read_text())
+        assert state['status']=='launch_cutoff_reached' and state['steps'][0]['status']=='pending'
+        assert all(item['exit_code']==0 for item in state['cpu_closeout'])
     from shoreline_treatment_analysis import provenance
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);(root/'results/processes').mkdir(parents=True);(root/'environment').mkdir()
