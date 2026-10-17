@@ -1,0 +1,294 @@
+{
+  "reader_version": 2,
+  "cases": [
+    {
+      "source": "profiles/J2_bridge_eager_b1_c1024_full_acq00_ticks_only_v4_reader_v3.json",
+      "sha256": "2b3600c2f267a776854a8b502597bd9e0f017dfcaf6375c62d684a2a249ccd4f",
+      "id": "J2_bridge_eager_b1_c1024_full_acq00_ticks_only_v4",
+      "analytical_header_source": {
+        "path": "environment/model_headers/bridge_v2.json",
+        "sha256": "efc9623a99c9f9220f7214d2121a045fb5547de1ad72f6703012e8f4e5935be2"
+      },
+      "classification": "measured physical bytes plus separately analytical logical demand",
+      "D_read": 9376319488.0,
+      "D_write": 28057856.0,
+      "logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 1024,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 3087428608,
+            "historical_kv_bytes": 29446144,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 0,
+            "U_main_bytes": 3116874752,
+            "known_main_input_subtotal_bytes": 3116874752,
+            "useful_linear_flops": 3087138816,
+            "useful_attention_flops": 176848896,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 3087428608,
+            "historical_kv_bytes": 29474816,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 0,
+            "U_main_bytes": 3116903424,
+            "known_main_input_subtotal_bytes": 3116903424,
+            "useful_linear_flops": 3087138816,
+            "useful_attention_flops": 177020928,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 3087428608,
+            "historical_kv_bytes": 29503488,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 0,
+            "U_main_bytes": 3116932096,
+            "known_main_input_subtotal_bytes": 3116932096,
+            "useful_linear_flops": 3087138816,
+            "useful_attention_flops": 177192960,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 9350710272,
+        "U_window_unique": 3116932096,
+        "U_window_initial_external_main": 3116874752,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 28,
+          "query_heads": 12,
+          "kv_heads": 2,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": true,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "D_read_over_U_tick_sum": 1.0027387455343029,
+      "D_read_over_U_window_unique": 3.0081885646571367
+    },
+    {
+      "source": "profiles/J2_qwen14b_graph_b1_c4096_full_acq00_ticks_only_v4_reader_v3.json",
+      "sha256": "169522264faffd7171d7f9fedcbd91b1903f825fde1f1a4e5ec3ddfb6c156746",
+      "id": "J2_qwen14b_graph_b1_c4096_full_acq00_ticks_only_v4",
+      "analytical_header_source": {
+        "path": "environment/model_headers/qwen14b_v2.json",
+        "sha256": "4cdf272df6d1ec68d6aff5058e450196a26802863f17bedea0b78c024ea5ad3c"
+      },
+      "classification": "measured physical bytes plus separately analytical logical demand",
+      "D_read": 86414439424.0,
+      "D_write": 73987072.0,
+      "logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 805896192,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28788838400,
+            "known_main_input_subtotal_bytes": 28788838400,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4030464000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806092800,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789035008,
+            "known_main_input_subtotal_bytes": 28789035008,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4031447040,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806289408,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789231616,
+            "known_main_input_subtotal_bytes": 28789231616,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4032430080,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 86367105024,
+        "U_window_unique": 28789252096,
+        "U_window_initial_external_main": 28788858880,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 48,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "D_read_over_U_tick_sum": 1.0005480605143224,
+      "D_read_over_U_window_unique": 3.001621547369287
+    },
+    {
+      "source": "profiles/J2_qwen14b_graph_b1_c4096_full_acq01_ticks_only_v4_reader_v3.json",
+      "sha256": "2ecd42168b18f9f72c70b3a948b5bca32f2037420bd578b2fb55a3fd3e367321",
+      "id": "J2_qwen14b_graph_b1_c4096_full_acq01_ticks_only_v4",
+      "analytical_header_source": {
+        "path": "environment/model_headers/qwen14b_v2.json",
+        "sha256": "4cdf272df6d1ec68d6aff5058e450196a26802863f17bedea0b78c024ea5ad3c"
+      },
+      "classification": "measured physical bytes plus separately analytical logical demand",
+      "D_read": 86414073344.0,
+      "D_write": 73917440.0,
+      "logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 805896192,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28788838400,
+            "known_main_input_subtotal_bytes": 28788838400,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4030464000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806092800,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789035008,
+            "known_main_input_subtotal_bytes": 28789035008,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4031447040,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806289408,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789231616,
+            "known_main_input_subtotal_bytes": 28789231616,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4032430080,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 86367105024,
+        "U_window_unique": 28789252096,
+        "U_window_initial_external_main": 28788858880,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 48,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "D_read_over_U_tick_sum": 1.0005438218635088,
+      "D_read_over_U_window_unique": 3.0016088315127307
+    },
+    {
+      "source": "profiles/J2_qwen14b_graph_b1_c4096_full_acq02_ticks_only_v4_reader_v3.json",
+      "sha256": "e72b28ca26362a245fefa276e02c2b39a4ed2676b2b47e6bf4759d6fd095b5f3",
+      "id": "J2_qwen14b_graph_b1_c4096_full_acq02_ticks_only_v4",
+      "analytical_header_source": {
+        "path": "environment/model_headers/qwen14b_v2.json",
+        "sha256": "4cdf272df6d1ec68d6aff5058e450196a26802863f17bedea0b78c024ea5ad3c"
+      },
+      "classification": "measured physical bytes plus separately analytical logical demand",
+      "D_read": 86413971712.0,
+      "D_write": 74879488.0,
+      "logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 805896192,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28788838400,
+            "known_main_input_subtotal_bytes": 28788838400,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4030464000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806092800,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789035008,
+            "known_main_input_subtotal_bytes": 28789035008,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4031447040,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 27982931968,
+            "historical_kv_bytes": 806289408,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 28789231616,
+            "known_main_input_subtotal_bytes": 28789231616,
+            "useful_linear_flops": 27981250560,
+            "useful_attention_flops": 4032430080,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 86367105024,
+        "U_window_unique": 28789252096,
+        "U_window_initial_external_main": 28788858880,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 48,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "D_read_over_U_tick_sum": 1.0005426451191919,
+      "D_read_over_U_window_unique": 3.0016053013064004
+    }
+  ],
+  "correction": "window-unique historical KV is its union over all selected ticks; initial external-only demand is separately reported; physical counters unchanged"
+}
