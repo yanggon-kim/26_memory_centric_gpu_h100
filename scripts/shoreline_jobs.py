@@ -471,7 +471,8 @@ def kernel_profiles():
                 label=f'J3_{model}_b{batch}_c{context}_{role}_acq{acq:02d}'
                 protocol=load(ROOT/'session.json').get('kernel_filter_protocols',{}).get(role)
                 if protocol:label+='_'+protocol
-                target=ROOT/'profiles'/(label+'.json')
+                reader_protocol=load(ROOT/'session.json').get('kernel_reader_protocol') if symbol else None
+                target=ROOT/'profiles'/(label+(('_reader_'+reader_protocol) if reader_protocol else '')+'.json')
                 if target.exists():results.append(load(target));continue
                 config=profile_config(model,'eager',batch,context,label)
                 output=ROOT/'runs'/label;report=ROOT/'profiles'/(label+'.ncu-rep')
@@ -485,9 +486,12 @@ def kernel_profiles():
                           '--gpu-uuid',UUID,'--mode','timing','--output',str(output),'--external-profiler']
                 outcome=attempt(label,command,timeout=600)
                 if report.exists():
-                    attempt(label+'_import',[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv'],gpu=False,timeout=120)
+                    import_label=label+'_import'+(('_'+reader_protocol) if reader_protocol else '')
+                    import_command=[NCU,'--import',str(report),'--page','raw','--print-units','base','--csv']
+                    if reader_protocol:import_command+=['--rename-kernels','0','--print-kernel-base','demangled']
+                    attempt(import_label,import_command,gpu=False,timeout=120)
                     attempt(label+'_sass',[NCU,'--import',str(report),'--page','source','--print-source','sass'],gpu=False,timeout=120)
-                raw=ROOT/'logs'/(label+'_import.log');rows=records(raw) if raw.exists() else []
+                raw=ROOT/'logs'/(label+'_import'+(('_'+reader_protocol) if reader_protocol else '')+'.log');rows=records(raw) if raw.exists() else []
                 symbols_observed=sorted(set(r.get('Kernel Name','') for r in rows))
                 exact=False
                 if (output/'run.json').exists():
@@ -500,12 +504,18 @@ def kernel_profiles():
                     'model':model,'batch':batch,'context':context,'engine':'eager','layer':mid,'role':role,
                     'acquisition_id':acq,'actual_nvtx_filter':nvtx,'symbols':symbols_observed,'exact_reference_ids':exact,
                     'expected_symbol':symbol,'selector_source_sha256':selector_hash,'selection_protocol':protocol or 'operation_nvtx_v1',
+                    'reader_protocol':reader_protocol,'source_config_sha256':digest(config),
                     'metrics':rows,'unavailable_metrics':unavailable,'cache_control':'none','clock_control':'none',
                     'replay_mode':'kernel','classification':'measured-real-GPU-instrumented',
                     'scope':'one observed operation/layer launch at early decode; kernel replay changes cache state',
                     'dynamic_tensor_work':None,'dynamic_work_reason':'static tile names and occupancy do not establish dynamic issued work',
                     'full_step_totals':None,'full_step_reason':'bounded kernel samples are not whole-model traffic'}
                 sass=ROOT/'logs'/(label+'_sass.log')
+                original_reader=ROOT/'profiles'/(label+'.json')
+                if reader_protocol and original_reader.exists():
+                    result['reader_reprocessing']={'original_source':str(original_reader.relative_to(ROOT)),
+                        'original_sha256':digest(original_reader),'reason':'disable NCU display-name simplification; retain original reader failure and raw capture',
+                        'raw_capture_reused':True}
                 result['loaded_source_export']={'path':str(sass.relative_to(ROOT)),'sha256':digest(sass),
                     'semantic_validation':'pending instruction/async coverage review; text export alone is not dynamic work'} if sass.exists() else None
                 dump(target,result);results.append(result)

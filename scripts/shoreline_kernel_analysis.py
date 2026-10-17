@@ -22,7 +22,13 @@ def analyze(root):
            'sm__warps_active.avg.pct_of_peak_sustained_active',
            'smsp__issue_active.avg.pct_of_peak_sustained_active','smsp__warps_eligible.avg.per_cycle_active',
            'l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum','l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum']
+    candidates={}
     for path in sorted((root/'profiles').glob('J3_*.json')):
+        data=load(path)
+        if 'role' not in data:continue
+        prior=candidates.get(data['id'])
+        if prior is None or '_reader_identity_v3.json' in path.name:candidates[data['id']]=path
+    for path in candidates.values():
         d=load(path)
         if 'role' not in d:continue
         metrics={m['Metric Name']:{'value':m.get('Metric Value'),'unit':m.get('Metric Unit'),
@@ -48,6 +54,7 @@ def analyze(root):
         rows.append({'id':d['id'],'status':d['status'],'model':d['model'],'batch':d['batch'],
             'context':d['context'],'role':d['role'],'layer':d['layer'],'acquisition_id':d['acquisition_id'],
             'source':source(path),'producer':source(process) if process.exists() else None,
+            'reader_reprocessing':d.get('reader_reprocessing'),
             'producer_status':producer.get('status'),'source_freeze_identity':producer.get('source_freeze_identity'),
             'native_run_source':source(native) if native.exists() else None,
             'config_source':source(config) if config.exists() else None,
