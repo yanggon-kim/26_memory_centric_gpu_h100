@@ -11,6 +11,13 @@ def rejected(function,*args):
 
 
 def main():
+    from trace_vllm_decode import ordinary_control_guard
+    ordinary_control_guard({},3,10)
+    rejected(ordinary_control_guard,{'CUDA_INJECTION64_PATH':'unit-test-tracer.so'},3,10)
+    rejected(ordinary_control_guard,{'LD_PRELOAD':'unit-test-tracer.so'},3,10)
+    rejected(ordinary_control_guard,{'NVBIT_INSTRUMENTATION_ENABLED':'1'},3,10)
+    rejected(ordinary_control_guard,{},2,10)
+    rejected(ordinary_control_guard,{},3,9)
     from shoreline_kernel_identity import attention_role
     assert attention_role('void flash::prepare_varlen_num_blocks_kernel<int>()')=='attention_scheduler'
     assert attention_role('void vllm::reshape_and_cache_flash_kernel<BF16>()')=='kv_update'

@@ -9,6 +9,13 @@ import sys
 from controlled_vllm_experiments import run_trial,cleanup_owned_engine
 from software_decode_experiments import digest,dump
 from tensor_manifest import parameters,vllm_kv
+import hashlib
+
+
+def ordinary_control_guard(env, warmups, trials):
+    assert warmups>=3 and trials>=10, 'ordinary trace-harness control requires >=3 warmups and >=10 trials'
+    assert not env.get('CUDA_INJECTION64_PATH') and not env.get('LD_PRELOAD'), 'ordinary calibration rejects injected/preloaded libraries'
+    assert env.get('NVBIT_INSTRUMENTATION_ENABLED','0')=='0', 'ordinary calibration rejects active NVBit'
 
 
 def describe_worker(worker):
@@ -26,6 +33,7 @@ def attach_worker_hooks(worker,layers):
 
 
 def main(a):
+    if a.ordinary_calibration:ordinary_control_guard(os.environ,a.warmups,a.trials)
     config=json.loads(a.config.read_text())
     assert Path(config['model_path']).name==config['model_revision'],'immutable model snapshot mismatch'
     assert 1<=a.steps<=4 and 1<=a.batch<=8 and a.context>0
@@ -44,6 +52,7 @@ def main(a):
               'enable_prefix_caching':False,'enable_chunked_prefill':True,'disable_log_stats':False,
               'async_scheduling':False,'distributed_executor_backend':'uni','tensor_parallel_size':1,
               'enforce_eager':True,'compilation_config':{'mode':0},**config['engine']}
+    assert settings['enforce_eager'] and settings['compilation_config']['mode']==0, 'trace/calibration requires the declared eager engine'
     assert a.batch<=settings['max_num_seqs'] and a.context+a.steps+1<=settings['max_model_len']
     settings['max_num_batched_tokens']=max(settings['max_num_batched_tokens'],a.batch*a.context)
     llm=vllm.LLM(**settings);engine=llm.llm_engine
@@ -57,6 +66,36 @@ def main(a):
         prompts=torch.randint(0,vocabulary,(a.batch,a.context),generator=generator).tolist()
         params=vllm.SamplingParams(temperature=0,repetition_penalty=1.0,ignore_eos=True,detokenize=False,
                                   max_tokens=a.steps+1,seed=config['seed'],output_kind=RequestOutputKind.CUMULATIVE)
+        if a.ordinary_calibration:
+            maps=Path('/proc/self/maps').read_text()
+            assert 'tracer_tool.so' not in maps and 'libnvbit.so' not in maps, 'tracer already loaded in ordinary control'
+            case={'batch_size':a.batch,'context_length':a.context,'generated_tokens':a.steps+1,
+                  'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[],
+                  'warmup_output_ids':[],'warmup_output_sha256':[]}
+            data={'status':'running','classification':'measured-real-GPU','mode':'ordinary trace-harness calibration',
+                  'config':config,'engine_settings':settings,'cases':[case],'external_instrumentation':False,
+                  'same_program':'trace_vllm_decode.py engine initialization, prompts, sampling and run_trial references',
+                  'coverage':'complete-model eager decode; selected-layer trace remains a distinct scope',
+                  'no_injection_proof':{'environment_guard_passed':True,'tracer_libraries_absent_from_maps':True},
+                  'versions':{'vllm':vllm.__version__,'torch':torch.__version__,'cuda_runtime':torch.version.cuda},
+                  'vllm_identity':vllm_identity,'script_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                      for p in Path(__file__).parent.glob('*.py')},
+                  'timing_scope':'two pure-decode ticks after all-request one-token prefill barrier; host launch gaps included',
+                  'trace_hook_overhead':'not silently transferred; tracer-injected disabled references and instrumented execution remain separate'}
+            dump(a.output/'run.json',data)
+            for i in range(a.warmups):
+                warm=run_trial(engine,prompts,params,f'ordinary_warmup_{i}',torch,a.output)
+                case['warmup_output_ids'].append(warm['output_ids']);case['warmup_output_sha256'].append(warm['output_sha256'])
+            for i in range(a.trials):
+                trial=run_trial(engine,prompts,params,f'ordinary_measured_{i}',torch,a.output,
+                                hardware_sampler=lambda:describe(nvml,handle,torch))
+                case['trials'].append(trial);dump(a.output/'run.json',data)
+            hashes=case['warmup_output_sha256']+[t['output_sha256'] for t in case['trials']]
+            case['output_digests_identical']=len(set(hashes))==1
+            data['status']='complete' if case['output_digests_identical'] else 'failed'
+            dump(a.output/'run.json',data)
+            assert case['output_digests_identical'], 'ordinary trace-harness outputs differ across warmups/trials'
+            return
         reference=None;references=[]
         for i in range(3):
             reference=run_trial(engine,prompts,params,f'untraced_reference_{i}',torch,a.output)
@@ -139,4 +178,7 @@ if __name__=='__main__':
     p.add_argument('--context',type=int,default=128)
     p.add_argument('--steps',type=int,default=2)
     p.add_argument('--layers',default='full')
+    p.add_argument('--ordinary-calibration',action='store_true')
+    p.add_argument('--warmups',type=int,default=3)
+    p.add_argument('--trials',type=int,default=10)
     main(p.parse_args())
