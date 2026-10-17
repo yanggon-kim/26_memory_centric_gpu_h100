@@ -1,0 +1,1564 @@
+{
+  "schema_version": 1,
+  "declared_utc": "2026-10-17T12:42:53.737716+00:00",
+  "source_session": "h200/20261017_job14131987",
+  "conditions": [
+    {
+      "id": "J1_bridge_graph_b1_c1024",
+      "job": "J1",
+      "scope": "ordinary 63 pure-decode ticks",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "engine": "graph",
+      "batch": 1,
+      "context": 1024,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J1_bridge_eager_b1_c1024",
+      "job": "J1",
+      "scope": "ordinary 63 pure-decode ticks",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "engine": "eager",
+      "batch": 1,
+      "context": 1024,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J1_bridge_graph_b8_c4096",
+      "job": "J1",
+      "scope": "ordinary 63 pure-decode ticks",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "engine": "graph",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J1_bridge_eager_b8_c4096",
+      "job": "J1",
+      "scope": "ordinary 63 pure-decode ticks",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "engine": "eager",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J2_current_node_pilot",
+      "job": "J2",
+      "scope": "instrumented full decode ticks4/5/6",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "engine": "eager",
+      "batch": 1,
+      "context": 1024,
+      "acquisition_ids": [
+        0
+      ],
+      "ordinary_timing": false
+    },
+    {
+      "id": "J2_qwen14b_graph_triplet",
+      "job": "J2",
+      "scope": "fresh instrumented full decode ticks4/5/6",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "engine": "graph",
+      "batch": 1,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "ordinary_timing": false,
+      "prior_cohort_not_pooled": true
+    },
+    {
+      "id": "J3_bridge_b1_c1024_qkv",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "qkv",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b1_c1024_gate_up",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "gate_up",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b1_c1024_down",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "down",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b1_c1024_attention_forward",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "attention_forward",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b1_c1024_attention_combine",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "attention_combine",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b1_c1024_kv_update",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "role": "kv_update",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_qkv",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "qkv",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_gate_up",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "gate_up",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_down",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "down",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_attention_forward",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "attention_forward",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_attention_combine",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "attention_combine",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_bridge_b8_c4096_kv_update",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "role": "kv_update",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_qkv",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "qkv",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_gate_up",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "gate_up",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_down",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "down",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_attention_forward",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "attention_forward",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_attention_combine",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "attention_combine",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_kv_update",
+      "job": "J3",
+      "scope": "one validated observed operation; kernel replay, cache none",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "kv_update",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "conditional": "role must actually be observed; unknown/absent roles remain explicit"
+    },
+    {
+      "id": "J2_metadata_bridge_b1_c1024",
+      "job": "J2",
+      "scope": "functional-only executed-length/request-page probe",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "ordinary_timing": false
+    },
+    {
+      "id": "J8_bridge_b1_c1024_eventsnone",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "event_mode": "none",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_bridge_b1_c1024_eventsempty",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "event_mode": "empty",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_bridge_b1_c1024_eventscomplete",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "event_mode": "complete",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J10_bridge_b1_c1024_long_energy",
+      "job": "J10",
+      "scope": "long_energy",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J10_bridge_b1_c1024_prefill",
+      "job": "J10",
+      "scope": "prefill",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J2_metadata_bridge_b8_c4096",
+      "job": "J2",
+      "scope": "functional-only executed-length/request-page probe",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "ordinary_timing": false
+    },
+    {
+      "id": "J8_bridge_b8_c4096_eventsnone",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "none",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_bridge_b8_c4096_eventsempty",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "empty",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_bridge_b8_c4096_eventscomplete",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "complete",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J10_bridge_b8_c4096_long_energy",
+      "job": "J10",
+      "scope": "long_energy",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J10_bridge_b8_c4096_prefill",
+      "job": "J10",
+      "scope": "prefill",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J2_metadata_mistral7b_b1_c4096",
+      "job": "J2",
+      "scope": "functional-only executed-length/request-page probe",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "ordinary_timing": false
+    },
+    {
+      "id": "J8_mistral7b_b1_c4096_eventsnone",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "none",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_mistral7b_b1_c4096_eventsempty",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "empty",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_mistral7b_b1_c4096_eventscomplete",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "complete",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J10_mistral7b_b1_c4096_long_energy",
+      "job": "J10",
+      "scope": "long_energy",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J10_mistral7b_b1_c4096_prefill",
+      "job": "J10",
+      "scope": "prefill",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J2_metadata_mistral7b_b8_c4096",
+      "job": "J2",
+      "scope": "functional-only executed-length/request-page probe",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "ordinary_timing": false
+    },
+    {
+      "id": "J8_mistral7b_b8_c4096_eventsnone",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "none",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_mistral7b_b8_c4096_eventsempty",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "empty",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_mistral7b_b8_c4096_eventscomplete",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "event_mode": "complete",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J10_mistral7b_b8_c4096_long_energy",
+      "job": "J10",
+      "scope": "long_energy",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J10_mistral7b_b8_c4096_prefill",
+      "job": "J10",
+      "scope": "prefill",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "mistral7b",
+      "batch": 8,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J2_metadata_qwen14b_b1_c4096",
+      "job": "J2",
+      "scope": "functional-only executed-length/request-page probe",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "ordinary_timing": false
+    },
+    {
+      "id": "J8_qwen14b_b1_c4096_eventsnone",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "none",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_qwen14b_b1_c4096_eventsempty",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "empty",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J8_qwen14b_b1_c4096_eventscomplete",
+      "job": "J8",
+      "scope": "complete layers and early/middle/late windows with matched controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "event_mode": "complete",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J10_qwen14b_b1_c4096_long_energy",
+      "job": "J10",
+      "scope": "long_energy",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J10_qwen14b_b1_c4096_prefill",
+      "job": "J10",
+      "scope": "prefill",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "qwen14b",
+      "batch": 1,
+      "context": 4096,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "energy family stops after first failed sensor/functional pilot; all unstarted conditions retain a reason"
+    },
+    {
+      "id": "J4_native_v4",
+      "job": "J4",
+      "scope": "56 native conditions; new timing only to enable source/allocation-matched physical joins",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditions": 56,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "previous_complete_suite_preserved": true
+    },
+    {
+      "id": "J4_extensions",
+      "job": "J4",
+      "scope": "read-only footprints plus six-ratio empty/compute/memory/concurrent controls",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10
+    },
+    {
+      "id": "J4_physical_controls",
+      "job": "J4",
+      "scope": "13 native plus2 read-only physical counter conditions",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditions": [
+        "stream_1mib",
+        "stream_28mib",
+        "stream_32mib",
+        "stream_512mib",
+        "stride17_512mib",
+        "gather_512mib",
+        "paged128_512mib",
+        "pointer_0.03125mib_chains1",
+        "pointer_96mib_chains1",
+        "pointer_96mib_chains32",
+        "fma_blocks528",
+        "bf16_gemm_4096",
+        "softmax_width8192",
+        "read_only_512mib",
+        "read_stride17_512mib"
+      ],
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "J5_bridge_graph_b1_c1024_f0.75",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "graph",
+      "requested_fraction": 0.75,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_graph_b1_c1024_f0.5",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "graph",
+      "requested_fraction": 0.5,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_graph_b1_c1024_f0.3",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "graph",
+      "requested_fraction": 0.3,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b1_c1024_f0.75",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "eager",
+      "requested_fraction": 0.75,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b1_c1024_f0.5",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "eager",
+      "requested_fraction": 0.5,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b1_c1024_f0.3",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "engine": "eager",
+      "requested_fraction": 0.3,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J6_bridge_b1_c1024_idle",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "idle",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b1_c1024_memory50",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "memory50",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b1_c1024_memory100",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "memory100",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b1_c1024_arithmetic50",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "arithmetic50",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b1_c1024_arithmetic100",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "arithmetic100",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J5_bridge_graph_b8_c4096_f0.75",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "graph",
+      "requested_fraction": 0.75,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_graph_b8_c4096_f0.5",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "graph",
+      "requested_fraction": 0.5,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_graph_b8_c4096_f0.3",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "graph",
+      "requested_fraction": 0.3,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b8_c4096_f0.75",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "eager",
+      "requested_fraction": 0.75,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b8_c4096_f0.5",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "eager",
+      "requested_fraction": 0.5,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J5_bridge_eager_b8_c4096_f0.3",
+      "job": "J5",
+      "scope": "actual returned SM counts and all-kernel restriction proof",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "engine": "eager",
+      "requested_fraction": 0.3,
+      "actual_sm_count": null,
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "graph/eager capability proven independently; at most2 placement pilots per shape after1 review"
+    },
+    {
+      "id": "J6_bridge_b8_c4096_idle",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "idle",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b8_c4096_memory50",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "memory50",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b8_c4096_memory100",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "memory100",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b8_c4096_arithmetic50",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "arithmetic50",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J6_bridge_b8_c4096_arithmetic100",
+      "job": "J6",
+      "scope": "owned disjoint-resource competition",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "model": "bridge",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "arithmetic100",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "conditional": "requires actual disjoint context placement, supported decoder restriction and positive concurrency"
+    },
+    {
+      "id": "J7_bridge_b1_c1024_normal",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "normal",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b1_c1024_pressure",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 1024,
+      "treatment": "pressure",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b1_c2048_normal",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 2048,
+      "treatment": "normal",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b1_c2048_pressure",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 2048,
+      "treatment": "pressure",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b1_c4096_normal",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 4096,
+      "treatment": "normal",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b1_c4096_pressure",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 1,
+      "context": 4096,
+      "treatment": "pressure",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b8_c4096_normal",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "normal",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J7_bridge_b8_c4096_pressure",
+      "job": "J7",
+      "scope": "matched ordinary/event-hook controls and separate whole-model physical traffic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "batch": 8,
+      "context": 4096,
+      "treatment": "pressure",
+      "acquisition_ids": [
+        0,
+        1,
+        2
+      ],
+      "warmups": 3,
+      "timed_trials": 10,
+      "pressure_bytes": 268435456,
+      "pressure_ticks": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "J9_joint_scenarios",
+      "job": "J9",
+      "scope": "320 conditional analytical scenarios; decoder predictions NA unless independent service and bound gates pass",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "scenarios": 320
+    },
+    {
+      "id": "J11_no_skip_micro",
+      "job": "J11",
+      "scope": "no_skip_micro",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditional": "model/full capture requires applicable source/correctness/semantic/time/storage gates; unavailable fields stay NA"
+    },
+    {
+      "id": "J11_standalone_eager_calibration",
+      "job": "J11",
+      "scope": "standalone_eager_calibration",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditional": "model/full capture requires applicable source/correctness/semantic/time/storage gates; unavailable fields stay NA"
+    },
+    {
+      "id": "J11_layer0_two_steps_semantic",
+      "job": "J11",
+      "scope": "layer0_two_steps_semantic",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditional": "model/full capture requires applicable source/correctness/semantic/time/storage gates; unavailable fields stay NA"
+    },
+    {
+      "id": "J11_conditional_full_model_two_steps",
+      "job": "J11",
+      "scope": "conditional_full_model_two_steps",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditional": "model/full capture requires applicable source/correctness/semantic/time/storage gates; unavailable fields stay NA"
+    },
+    {
+      "id": "J11_private_archive_readback",
+      "job": "J11",
+      "scope": "private_archive_readback",
+      "disposition": "declared; inspect actual process/profile qualification",
+      "conditional": "model/full capture requires applicable source/correctness/semantic/time/storage gates; unavailable fields stay NA"
+    }
+  ],
+  "policy": "No success inferred from implementation or plan. Actual job/process/profile evidence determines disposition; failures, conditional stops and unstarted cases must remain represented."
+}
