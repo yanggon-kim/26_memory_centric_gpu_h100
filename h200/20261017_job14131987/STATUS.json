@@ -133,11 +133,11 @@
     },
     {
       "id": "J4",
-      "status": "in_progress",
+      "status": "partial",
       "scientific_gate": "incomplete",
       "prior_evidence": "h200/20261016_job14100402/STATUS.json",
-      "reason": "read-only service and six-condition overlap calibration extension",
-      "updated_utc": "2026-10-17T14:24:50.542465+00:00"
+      "reason": "Three native and three extension ordinary acquisitions plus same-pass overlap and read-only counter acq00 saved; acq01 interrupted; remaining physical service/clock/held-out joins pending",
+      "updated_utc": "2026-10-17T14:45:25.329705+00:00"
     },
     {
       "id": "J5",
@@ -169,10 +169,15 @@
     },
     {
       "id": "J9",
-      "status": "planned",
-      "scientific_gate": "pending",
+      "status": "partial",
+      "scientific_gate": "incomplete",
       "prior_evidence": "h200/20261016_job14100402/STATUS.json",
-      "reason": "Fresh allocation; previous evidence retained separately"
+      "reason": "320 conditional analytical scenarios saved; decoder P/beta transfer and physical area/PHY/package feasibility remain unvalidated",
+      "updated_utc": "2026-10-17T14:44:02.182151+00:00",
+      "evidence": {
+        "path": "results/shoreline_joint_sensitivity.json",
+        "sha256": "3cc0dda401fa02ef01e7d654e1d86261edc849305d189009285b693659056284"
+      }
     },
     {
       "id": "J10",
@@ -189,5 +194,16 @@
       "reason": "Fresh allocation; previous evidence retained separately"
     }
   ],
-  "historical_data": "previous session retained; no pooling across allocations"
+  "historical_data": "previous session retained; no pooling across allocations",
+  "execution_state": "interrupted",
+  "recovery_report": "analysis/recovery_20261017_network_v1.md",
+  "allocation_recovery": {
+    "observed_utc": "2026-10-17T14:45:25.329705+00:00",
+    "saved_job_id": "14131987",
+    "shell_job_id": "14133085",
+    "old_scheduler_end": "2026-10-17T11:26:44-04:00",
+    "old_scheduler_preempt_time": "2026-10-17T10:26:44-04:00",
+    "saved_session_deadline_is_stale": true,
+    "gpu_restart_requires": "versioned allocation configuration, selected GPU UUID inventory, source/runtime/isolation and budget checks; no automatic cross-allocation measurement pooling"
+  }
 }

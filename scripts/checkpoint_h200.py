@@ -75,7 +75,9 @@ def main():
     for start in range(0, len(selected), 100):
         git('add', '-f', '--', *selected[start:start+100])
     staged = git('diff', '--cached', '--name-only').splitlines()
-    for name in staged:
+    # Removed generated aggregates have no index blob to scan. Their bounded
+    # replacement shards still pass the same staged-content secret checks.
+    for name in git('diff', '--cached', '--name-only', '--diff-filter=d').splitlines():
         content = subprocess.check_output(['git', 'show', ':'+name], cwd=PACKAGE)
         if any(s.search(content) for s in SECRETS):
             raise RuntimeError('Secret pattern in staged file; publication refused: '+name)
