@@ -36,6 +36,18 @@ def main(a):
     (raw/'traces').mkdir()
     reserve=a.budget_gib*(3 if a.archive_path else 2)
     assert shutil.disk_usage(a.output).free>reserve*1024**3,'insufficient raw+grouped(+archive) trace headroom'
+    inode_budget={'maximum_raw_files':a.budget_files,'required_free_user_inodes':3*a.budget_files+512}
+    if shutil.which('lfs'):
+        quota=subprocess.check_output(['lfs','quota','-u',str(os.getuid()),str(a.output)],text=True,timeout=20)
+        dump(a.output/'quota_before.json',{'raw_readonly_quota':quota})
+        rows=[line.split() for line in quota.splitlines() if line.lstrip().startswith('/')]
+        assert len(rows)==1 and len(rows[0])>=9,'cannot establish user trace inode headroom'
+        used=int(rows[0][5].rstrip('*'));limit=int(rows[0][7])
+        inode_budget.update(user_inodes_used=used,user_inode_limit=limit,free_user_inodes=limit-used)
+        assert limit>0 and limit-used>=inode_budget['required_free_user_inodes'],'insufficient user inode headroom for raw/grouped trace plus reserve'
+    else:
+        inode_budget['free_filesystem_inodes']=os.statvfs(a.output).f_favail
+        assert inode_budget['free_filesystem_inodes']>=inode_budget['required_free_user_inodes'],'insufficient filesystem inode headroom'
     env=dict(os.environ)
     env.update(PATH=str(toolkit/'bin')+os.pathsep+env.get('PATH',''),
                PYTHONPATH=str(a.accel_root/'util/tracer_nvbit/others')+os.pathsep+env.get('PYTHONPATH',''),
@@ -70,7 +82,7 @@ def main(a):
     summary={'status':'running','framework_sha':actual,'backend_sha':backend,'nvbit_version':'1.8','command':cmd,
              'engine':a.engine,'trace_env':{k:env[k] for k in ['ACTIVE_FROM_START','NVBIT_INSTRUMENTATION_ENABLED','ALLOW_REG_VAL_TRACING','SKIP_TMA_MEM','SPINLOCK_HANDLING_MODE','ENABLE_WATCHDOG','USER_DEFINED_FOLDERS','TRACE_FILE_COMPRESS','TRACES_FOLDER']},
              'runtime_packages':{dist.metadata['Name']:dist.version for dist in importlib.metadata.distributions()},'external_binaries':binaries,'CUDA_HOME':str(toolkit),'toolkit_versions':toolkit_versions,'source_changes':source_state,'package_script_sha256':package_scripts,'model_config_sha256':hashlib.sha256(modelconfig.read_bytes()).hexdigest(),
-             'reviewed_local_patch':patch_spec,'budget_gib':a.budget_gib,'minimum_reserved_disk_gib':reserve,'timeout_s':a.timeout_s,'replay':'pending'}
+             'reviewed_local_patch':patch_spec,'budget_gib':a.budget_gib,'inode_budget':inode_budget,'minimum_reserved_disk_gib':reserve,'timeout_s':a.timeout_s,'replay':'pending'}
     dump(a.output/'launch_manifest.json',summary)
     start=time.monotonic()
     failure=None
@@ -78,13 +90,13 @@ def main(a):
         process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,env=env,cwd=a.output,start_new_session=True)
         try:
             while process.poll() is None:
-                size=0
+                size=0;file_count=0
                 for path in raw.rglob('*'):
                     try:
-                        if path.is_file():size+=path.stat().st_size
+                        if path.is_file():size+=path.stat().st_size;file_count+=1
                     except FileNotFoundError:pass # compressor may rename during this snapshot
-                if size>a.budget_gib*1024**3 or time.monotonic()-start>a.timeout_s:
-                    failure='trace byte/time budget exceeded; partial traces are not validated'
+                if size>a.budget_gib*1024**3 or file_count>a.budget_files or time.monotonic()-start>a.timeout_s:
+                    failure='trace byte/file/time budget exceeded; partial traces are not validated'
                     break
                 time.sleep(1)
         finally:
@@ -116,6 +128,7 @@ if __name__=='__main__':
     p.add_argument('--layers',default='full')
     p.add_argument('--engine',choices=['hf','vllm'],default='hf',help='HF semantic bridge or required eager-vLLM optimized-kernel calibration route')
     p.add_argument('--budget-gib',type=float,default=40)
+    p.add_argument('--budget-files',type=int,default=2048)
     p.add_argument('--timeout-s',type=int,default=1800)
     p.add_argument('--replay-smoke',action='store_true')
     p.add_argument('--replay-timeout-s',type=int,default=300)
