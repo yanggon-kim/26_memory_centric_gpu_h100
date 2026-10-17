@@ -12,22 +12,34 @@ def analyze(root):
     results=[]
     first=root/'results/shoreline_native_counter_qualification.json'
     selected=load(first).get('selection',[]) if first.exists() else []
-    definitions=[(c,'J4_native_v4_acq','J4_native_counter_') for c in selected]
-    definitions += [(c,'J4_service_extension_acq','J4_counter_') for c in ('read_only_512mib','read_stride17_512mib')]
-    for condition,ordinary_prefix,counter_prefix in definitions:
+    definitions=[(c,'J4_native_v4_acq',f'J4_native_counter_{c}_acq','J4',1) for c in selected]
+    definitions += [(c,'J4_service_extension_acq',f'J4_counter_{c}_acq','J4',1) for c in ('read_only_512mib','read_stride17_512mib')]
+    for fraction in (1,.75,.5,.3):
+        suffix=f'_f{int(fraction*100)}' if fraction!=1 else ''
+        ledger=root/'results'/f'shoreline_native_counter_qualification_J5{suffix}.json'
+        if ledger.exists():
+            definitions += [(c,f'J5_native_f{int(fraction*100)}_acq',f'J5_native_counter_{c}{suffix}_acq','J5',fraction)
+                            for c in load(ledger).get('selection',[])]
+    for condition,ordinary_prefix,counter_stem,job,fraction in definitions:
         entry={'condition':condition,'sources':[],'clock_qualified':False,'physical_service_bytes_per_second':None,
+               'job':job,'requested_sm_fraction':fraction,
                'classification':'independently measured native-pattern service; no automatic decoder transfer'}
         timings=[];reads=[];writes=[];clock_checks=[];hashes=[];operations=[]
         for acq in range(3):
             ordinary=root/'runs'/f'{ordinary_prefix}{acq:02d}/run.json'
-            profile=root/'profiles'/f'{counter_prefix}{condition}_acq{acq:02d}.json'
-            profiled_run=root/'runs'/f'{counter_prefix}{condition}_acq{acq:02d}/run.json'
+            profile=root/'profiles'/f'{counter_stem}{acq:02d}.json'
+            profiled_run=root/'runs'/f'{counter_stem}{acq:02d}/run.json'
             if not all(p.exists() for p in (ordinary,profile,profiled_run)):continue
             d,p,pd=load(ordinary),load(profile),load(profiled_run)
             if d['status']!='complete' or p['status']!='complete' or pd['status']!='complete':continue
             case=next(c for c in d['cases'] if c['id']==condition)
             pcase=next(c for c in pd['cases'] if c['id']==condition)
             if case.get('correctness')!='passed' or pcase.get('correctness')!='passed':continue
+            if job=='J5':
+                ordinary_sms=d.get('allocation',{}).get('actual_sm_count')
+                profiled_sms=pd.get('allocation',{}).get('actual_sm_count')
+                if not ordinary_sms or ordinary_sms!=profiled_sms:continue
+                entry['actual_sm_count']=ordinary_sms
             hashes.extend(json.dumps(x['source_sha256'],sort_keys=True) for x in (d,pd))
             timings.append([t['gpu_event_ms']/t.get('repetitions',1) for t in case['trials']])
             reads.append(p['physical_read_bytes']);writes.append(p['physical_write_bytes'])

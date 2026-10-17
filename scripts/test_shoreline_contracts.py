@@ -194,6 +194,34 @@ def main():
         assert decode_timeline(path,7)['restriction_passed'] is False
         db.close()
     from shoreline_accounting import useful
+    from shoreline_sm_analysis import analyze as sm_statistics
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory)
+        for folder in ('profiles','results/processes','environment','runs'): (root/folder).mkdir(parents=True)
+        identity='1'*64
+        (root/'environment'/('source_freeze_'+identity[:12]+'.json')).write_text(json.dumps({'identity':identity}))
+        for fraction,sms in ((100,132),(75,104)):
+            for acq in range(3):
+                label=f'J5_bridge_eager_b1_c1024_f{fraction}_acq{acq:02d}';path=root/'runs'/(label+'.json');path.write_text('{}')
+                data={'id':label,'status':'complete','exact_reference_ids':True,'harness':'same',
+                      'step_ms':[1 if fraction==100 else 1.02]*10,'run_source':str(path.relative_to(root)),
+                      'run_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'allocation':{'allocation':{'actual_sm_count':sms}},
+                      'clock_qualification':{'passed':True,'clocks':{m:{'minimum':v,'maximum':v} for m,v in [('sm_clock_mhz',1980),('memory_clock_mhz',3201)]}}}
+                (root/'profiles'/(label+'.json')).write_text(json.dumps(data))
+                process={'status':'complete','source_freeze_identity':identity,'monitor':{'failure':None}}
+                (root/'results/processes'/(label+'.json')).write_text(json.dumps(process))
+            label=f'J5_bridge_eager_b1_c1024_f{fraction}_acq00_pilot0'
+            (root/'profiles'/(label+'.json')).write_text(json.dumps({'id':label,'status':'complete','exact_reference_ids':True,
+                'allocation':{'allocation':{'actual_sm_count':sms}},'timeline':{'restriction_passed':True}}))
+            (root/'results/processes'/(label+'.json')).write_text(json.dumps(process))
+        def selected_sm():return next(x for x in sm_statistics(root)['comparisons'] if x['engine']=='eager' and x['batch']==1 and x['requested_fraction']==.75)
+        assert selected_sm()['qualified'] and selected_sm()['ratio_ci95']['passes_5_percent_noninferiority']
+        path=root/'profiles/J5_bridge_eager_b1_c1024_f75_acq00.json';data=json.loads(path.read_text())
+        data['clock_qualification']['clocks']['sm_clock_mhz']['minimum']=1000;path.write_text(json.dumps(data))
+        assert selected_sm()['qualified'] is False
+        data['clock_qualification']['clocks']['sm_clock_mhz']['minimum']=1980;path.write_text(json.dumps(data))
+        (root/data['run_source']).write_text('tampered')
+        assert selected_sm()['qualified'] is False
     import struct
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory)

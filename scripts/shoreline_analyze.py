@@ -147,6 +147,8 @@ def main(root):
     flat_records=emit(root)
     from shoreline_treatment_analysis import analyze as treatments
     treatments(root)
+    from shoreline_sm_analysis import analyze as sm_allocations
+    sm_allocations(root)
     from shoreline_kernel_analysis import analyze as kernels
     kernels(root)
     manifest_path=root/'results/shoreline_case_manifest.json'
