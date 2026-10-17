@@ -189,8 +189,8 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
 
 def baselines(root):
     update_job(root,'J1','in_progress')
-    contrasts = [('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),
-                 ('mistral7b',8,4096),('qwen14b',1,4096)]
+    contrasts = load(root/'session.json').get('baseline_contrasts',
+        [('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)])
     for model in ('bridge','mistral7b','qwen14b'):
         hf = acquisition(root,model,'hf_eager',1,128,0,smoke=True)
         graph = acquisition(root,model,'graph',1,128,0,smoke=True)

@@ -40,7 +40,9 @@ def disposition(job,status,reason):
 def reference(model,engine,batch,context):
     name=f'{model}_{engine}_b{batch}_c{context}_acq00.json'
     q=ROOT/'results/qualifications'/name
-    if not q.exists():return None
+    if not q.exists():
+        from shoreline_reuse import output_reference
+        return output_reference(ROOT, name.removesuffix('.json'))
     row=load(q);p=ROOT/row['output']/'run.json'
     if not p.exists():return None
     data=load(p)
@@ -179,8 +181,8 @@ def traffic():
         publish('J2 checkpoint: bounded whole-decode producer/reader pilot passed; expansion pending')
         return
     results=[first]
-    for model,batch,context in CONTRASTS:
-        for engine in ('eager','graph'):
+    for model,batch,context in load(ROOT/'session.json').get('traffic_contrasts',CONTRASTS):
+        for engine in load(ROOT/'session.json').get('traffic_engines',('eager','graph')):
             for acq in range(3):results.append(counter_case(model,engine,batch,context,acq))
         selected=load(ROOT/'session.json').get('traffic_layer_contrasts',CONTRASTS)
         if [model,batch,context] not in [list(c) for c in selected]:continue
@@ -850,7 +852,7 @@ def traces():
         label='J11_upload_'+archive.stem
         proof=ROOT/'results'/(label+'.json')
         outcome=attempt(label,python_command('shoreline_archive.py','--file',archive,'--proof',proof,
-            '--remote-path','archives/20261016_job14100402/'+archive.name),gpu=False,timeout=1200)
+            '--remote-path','archives/'+ROOT.name+'/'+archive.name),gpu=False,timeout=1200)
         publish(f'J11 archive readback checkpoint: {label} {outcome["status"]}')
     disposition('J11','partial','native trace/parser, semantic warnings, recurrence and durable readback individually recorded; H200 timing/power calibration remains separate')
 

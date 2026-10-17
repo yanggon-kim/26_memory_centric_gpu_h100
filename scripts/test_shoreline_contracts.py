@@ -25,6 +25,27 @@ def main():
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
     from unittest.mock import patch
+    import shoreline_reuse
+    with tempfile.TemporaryDirectory() as directory:
+        package=Path(directory);old=package/'h200/old';current=package/'h200/new'
+        old.mkdir(parents=True);(current/'results').mkdir(parents=True)
+        artifact=old/'run.json';qualification=old/'qualification.json'
+        artifact.write_text(json.dumps({'status':'complete','cases':[{'output_digests_identical':True,
+            'trials':[{'output_ids':[[1,2,3]]}]*3}]}));qualification.write_text('{}')
+        import hashlib
+        entry={'key':'fixture','original_session':'h200/old','artifact':'run.json',
+               'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest(),
+               'qualification_artifact':'qualification.json','qualification_sha256':hashlib.sha256(qualification.read_bytes()).hexdigest(),
+               'role':'exact-output-reference-only','clock_timing_join_permitted':False}
+        registry=current/'results/evidence_reuse.json'
+        def registry_entry(value):registry.write_text(json.dumps({'entries':[value]}))
+        with patch.object(shoreline_reuse,'__file__',str(package/'scripts/shoreline_reuse.py')):
+            registry_entry(entry);assert shoreline_reuse.output_reference(current,'fixture')==artifact
+            assert shoreline_reuse.output_reference(current,'missing') is None
+            registry_entry({**entry,'sha256':'0'*64});rejected(shoreline_reuse.output_reference,current,'fixture')
+            registry_entry({**entry,'clock_timing_join_permitted':True});rejected(shoreline_reuse.output_reference,current,'fixture')
+            registry_entry({**entry,'artifact':'../../escape'});rejected(shoreline_reuse.output_reference,current,'fixture')
+            registry.write_text(json.dumps({'entries':[entry,entry]}));rejected(shoreline_reuse.output_reference,current,'fixture')
     import h200_session,subprocess,socket
     host=socket.gethostname();session={'slurm_job_id':'unit-test-only','expected_hostname':host}
     with patch.object(h200_session,'SESSION',session),patch.dict(os.environ,{'SLURM_JOB_ID':'unit-test-only'}),patch.object(h200_session.time,'sleep'):
