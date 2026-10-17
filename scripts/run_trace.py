@@ -16,7 +16,7 @@ from export_trace import export,archive_verified
 
 
 def main(a):
-    assert 1<=a.steps<=4 and 1<=a.batch<=8 and a.context>0 and a.budget_gib>0 and a.timeout_s>0 and a.replay_timeout_s>0,'invalid trace budget/shape'
+    assert 1<=a.steps<=4 and 1<=a.batch<=8 and a.context>0 and a.budget_gib>0 and a.budget_files>0 and a.timeout_s>0 and a.replay_timeout_s>0,'invalid trace budget/shape'
     assert not any(k.startswith(('GPGPUSIM','GPGPU_SIM','ACCELSIM')) for k in os.environ),'native capture rejects inherited simulator setup environment'
     assert not os.environ.get('LD_PRELOAD'),'native capture requires no inherited preload'
     assert not any(term in os.environ.get('LD_LIBRARY_PATH','').lower() for term in ['gpgpu-sim','gpgpusim','accel-sim','accel_sim']),'native capture rejects simulator library paths'
@@ -105,6 +105,11 @@ def main(a):
                 except ProcessLookupError:pass
                 try:process.wait(timeout=30)
                 except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+    finished_files=[p for p in raw.rglob('*') if p.is_file()]
+    finished_bytes=sum(p.stat().st_size for p in finished_files)
+    dump(a.output/'capture_budget_observation.json',{'raw_files':len(finished_files),'raw_bytes':finished_bytes,
+        'maximum_raw_files':a.budget_files,'maximum_raw_bytes':a.budget_gib*1024**3,'failure':failure})
+    assert finished_bytes<=a.budget_gib*1024**3 and len(finished_files)<=a.budget_files,'completed capture exceeded byte/file budget; preserve partial evidence'
     assert failure is None,failure
     assert process.returncode==0,'trace process failed; preserve capture.log'
     metadata=json.loads((a.output/'metadata/trace_metadata.json').read_text())
