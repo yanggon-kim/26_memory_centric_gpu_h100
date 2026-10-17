@@ -43,6 +43,9 @@ Kernel replay samples retain their exact metric names/units and source/producer 
 | J3_bridge_b8_c4096_qkv_acq00 | complete | 880 | 50331648 |
 | J3_bridge_b8_c4096_qkv_acq01 | complete | 880 | 50331648 |
 | J3_bridge_b8_c4096_qkv_acq02 | complete | 880 | 50331648 |
+| J3_mistral7b_b1_c4096_attention_combine_acq00_filter_v2 | complete | 920 | NA |
+| J3_mistral7b_b1_c4096_attention_combine_acq01_filter_v2 | complete | 920 | NA |
+| J3_mistral7b_b1_c4096_attention_combine_acq02_filter_v2 | complete | 920 | NA |
 | J3_mistral7b_b1_c4096_attention_forward_acq00_filter_v2 | complete | 5424 | NA |
 | J3_mistral7b_b1_c4096_attention_forward_acq01_filter_v2 | complete | 5424 | NA |
 | J3_mistral7b_b1_c4096_attention_forward_acq02_filter_v2 | complete | 5424 | NA |
@@ -52,6 +55,9 @@ Kernel replay samples retain their exact metric names/units and source/producer 
 | J3_mistral7b_b1_c4096_gate_up_acq00 | complete | 888 | 234881024 |
 | J3_mistral7b_b1_c4096_gate_up_acq01 | complete | 888 | 234881024 |
 | J3_mistral7b_b1_c4096_gate_up_acq02 | complete | 888 | 234881024 |
+| J3_mistral7b_b1_c4096_kv_update_acq00_filter_v2 | complete | 1344 | NA |
+| J3_mistral7b_b1_c4096_kv_update_acq01_filter_v2 | complete | 1344 | NA |
+| J3_mistral7b_b1_c4096_kv_update_acq02_filter_v2 | complete | 1344 | NA |
 | J3_mistral7b_b1_c4096_qkv_acq00 | complete | 840 | 50331648 |
 | J3_mistral7b_b1_c4096_qkv_acq01 | complete | 840 | 50331648 |
 | J3_mistral7b_b1_c4096_qkv_acq02 | complete | 840 | 50331648 |

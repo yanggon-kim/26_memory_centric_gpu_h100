@@ -200,10 +200,11 @@ def traffic():
 def metadata_probes():
     outcomes=[]
     for model,b,c in CONTRASTS:
-        label=f'J2_metadata_{model}_eager_b{b}_c{c}_ticks456_v1'
+        protocol=load(ROOT/'session.json').get('metadata_probe_protocol','v1')
+        label=f'J2_metadata_{model}_eager_b{b}_c{c}_ticks456_'+protocol
         config=profile_config(model,'eager',b,c,label);out=ROOT/'runs'/label
         row=attempt(label,python_command('shoreline_decode.py','--config',config,'--gpu-uuid',UUID,
-            '--output',out,'--mode','timing','--ordinary-control','--pressure','normal','--collect-worker-metadata'),timeout=600)
+            '--output',out,'--mode','timing','--external-profiler','--pressure','normal','--collect-worker-metadata'),timeout=600)
         entry={'id':label,'status':'failed','scope':'functional-only metadata with GPU copies; timing/physical bytes excluded'}
         path=out/'attention_observations.json'
         if row['status']=='complete' and path.exists():

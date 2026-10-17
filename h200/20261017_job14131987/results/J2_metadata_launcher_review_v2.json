@@ -1,0 +1,11 @@
+{
+  "status": "launcher contract reviewed; bounded v2 pilot pending",
+  "reviewed_utc": "2026-10-17T14:16:50.680830+00:00",
+  "failed_id": "J2_metadata_bridge_eager_b1_c1024_ticks456_v1",
+  "failure": "--ordinary-control forces external_profilerFalse, while collect-worker-metadata intentionally requires the separate instrumented path. The assertion failed before loading a model.",
+  "fix": "Use the existing explicit instrumented/profiler-API path with --external-profiler and omit ordinary-control. Keep GPU-copy metadata functional-only; ordinary timing and physical counter claims remain disabled.",
+  "numerical_entrypoints_changed": false,
+  "source_freeze_retained": "cb0f67df5bee953d0aed511aca96210ec7b172fdbbfd1ef9b655f1017c5c8ddd",
+  "case_protocol": "v2; original failure retained",
+  "resume": "Pause native suite only at a published case boundary, run metadata v2, then resume cached native acquisitions without repetition."
+}
