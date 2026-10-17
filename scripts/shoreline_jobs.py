@@ -583,7 +583,8 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
         if db.exists() and allocation.exists():
             from shoreline_timeline import read
             try:
-                result['timeline']=read(db,load(allocation)['allocation']['green_context_id'])
+                expected_context=0 if fraction==1 else load(allocation)['allocation']['green_context_id']
+                result['timeline']=read(db,expected_context)
                 graph_proof=engine!='graph' or all(w['graph_kernel_count']>0 for w in result['timeline']['windows'])
                 result['status']='complete' if outcome['status']=='complete' and result.get('exact_reference_ids') and result['timeline']['restriction_passed'] and graph_proof else 'failed'
             except Exception as error:result['reason']=str(error)
@@ -591,6 +592,9 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
         result['status']='complete'
         result['clock_qualification']=campaign.clock_qualification(load(native),outcome['monitor']['source'])
         if not result['clock_qualification']['passed']:result['status']='rejected'
+        result.update(run_source=str(native.relative_to(ROOT)),run_sha256=digest(native),
+            step_ms=[t['wall_ms']/t['decode_iterations'] for t in load(native)['cases'][0]['trials']],
+            harness='shoreline_restricted_decode.py; VLLM_ENABLE_V1_MULTIPROCESSING=0; identical stream wrapper for fraction1 and restricted arms')
     dump(target,result);publish(f'J5 checkpoint: {label} {result["status"]}')
     return result
 
@@ -612,6 +616,12 @@ def sm_allocations():
     counter_proofs={}
     for (engine,b,c),supported in qualified.items():
         if not supported:continue
+        # Match the in-process/stream harness, rather than comparing a restricted
+        # in-process engine with the ordinary multiprocess J1 engine.
+        primary=restricted_case('bridge',engine,b,c,1,0,True)
+        results.append(primary)
+        if primary['status']!='complete':continue
+        for acq in range(3):results.append(restricted_case('bridge',engine,b,c,1,acq))
         for fraction in (.75,.5,.3):
             # Each resource setting needs its own all-kernel proof; a 75% pilot does not prove 30%.
             proof=qualified_proofs[(engine,b,c)] if fraction==.75 else restricted_case('bridge',engine,b,c,fraction,0,True)
@@ -621,7 +631,7 @@ def sm_allocations():
             for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
     for (b,c,fraction),engine in counter_proofs.items():
         for acq in range(3):results.append(counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction))
-    for fraction in (.75,.5,.3):
+    for fraction in (1,.75,.5,.3):
         for acq in range(3):
             label=f'J5_native_f{int(fraction*100)}_acq{acq:02d}';out=ROOT/'runs'/label
             outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
