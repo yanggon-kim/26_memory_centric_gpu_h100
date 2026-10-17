@@ -1,0 +1,33 @@
+{
+  "classification": "analytical dense BF16 KV geometry; not measured residency, padding, traffic or elimination",
+  "header_sha256": "efc9623a99c9f9220f7214d2121a045fb5547de1ad72f6703012e8f4e5935be2",
+  "queried_L2_bytes": 62914560,
+  "conditions": [
+    {
+      "batch": 1,
+      "context": 1024,
+      "logical_dense_KV_bytes_at_context": 29360128,
+      "ratio_to_queried_L2": 0.4666666666666667
+    },
+    {
+      "batch": 1,
+      "context": 2048,
+      "logical_dense_KV_bytes_at_context": 58720256,
+      "ratio_to_queried_L2": 0.9333333333333333
+    },
+    {
+      "batch": 1,
+      "context": 4096,
+      "logical_dense_KV_bytes_at_context": 117440512,
+      "ratio_to_queried_L2": 1.8666666666666667
+    },
+    {
+      "batch": 8,
+      "context": 4096,
+      "logical_dense_KV_bytes_at_context": 939524096,
+      "ratio_to_queried_L2": 14.933333333333334
+    }
+  ],
+  "longer_context_required_by_initial_scope_rule": false,
+  "reason": "B1/C4096 logical KV already exceeds actual L2; no longer-context expansion needed"
+}

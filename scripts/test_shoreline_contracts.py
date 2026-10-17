@@ -110,6 +110,24 @@ def main():
             registry_entry({**entry,'artifact':'../../escape'});rejected(shoreline_reuse.output_reference,current,'fixture')
             registry.write_text(json.dumps({'entries':[entry,entry]}));rejected(shoreline_reuse.output_reference,current,'fixture')
     import h200_session,subprocess,socket
+    from shoreline_jobs import functional_smoke_reference
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'configs').mkdir();(root/'results/qualifications').mkdir(parents=True)
+        cfg={'model_id':'fixture','model_revision':'1'*40,'seed':20261013,'precision':'BF16'}
+        (root/'configs/fixture_smoke.json').write_text(json.dumps(cfg))
+        def smoke(mode,token=7,context=2048):
+            out=root/'runs'/mode;out.mkdir(parents=True,exist_ok=True);path=out/'run.json'
+            path.write_text(json.dumps({'status':'complete','config':cfg,'cases':[{'batch_size':1,'context_length':context,
+                'generated_tokens':64,'prompt_sha256':'fixed','trials':[{'output_ids':[[token]*64]}]*3}]}))
+            (root/'results/qualifications'/f'fixture_{mode}_b1_c2048_smoke.json').write_text(json.dumps({
+                'status':'passed','command_status':'complete','output':str(out.relative_to(root)),
+                'run_sha256':hashlib.sha256(path.read_bytes()).hexdigest()}))
+            return path
+        smoke('hf_eager');path=smoke('eager')
+        assert functional_smoke_reference(root,'fixture','eager',1,2048)==path
+        path.write_text('{}');rejected(functional_smoke_reference,root,'fixture','eager',1,2048)
+        smoke('eager',token=8);rejected(functional_smoke_reference,root,'fixture','eager',1,2048)
+        smoke('eager',context=1024);rejected(functional_smoke_reference,root,'fixture','eager',1,2048)
     host=socket.gethostname();session={'slurm_job_id':'unit-test-only','expected_hostname':host}
     with patch.object(h200_session,'SESSION',session),patch.dict(os.environ,{'SLURM_JOB_ID':'unit-test-only'}),patch.object(h200_session.time,'sleep'):
         with patch.object(h200_session.subprocess,'check_output',side_effect=[subprocess.TimeoutExpired('scontrol',15),'JobState=RUNNING EndTime=2030-01-01T00:00:00 NodeList='+host.split('.')[0]]) as query:
