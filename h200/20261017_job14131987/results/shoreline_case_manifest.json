@@ -3,10 +3,11 @@
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
+      "status": "complete",
+      "scientific_gate": "passed",
       "prior_evidence": "h200/20261016_job14100402/STATUS.json",
-      "reason": "Fresh allocation; previous evidence retained separately"
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-17T12:27:11.122002+00:00"
     },
     {
       "id": "J1",
@@ -87,6 +88,52 @@
     }
   ],
   "conditions": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "id": "cpu_contracts",
+      "status": "failed",
+      "source": "results/processes/cpu_contracts.json",
+      "source_sha256": "fc1f6bc3fc92d733b75d928ff55ee59ade95f7764dfc2cc0103888c0752851a5",
+      "gpu_execution": false,
+      "exit_code": 1,
+      "numerical_source_freeze": "60c06f011266403bb98edbced787c7d025487a0ae66f75c58d5549454f9f2176"
+    },
+    {
+      "id": "cpu_contracts_revision_api_retry1",
+      "status": "complete",
+      "source": "results/processes/cpu_contracts_revision_api_retry1.json",
+      "source_sha256": "ff5675a1c9ebf304af3f1fda46360efd053bfd3ef73fb8a715309c320f002fd2",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "9d128197fa7c22ca89d5974ab6849242895fadc2f7239cf515441f2a2ede0e3d"
+    },
+    {
+      "id": "inventory",
+      "status": "complete",
+      "source": "results/processes/inventory.json",
+      "source_sha256": "8ec460d5c17341d525186c1828493a37eb3eb76d3e2e07eee6196425351f0ead",
+      "gpu_execution": true,
+      "exit_code": 0,
+      "numerical_source_freeze": "60c06f011266403bb98edbced787c7d025487a0ae66f75c58d5549454f9f2176"
+    },
+    {
+      "id": "ncu_catalog",
+      "status": "complete",
+      "source": "results/processes/ncu_catalog.json",
+      "source_sha256": "14ad3cd452b55840daf2f5b393da69401a21a27a75eacd7cccf2d02b0857fc46",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "60c06f011266403bb98edbced787c7d025487a0ae66f75c58d5549454f9f2176"
+    },
+    {
+      "id": "pip_freeze",
+      "status": "complete",
+      "source": "results/processes/pip_freeze.json",
+      "source_sha256": "dffb74d9f356899765883226095b0db7b5d42ed3215a53a847373501754a4c64",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "60c06f011266403bb98edbced787c7d025487a0ae66f75c58d5549454f9f2176"
+    }
+  ],
   "historical_session": "h200/20261016_job14100402"
 }

@@ -67,7 +67,7 @@ def main(a):
         try:constructor()
         except ValueError:checked.append('rejected '+label)
         else:raise AssertionError('negative capacity accepted')
-    with tempfile.TemporaryDirectory(dir=package/'results',prefix='cpu_contract_') as temporary:
+    with tempfile.TemporaryDirectory(prefix='cpu_contract_') as temporary:
         temporary=Path(temporary)
         # A repository may publish two complete encodings of the same model.
         # The native alternate must not double the HF download or bypass budget.
@@ -94,7 +94,7 @@ def main(a):
                             hf_hub_download=lambda *a,**k:str(fixture/'model.safetensors.index.json'),
                             snapshot_download=snapshot_download)
         with patch.dict(sys.modules,{'huggingface_hub':hub}),contextlib.redirect_stdout(io.StringIO()):
-            materialize(SimpleNamespace(model='mistral7b',stage='smoke',snapshot=None,download=True,
+            materialize(SimpleNamespace(model='mistral7b',stage='smoke',snapshot=None,download=True,revision=None,
                         output=temporary/'selected_hf.json',reuse_output=None))
         proof=json.loads((temporary/'selected_hf.download_manifest.json').read_text())
         assert proof['selected_bytes']<20*1024**3 and proof['selected_weights']==shards

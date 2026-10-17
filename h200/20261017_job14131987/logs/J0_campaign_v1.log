@@ -1,0 +1,14 @@
+START inventory
+END inventory complete 3.66
+START cpu_contracts
+END cpu_contracts failed 0.13
+START pip_freeze
+END pip_freeze complete 0.53
+START ncu_catalog
+END ncu_catalog complete 1.63
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 254, in <module>
+    (inventory if args.job=='J0' else baselines)(DEFAULT_ROOT)
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_campaign.py", line 60, in inventory
+    assert all(x['status'] == 'complete' for x in outcomes), 'J0 feasibility/CPU checks failed; inspect logs'
+AssertionError: J0 feasibility/CPU checks failed; inspect logs
