@@ -24,6 +24,6 @@ Physical read+write bytes come from separate kernel-replay counter captures with
 
 The fixed70/30 native overlap-family held-out model is rejected: one condition has10.54% relative error against the predeclared10% limit, and its point estimates give an empty coupled residual interval. No threshold/split/attempt selection was changed to obtain a pass. Sampling uncertainty and analytical assumption envelopes remain distinct.
 
-The raw footprint/pointer figure and illustrative joint-sensitivity figure are under `analysis/figures/`. The latter uses declared hypothetical inputs and does not predict H200 speedup. Authoritative source-bound joins are in `results/shoreline_independent_service_qualification.json`; completed coverage and its source hashes are in `results/J4_final_capture_review_v1.json`.
+The raw footprint/pointer figure and illustrative joint-sensitivity figure are under `analysis/figures/`. The latter uses declared hypothetical inputs and does not predict H200 speedup. Authoritative source-bound joins are in `results/shoreline_independent_service_qualification.json`; completed coverage and its source hashes are in `results/J4_final_capture_review_v2.json`.
 
 Next: finish focused current-GPU decoder controls; run the bounded J11 semantic pilot, J5 actual resource-allocation measurements, J8 layer/event controls and J9 conditional analysis, then selected J7/J10 and supported J6/J11 closeout. No physical SRAM/PHY/package change is enacted.
