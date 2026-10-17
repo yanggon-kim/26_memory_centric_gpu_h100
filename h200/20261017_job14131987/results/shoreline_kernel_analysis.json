@@ -8014,6 +8014,642 @@
       "limitations": "Static SASS rows are not dynamic instruction counts; grid is not productive workers; kernel replay/pass metrics are not whole-model totals or a wall-time partition."
     },
     {
+      "id": "J3_mistral7b_b1_c4096_gate_up_acq00",
+      "status": "complete",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "gate_up",
+      "layer": 16,
+      "acquisition_id": 0,
+      "source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq00.json",
+        "sha256": "61130366e82b2f5a383a0d4f1bdf9140f6d27a3ce16f8e3ef8a3b57eac7cbab5"
+      },
+      "producer": {
+        "path": "results/processes/J3_mistral7b_b1_c4096_gate_up_acq00.json",
+        "sha256": "2a2b511240537b64198e097aa01bf3568b29605a025bd16dd2f95929d4888f2b"
+      },
+      "reader_reprocessing": null,
+      "producer_status": "complete",
+      "source_freeze_identity": "9d128197fa7c22ca89d5974ab6849242895fadc2f7239cf515441f2a2ede0e3d",
+      "native_run_source": {
+        "path": "runs/J3_mistral7b_b1_c4096_gate_up_acq00/run.json",
+        "sha256": "f04c128dbbf07c5f1cb47983f427c55f442369c975d9253054497a6e419312de"
+      },
+      "config_source": {
+        "path": "configs/J3_mistral7b_b1_c4096_gate_up_acq00.json",
+        "sha256": "1e288fd02f6f83acd82c221892bc0f068e5733f202ef1f90aaf6e637d89cee23"
+      },
+      "loaded_config_matches_saved_input": true,
+      "native_shape_matches": true,
+      "isolation_failure": null,
+      "exact_reference_ids": true,
+      "symbols": [
+        "nvjet_sm90_tst_128x8_64x12_2x1_v_bz_TNT"
+      ],
+      "metrics": {
+        "launch__grid_size": {
+          "value": "132",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__block_size": {
+          "value": "384",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__registers_per_thread": {
+          "value": "168",
+          "unit": "register/thread",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_static": {
+          "value": "0",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_dynamic": {
+          "value": "225652",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_allocated": {
+          "value": "226688",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_config_size": {
+          "value": "233472",
+          "unit": "byte",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "sm__warps_active.avg.pct_of_peak_sustained_active": {
+          "value": "14.47",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__issue_active.avg.pct_of_peak_sustained_active": {
+          "value": "8.78",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__warps_eligible.avg.per_cycle_active": {
+          "value": "0.09",
+          "unit": "warp",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        }
+      },
+      "all_metric_source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq00.json",
+        "sha256": "61130366e82b2f5a383a0d4f1bdf9140f6d27a3ce16f8e3ef8a3b57eac7cbab5"
+      },
+      "static_sass_opcodes": {
+        "LDC": 4,
+        "S2R": 1,
+        "S2UR": 4,
+        "ISETP.LT.AND": 6,
+        "NOP": 29,
+        "BRA": 52,
+        "UMOV": 89,
+        "R2UR": 7,
+        "UISETP.LT.AND": 11,
+        "BRA.U": 27,
+        "UPRMT": 23,
+        "USHF.R.U32": 26,
+        "ULOP3.LUT": 10,
+        "UIMAD.U32": 58,
+        "SYNCS.EXCH.64": 11,
+        "UIADD3": 102,
+        "UCGABAR_ARV": 2,
+        "ULDC.U8": 2,
+        "ULDC": 72,
+        "UISETP.EQ.AND": 26,
+        "UIMAD.WIDE.U32": 22,
+        "UISETP.GE.AND": 12,
+        "MOV": 31,
+        "LOP3.LUT": 36,
+        "SHF.R.U32": 4,
+        "SHF.R.U64": 1,
+        "IADD3": 9,
+        "IMAD.SHL": 9,
+        "IMAD": 7,
+        "UISETP.NE.OR": 1,
+        "ISETP.NE.AND": 4,
+        "ISETP.GE.AND": 7,
+        "UCGABAR_WAIT": 2,
+        "PLOP3.LUT": 2,
+        "ISETP.EQ.AND": 6,
+        "LDS": 4,
+        "WARPSYNC.ALL": 3,
+        "BAR.SYNC": 2,
+        "WARPGROUP.ARRIVE": 8,
+        "HGMMA.": 16,
+        "WARPGROUP.DEPBAR.LE": 5,
+        "SYNCS.ARRIVE.TRANS64.RED.A1T0": 11,
+        "SYNCS.PHASECHK.TRANS64.TRYWAIT": 15,
+        "UISETP.NE.AND": 3,
+        "STS": 4,
+        "NANOSLEEP.SYNCS": 9,
+        "SYNCS.PHASECHK.TRANS64": 9,
+        "LDC.64": 4,
+        "SHF.R.S32.HI": 3,
+        "ISETP.NE.OR": 1,
+        "LDG.E": 1,
+        "ISETP.GE.OR": 1,
+        "ISETP.GT.AND": 3,
+        "ISETP.GT.OR": 1,
+        "FSETP.EQ.AND": 2,
+        "LEA": 2,
+        "LEA.HI": 2,
+        "SHF.L.U32": 2,
+        "ISETP.EQ.OR": 2,
+        "FFMA": 16,
+        "VOTEU.ANY": 1,
+        "ULDC.64": 3,
+        "UIADD3.64": 6,
+        "SHF.R.U32.HI": 1,
+        "IMAD.IADD": 1,
+        "WARPGROUP.WAIT": 4,
+        "F2FP.BF16.F32.PACK_AB": 4,
+        "STSM.16.MT88": 4,
+        "FENCE.VIEW.ASYNC.S": 2,
+        "UTMASTG.3D": 2,
+        "UTMACMDFLUSH": 2,
+        "USHF.L.U64.HI": 1,
+        "UTMALDG.3D": 2,
+        "UTMALDG.3D.MULTICAST": 2,
+        "SYNCS.ARRIVE.TRANS64.RED": 3,
+        "UISETP.LT.U32.AND": 2,
+        "ATOMG.E.ADD": 1,
+        "PRMT": 1,
+        "STAS": 1,
+        "EXIT": 1
+      },
+      "static_sass_instruction_rows": 888,
+      "sass_source": {
+        "path": "logs/J3_mistral7b_b1_c4096_gate_up_acq00_sass.log",
+        "sha256": "86af44f6bcd51b713233161e115aba298860d41274408ee60bedfc7d1cbaed20"
+      },
+      "operator_weight_geometry": [
+        {
+          "name": "model.layers.16.mlp.gate_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        },
+        {
+          "name": "model.layers.16.mlp.up_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        }
+      ],
+      "analytical_operator_flops": 234881024,
+      "flop_scope": "complete logical linear operator; not automatically work of the first sampled kernel",
+      "dynamic_issued_work": null,
+      "productive_workers": null,
+      "limitations": "Static SASS rows are not dynamic instruction counts; grid is not productive workers; kernel replay/pass metrics are not whole-model totals or a wall-time partition."
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_gate_up_acq01",
+      "status": "complete",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "gate_up",
+      "layer": 16,
+      "acquisition_id": 1,
+      "source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq01.json",
+        "sha256": "7dd14ba1a5700173bf6b27d11be2a71ef47a44a0b876fd1b6d044e8675aa6477"
+      },
+      "producer": {
+        "path": "results/processes/J3_mistral7b_b1_c4096_gate_up_acq01.json",
+        "sha256": "6dd58b7259d999936a2754ea41e56189c7c7d31c3e616f411987a209e55baf22"
+      },
+      "reader_reprocessing": null,
+      "producer_status": "complete",
+      "source_freeze_identity": "9d128197fa7c22ca89d5974ab6849242895fadc2f7239cf515441f2a2ede0e3d",
+      "native_run_source": {
+        "path": "runs/J3_mistral7b_b1_c4096_gate_up_acq01/run.json",
+        "sha256": "fe8e7746576df478a45568dc64dd288935077154e6aa6cd81fb0c0e9e98dcff2"
+      },
+      "config_source": {
+        "path": "configs/J3_mistral7b_b1_c4096_gate_up_acq01.json",
+        "sha256": "1e288fd02f6f83acd82c221892bc0f068e5733f202ef1f90aaf6e637d89cee23"
+      },
+      "loaded_config_matches_saved_input": true,
+      "native_shape_matches": true,
+      "isolation_failure": null,
+      "exact_reference_ids": true,
+      "symbols": [
+        "nvjet_sm90_tst_128x8_64x12_2x1_v_bz_TNT"
+      ],
+      "metrics": {
+        "launch__grid_size": {
+          "value": "132",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__block_size": {
+          "value": "384",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__registers_per_thread": {
+          "value": "168",
+          "unit": "register/thread",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_static": {
+          "value": "0",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_dynamic": {
+          "value": "225652",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_allocated": {
+          "value": "226688",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_config_size": {
+          "value": "233472",
+          "unit": "byte",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "sm__warps_active.avg.pct_of_peak_sustained_active": {
+          "value": "14.47",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__issue_active.avg.pct_of_peak_sustained_active": {
+          "value": "8.70",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__warps_eligible.avg.per_cycle_active": {
+          "value": "0.09",
+          "unit": "warp",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        }
+      },
+      "all_metric_source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq01.json",
+        "sha256": "7dd14ba1a5700173bf6b27d11be2a71ef47a44a0b876fd1b6d044e8675aa6477"
+      },
+      "static_sass_opcodes": {
+        "LDC": 4,
+        "S2R": 1,
+        "S2UR": 4,
+        "ISETP.LT.AND": 6,
+        "NOP": 29,
+        "BRA": 52,
+        "UMOV": 89,
+        "R2UR": 7,
+        "UISETP.LT.AND": 11,
+        "BRA.U": 27,
+        "UPRMT": 23,
+        "USHF.R.U32": 26,
+        "ULOP3.LUT": 10,
+        "UIMAD.U32": 58,
+        "SYNCS.EXCH.64": 11,
+        "UIADD3": 102,
+        "UCGABAR_ARV": 2,
+        "ULDC.U8": 2,
+        "ULDC": 72,
+        "UISETP.EQ.AND": 26,
+        "UIMAD.WIDE.U32": 22,
+        "UISETP.GE.AND": 12,
+        "MOV": 31,
+        "LOP3.LUT": 36,
+        "SHF.R.U32": 4,
+        "SHF.R.U64": 1,
+        "IADD3": 9,
+        "IMAD.SHL": 9,
+        "IMAD": 7,
+        "UISETP.NE.OR": 1,
+        "ISETP.NE.AND": 4,
+        "ISETP.GE.AND": 7,
+        "UCGABAR_WAIT": 2,
+        "PLOP3.LUT": 2,
+        "ISETP.EQ.AND": 6,
+        "LDS": 4,
+        "WARPSYNC.ALL": 3,
+        "BAR.SYNC": 2,
+        "WARPGROUP.ARRIVE": 8,
+        "HGMMA.": 16,
+        "WARPGROUP.DEPBAR.LE": 5,
+        "SYNCS.ARRIVE.TRANS64.RED.A1T0": 11,
+        "SYNCS.PHASECHK.TRANS64.TRYWAIT": 15,
+        "UISETP.NE.AND": 3,
+        "STS": 4,
+        "NANOSLEEP.SYNCS": 9,
+        "SYNCS.PHASECHK.TRANS64": 9,
+        "LDC.64": 4,
+        "SHF.R.S32.HI": 3,
+        "ISETP.NE.OR": 1,
+        "LDG.E": 1,
+        "ISETP.GE.OR": 1,
+        "ISETP.GT.AND": 3,
+        "ISETP.GT.OR": 1,
+        "FSETP.EQ.AND": 2,
+        "LEA": 2,
+        "LEA.HI": 2,
+        "SHF.L.U32": 2,
+        "ISETP.EQ.OR": 2,
+        "FFMA": 16,
+        "VOTEU.ANY": 1,
+        "ULDC.64": 3,
+        "UIADD3.64": 6,
+        "SHF.R.U32.HI": 1,
+        "IMAD.IADD": 1,
+        "WARPGROUP.WAIT": 4,
+        "F2FP.BF16.F32.PACK_AB": 4,
+        "STSM.16.MT88": 4,
+        "FENCE.VIEW.ASYNC.S": 2,
+        "UTMASTG.3D": 2,
+        "UTMACMDFLUSH": 2,
+        "USHF.L.U64.HI": 1,
+        "UTMALDG.3D": 2,
+        "UTMALDG.3D.MULTICAST": 2,
+        "SYNCS.ARRIVE.TRANS64.RED": 3,
+        "UISETP.LT.U32.AND": 2,
+        "ATOMG.E.ADD": 1,
+        "PRMT": 1,
+        "STAS": 1,
+        "EXIT": 1
+      },
+      "static_sass_instruction_rows": 888,
+      "sass_source": {
+        "path": "logs/J3_mistral7b_b1_c4096_gate_up_acq01_sass.log",
+        "sha256": "86af44f6bcd51b713233161e115aba298860d41274408ee60bedfc7d1cbaed20"
+      },
+      "operator_weight_geometry": [
+        {
+          "name": "model.layers.16.mlp.gate_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        },
+        {
+          "name": "model.layers.16.mlp.up_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        }
+      ],
+      "analytical_operator_flops": 234881024,
+      "flop_scope": "complete logical linear operator; not automatically work of the first sampled kernel",
+      "dynamic_issued_work": null,
+      "productive_workers": null,
+      "limitations": "Static SASS rows are not dynamic instruction counts; grid is not productive workers; kernel replay/pass metrics are not whole-model totals or a wall-time partition."
+    },
+    {
+      "id": "J3_mistral7b_b1_c4096_gate_up_acq02",
+      "status": "complete",
+      "model": "mistral7b",
+      "batch": 1,
+      "context": 4096,
+      "role": "gate_up",
+      "layer": 16,
+      "acquisition_id": 2,
+      "source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq02.json",
+        "sha256": "0b5e4f6e80d587b1c80bfbf07df4ffc4b3b6a2aee36ed87de5b09546515aab7e"
+      },
+      "producer": {
+        "path": "results/processes/J3_mistral7b_b1_c4096_gate_up_acq02.json",
+        "sha256": "537e0b150c06bcc771513eeb554028f9902eed9e9986285191220b9e7b184dcc"
+      },
+      "reader_reprocessing": null,
+      "producer_status": "complete",
+      "source_freeze_identity": "9d128197fa7c22ca89d5974ab6849242895fadc2f7239cf515441f2a2ede0e3d",
+      "native_run_source": {
+        "path": "runs/J3_mistral7b_b1_c4096_gate_up_acq02/run.json",
+        "sha256": "1cd4bf4db2dd9d302df35f9135da7189feaf791fb739cce2ce7f3f44ca2f1168"
+      },
+      "config_source": {
+        "path": "configs/J3_mistral7b_b1_c4096_gate_up_acq02.json",
+        "sha256": "1e288fd02f6f83acd82c221892bc0f068e5733f202ef1f90aaf6e637d89cee23"
+      },
+      "loaded_config_matches_saved_input": true,
+      "native_shape_matches": true,
+      "isolation_failure": null,
+      "exact_reference_ids": true,
+      "symbols": [
+        "nvjet_sm90_tst_128x8_64x12_2x1_v_bz_TNT"
+      ],
+      "metrics": {
+        "launch__grid_size": {
+          "value": "132",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__block_size": {
+          "value": "384",
+          "unit": "",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__registers_per_thread": {
+          "value": "168",
+          "unit": "register/thread",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_static": {
+          "value": "0",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_dynamic": {
+          "value": "225652",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_per_block_allocated": {
+          "value": "226688",
+          "unit": "byte/block",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "launch__shared_mem_config_size": {
+          "value": "233472",
+          "unit": "byte",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "sm__warps_active.avg.pct_of_peak_sustained_active": {
+          "value": "14.48",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__issue_active.avg.pct_of_peak_sustained_active": {
+          "value": "8.62",
+          "unit": "%",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "smsp__warps_eligible.avg.per_cycle_active": {
+          "value": "0.09",
+          "unit": "warp",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_ld.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        },
+        "l1tex__t_sectors_pipe_lsu_mem_local_op_st.sum": {
+          "value": "0",
+          "unit": "sector",
+          "definition": "exact Nsight metric name supplies numerator/denominator and active/elapsed scope"
+        }
+      },
+      "all_metric_source": {
+        "path": "profiles/J3_mistral7b_b1_c4096_gate_up_acq02.json",
+        "sha256": "0b5e4f6e80d587b1c80bfbf07df4ffc4b3b6a2aee36ed87de5b09546515aab7e"
+      },
+      "static_sass_opcodes": {
+        "LDC": 4,
+        "S2R": 1,
+        "S2UR": 4,
+        "ISETP.LT.AND": 6,
+        "NOP": 29,
+        "BRA": 52,
+        "UMOV": 89,
+        "R2UR": 7,
+        "UISETP.LT.AND": 11,
+        "BRA.U": 27,
+        "UPRMT": 23,
+        "USHF.R.U32": 26,
+        "ULOP3.LUT": 10,
+        "UIMAD.U32": 58,
+        "SYNCS.EXCH.64": 11,
+        "UIADD3": 102,
+        "UCGABAR_ARV": 2,
+        "ULDC.U8": 2,
+        "ULDC": 72,
+        "UISETP.EQ.AND": 26,
+        "UIMAD.WIDE.U32": 22,
+        "UISETP.GE.AND": 12,
+        "MOV": 31,
+        "LOP3.LUT": 36,
+        "SHF.R.U32": 4,
+        "SHF.R.U64": 1,
+        "IADD3": 9,
+        "IMAD.SHL": 9,
+        "IMAD": 7,
+        "UISETP.NE.OR": 1,
+        "ISETP.NE.AND": 4,
+        "ISETP.GE.AND": 7,
+        "UCGABAR_WAIT": 2,
+        "PLOP3.LUT": 2,
+        "ISETP.EQ.AND": 6,
+        "LDS": 4,
+        "WARPSYNC.ALL": 3,
+        "BAR.SYNC": 2,
+        "WARPGROUP.ARRIVE": 8,
+        "HGMMA.": 16,
+        "WARPGROUP.DEPBAR.LE": 5,
+        "SYNCS.ARRIVE.TRANS64.RED.A1T0": 11,
+        "SYNCS.PHASECHK.TRANS64.TRYWAIT": 15,
+        "UISETP.NE.AND": 3,
+        "STS": 4,
+        "NANOSLEEP.SYNCS": 9,
+        "SYNCS.PHASECHK.TRANS64": 9,
+        "LDC.64": 4,
+        "SHF.R.S32.HI": 3,
+        "ISETP.NE.OR": 1,
+        "LDG.E": 1,
+        "ISETP.GE.OR": 1,
+        "ISETP.GT.AND": 3,
+        "ISETP.GT.OR": 1,
+        "FSETP.EQ.AND": 2,
+        "LEA": 2,
+        "LEA.HI": 2,
+        "SHF.L.U32": 2,
+        "ISETP.EQ.OR": 2,
+        "FFMA": 16,
+        "VOTEU.ANY": 1,
+        "ULDC.64": 3,
+        "UIADD3.64": 6,
+        "SHF.R.U32.HI": 1,
+        "IMAD.IADD": 1,
+        "WARPGROUP.WAIT": 4,
+        "F2FP.BF16.F32.PACK_AB": 4,
+        "STSM.16.MT88": 4,
+        "FENCE.VIEW.ASYNC.S": 2,
+        "UTMASTG.3D": 2,
+        "UTMACMDFLUSH": 2,
+        "USHF.L.U64.HI": 1,
+        "UTMALDG.3D": 2,
+        "UTMALDG.3D.MULTICAST": 2,
+        "SYNCS.ARRIVE.TRANS64.RED": 3,
+        "UISETP.LT.U32.AND": 2,
+        "ATOMG.E.ADD": 1,
+        "PRMT": 1,
+        "STAS": 1,
+        "EXIT": 1
+      },
+      "static_sass_instruction_rows": 888,
+      "sass_source": {
+        "path": "logs/J3_mistral7b_b1_c4096_gate_up_acq02_sass.log",
+        "sha256": "86af44f6bcd51b713233161e115aba298860d41274408ee60bedfc7d1cbaed20"
+      },
+      "operator_weight_geometry": [
+        {
+          "name": "model.layers.16.mlp.gate_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        },
+        {
+          "name": "model.layers.16.mlp.up_proj.weight",
+          "shape": [
+            14336,
+            4096
+          ],
+          "dtype": "BF16"
+        }
+      ],
+      "analytical_operator_flops": 234881024,
+      "flop_scope": "complete logical linear operator; not automatically work of the first sampled kernel",
+      "dynamic_issued_work": null,
+      "productive_workers": null,
+      "limitations": "Static SASS rows are not dynamic instruction counts; grid is not productive workers; kernel replay/pass metrics are not whole-model totals or a wall-time partition."
+    },
+    {
       "id": "J3_mistral7b_b1_c4096_qkv_acq00",
       "status": "complete",
       "model": "mistral7b",
