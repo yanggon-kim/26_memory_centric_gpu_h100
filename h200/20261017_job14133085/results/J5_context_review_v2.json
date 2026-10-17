@@ -1,0 +1,21 @@
+{
+  "reviewed_utc": "2026-10-17T16:03:32.646255+00:00",
+  "first_pilot": "profiles/J5_bridge_graph_b1_c1024_f75_acq00_pilot0.json",
+  "first_pilot_sha256": "d366340342a86f272cc33d9d10b64c3ef8faf4078d77f591f18cf8d4b51b3f3f",
+  "actual_allocated_sms": 104,
+  "minimum_partition": 8,
+  "alignment": 8,
+  "first_window_primary_graph_kernels": 1011,
+  "first_window_green_helper_kernels": 51,
+  "first_producer_exit_code": 134,
+  "correction_version": "green_context_v2",
+  "correction": [
+    "explicitly make converted green context current before framework initialization",
+    "retain green context and its stream for the bounded child process lifetime to protect cached allocator/graph teardown"
+  ],
+  "lifetime_scope": "two pinned Python handles per created green context, reclaimed by driver at child process exit; no system setting or persistent context",
+  "new_source_freeze_identity": "d68c96763eaa15021b52d8a81022b565955717056ed89e24195c4e15781c03b0",
+  "CPU_contract_log": "logs/shoreline_contracts_green_context_v6.log",
+  "preserved_initial_CPU_fixture_failure": "logs/shoreline_contracts_green_context_v5.log",
+  "retry_policy": "per-shape/engine source-bound review, at most two pilot attempts; no third attempt or relaxed all-kernel gate"
+}

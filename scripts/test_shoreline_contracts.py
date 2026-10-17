@@ -110,6 +110,22 @@ def main():
             registry_entry({**entry,'artifact':'../../escape'});rejected(shoreline_reuse.output_reference,current,'fixture')
             registry.write_text(json.dumps({'entries':[entry,entry]}));rejected(shoreline_reuse.output_reference,current,'fixture')
     import h200_session,subprocess,socket
+    import shoreline_green,types,sys
+    events=[]
+    class FakeGreen:
+        def set_context(self):events.append('current')
+        def Stream(self):events.append('stream');return 'green_stream'
+    green=FakeGreen()
+    device=SimpleNamespace(set_current=lambda:None,resources=SimpleNamespace(sm=SimpleNamespace(
+        sm_count=132,coscheduled_alignment=8,min_partition_size=8)))
+    core=types.ModuleType('cuda.core');core.Device=lambda index:device
+    cuda=types.ModuleType('cuda');cuda.core=core
+    torch=SimpleNamespace(cuda=SimpleNamespace(GreenContext=SimpleNamespace(create=lambda count,index:green),current_stream=lambda:'primary_stream'))
+    with patch.dict(sys.modules,{'cuda':cuda,'cuda.core':core}),patch.object(shoreline_green,'retain_for_process',side_effect=lambda *a:events.append('retain')),patch.object(shoreline_green,'stream_proof',side_effect=lambda s:{'green_context_handle':int(s=='green_stream'),'actual_sm_count':104 if s=='green_stream' else 132}):
+        _,_,allocation=shoreline_green.create(torch,.75,make_current=True)
+        assert allocation['requested_sms']==104 and events==['current','stream','retain']
+        events.clear();assert shoreline_green.create(torch,1,make_current=True)[2]['actual_sm_count']==132 and events==[]
+        rejected(shoreline_green.create,torch,0)
     from shoreline_jobs import functional_smoke_reference
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);(root/'configs').mkdir();(root/'results/qualifications').mkdir(parents=True)

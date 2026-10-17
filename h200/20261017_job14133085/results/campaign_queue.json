@@ -1,5 +1,5 @@
 {
-  "status": "running",
+  "status": "needs_diagnosis",
   "steps": [
     {
       "id": "J4_native",
@@ -69,7 +69,7 @@
     },
     {
       "id": "J5",
-      "status": "running",
+      "status": "command_failed",
       "started_utc": "2026-10-17T15:55:33.101087+00:00",
       "command": [
         "/tmp/h200_research_jkim4112_job14133085/runtime/bin/python",
@@ -79,10 +79,24 @@
         "--job",
         "J5"
       ],
-      "log": "logs/queue_J5_attempt00.log"
+      "log": "logs/queue_J5_attempt00.log",
+      "exit_code": 76,
+      "ended_utc": "2026-10-17T16:03:32.674795+00:00"
     }
   ],
   "queue_source_sha256": "ccb09a3feacf359ba9687816db90df39f0df3c657bdd7a334e8670685ad9294d",
   "start_at": "J4_native",
-  "queue_attempt": 0
+  "queue_attempt": 0,
+  "cpu_closeout": [
+    {
+      "id": "analysis",
+      "exit_code": 0,
+      "log": "logs/queue_cpu_closeout_analysis_attempt00.log"
+    },
+    {
+      "id": "figures",
+      "exit_code": 0,
+      "log": "logs/queue_cpu_closeout_figures_attempt00.log"
+    }
+  ]
 }

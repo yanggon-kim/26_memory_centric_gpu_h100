@@ -608,7 +608,12 @@ def sm_allocations():
                 result=restricted_case('bridge',engine,b,c,.75,0,True,attempt_id)
                 results.append(result)
                 if result['status']=='complete':break
-                if attempt_id==0 and not load(ROOT/'session.json').get('sm_pilot_reviewed',False):
+                session=load(ROOT/'session.json')
+                review=session.get('sm_pilot_reviews',{}).get(f'bridge_{engine}_b{b}_c{c}',{})
+                reviewed=review.get('source_freeze_identity')==session.get('frozen_source_identity') and review.get('first_attempt_reviewed') is True
+                if attempt_id==0 and reviewed and review.get('terminal_unavailable'):
+                    break
+                if attempt_id==0 and not reviewed:
                     disposition('J5','partial','first resource-restriction pilot failed; review actual evidence/adapter before spending the remaining bounded pilot attempt')
                     raise SystemExit(76)
             qualified[(engine,b,c)]=result['status']=='complete'

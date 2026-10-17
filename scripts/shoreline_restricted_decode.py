@@ -16,7 +16,7 @@ def main(a):
     from shoreline_green import create,stream_proof
     from software_decode_experiments import dump
     verify_cuda(torch,a.gpu_uuid)
-    green,stream,proof=create(torch,a.fraction)
+    green,stream,proof=create(torch,a.fraction,make_current=True)
     assert a.fraction==1 or proof['green_context_handle']
     dump(a.output/'green_allocation.json',{'status':'allocated','allocation':proof,
           'all_kernel_restriction_proof':'pending Nsight Systems greenContextId validation during selected decode ticks'})

@@ -1,0 +1,26 @@
+QUEUE_START J11_semantic_pilot
+QUEUE_END J11_semantic_pilot 0
+QUEUE_START J5
+QUEUE_END J5 0
+QUEUE_START J8
+QUEUE_END J8 0
+QUEUE_START J9_analysis
+QUEUE_END J9_analysis 0
+QUEUE_START J7
+QUEUE_END J7 0
+QUEUE_START J10
+QUEUE_END J10 0
+QUEUE_START J6
+QUEUE_END J6 0
+QUEUE_START J11_closeout
+QUEUE_END J11_closeout 0
+QUEUE_START final_analysis
+QUEUE_END final_analysis 0
+QUEUE_START final_figures
+QUEUE_END final_figures 0
+Traceback (most recent call last):
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/test_shoreline_contracts.py", line 296, in <module>
+    if __name__=='__main__':main()
+  File "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/test_shoreline_contracts.py", line 124, in main
+    with patch.dict(sys.modules,{'cuda':cuda,'cuda.core':core}),patch.object(shoreline_green,'retain_for_process',side_effect=lambda *a:events.append('retain')),patch.object(shoreline_green,'stream_proof',side_effect=lambda s:{'green_context_handle':int(s=='green_stream'),'actual_sm_count':104 if s=='green_stream' else 132}):
+NameError: name 'sys' is not defined. Did you mean: 'sms'?
