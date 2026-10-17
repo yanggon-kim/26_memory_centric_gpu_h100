@@ -181,6 +181,18 @@ def main():
         assert len(proof['conditions'])==60 and all(r['same_pass_overlap_ms']>0 for r in proof['conditions'])
         db.execute('DELETE FROM CUPTI_ACTIVITY_KIND_KERNEL WHERE rowid=1');db.commit();db.close()
         rejected(native_overlap,path)
+    from shoreline_timeline import read as decode_timeline
+    with tempfile.TemporaryDirectory() as directory:
+        path=Path(directory)/'contexts.sqlite';db=sqlite3.connect(path)
+        db.executescript("CREATE TABLE NVTX_EVENTS(start INTEGER,end INTEGER,text TEXT); CREATE TABLE StringIds(id INTEGER,value TEXT); CREATE TABLE CUPTI_ACTIVITY_KIND_KERNEL(start INTEGER,end INTEGER,demangledName INTEGER,greenContextId INTEGER,graphNodeId INTEGER); INSERT INTO NVTX_EVENTS VALUES(0,100,'shoreline_ticks_4_6'); INSERT INTO StringIds VALUES(1,'decode'); INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(1,90,1,0,1);")
+        db.commit()
+        assert decode_timeline(path,0)['restriction_passed'] is True
+        assert decode_timeline(path,7)['restriction_passed'] is False
+        db.execute('UPDATE CUPTI_ACTIVITY_KIND_KERNEL SET greenContextId=7');db.commit()
+        assert decode_timeline(path,7)['restriction_passed'] is True
+        db.execute('INSERT INTO CUPTI_ACTIVITY_KIND_KERNEL VALUES(2,80,1,0,1)');db.commit()
+        assert decode_timeline(path,7)['restriction_passed'] is False
+        db.close()
     from shoreline_accounting import useful
     import struct
     with tempfile.TemporaryDirectory() as directory:
