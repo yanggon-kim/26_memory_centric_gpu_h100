@@ -15,7 +15,24 @@ from software_decode_experiments import dump
 from export_trace import export,archive_verified
 
 
+def terminate_wrapper(signum, frame):
+    # Let the owned-child finally block run when the outer supervisor stops us.
+    raise SystemExit(128+signum)
+
+
+def stop_owned_child(process):
+    if process.poll() is None:
+        try:os.killpg(process.pid,signal.SIGTERM)
+        except ProcessLookupError:pass
+        try:process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:os.killpg(process.pid,signal.SIGKILL)
+            except ProcessLookupError:pass
+            process.wait()
+
+
 def main(a):
+    signal.signal(signal.SIGTERM,terminate_wrapper)
     assert 1<=a.steps<=4 and 1<=a.batch<=8 and a.context>0 and a.budget_gib>0 and a.budget_files>0 and a.timeout_s>0 and a.replay_timeout_s>0,'invalid trace budget/shape'
     assert not any(k.startswith(('GPGPUSIM','GPGPU_SIM','ACCELSIM')) for k in os.environ),'native capture rejects inherited simulator setup environment'
     assert not os.environ.get('LD_PRELOAD'),'native capture requires no inherited preload'
@@ -100,11 +117,7 @@ def main(a):
                     break
                 time.sleep(1)
         finally:
-            if process.poll() is None:
-                try:os.killpg(process.pid,signal.SIGTERM)
-                except ProcessLookupError:pass
-                try:process.wait(timeout=30)
-                except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait()
+            stop_owned_child(process)
     finished_files=[p for p in raw.rglob('*') if p.is_file()]
     finished_bytes=sum(p.stat().st_size for p in finished_files)
     dump(a.output/'capture_budget_observation.json',{'raw_files':len(finished_files),'raw_bytes':finished_bytes,

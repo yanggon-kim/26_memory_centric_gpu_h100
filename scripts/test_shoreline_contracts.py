@@ -41,6 +41,20 @@ def main():
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
     from unittest.mock import patch
+    import run_trace,signal,subprocess
+    child=SimpleNamespace(pid=987654321,poll=lambda:None)
+    waited=[]
+    def wait_child(timeout=None):
+        waited.append(timeout)
+        if timeout:raise subprocess.TimeoutExpired('unit-test-owned-child',timeout)
+    child.wait=wait_child
+    with patch.object(run_trace.os,'killpg') as kill:
+        run_trace.stop_owned_child(child)
+        assert kill.call_args_list==[__import__('unittest').mock.call(child.pid,signal.SIGTERM),__import__('unittest').mock.call(child.pid,signal.SIGKILL)]
+        assert waited==[5,None]
+    try:run_trace.terminate_wrapper(signal.SIGTERM,None)
+    except SystemExit as error:assert error.code==143
+    else:raise AssertionError('wrapper ignored termination')
     import shoreline_queue
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
