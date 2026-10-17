@@ -5,7 +5,9 @@ Kernel replay samples retain their exact metric names/units and source/producer 
 | Case | Status | Static SASS rows | Logical operator FLOPs |
 |---|---|---:|---:|
 | J3_bridge_b1_c1024_attention_forward_acq00 | failed | 0 | NA |
+| J3_bridge_b1_c1024_attention_forward_acq00_filter_v2 | failed | 5424 | NA |
 | J3_bridge_b1_c1024_attention_forward_acq01 | failed | 0 | NA |
+| J3_bridge_b1_c1024_attention_forward_acq02 | failed | 0 | NA |
 | J3_bridge_b1_c1024_down_acq00 | complete | 840 | 27525120 |
 | J3_bridge_b1_c1024_down_acq01 | complete | 840 | 27525120 |
 | J3_bridge_b1_c1024_down_acq02 | complete | 840 | 27525120 |
