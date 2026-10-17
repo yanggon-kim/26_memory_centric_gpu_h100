@@ -1,0 +1,884 @@
+------------------ -----------------------------------------------------------
+Kernel Name        nvjet_sm90_tst_64x8_64x16_4x1_v_bz_bias_TNT                
+------------------ -----------------------------------------------------------
+Address            Source                                                     
+0x7ffbff0f2700           LDC R1, c[0x0][0x28]                                 
+0x7ffbff0f2710           S2R R2, SR_TID.X                                     
+0x7ffbff0f2720           S2UR UR4, SR_CgaCtaId                                
+0x7ffbff0f2730           ISETP.LT.AND P0, PT, R2, 0x100, PT                   
+0x7ffbff0f2740           NOP                                                  
+0x7ffbff0f2750           BRA !P0, 0x7ffbff0f47e0                              
+0x7ffbff0f2760           UMOV UR7, 0x28480                                    
+0x7ffbff0f2770           R2UR UR8, R2                                         
+0x7ffbff0f2780           NOP                                                  
+0x7ffbff0f2790           UISETP.LT.AND UP0, UPT, UR8, 0x80, UPT               
+0x7ffbff0f27a0     @UP0  UMOV UR10, 0x1ffffe                                  
+0x7ffbff0f27b0     @UP0  UMOV UR11, 0x7ffff800                                
+0x7ffbff0f27c0     @!UP0 UMOV UR7, 0x28400                                    
+0x7ffbff0f27d0           BRA.U UP0, 0x7ffbff0f2800                            
+0x7ffbff0f27e0           UMOV UR10, 0x1ffff6                                  
+0x7ffbff0f27f0           UMOV UR11, 0xffffd800                                
+0x7ffbff0f2800           UPRMT UR7, UR7, 0x4210, UR4                          
+0x7ffbff0f2810           USHF.R.U32 UR8, UR8, 0x5, URZ                        
+0x7ffbff0f2820           ULOP3.LUT UR8, UR8, 0x3, URZ, 0xc0, !UPT             
+0x7ffbff0f2830     @UP0  UIMAD.U32 UR7, UR8, 0x10, UR7                        
+0x7ffbff0f2840     @!UP0 UIMAD.U32 UR7, UR8, 0x8, UR7                         
+0x7ffbff0f2850     @UP0  UISETP.LT.AND UP1, UPT, UR8, 0x11, UPT               
+0x7ffbff0f2860     @!UP0 UISETP.LT.AND UP1, UPT, UR8, 0x10, UPT               
+0x7ffbff0f2870     @UP1  SYNCS.EXCH.64 URZ, [UR7], UR10                       
+0x7ffbff0f2880     @UP0  UIADD3 UR7, UR7, 0x40, URZ                           
+0x7ffbff0f2890     @!UP0 UIADD3 UR7, UR7, 0x20, URZ                           
+0x7ffbff0f28a0     @UP0  UISETP.LT.AND UP1, UPT, UR8, 0xd, UPT                
+0x7ffbff0f28b0     @!UP0 UISETP.LT.AND UP1, UPT, UR8, 0xc, UPT                
+0x7ffbff0f28c0     @UP1  SYNCS.EXCH.64 URZ, [UR7], UR10                       
+0x7ffbff0f28d0     @UP0  UIADD3 UR7, UR7, 0x40, URZ                           
+0x7ffbff0f28e0     @!UP0 UIADD3 UR7, UR7, 0x20, URZ                           
+0x7ffbff0f28f0     @UP0  UISETP.LT.AND UP1, UPT, UR8, 0x9, UPT                
+0x7ffbff0f2900     @!UP0 UISETP.LT.AND UP1, UPT, UR8, 0x8, UPT                
+0x7ffbff0f2910     @UP1  SYNCS.EXCH.64 URZ, [UR7], UR10                       
+0x7ffbff0f2920     @UP0  UIADD3 UR7, UR7, 0x40, URZ                           
+0x7ffbff0f2930     @!UP0 UIADD3 UR7, UR7, 0x20, URZ                           
+0x7ffbff0f2940     @UP0  UISETP.LT.AND UP1, UPT, UR8, 0x5, UPT                
+0x7ffbff0f2950     @!UP0 UISETP.LT.AND UP1, UPT, UR8, 0x4, UPT                
+0x7ffbff0f2960     @UP1  SYNCS.EXCH.64 URZ, [UR7], UR10                       
+0x7ffbff0f2970     @UP0  UIADD3 UR7, UR7, 0x40, URZ                           
+0x7ffbff0f2980     @!UP0 UIADD3 UR7, UR7, 0x20, URZ                           
+0x7ffbff0f2990     @UP0  UISETP.LT.AND UP1, UPT, UR8, 0x1, UPT                
+0x7ffbff0f29a0     @!UP0 UISETP.LT.AND UP1, UPT, UR8, 0x0, UPT                
+0x7ffbff0f29b0     @UP1  SYNCS.EXCH.64 URZ, [UR7], UR10                       
+0x7ffbff0f29c0     @UP0  UIADD3 UR7, UR7, 0x40, URZ                           
+0x7ffbff0f29d0     @!UP0 UIADD3 UR7, UR7, 0x20, URZ                           
+0x7ffbff0f29e0           NOP                                                  
+0x7ffbff0f29f0           UCGABAR_ARV                                          
+0x7ffbff0f2a00           S2UR UR5, SR_CTAID.Y                                 
+0x7ffbff0f2a10           ULDC.U8 UR5, c[0x0][UR5+0x240]                       
+0x7ffbff0f2a20           ULDC UR15, c[0x0][0x344]                             
+0x7ffbff0f2a30           UISETP.EQ.AND UP1, UPT, URZ, UR15, UPT               
+0x7ffbff0f2a40           UIMAD.WIDE.U32 UR16, UR5, UR15, URZ                  
+0x7ffbff0f2a50           ULDC UR15, c[0x0][0x348]                             
+0x7ffbff0f2a60           USHF.R.U32 UR11, UR17, UR15, URZ                     
+0x7ffbff0f2a70           ULDC UR15, c[0x0][0x340]                             
+0x7ffbff0f2a80           UIMAD.U32 UR14, UR11, UR15, UR5                      
+0x7ffbff0f2a90     @UP1  UMOV UR11, UR5                                       
+0x7ffbff0f2aa0     @UP1  UMOV UR14, URZ                                       
+0x7ffbff0f2ab0           UMOV UR10, URZ                                       
+0x7ffbff0f2ac0           ULDC UR15, c[0x0][0x220]                             
+0x7ffbff0f2ad0           UISETP.EQ.AND UP1, UPT, URZ, UR15, UPT               
+0x7ffbff0f2ae0           UIMAD.WIDE.U32 UR16, UR14, UR15, URZ                 
+0x7ffbff0f2af0           ULDC UR15, c[0x0][0x224]                             
+0x7ffbff0f2b00           USHF.R.U32 UR12, UR17, UR15, URZ                     
+0x7ffbff0f2b10           ULDC UR15, c[0x0][0x21c]                             
+0x7ffbff0f2b20           UIMAD.U32 UR13, UR12, UR15, UR14                     
+0x7ffbff0f2b30     @UP1  UMOV UR12, UR14                                      
+0x7ffbff0f2b40     @UP1  UMOV UR13, URZ                                       
+0x7ffbff0f2b50           ULDC UR14, c[0x0][0x218]                             
+0x7ffbff0f2b60           UISETP.GE.AND UP1, UPT, UR12, UR14, UPT              
+0x7ffbff0f2b70           BRA.U !UP1, 0x7ffbff0f2c20                           
+0x7ffbff0f2b80           ULDC UR16, c[0x0][0x238]                             
+0x7ffbff0f2b90           UISETP.EQ.AND UP1, UPT, URZ, UR16, UPT               
+0x7ffbff0f2ba0           UIMAD.WIDE.U32 UR14, UR13, UR16, URZ                 
+0x7ffbff0f2bb0           ULDC UR16, c[0x0][0x23c]                             
+0x7ffbff0f2bc0           USHF.R.U32 UR8, UR15, UR16, URZ                      
+0x7ffbff0f2bd0           ULDC UR14, c[0x0][0x234]                             
+0x7ffbff0f2be0           UIMAD.U32 UR9, UR8, UR14, UR13                       
+0x7ffbff0f2bf0     @UP1  UMOV UR8, UR13                                       
+0x7ffbff0f2c00     @UP1  UMOV UR9, URZ                                        
+0x7ffbff0f2c10           BRA 0x7ffbff0f2cb0                                   
+0x7ffbff0f2c20           ULDC UR16, c[0x0][0x22c]                             
+0x7ffbff0f2c30           UISETP.EQ.AND UP1, UPT, URZ, UR16, UPT               
+0x7ffbff0f2c40           UIMAD.WIDE.U32 UR14, UR13, UR16, URZ                 
+0x7ffbff0f2c50           ULDC UR16, c[0x0][0x230]                             
+0x7ffbff0f2c60           USHF.R.U32 UR8, UR15, UR16, URZ                      
+0x7ffbff0f2c70           ULDC UR14, c[0x0][0x228]                             
+0x7ffbff0f2c80           UIMAD.U32 UR9, UR8, UR14, UR13                       
+0x7ffbff0f2c90     @UP1  UMOV UR8, UR13                                       
+0x7ffbff0f2ca0     @UP1  UMOV UR9, URZ                                        
+0x7ffbff0f2cb0           ULOP3.LUT UP1, URZ, UR12, 0x1, URZ, 0xc0, !UPT       
+0x7ffbff0f2cc0           ULDC UR15, c[0x0][0x228]                             
+0x7ffbff0f2cd0           UIADD3 UR14, URZ, 0x0, -UR15                         
+0x7ffbff0f2ce0           UIMAD.U32 UR9, UR12, UR14, UR9                       
+0x7ffbff0f2cf0           ULDC UR16, c[0x0][0x34c]                             
+0x7ffbff0f2d00     @UP1  UIADD3 UR8, -UR8, 0x0, UR16                          
+0x7ffbff0f2d10           UIMAD.WIDE.U32 UR14, UR4, -0x80000000, URZ           
+0x7ffbff0f2d20           USHF.R.U32 UR15, UR15, 0x1, URZ                      
+0x7ffbff0f2d30           UIMAD.U32 UR12, UR15, -0x4, UR4                      
+0x7ffbff0f2d40           UIMAD.U32 UR8, UR8, 0x4, UR12                        
+0x7ffbff0f2d50           UIMAD.U32 UR9, UR9, 0x1, UR15                        
+0x7ffbff0f2d60           ULDC UR12, c[0x0][0x210]                             
+0x7ffbff0f2d70           UISETP.GE.AND UP1, UPT, UR5, UR12, UPT               
+0x7ffbff0f2d80           BRA.U UP1, 0x7ffbff0f5db0                            
+0x7ffbff0f2d90           UMOV UR12, URZ                                       
+0x7ffbff0f2da0           UMOV UR13, 0x1                                       
+0x7ffbff0f2db0           UMOV UR14, 0x283f8                                   
+0x7ffbff0f2dc0           UMOV UR7, 0x28480                                    
+0x7ffbff0f2dd0           UPRMT UR7, UR7, 0x4210, UR4                          
+0x7ffbff0f2de0           UPRMT UR14, UR14, 0x4210, UR4                        
+0x7ffbff0f2df0           UMOV UR15, 0x400                                     
+0x7ffbff0f2e00           UPRMT UR15, UR15, 0x4210, UR4                        
+0x7ffbff0f2e10           UMOV UR16, 0x2000040                                 
+0x7ffbff0f2e20           UMOV UR17, 0x40000040                                
+0x7ffbff0f2e30           UMOV UR18, 0x2000240                                 
+0x7ffbff0f2e40           UMOV UR19, 0x40000040                                
+0x7ffbff0f2e50           MOV R6, 0x0                                          
+0x7ffbff0f2e60           MOV R4, 0x0                                          
+0x7ffbff0f2e70           MOV R5, 0x0                                          
+0x7ffbff0f2e80           MOV R3, 0x40                                         
+0x7ffbff0f2e90           R2UR UR21, R2                                        
+0x7ffbff0f2ea0           NOP                                                  
+0x7ffbff0f2eb0           USHF.R.U32 UR21, UR21, 0x7, URZ                      
+0x7ffbff0f2ec0           UIMAD.U32 UR21, UR21, 0x8, URZ                       
+0x7ffbff0f2ed0           UPRMT UR21, UR21, 0x4210, UR4                        
+0x7ffbff0f2ee0           ULDC UR20, c[0x0][0x350]                             
+0x7ffbff0f2ef0           LOP3.LUT R8, R2, 0x7f, RZ, 0xc0, !PT                 
+0x7ffbff0f2f00           LOP3.LUT P2, RZ, R8, 0x7, RZ, 0xc0, !PT              
+0x7ffbff0f2f10           MOV R9, 0xbe147ad0                                   
+0x7ffbff0f2f20           SHF.R.U32 R8, R8, 0x1, RZ                            
+0x7ffbff0f2f30           SHF.R.U64 R8, R9, R8, 0x369cf258                     
+0x7ffbff0f2f40           LOP3.LUT R8, R8, 0xf, RZ, 0xc0, !PT                  
+0x7ffbff0f2f50     @P2   IADD3 R8, R8, 0x80, RZ                               
+0x7ffbff0f2f60           ISETP.LT.AND P2, PT, R8, 0x1, PT                     
+0x7ffbff0f2f70           MOV R9, UR8                                          
+0x7ffbff0f2f80           LOP3.LUT R7, R9, 0x3, RZ, 0xc0, !PT                  
+0x7ffbff0f2f90           IADD3 R9, R8, -0x1, RZ                               
+0x7ffbff0f2fa0           IMAD.SHL R9, R9, 0x1000000, RZ                       
+0x7ffbff0f2fb0           IMAD R7, R7, -0x1000000, R9                          
+0x7ffbff0f2fc0           MOV R10, UR9                                         
+0x7ffbff0f2fd0     @P2   LOP3.LUT R7, R10, 0x0, RZ, 0xc0, !PT                 
+0x7ffbff0f2fe0     @P2   IMAD.SHL R9, R8, 0x4000000, RZ                       
+0x7ffbff0f2ff0     @P2   IMAD R7, R7, -0x4000000, R9                          
+0x7ffbff0f3000           UISETP.EQ.AND UP1, UPT, URZ, URZ, UPT                
+0x7ffbff0f3010           UISETP.NE.OR UP2, UPT, URZ, URZ, !UPT                
+0x7ffbff0f3020           ISETP.NE.AND P1, PT, RZ, RZ, PT                      
+0x7ffbff0f3030           ISETP.GE.AND P0, PT, R3, UR20, PT                    
+0x7ffbff0f3040           UCGABAR_WAIT                                         
+0x7ffbff0f3050           ISETP.NE.AND P3, PT, RZ, RZ, PT                      
+0x7ffbff0f3060           UIADD3 UR6, UR7, 0x10, URZ                           
+0x7ffbff0f3070           BRA.U UP0, 0x7ffbff0f45c0                            
+0x7ffbff0f3080           UMOV UR13, URZ                                       
+0x7ffbff0f3090           UIADD3 UR14, UR14, 0x80, URZ                         
+0x7ffbff0f30a0           UMOV UR12, 0xf                                       
+0x7ffbff0f30b0           UIADD3 UR16, UR16, 0x21c6, URZ                       
+0x7ffbff0f30c0           UIADD3 UR18, UR18, 0x21c6, URZ                       
+0x7ffbff0f30d0           UIADD3 UR15, UR15, 0x21c00, URZ                      
+0x7ffbff0f30e0           BRA 0x7ffbff0f4670                                   
+0x7ffbff0f30f0           IADD3 R3, R3, 0x40, RZ                               
+0x7ffbff0f3100           UISETP.EQ.AND UP3, UPT, UR13, 0x10, UPT              
+0x7ffbff0f3110           UISETP.EQ.AND UP2, UPT, UR12, 0xe, UPT               
+0x7ffbff0f3120           UIADD3 UR12, UR12, 0x1, URZ                          
+0x7ffbff0f3130           UIADD3 UR16, UR16, 0x23a, URZ                        
+0x7ffbff0f3140           UIADD3 UR18, UR18, 0x23a, URZ                        
+0x7ffbff0f3150           UIADD3 UR15, UR15, 0x2400, URZ                       
+0x7ffbff0f3160           ISETP.GE.AND P0, PT, R3, UR20, PT                    
+0x7ffbff0f3170           PLOP3.LUT P3, PT, PT, PT, UP3, 0xa0, 0x0             
+0x7ffbff0f3180     @!UP3 UIADD3 UR6, UR7, 0x10, URZ                           
+0x7ffbff0f3190     @UP3  UIADD3 UR6, UR7, -0x100, URZ                         
+0x7ffbff0f31a0     @UP3  UMOV UR13, URZ                                       
+0x7ffbff0f31b0     @!UP3 UIADD3 UR13, UR13, 0x1, URZ                          
+0x7ffbff0f31c0           BRA !P2, 0x7ffbff0f45c0                              
+0x7ffbff0f31d0           ISETP.EQ.AND P4, PT, R3, 0x40, PT                    
+0x7ffbff0f31e0           NOP                                                  
+0x7ffbff0f31f0           BRA !P4, 0x7ffbff0f3230                              
+0x7ffbff0f3200           LDS R6, [UR7+0x8]                                    
+0x7ffbff0f3210           WARPSYNC.ALL                                         
+0x7ffbff0f3220           BAR.SYNC 0x0, 0x80                                   
+0x7ffbff0f3230     @P3   LOP3.LUT R4, R4, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f3240           NOP                                                  
+0x7ffbff0f3250           WARPGROUP.ARRIVE                                     
+0x7ffbff0f3260           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24, !UP1   
+0x7ffbff0f3270           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f3280           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f3290           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24         
+0x7ffbff0f32a0           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f32b0           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f32c0           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24         
+0x7ffbff0f32d0           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f32e0           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f32f0           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24.gsb0    
+0x7ffbff0f3300           WARPGROUP.DEPBAR.LE gsb0, 0x1                        
+0x7ffbff0f3310     @P1   SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [R7+UR14], RZ      
+0x7ffbff0f3320     @!P0  SYNCS.PHASECHK.TRANS64.TRYWAIT P2, [UR6], R4         
+0x7ffbff0f3330           UMOV UR7, UR6                                        
+0x7ffbff0f3340           UIADD3 UR14, UR14, 0x8, URZ                          
+0x7ffbff0f3350           ISETP.LT.AND P1, PT, R8, 0x5, PT                     
+0x7ffbff0f3360           UISETP.NE.AND UP1, UPT, URZ, URZ, UPT                
+0x7ffbff0f3370     @!P0  BRA.U !UP2, 0x7ffbff0f30f0                           
+0x7ffbff0f3380           BRA !P0, 0x7ffbff0f4310                              
+0x7ffbff0f3390           UPRMT UR22, URZ, 0x4210, UR4                         
+0x7ffbff0f33a0           LOP3.LUT P3, RZ, R2, 0x7f, RZ, 0xc0, !PT             
+0x7ffbff0f33b0           NOP                                                  
+0x7ffbff0f33c0     @!P3  STS [UR22+0x285d0], R6                               
+0x7ffbff0f33d0           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [UR21+0x285a8], RZ 
+0x7ffbff0f33e0           BRA.U !UP0, 0x7ffbff0f3440                           
+0x7ffbff0f33f0           ULOP3.LUT UR22, UR21, 0x8, URZ, 0x3c, !UPT           
+0x7ffbff0f3400           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [UR22+0x285b8], R5
+0x7ffbff0f3410     @!P3  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f3420     @!P3  SYNCS.PHASECHK.TRANS64 P3, [UR22+0x285b8], R5        
+0x7ffbff0f3430     @!P3  BRA 0x7ffbff0f3400                                   
+0x7ffbff0f3440           NOP                                                  
+0x7ffbff0f3450           LDC R9, c[0x0][0x3b0]                                
+0x7ffbff0f3460           LDC R10, c[0x0][0x3b4]                               
+0x7ffbff0f3470           LDC.64 R22, c[0x0][0x870]                            
+0x7ffbff0f3480           SHF.R.U32 R21, R2, 0x7, RZ                           
+0x7ffbff0f3490           UIMAD UR22, UR8, 0x40, URZ                           
+0x7ffbff0f34a0           LDC.64 R28, c[0x0][0x388]                            
+0x7ffbff0f34b0           IADD3 R20, -R9, UR22, RZ                             
+0x7ffbff0f34c0           ISETP.GT.AND P4, PT, R20, -0x3f, PT                  
+0x7ffbff0f34d0           SHF.R.S32.HI R17, RZ, 0x5, R2                        
+0x7ffbff0f34e0           LOP3.LUT R17, R17, 0x3, RZ, 0xc0, !PT                
+0x7ffbff0f34f0           LEA R17, R17, UR22, 0x4                              
+0x7ffbff0f3500           LOP3.LUT R30, R2, 0x1c, RZ, 0xc0, !PT                
+0x7ffbff0f3510           LEA.HI R17, R30, R17, 0x0, 0x1e                      
+0x7ffbff0f3520           IMAD.WIDE R22, R28, UR11, R22                        
+0x7ffbff0f3530           IMAD R23, R29, UR11, R23                             
+0x7ffbff0f3540           IADD3 R20, P3, R17, -R9, RZ                          
+0x7ffbff0f3550           LEA R22, P3, R17, R22, 0x1                           
+0x7ffbff0f3560           LEA.HI.X R23, R17, R23, RZ, 0x1, P3                  
+0x7ffbff0f3570           BRA P4, 0x7ffbff0f35b0                               
+0x7ffbff0f3580           LDG.E.U16.STRONG.GPU R18, [R22]                      
+0x7ffbff0f3590           LDG.E.U16.STRONG.GPU R19, [R22+0x10]                 
+0x7ffbff0f35a0           BRA 0x7ffbff0f3630                                   
+0x7ffbff0f35b0           ISETP.LE.AND P3, PT, R20, 0x0, PT                    
+0x7ffbff0f35c0           NOP                                                  
+0x7ffbff0f35d0     @!P3  CS2R.32 R18, SRZ                                     
+0x7ffbff0f35e0     @P3   LDG.E.U16.STRONG.GPU R18, [R22]                      
+0x7ffbff0f35f0           ISETP.LE.AND P3, PT, R20, -0x8, PT                   
+0x7ffbff0f3600           NOP                                                  
+0x7ffbff0f3610     @!P3  CS2R.32 R19, SRZ                                     
+0x7ffbff0f3620     @P3   LDG.E.U16.STRONG.GPU R19, [R22+0x10]                 
+0x7ffbff0f3630           LDC.64 R12, c[0x0][0x890]                            
+0x7ffbff0f3640           LDC.64 R14, c[0x0][0x370]                            
+0x7ffbff0f3650           SHF.R.S32.HI R11, RZ, 0x5, R2                        
+0x7ffbff0f3660           LOP3.LUT R16, R2, 0x1f, RZ, 0xc0, !PT                
+0x7ffbff0f3670           LOP3.LUT R11, R11, 0x3, RZ, 0xc0, !PT                
+0x7ffbff0f3680           LDC.64 R22, c[0x0][0x8a8]                            
+0x7ffbff0f3690           ISETP.NE.AND P3, PT, R22, RZ, PT                     
+0x7ffbff0f36a0           ISETP.NE.OR P3, PT, R23, RZ, P3                      
+0x7ffbff0f36b0           NOP                                                  
+0x7ffbff0f36c0     @P3   LDG.E R17, [R22]                                     
+0x7ffbff0f36d0     @!P3  LDC R17, c[0x0][0x368]                               
+0x7ffbff0f36e0           MOV R20, RZ                                          
+0x7ffbff0f36f0           MOV R21, UR9                                         
+0x7ffbff0f3700           MOV R22, UR8                                         
+0x7ffbff0f3710           IMAD R22, R22, 0x40, -R9                             
+0x7ffbff0f3720           IMAD R21, R21, 0x8, -R10                             
+0x7ffbff0f3730           ISETP.GE.AND P4, PT, R21, 0x1, PT                    
+0x7ffbff0f3740           ISETP.GE.OR P3, PT, R22, 0x1, P4                     
+0x7ffbff0f3750           NOP                                                  
+0x7ffbff0f3760           BRA !P3, 0x7ffbff0f37b0                              
+0x7ffbff0f3770           WARPGROUP.DEPBAR.LE gsb0, 0x0                        
+0x7ffbff0f3780     @P1   SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [R7+UR14], RZ      
+0x7ffbff0f3790           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [UR21+0x285b8], RZ 
+0x7ffbff0f37a0           BRA 0x7ffbff0f3e10                                   
+0x7ffbff0f37b0           ISETP.GT.AND P4, PT, R21, -0x7, PT                   
+0x7ffbff0f37c0           ISETP.GT.OR P3, PT, R22, -0x3f, P4                   
+0x7ffbff0f37d0           NOP                                                  
+0x7ffbff0f37e0           BRA P3, 0x7ffbff0f39e0                               
+0x7ffbff0f37f0           FSETP.EQ.AND P5, PT, RZ, R20, PT                     
+0x7ffbff0f3800           SHF.R.U32 R23, R2, 0x7, RZ                           
+0x7ffbff0f3810           MOV R21, UR9                                         
+0x7ffbff0f3820           MOV R22, UR8                                         
+0x7ffbff0f3830           IMAD.SHL R21, R21, 0x8, RZ                           
+0x7ffbff0f3840           IMAD.SHL R22, R22, 0x40, RZ                          
+0x7ffbff0f3850           LEA R22, R11, R22, 0x4                               
+0x7ffbff0f3860           LOP3.LUT R28, R16, 0x18, RZ, 0xc0, !PT               
+0x7ffbff0f3870           LEA.HI R22, R28, R22, 0x0, 0x1e                      
+0x7ffbff0f3880           LOP3.LUT R28, R16, 0x3, RZ, 0xc0, !PT                
+0x7ffbff0f3890           IMAD R21, R28, 0x2, R21                              
+0x7ffbff0f38a0           LOP3.LUT R28, R16, 0x4, RZ, 0xc0, !PT                
+0x7ffbff0f38b0           SHF.R.S32.HI R28, RZ, 0x2, R28                       
+0x7ffbff0f38c0           IADD3 R21, R21, R28, RZ                              
+0x7ffbff0f38d0           SHF.L.U32 R21, R21, 0x1, RZ                          
+0x7ffbff0f38e0           ISETP.EQ.OR P5, PT, R17, 0x3f800000, !PT             
+0x7ffbff0f38f0           WARPGROUP.DEPBAR.LE gsb0, 0x0                        
+0x7ffbff0f3900     @P1   SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [R7+UR14], RZ      
+0x7ffbff0f3910           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [UR21+0x285b8], RZ 
+0x7ffbff0f3920           BRA P5, 0x7ffbff0f3970                               
+0x7ffbff0f3930           FFMA R24, R17, R24, RZ                               
+0x7ffbff0f3940           FFMA R25, R17, R25, RZ                               
+0x7ffbff0f3950           FFMA R26, R17, R26, RZ                               
+0x7ffbff0f3960           FFMA R27, R17, R27, RZ                               
+0x7ffbff0f3970           F2F.F32.BF16 R18, R18                                
+0x7ffbff0f3980           F2F.F32.BF16 R19, R19                                
+0x7ffbff0f3990           FADD R24, R24, R18                                   
+0x7ffbff0f39a0           FADD R25, R25, R18                                   
+0x7ffbff0f39b0           FADD R26, R26, R19                                   
+0x7ffbff0f39c0           FADD R27, R27, R19                                   
+0x7ffbff0f39d0           BRA 0x7ffbff0f3bc0                                   
+0x7ffbff0f39e0           FSETP.EQ.AND P5, PT, RZ, R20, PT                     
+0x7ffbff0f39f0           SHF.R.U32 R23, R2, 0x7, RZ                           
+0x7ffbff0f3a00           MOV R21, UR9                                         
+0x7ffbff0f3a10           MOV R22, UR8                                         
+0x7ffbff0f3a20           IMAD.SHL R21, R21, 0x8, RZ                           
+0x7ffbff0f3a30           IMAD.SHL R22, R22, 0x40, RZ                          
+0x7ffbff0f3a40           LEA R22, R11, R22, 0x4                               
+0x7ffbff0f3a50           LOP3.LUT R28, R16, 0x18, RZ, 0xc0, !PT               
+0x7ffbff0f3a60           LEA.HI R22, R28, R22, 0x0, 0x1e                      
+0x7ffbff0f3a70           LOP3.LUT R28, R16, 0x3, RZ, 0xc0, !PT                
+0x7ffbff0f3a80           IMAD R21, R28, 0x2, R21                              
+0x7ffbff0f3a90           LOP3.LUT R28, R16, 0x4, RZ, 0xc0, !PT                
+0x7ffbff0f3aa0           SHF.R.S32.HI R28, RZ, 0x2, R28                       
+0x7ffbff0f3ab0           IADD3 R21, R21, R28, RZ                              
+0x7ffbff0f3ac0           SHF.L.U32 R21, R21, 0x1, RZ                          
+0x7ffbff0f3ad0           ISETP.EQ.OR P5, PT, R17, 0x3f800000, !PT             
+0x7ffbff0f3ae0           WARPGROUP.DEPBAR.LE gsb0, 0x0                        
+0x7ffbff0f3af0     @P1   SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [R7+UR14], RZ      
+0x7ffbff0f3b00           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [UR21+0x285b8], RZ 
+0x7ffbff0f3b10           BRA P5, 0x7ffbff0f3b60                               
+0x7ffbff0f3b20           FFMA R24, R17, R24, RZ                               
+0x7ffbff0f3b30           FFMA R25, R17, R25, RZ                               
+0x7ffbff0f3b40           FFMA R26, R17, R26, RZ                               
+0x7ffbff0f3b50           FFMA R27, R17, R27, RZ                               
+0x7ffbff0f3b60           F2F.F32.BF16 R18, R18                                
+0x7ffbff0f3b70           F2F.F32.BF16 R19, R19                                
+0x7ffbff0f3b80           FADD R24, R24, R18                                   
+0x7ffbff0f3b90           FADD R25, R25, R18                                   
+0x7ffbff0f3ba0           FADD R26, R26, R19                                   
+0x7ffbff0f3bb0           FADD R27, R27, R19                                   
+0x7ffbff0f3bc0           LOP3.LUT P5, R23, R2, 0x7f, RZ, 0xc0, !PT            
+0x7ffbff0f3bd0           NOP                                                  
+0x7ffbff0f3be0           VOTEU.ANY UP3, !P5                                   
+0x7ffbff0f3bf0           SHF.R.U32 R28, R2, 0x7, RZ                           
+0x7ffbff0f3c00           ULDC.64 UR22, c[0x0][0xc0]                           
+0x7ffbff0f3c10           UIADD3.64 UR22, UR22, 0x440, URZ                     
+0x7ffbff0f3c20           S2UR UR25, SR_CgaCtaId                               
+0x7ffbff0f3c30           R2UR UR24, R28                                       
+0x7ffbff0f3c40           UIMAD.U32 UR33, UR8, 0x40, URZ                       
+0x7ffbff0f3c50           UIMAD.U32 UR34, UR9, 0x8, URZ                        
+0x7ffbff0f3c60           UMOV UR35, UR11                                      
+0x7ffbff0f3c70           UMOV UR32, 0x24400                                   
+0x7ffbff0f3c80           UIMAD.U32 UR32, UR24, 0x2000, UR32                   
+0x7ffbff0f3c90           UPRMT UR32, UR32, 0x4210, UR25                       
+0x7ffbff0f3ca0           IMAD.SHL R31, R23, 0x8, RZ                           
+0x7ffbff0f3cb0           SHF.R.U32.HI R32, RZ, 0x4, R23                       
+0x7ffbff0f3cc0           LOP3.LUT R29, R23, 0x7, RZ, 0xc0, !PT                
+0x7ffbff0f3cd0           LOP3.LUT R31, R31, 0xc0, RZ, 0xc0, !PT               
+0x7ffbff0f3ce0           LOP3.LUT R32, R32, 0xffffffe, RZ, 0xc0, !PT          
+0x7ffbff0f3cf0           IMAD R29, R29, 0x9, RZ                               
+0x7ffbff0f3d00           IMAD.IADD R31, R32, 0x1, R31                         
+0x7ffbff0f3d10           LOP3.LUT R29, R31, R29, RZ, 0x3c, !PT                
+0x7ffbff0f3d20           IMAD.SHL R29, R29, 0x10, RZ                          
+0x7ffbff0f3d30           LOP3.LUT R30, R29, 0x10, RZ, 0x3c, !PT               
+0x7ffbff0f3d40           WARPGROUP.ARRIVE                                     
+0x7ffbff0f3d50           WARPGROUP.WAIT                                       
+0x7ffbff0f3d60           F2FP.BF16.F32.PACK_AB R24, R25, R24                  
+0x7ffbff0f3d70           F2FP.BF16.F32.PACK_AB R26, R27, R26                  
+0x7ffbff0f3d80           STSM.16.MT88 [R29+UR32], R24                         
+0x7ffbff0f3d90           STSM.16.MT88 [R30+UR32], R26                         
+0x7ffbff0f3da0           FENCE.VIEW.ASYNC.S                                   
+0x7ffbff0f3db0           WARPGROUP.ARRIVE                                     
+0x7ffbff0f3dc0           UIADD3 UR22, UR22, 0x40, URZ                         
+0x7ffbff0f3dd0           WARPGROUP.WAIT                                       
+0x7ffbff0f3de0     @UP3  UTMASTG.3D [UR32], [UR22]                            
+0x7ffbff0f3df0           UTMACMDFLUSH                                         
+0x7ffbff0f3e00           NOP                                                  
+0x7ffbff0f3e10           R2UR UR22, R6                                        
+0x7ffbff0f3e20           ULDC UR23, c[0x0][0x214]                             
+0x7ffbff0f3e30           NOP                                                  
+0x7ffbff0f3e40           UISETP.GE.AND UP3, UPT, UR22, UR23, UPT              
+0x7ffbff0f3e50           BRA.U UP3, 0x7ffbff0f5db0                            
+0x7ffbff0f3e60           BRA.U UP0, 0x7ffbff0f42f0                            
+0x7ffbff0f3e70           LOP3.LUT R5, R5, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f3e80           ULOP3.LUT UR22, UR21, 0x8, URZ, 0x3c, !UPT           
+0x7ffbff0f3e90           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [UR22+0x285a8], R5
+0x7ffbff0f3ea0     @!P3  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f3eb0     @!P3  SYNCS.PHASECHK.TRANS64 P3, [UR22+0x285a8], R5        
+0x7ffbff0f3ec0     @!P3  BRA 0x7ffbff0f3e90                                   
+0x7ffbff0f3ed0           UPRMT UR22, URZ, 0x4210, UR4                         
+0x7ffbff0f3ee0           LDS R6, [UR22+0x285d0]                               
+0x7ffbff0f3ef0           R2UR UR5, R6                                         
+0x7ffbff0f3f00           ULDC UR25, c[0x0][0x344]                             
+0x7ffbff0f3f10           UISETP.EQ.AND UP3, UPT, URZ, UR25, UPT               
+0x7ffbff0f3f20           UIMAD.WIDE.U32 UR26, UR5, UR25, URZ                  
+0x7ffbff0f3f30           ULDC UR25, c[0x0][0x348]                             
+0x7ffbff0f3f40           USHF.R.U32 UR11, UR27, UR25, URZ                     
+0x7ffbff0f3f50           ULDC UR25, c[0x0][0x340]                             
+0x7ffbff0f3f60           UIMAD.U32 UR24, UR11, UR25, UR5                      
+0x7ffbff0f3f70     @UP3  UMOV UR11, UR5                                       
+0x7ffbff0f3f80     @UP3  UMOV UR24, URZ                                       
+0x7ffbff0f3f90           UMOV UR10, URZ                                       
+0x7ffbff0f3fa0           ULDC UR25, c[0x0][0x220]                             
+0x7ffbff0f3fb0           UISETP.EQ.AND UP3, UPT, URZ, UR25, UPT               
+0x7ffbff0f3fc0           UIMAD.WIDE.U32 UR26, UR24, UR25, URZ                 
+0x7ffbff0f3fd0           ULDC UR25, c[0x0][0x224]                             
+0x7ffbff0f3fe0           USHF.R.U32 UR22, UR27, UR25, URZ                     
+0x7ffbff0f3ff0           ULDC UR25, c[0x0][0x21c]                             
+0x7ffbff0f4000           UIMAD.U32 UR23, UR22, UR25, UR24                     
+0x7ffbff0f4010     @UP3  UMOV UR22, UR24                                      
+0x7ffbff0f4020     @UP3  UMOV UR23, URZ                                       
+0x7ffbff0f4030           ULDC UR24, c[0x0][0x218]                             
+0x7ffbff0f4040           UISETP.GE.AND UP3, UPT, UR22, UR24, UPT              
+0x7ffbff0f4050           BRA.U !UP3, 0x7ffbff0f4100                           
+0x7ffbff0f4060           ULDC UR26, c[0x0][0x238]                             
+0x7ffbff0f4070           UISETP.EQ.AND UP3, UPT, URZ, UR26, UPT               
+0x7ffbff0f4080           UIMAD.WIDE.U32 UR24, UR23, UR26, URZ                 
+0x7ffbff0f4090           ULDC UR26, c[0x0][0x23c]                             
+0x7ffbff0f40a0           USHF.R.U32 UR8, UR25, UR26, URZ                      
+0x7ffbff0f40b0           ULDC UR24, c[0x0][0x234]                             
+0x7ffbff0f40c0           UIMAD.U32 UR9, UR8, UR24, UR23                       
+0x7ffbff0f40d0     @UP3  UMOV UR8, UR23                                       
+0x7ffbff0f40e0     @UP3  UMOV UR9, URZ                                        
+0x7ffbff0f40f0           BRA 0x7ffbff0f4190                                   
+0x7ffbff0f4100           ULDC UR26, c[0x0][0x22c]                             
+0x7ffbff0f4110           UISETP.EQ.AND UP3, UPT, URZ, UR26, UPT               
+0x7ffbff0f4120           UIMAD.WIDE.U32 UR24, UR23, UR26, URZ                 
+0x7ffbff0f4130           ULDC UR26, c[0x0][0x230]                             
+0x7ffbff0f4140           USHF.R.U32 UR8, UR25, UR26, URZ                      
+0x7ffbff0f4150           ULDC UR24, c[0x0][0x228]                             
+0x7ffbff0f4160           UIMAD.U32 UR9, UR8, UR24, UR23                       
+0x7ffbff0f4170     @UP3  UMOV UR8, UR23                                       
+0x7ffbff0f4180     @UP3  UMOV UR9, URZ                                        
+0x7ffbff0f4190           ULOP3.LUT UP3, URZ, UR22, 0x1, URZ, 0xc0, !UPT       
+0x7ffbff0f41a0           ULDC UR25, c[0x0][0x228]                             
+0x7ffbff0f41b0           UIADD3 UR24, URZ, 0x0, -UR25                         
+0x7ffbff0f41c0           UIMAD.U32 UR9, UR22, UR24, UR9                       
+0x7ffbff0f41d0           ULDC UR26, c[0x0][0x34c]                             
+0x7ffbff0f41e0     @UP3  UIADD3 UR8, -UR8, 0x0, UR26                          
+0x7ffbff0f41f0           UIMAD.WIDE.U32 UR24, UR4, -0x80000000, URZ           
+0x7ffbff0f4200           USHF.R.U32 UR25, UR25, 0x1, URZ                      
+0x7ffbff0f4210           UIMAD.U32 UR22, UR25, -0x4, UR4                      
+0x7ffbff0f4220           UIMAD.U32 UR8, UR8, 0x4, UR22                        
+0x7ffbff0f4230           UIMAD.U32 UR9, UR9, 0x1, UR25                        
+0x7ffbff0f4240           ULDC UR22, c[0x0][0x214]                             
+0x7ffbff0f4250           UISETP.GE.AND UP3, UPT, UR5, UR22, UPT               
+0x7ffbff0f4260           MOV R3, RZ                                           
+0x7ffbff0f4270           UISETP.EQ.AND UP1, UPT, URZ, 0x0, UPT                
+0x7ffbff0f4280           ISETP.NE.AND P1, PT, RZ, RZ, PT                      
+0x7ffbff0f4290           BRA.U UP3, 0x7ffbff0f5db0                            
+0x7ffbff0f42a0           ULOP3.LUT UP0, URZ, URZ, URZ, URZ, 0x0, !UP0         
+0x7ffbff0f42b0           UISETP.EQ.AND UP1, UPT, URZ, URZ, UPT                
+0x7ffbff0f42c0           SYNCS.PHASECHK.TRANS64.TRYWAIT P2, [UR7], R4         
+0x7ffbff0f42d0           BRA.U !UP2, 0x7ffbff0f30f0                           
+0x7ffbff0f42e0           BRA 0x7ffbff0f4310                                   
+0x7ffbff0f42f0           ULOP3.LUT UP0, URZ, URZ, URZ, URZ, 0x0, !UP0         
+0x7ffbff0f4300           BRA 0x7ffbff0f4670                                   
+0x7ffbff0f4310           IADD3 R3, R3, 0x40, RZ                               
+0x7ffbff0f4320           UISETP.EQ.AND UP3, UPT, UR13, 0x10, UPT              
+0x7ffbff0f4330           UISETP.EQ.AND UP2, UPT, UR12, 0xe, UPT               
+0x7ffbff0f4340           UMOV UR12, URZ                                       
+0x7ffbff0f4350           UIADD3 UR16, UR16, -0x21c6, URZ                      
+0x7ffbff0f4360           UIADD3 UR18, UR18, -0x21c6, URZ                      
+0x7ffbff0f4370           UIADD3 UR15, UR15, -0x21c00, URZ                     
+0x7ffbff0f4380           ISETP.GE.AND P0, PT, R3, UR20, PT                    
+0x7ffbff0f4390           PLOP3.LUT P3, PT, PT, PT, UP3, 0xa0, 0x0             
+0x7ffbff0f43a0     @!UP3 UIADD3 UR6, UR7, 0x10, URZ                           
+0x7ffbff0f43b0     @UP3  UIADD3 UR6, UR7, -0x100, URZ                         
+0x7ffbff0f43c0     @UP3  UMOV UR13, URZ                                       
+0x7ffbff0f43d0     @!UP3 UIADD3 UR13, UR13, 0x1, URZ                          
+0x7ffbff0f43e0           BRA !P2, 0x7ffbff0f4610                              
+0x7ffbff0f43f0           ISETP.EQ.AND P4, PT, R3, 0x40, PT                    
+0x7ffbff0f4400           NOP                                                  
+0x7ffbff0f4410           BRA !P4, 0x7ffbff0f4450                              
+0x7ffbff0f4420           LDS R6, [UR7+0x8]                                    
+0x7ffbff0f4430           WARPSYNC.ALL                                         
+0x7ffbff0f4440           BAR.SYNC 0x0, 0x80                                   
+0x7ffbff0f4450     @P3   LOP3.LUT R4, R4, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f4460           NOP                                                  
+0x7ffbff0f4470           WARPGROUP.ARRIVE                                     
+0x7ffbff0f4480           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24, !UP1   
+0x7ffbff0f4490           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f44a0           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f44b0           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24         
+0x7ffbff0f44c0           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f44d0           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f44e0           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24         
+0x7ffbff0f44f0           UIADD3 UR16, UR16, 0x2, URZ                          
+0x7ffbff0f4500           UIADD3 UR18, UR18, 0x2, URZ                          
+0x7ffbff0f4510           HGMMA.64x8x16.F32.BF16 R24, gdesc[UR16], R24.gsb0    
+0x7ffbff0f4520           WARPGROUP.DEPBAR.LE gsb0, 0x1                        
+0x7ffbff0f4530     @P1   SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [R7+UR14], RZ      
+0x7ffbff0f4540     @!P0  SYNCS.PHASECHK.TRANS64.TRYWAIT P2, [UR6], R4         
+0x7ffbff0f4550           UMOV UR7, UR6                                        
+0x7ffbff0f4560           UIADD3 UR14, UR14, -0x78, URZ                        
+0x7ffbff0f4570           ISETP.LT.AND P1, PT, R8, 0x5, PT                     
+0x7ffbff0f4580           UISETP.NE.AND UP1, UPT, URZ, URZ, UPT                
+0x7ffbff0f4590     @!P0  BRA.U !UP2, 0x7ffbff0f30f0                           
+0x7ffbff0f45a0           BRA !P0, 0x7ffbff0f4310                              
+0x7ffbff0f45b0           BRA 0x7ffbff0f3390                                   
+0x7ffbff0f45c0           SYNCS.PHASECHK.TRANS64.TRYWAIT P2, [UR7], R4         
+0x7ffbff0f45d0     @!P2  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f45e0     @!P2  SYNCS.PHASECHK.TRANS64 P2, [UR7], R4                 
+0x7ffbff0f45f0     @P2   BRA 0x7ffbff0f31d0                                   
+0x7ffbff0f4600           BRA 0x7ffbff0f45c0                                   
+0x7ffbff0f4610           SYNCS.PHASECHK.TRANS64.TRYWAIT P2, [UR7], R4         
+0x7ffbff0f4620     @!P2  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f4630     @!P2  SYNCS.PHASECHK.TRANS64 P2, [UR7], R4                 
+0x7ffbff0f4640     @P2   BRA 0x7ffbff0f43f0                                   
+0x7ffbff0f4650           BRA 0x7ffbff0f4610                                   
+0x7ffbff0f4660           BRA.U UP1, 0x7ffbff0f3e10                            
+0x7ffbff0f4670           USHF.R.U32 UR22, UR20, 0x6, URZ                      
+0x7ffbff0f4680           UIADD3 UR23, UR22, 0x0, UR13                         
+0x7ffbff0f4690           UIADD3 UR22, UR22, 0x0, UR12                         
+0x7ffbff0f46a0           UIMAD.WIDE.U32 UR24, UR23, -0xf0f0f0f, URZ           
+0x7ffbff0f46b0           USHF.R.U32 UR25, UR25, 0x4, URZ                      
+0x7ffbff0f46c0           UIMAD.U32 UR23, UR25, -0x11, UR23                    
+0x7ffbff0f46d0           MOV R3, 0x1                                          
+0x7ffbff0f46e0           LOP3.LUT P3, RZ, R3, UR25, RZ, 0xc0, !PT             
+0x7ffbff0f46f0           UIADD3 UR23, UR23, 0x0, -UR13                        
+0x7ffbff0f4700           UIADD3 UR13, UR13, 0x0, UR23                         
+0x7ffbff0f4710           UIMAD.U32 UR7, UR23, 0x10, UR7                       
+0x7ffbff0f4720     @P3   LOP3.LUT R4, R4, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f4730           UIMAD.WIDE.U32 UR24, UR22, -0x80000000, URZ          
+0x7ffbff0f4740           USHF.R.U32 UR25, UR25, 0x3, URZ                      
+0x7ffbff0f4750           UIMAD.U32 UR22, UR25, -0x10, UR22                    
+0x7ffbff0f4760           UIADD3 UR23, UR22, 0x0, -UR12                        
+0x7ffbff0f4770           UIADD3 UR12, UR12, 0x0, UR23                         
+0x7ffbff0f4780           UIMAD.U32 UR14, UR23, 0x8, UR14                      
+0x7ffbff0f4790           UIMAD.U32 UR16, UR23, 0x240, UR16                    
+0x7ffbff0f47a0           UIMAD.U32 UR18, UR23, 0x240, UR18                    
+0x7ffbff0f47b0           UIMAD.U32 UR15, UR23, 0x2400, UR15                   
+0x7ffbff0f47c0           UISETP.EQ.AND UP2, UPT, UR12, 0xf, UPT               
+0x7ffbff0f47d0           BRA 0x7ffbff0f3e10                                   
+0x7ffbff0f47e0           ISETP.GE.AND P0, PT, R2, 0x120, PT                   
+0x7ffbff0f47f0           NOP                                                  
+0x7ffbff0f4800           BRA P0, 0x7ffbff0f49d0                               
+0x7ffbff0f4810           UMOV UR9, 0x285a8                                    
+0x7ffbff0f4820           UMOV UR9, 0x285a8                                    
+0x7ffbff0f4830           UMOV UR34, 0x1fff00                                  
+0x7ffbff0f4840           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f4850           UMOV UR35, 0xfffc0000                                
+0x7ffbff0f4860           SYNCS.EXCH.64 URZ, [UR9], UR34                       
+0x7ffbff0f4870           SYNCS.EXCH.64 URZ, [UR9+0x8], UR34                   
+0x7ffbff0f4880           UMOV UR9, 0x285b8                                    
+0x7ffbff0f4890           UMOV UR34, 0x1fff00                                  
+0x7ffbff0f48a0           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f48b0           UMOV UR35, 0xfffc0000                                
+0x7ffbff0f48c0           SYNCS.EXCH.64 URZ, [UR9], UR34                       
+0x7ffbff0f48d0           SYNCS.EXCH.64 URZ, [UR9+0x8], UR34                   
+0x7ffbff0f48e0           UMOV UR9, 0x285c8                                    
+0x7ffbff0f48f0           UMOV UR34, 0x1ffff8                                  
+0x7ffbff0f4900           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f4910           UMOV UR35, 0x7fffe000                                
+0x7ffbff0f4920           SYNCS.EXCH.64 URZ, [UR9], UR34                       
+0x7ffbff0f4930           UMOV UR9, 0x28590                                    
+0x7ffbff0f4940           UMOV UR34, 0x1ffffe                                  
+0x7ffbff0f4950           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f4960           UMOV UR35, 0x7ffff800                                
+0x7ffbff0f4970           SYNCS.EXCH.64 URZ, [UR9], UR34                       
+0x7ffbff0f4980           UMOV UR9, 0x28598                                    
+0x7ffbff0f4990           UMOV UR34, 0x1fff00                                  
+0x7ffbff0f49a0           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f49b0           UMOV UR35, 0x7ffc0000                                
+0x7ffbff0f49c0           SYNCS.EXCH.64 URZ, [UR9], UR34                       
+0x7ffbff0f49d0           NOP                                                  
+0x7ffbff0f49e0           UCGABAR_ARV                                          
+0x7ffbff0f49f0           UMOV UR9, 0x28480                                    
+0x7ffbff0f4a00           UMOV UR32, 0x28580                                   
+0x7ffbff0f4a10           UMOV UR31, 0x28400                                   
+0x7ffbff0f4a20           MOV R3, 0x0                                          
+0x7ffbff0f4a30           MOV R5, 0x0                                          
+0x7ffbff0f4a40           MOV R4, 0x0                                          
+0x7ffbff0f4a50           UPRMT UR17, UR9, 0x4210, UR4                         
+0x7ffbff0f4a60           UPRMT UR25, UR9, 0x4210, UR4                         
+0x7ffbff0f4a70           UPRMT UR9, UR9, 0x4210, UR4                          
+0x7ffbff0f4a80           UPRMT UR31, UR31, 0x4210, UR4                        
+0x7ffbff0f4a90           UPRMT UR32, UR32, 0x4210, UR4                        
+0x7ffbff0f4aa0           ULOP3.LUT UR23, UR4, 0x3, URZ, 0xc0, !UPT            
+0x7ffbff0f4ab0           USHF.R.U32 UR30, UR4, 0x2, URZ                       
+0x7ffbff0f4ac0           ULDC UR22, c[0x0][0x350]                             
+0x7ffbff0f4ad0           S2UR UR5, SR_CTAID.Y                                 
+0x7ffbff0f4ae0           ULDC.U8 UR5, c[0x0][UR5+0x240]                       
+0x7ffbff0f4af0           ULDC UR38, c[0x0][0x344]                             
+0x7ffbff0f4b00           UISETP.EQ.AND UP1, UPT, URZ, UR38, UPT               
+0x7ffbff0f4b10           UIMAD.WIDE.U32 UR36, UR5, UR38, URZ                  
+0x7ffbff0f4b20           ULDC UR38, c[0x0][0x348]                             
+0x7ffbff0f4b30           USHF.R.U32 UR12, UR37, UR38, URZ                     
+0x7ffbff0f4b40           ULDC UR36, c[0x0][0x340]                             
+0x7ffbff0f4b50           UIMAD.U32 UR35, UR12, UR36, UR5                      
+0x7ffbff0f4b60     @UP1  UMOV UR12, UR5                                       
+0x7ffbff0f4b70     @UP1  UMOV UR35, URZ                                       
+0x7ffbff0f4b80           UMOV UR26, URZ                                       
+0x7ffbff0f4b90           ULDC UR38, c[0x0][0x220]                             
+0x7ffbff0f4ba0           UISETP.EQ.AND UP1, UPT, URZ, UR38, UPT               
+0x7ffbff0f4bb0           UIMAD.WIDE.U32 UR36, UR35, UR38, URZ                 
+0x7ffbff0f4bc0           ULDC UR38, c[0x0][0x224]                             
+0x7ffbff0f4bd0           USHF.R.U32 UR33, UR37, UR38, URZ                     
+0x7ffbff0f4be0           ULDC UR36, c[0x0][0x21c]                             
+0x7ffbff0f4bf0           UIMAD.U32 UR34, UR33, UR36, UR35                     
+0x7ffbff0f4c00     @UP1  UMOV UR33, UR35                                      
+0x7ffbff0f4c10     @UP1  UMOV UR34, URZ                                       
+0x7ffbff0f4c20           ULDC UR35, c[0x0][0x218]                             
+0x7ffbff0f4c30           UISETP.GE.AND UP1, UPT, UR33, UR35, UPT              
+0x7ffbff0f4c40           BRA.U !UP1, 0x7ffbff0f4cf0                           
+0x7ffbff0f4c50           ULDC UR35, c[0x0][0x238]                             
+0x7ffbff0f4c60           UISETP.EQ.AND UP1, UPT, URZ, UR35, UPT               
+0x7ffbff0f4c70           UIMAD.WIDE.U32 UR36, UR34, UR35, URZ                 
+0x7ffbff0f4c80           ULDC UR35, c[0x0][0x23c]                             
+0x7ffbff0f4c90           USHF.R.U32 UR7, UR37, UR35, URZ                      
+0x7ffbff0f4ca0           ULDC UR35, c[0x0][0x234]                             
+0x7ffbff0f4cb0           UIMAD.U32 UR14, UR7, UR35, UR34                      
+0x7ffbff0f4cc0     @UP1  UMOV UR7, UR34                                       
+0x7ffbff0f4cd0     @UP1  UMOV UR14, URZ                                       
+0x7ffbff0f4ce0           BRA 0x7ffbff0f4d80                                   
+0x7ffbff0f4cf0           ULDC UR35, c[0x0][0x22c]                             
+0x7ffbff0f4d00           UISETP.EQ.AND UP1, UPT, URZ, UR35, UPT               
+0x7ffbff0f4d10           UIMAD.WIDE.U32 UR36, UR34, UR35, URZ                 
+0x7ffbff0f4d20           ULDC UR35, c[0x0][0x230]                             
+0x7ffbff0f4d30           USHF.R.U32 UR7, UR37, UR35, URZ                      
+0x7ffbff0f4d40           ULDC UR35, c[0x0][0x228]                             
+0x7ffbff0f4d50           UIMAD.U32 UR14, UR7, UR35, UR34                      
+0x7ffbff0f4d60     @UP1  UMOV UR7, UR34                                       
+0x7ffbff0f4d70     @UP1  UMOV UR14, URZ                                       
+0x7ffbff0f4d80           ULOP3.LUT UP1, URZ, UR33, 0x1, URZ, 0xc0, !UPT       
+0x7ffbff0f4d90           ULDC UR36, c[0x0][0x228]                             
+0x7ffbff0f4da0           UIADD3 UR35, URZ, 0x0, -UR36                         
+0x7ffbff0f4db0           UIMAD.U32 UR14, UR33, UR35, UR14                     
+0x7ffbff0f4dc0           ULDC UR37, c[0x0][0x34c]                             
+0x7ffbff0f4dd0     @UP1  UIADD3 UR7, -UR7, 0x0, UR37                          
+0x7ffbff0f4de0           UIMAD.WIDE.U32 UR34, UR4, -0x80000000, URZ           
+0x7ffbff0f4df0           USHF.R.U32 UR35, UR35, 0x1, URZ                      
+0x7ffbff0f4e00           UIMAD.U32 UR33, UR35, -0x4, UR4                      
+0x7ffbff0f4e10           UIMAD.U32 UR7, UR7, 0x4, UR33                        
+0x7ffbff0f4e20           UIMAD.U32 UR14, UR14, 0x1, UR35                      
+0x7ffbff0f4e30           UMOV UR20, UR12                                      
+0x7ffbff0f4e40           UMOV UR28, UR12                                      
+0x7ffbff0f4e50           ULDC UR33, c[0x0][0x210]                             
+0x7ffbff0f4e60           UIADD3 UR15, UR5, 0x0, UR33                          
+0x7ffbff0f4e70           ULDC UR33, c[0x0][0x210]                             
+0x7ffbff0f4e80           UISETP.GE.AND UP1, UPT, UR5, UR33, UPT               
+0x7ffbff0f4e90           BRA.U UP1, 0x7ffbff0f5db0                            
+0x7ffbff0f4ea0           UCGABAR_WAIT                                         
+0x7ffbff0f4eb0           LOP3.LUT P1, RZ, R2, 0x1f, RZ, 0xc0, !PT             
+0x7ffbff0f4ec0           ISETP.EQ.AND P1, PT, RZ, RZ, !P1                     
+0x7ffbff0f4ed0           BRA P0, 0x7ffbff0f5a40                               
+0x7ffbff0f4ee0           UISETP.LT.AND UP0, UPT, UR30, 0x1, UPT               
+0x7ffbff0f4ef0           UISETP.LT.AND UP0, UPT, UR23, 0x4, UP0               
+0x7ffbff0f4f00           UMOV UR8, 0x400                                      
+0x7ffbff0f4f10           UMOV UR16, 0x2400                                    
+0x7ffbff0f4f20           UMOV UR10, 0xffffffc0                                
+0x7ffbff0f4f30           UMOV UR18, 0xffffffc0                                
+0x7ffbff0f4f40           UIMAD.U32 UR8, UR30, 0x2000, UR8                     
+0x7ffbff0f4f50           UPRMT UR8, UR8, 0x4210, UR4                          
+0x7ffbff0f4f60           UIMAD.U32 UR16, UR23, 0x100, UR16                    
+0x7ffbff0f4f70           BRA.U !UP0, 0x7ffbff0f5db0                           
+0x7ffbff0f4f80           LOP3.LUT R8, R2, 0x7f, RZ, 0xc0, !PT                 
+0x7ffbff0f4f90           ISETP.LT.AND P1, PT, R8, 0x1, PT                     
+0x7ffbff0f4fa0           UIMAD.U32 UR39, UR30, 0x4, URZ                       
+0x7ffbff0f4fb0           USHF.L.U64.HI UR38, URZ, UR39, 0xf0000               
+0x7ffbff0f4fc0           ULDC.64 UR34, c[0x0][0xc0]                           
+0x7ffbff0f4fd0           ULDC.64 UR36, c[0x0][0xc0]                           
+0x7ffbff0f4fe0           UIADD3.64 UR34, UR34, 0x2c0, URZ                     
+0x7ffbff0f4ff0           MOV R6, 0x2400                                       
+0x7ffbff0f5000           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [UR31], R3        
+0x7ffbff0f5010           BRA 0x7ffbff0f50b0                                   
+0x7ffbff0f5020           IADD3 R4, R4, 0x1, RZ                                
+0x7ffbff0f5030           UIADD3 UR8, UR8, 0x2400, URZ                         
+0x7ffbff0f5040           UIADD3 UR16, UR16, 0x2400, URZ                       
+0x7ffbff0f5050           UISETP.EQ.AND UP2, UPT, UR9, UR32, UPT               
+0x7ffbff0f5060           UIADD3 UR31, UR31, 0x8, URZ                          
+0x7ffbff0f5070     @!UP2 UIADD3 UR17, UR17, 0x10, URZ                         
+0x7ffbff0f5080     @UP2  UIADD3 UR17, UR17, -0x100, URZ                       
+0x7ffbff0f5090     @!UP2 UIADD3 UR9, UR9, 0x10, URZ                           
+0x7ffbff0f50a0     @UP2  UIADD3 UR9, UR9, -0x100, URZ                         
+0x7ffbff0f50b0           ISETP.EQ.AND P2, PT, R4, 0xf, PT                     
+0x7ffbff0f50c0           MOV R8, 0x8                                          
+0x7ffbff0f50d0           UIMAD.U32 UR11, UR7, 0x40, URZ                       
+0x7ffbff0f50e0           UIMAD.U32 UR11, UR30, 0x40, UR11                     
+0x7ffbff0f50f0           UIMAD.U32 UR19, UR14, 0x8, URZ                       
+0x7ffbff0f5100           UIMAD.U32 UR19, UR23, 0x2, UR19                      
+0x7ffbff0f5110           BRA !P3, 0x7ffbff0f59a0                              
+0x7ffbff0f5120     @P2   MOV R8, 0xffffff88                                   
+0x7ffbff0f5130     @P2   LOP3.LUT R3, R3, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f5140           UIADD3 UR10, UR10, 0x40, URZ                         
+0x7ffbff0f5150           UIADD3 UR18, UR18, 0x40, URZ                         
+0x7ffbff0f5160           UTMALDG.3D [UR8], [UR34]                             
+0x7ffbff0f5170           UIADD3.64 UR34, UR34, 0x40, URZ                      
+0x7ffbff0f5180           UTMALDG.3D.MULTICAST [UR16], [UR34], UR38            
+0x7ffbff0f5190           MOV R9, UR15                                         
+0x7ffbff0f51a0     @P1   STS [UR9+0x8], R9                                    
+0x7ffbff0f51b0     @P1   SYNCS.ARRIVE.TRANS64.RED RZ, [UR9], R6               
+0x7ffbff0f51c0           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [R8+UR31], R3     
+0x7ffbff0f51d0           UIADD3 UR39, UR10, 0x40, URZ                         
+0x7ffbff0f51e0           UISETP.LT.U32.AND UP1, UPT, UR39, UR22, UPT          
+0x7ffbff0f51f0           UIADD3.64 UR34, UR34, -0x40, URZ                     
+0x7ffbff0f5200     @!P2  BRA.U UP1, 0x7ffbff0f5020                            
+0x7ffbff0f5210           BRA.U UP1, 0x7ffbff0f57a0                            
+0x7ffbff0f5220           UMOV UR5, UR15                                       
+0x7ffbff0f5230           ULDC UR44, c[0x0][0x344]                             
+0x7ffbff0f5240           UISETP.EQ.AND UP2, UPT, URZ, UR44, UPT               
+0x7ffbff0f5250           UIMAD.WIDE.U32 UR42, UR5, UR44, URZ                  
+0x7ffbff0f5260           ULDC UR44, c[0x0][0x348]                             
+0x7ffbff0f5270           USHF.R.U32 UR12, UR43, UR44, URZ                     
+0x7ffbff0f5280           ULDC UR42, c[0x0][0x340]                             
+0x7ffbff0f5290           UIMAD.U32 UR41, UR12, UR42, UR5                      
+0x7ffbff0f52a0     @UP2  UMOV UR12, UR5                                       
+0x7ffbff0f52b0     @UP2  UMOV UR41, URZ                                       
+0x7ffbff0f52c0           UMOV UR26, URZ                                       
+0x7ffbff0f52d0           ULDC UR44, c[0x0][0x220]                             
+0x7ffbff0f52e0           UISETP.EQ.AND UP2, UPT, URZ, UR44, UPT               
+0x7ffbff0f52f0           UIMAD.WIDE.U32 UR42, UR41, UR44, URZ                 
+0x7ffbff0f5300           ULDC UR44, c[0x0][0x224]                             
+0x7ffbff0f5310           USHF.R.U32 UR39, UR43, UR44, URZ                     
+0x7ffbff0f5320           ULDC UR42, c[0x0][0x21c]                             
+0x7ffbff0f5330           UIMAD.U32 UR40, UR39, UR42, UR41                     
+0x7ffbff0f5340     @UP2  UMOV UR39, UR41                                      
+0x7ffbff0f5350     @UP2  UMOV UR40, URZ                                       
+0x7ffbff0f5360           ULDC UR41, c[0x0][0x218]                             
+0x7ffbff0f5370           UISETP.GE.AND UP2, UPT, UR39, UR41, UPT              
+0x7ffbff0f5380           BRA.U !UP2, 0x7ffbff0f5430                           
+0x7ffbff0f5390           ULDC UR41, c[0x0][0x238]                             
+0x7ffbff0f53a0           UISETP.EQ.AND UP2, UPT, URZ, UR41, UPT               
+0x7ffbff0f53b0           UIMAD.WIDE.U32 UR42, UR40, UR41, URZ                 
+0x7ffbff0f53c0           ULDC UR41, c[0x0][0x23c]                             
+0x7ffbff0f53d0           USHF.R.U32 UR7, UR43, UR41, URZ                      
+0x7ffbff0f53e0           ULDC UR41, c[0x0][0x234]                             
+0x7ffbff0f53f0           UIMAD.U32 UR14, UR7, UR41, UR40                      
+0x7ffbff0f5400     @UP2  UMOV UR7, UR40                                       
+0x7ffbff0f5410     @UP2  UMOV UR14, URZ                                       
+0x7ffbff0f5420           BRA 0x7ffbff0f54c0                                   
+0x7ffbff0f5430           ULDC UR41, c[0x0][0x22c]                             
+0x7ffbff0f5440           UISETP.EQ.AND UP2, UPT, URZ, UR41, UPT               
+0x7ffbff0f5450           UIMAD.WIDE.U32 UR42, UR40, UR41, URZ                 
+0x7ffbff0f5460           ULDC UR41, c[0x0][0x230]                             
+0x7ffbff0f5470           USHF.R.U32 UR7, UR43, UR41, URZ                      
+0x7ffbff0f5480           ULDC UR41, c[0x0][0x228]                             
+0x7ffbff0f5490           UIMAD.U32 UR14, UR7, UR41, UR40                      
+0x7ffbff0f54a0     @UP2  UMOV UR7, UR40                                       
+0x7ffbff0f54b0     @UP2  UMOV UR14, URZ                                       
+0x7ffbff0f54c0           ULOP3.LUT UP2, URZ, UR39, 0x1, URZ, 0xc0, !UPT       
+0x7ffbff0f54d0           ULDC UR42, c[0x0][0x228]                             
+0x7ffbff0f54e0           UIADD3 UR41, URZ, 0x0, -UR42                         
+0x7ffbff0f54f0           UIMAD.U32 UR14, UR39, UR41, UR14                     
+0x7ffbff0f5500           ULDC UR43, c[0x0][0x34c]                             
+0x7ffbff0f5510     @UP2  UIADD3 UR7, -UR7, 0x0, UR43                          
+0x7ffbff0f5520           UIMAD.WIDE.U32 UR40, UR4, -0x80000000, URZ           
+0x7ffbff0f5530           USHF.R.U32 UR41, UR41, 0x1, URZ                      
+0x7ffbff0f5540           UIMAD.U32 UR39, UR41, -0x4, UR4                      
+0x7ffbff0f5550           UIMAD.U32 UR7, UR7, 0x4, UR39                        
+0x7ffbff0f5560           UIMAD.U32 UR14, UR14, 0x1, UR41                      
+0x7ffbff0f5570           ULDC UR39, c[0x0][0x214]                             
+0x7ffbff0f5580           UISETP.GE.AND UP2, UPT, UR5, UR39, UPT               
+0x7ffbff0f5590           UMOV UR20, UR12                                      
+0x7ffbff0f55a0           UIMAD.U32 UR10, UR22, -0x1, UR10                     
+0x7ffbff0f55b0           UIMAD.U32 UR18, UR22, -0x1, UR18                     
+0x7ffbff0f55c0           BRA.U UP2, 0x7ffbff0f56a0                            
+0x7ffbff0f55d0           UPRMT UR39, URZ, 0x4210, UR4                         
+0x7ffbff0f55e0           SYNCS.PHASECHK.TRANS64.TRYWAIT P4, [UR39+0x28590], R5
+0x7ffbff0f55f0     @!P4  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f5600     @!P4  SYNCS.PHASECHK.TRANS64 P4, [UR39+0x28590], R5        
+0x7ffbff0f5610     @P4   BRA 0x7ffbff0f5630                                   
+0x7ffbff0f5620           BRA 0x7ffbff0f55e0                                   
+0x7ffbff0f5630           LOP3.LUT R5, R5, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f5640           UPRMT UR39, URZ, 0x4210, UR4                         
+0x7ffbff0f5650           LDS R9, [UR39+0x285a0]                               
+0x7ffbff0f5660           R2UR UR15, R9                                        
+0x7ffbff0f5670           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [URZ+0x28598], RZ  
+0x7ffbff0f5680     @!P2  BRA.U !UP2, 0x7ffbff0f5020                           
+0x7ffbff0f5690           BRA.U !UP2, 0x7ffbff0f57a0                           
+0x7ffbff0f56a0     @!P2  LOP3.LUT R3, R3, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f56b0           UMOV UR31, 0x28400                                   
+0x7ffbff0f56c0           UPRMT UR31, UR31, 0x4210, UR4                        
+0x7ffbff0f56d0           LOP3.LUT R9, R2, 0x1f, RZ, 0xc0, !PT                 
+0x7ffbff0f56e0           ISETP.GT.AND P4, PT, R9, 0xf, PT                     
+0x7ffbff0f56f0           NOP                                                  
+0x7ffbff0f5700     @P4   BRA 0x7ffbff0f5790                                   
+0x7ffbff0f5710           ISETP.GT.AND P4, PT, R9, R4, PT                      
+0x7ffbff0f5720           NOP                                                  
+0x7ffbff0f5730     @P4   LOP3.LUT R3, R3, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f5740           IMAD.SHL R9, R9, 0x8, RZ                             
+0x7ffbff0f5750           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [R9+UR31], R3     
+0x7ffbff0f5760     @!P3  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f5770     @!P3  SYNCS.PHASECHK.TRANS64 P3, [R9+UR31], R3             
+0x7ffbff0f5780     @!P3  BRA 0x7ffbff0f5750                                   
+0x7ffbff0f5790           BRA 0x7ffbff0f5db0                                   
+0x7ffbff0f57a0           MOV R4, 0x0                                          
+0x7ffbff0f57b0           UIADD3 UR8, UR8, -0x21c00, URZ                       
+0x7ffbff0f57c0           UIADD3 UR16, UR16, -0x21c00, URZ                     
+0x7ffbff0f57d0           UISETP.EQ.AND UP3, UPT, UR9, UR32, UPT               
+0x7ffbff0f57e0           UIADD3 UR31, UR31, -0x78, URZ                        
+0x7ffbff0f57f0     @!UP3 UIADD3 UR17, UR17, 0x10, URZ                         
+0x7ffbff0f5800     @UP3  UIADD3 UR17, UR17, -0x100, URZ                       
+0x7ffbff0f5810     @!UP3 UIADD3 UR9, UR9, 0x10, URZ                           
+0x7ffbff0f5820     @UP3  UIADD3 UR9, UR9, -0x100, URZ                         
+0x7ffbff0f5830           ISETP.EQ.AND P2, PT, R4, 0xf, PT                     
+0x7ffbff0f5840           MOV R8, 0x8                                          
+0x7ffbff0f5850           UIMAD.U32 UR11, UR7, 0x40, URZ                       
+0x7ffbff0f5860           UIMAD.U32 UR11, UR30, 0x40, UR11                     
+0x7ffbff0f5870           UIMAD.U32 UR19, UR14, 0x8, URZ                       
+0x7ffbff0f5880           UIMAD.U32 UR19, UR23, 0x2, UR19                      
+0x7ffbff0f5890           BRA !P3, 0x7ffbff0f59f0                              
+0x7ffbff0f58a0     @P2   MOV R8, 0xffffff88                                   
+0x7ffbff0f58b0     @P2   LOP3.LUT R3, R3, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f58c0           UIADD3 UR10, UR10, 0x40, URZ                         
+0x7ffbff0f58d0           UIADD3 UR18, UR18, 0x40, URZ                         
+0x7ffbff0f58e0           UTMALDG.3D [UR8], [UR34]                             
+0x7ffbff0f58f0           UIADD3.64 UR34, UR34, 0x40, URZ                      
+0x7ffbff0f5900           UTMALDG.3D.MULTICAST [UR16], [UR34], UR38            
+0x7ffbff0f5910           MOV R9, UR15                                         
+0x7ffbff0f5920     @P1   STS [UR9+0x8], R9                                    
+0x7ffbff0f5930     @P1   SYNCS.ARRIVE.TRANS64.RED RZ, [UR9], R6               
+0x7ffbff0f5940           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [R8+UR31], R3     
+0x7ffbff0f5950           UIADD3 UR39, UR10, 0x40, URZ                         
+0x7ffbff0f5960           UISETP.LT.U32.AND UP1, UPT, UR39, UR22, UPT          
+0x7ffbff0f5970           UIADD3.64 UR34, UR34, -0x40, URZ                     
+0x7ffbff0f5980     @!P2  BRA.U UP1, 0x7ffbff0f5020                            
+0x7ffbff0f5990           BRA 0x7ffbff0f5220                                   
+0x7ffbff0f59a0           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [UR31], R3        
+0x7ffbff0f59b0     @!P3  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f59c0     @!P3  SYNCS.PHASECHK.TRANS64 P3, [UR31], R3                
+0x7ffbff0f59d0     @P3   BRA 0x7ffbff0f5120                                   
+0x7ffbff0f59e0           BRA 0x7ffbff0f59a0                                   
+0x7ffbff0f59f0           SYNCS.PHASECHK.TRANS64.TRYWAIT P3, [UR31], R3        
+0x7ffbff0f5a00     @!P3  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f5a10     @!P3  SYNCS.PHASECHK.TRANS64 P3, [UR31], R3                
+0x7ffbff0f5a20     @P3   BRA 0x7ffbff0f58a0                                   
+0x7ffbff0f5a30           BRA 0x7ffbff0f59f0                                   
+0x7ffbff0f5a40           ISETP.GE.AND P0, PT, R2, 0x140, PT                   
+0x7ffbff0f5a50           NOP                                                  
+0x7ffbff0f5a60           BRA P0, 0x7ffbff0f5a80                               
+0x7ffbff0f5a70           BRA 0x7ffbff0f5db0                                   
+0x7ffbff0f5a80           ISETP.GE.AND P0, PT, R2, 0x160, PT                   
+0x7ffbff0f5a90           NOP                                                  
+0x7ffbff0f5aa0           BRA P0, 0x7ffbff0f5db0                               
+0x7ffbff0f5ab0           UISETP.NE.AND UP1, UPT, UR4, URZ, UPT                
+0x7ffbff0f5ac0           BRA.U UP1, 0x7ffbff0f5db0                            
+0x7ffbff0f5ad0           LDC.64 R6, c[0x0][0x840]                             
+0x7ffbff0f5ae0           ULDC UR33, c[0x0][0x210]                             
+0x7ffbff0f5af0           UIADD3 UR5, UR5, UR33, URZ                           
+0x7ffbff0f5b00           ULDC UR34, c[0x0][0x214]                             
+0x7ffbff0f5b10           UISETP.GE.AND UP1, UPT, UR5, UR34, UPT               
+0x7ffbff0f5b20           BRA.U UP1, 0x7ffbff0f5db0                            
+0x7ffbff0f5b30           UIADD3 UR34, UR33, UR33, URZ                         
+0x7ffbff0f5b40           ULDC UR35, c[0x0][0x214]                             
+0x7ffbff0f5b50           UISETP.GE.AND UP1, UPT, UR34, UR35, UPT              
+0x7ffbff0f5b60     @UP1  UMOV UR5, UR34                                       
+0x7ffbff0f5b70           BRA.U UP1, 0x7ffbff0f5c00                            
+0x7ffbff0f5b80           UIADD3 UR33, UR33, UR33, URZ                         
+0x7ffbff0f5b90           LOP3.LUT P0, RZ, R2, 0x1f, RZ, 0xc0, !PT             
+0x7ffbff0f5ba0           MOV R3, 0x1                                          
+0x7ffbff0f5bb0           NOP                                                  
+0x7ffbff0f5bc0     @!P0  ATOMG.E.ADD PT, R3, [R6], R3                         
+0x7ffbff0f5bd0     @!P0  IADD3 R3, R3, UR33, RZ                               
+0x7ffbff0f5be0     @!P0  R2UR UR5, R3                                         
+0x7ffbff0f5bf0           NOP                                                  
+0x7ffbff0f5c00           MOV R3, UR5                                          
+0x7ffbff0f5c10           LOP3.LUT R8, R2, 0x1f, RZ, 0xc0, !PT                 
+0x7ffbff0f5c20           ISETP.EQ.AND P0, PT, R8, RZ, PT                      
+0x7ffbff0f5c30           NOP                                                  
+0x7ffbff0f5c40           BRA P0, 0x7ffbff0f5cd0                               
+0x7ffbff0f5c50           ISETP.LT.AND P0, PT, R8, 0x4, PT                     
+0x7ffbff0f5c60           PRMT R8, RZ, 0x4210, R8                              
+0x7ffbff0f5c70           IADD3 R8, R8, 0x28590, RZ                            
+0x7ffbff0f5c80           MOV R9, R8                                           
+0x7ffbff0f5c90     @P0   STAS [R8.64+0x10], R3                                
+0x7ffbff0f5ca0           MOV R9, 0x4                                          
+0x7ffbff0f5cb0     @P0   SYNCS.ARRIVE.TRANS64.RED RZ, [R8+URZ], R9            
+0x7ffbff0f5cc0           BRA 0x7ffbff0f5cf0                                   
+0x7ffbff0f5cd0           STS [URZ+0x285a0], R3                                
+0x7ffbff0f5ce0           SYNCS.ARRIVE.TRANS64.RED.A1T0 RZ, [URZ+0x28590], RZ  
+0x7ffbff0f5cf0           WARPSYNC.ALL                                         
+0x7ffbff0f5d00           UPRMT UR34, URZ, 0x4210, UR4                         
+0x7ffbff0f5d10           SYNCS.PHASECHK.TRANS64.TRYWAIT P0, [UR34+0x28598], R5
+0x7ffbff0f5d20     @!P0  NANOSLEEP.SYNCS 0xc350                               
+0x7ffbff0f5d30     @!P0  SYNCS.PHASECHK.TRANS64 P0, [UR34+0x28598], R5        
+0x7ffbff0f5d40     @P0   BRA 0x7ffbff0f5d60                                   
+0x7ffbff0f5d50           BRA 0x7ffbff0f5d10                                   
+0x7ffbff0f5d60           LOP3.LUT R5, R5, RZ, RZ, 0xf, !PT                    
+0x7ffbff0f5d70           ULDC UR34, c[0x0][0x214]                             
+0x7ffbff0f5d80           UISETP.GE.AND UP1, UPT, UR5, UR34, UPT               
+0x7ffbff0f5d90           BRA.U UP1, 0x7ffbff0f5db0                            
+0x7ffbff0f5da0           BRA 0x7ffbff0f5b90                                   
+0x7ffbff0f5db0           EXIT                                                 
+0x7ffbff0f5dc0           BRA `(.L_x_0) 0x7ffbff0f5dc0                         
+0x7ffbff0f5dd0           NOP                                                  
+0x7ffbff0f5de0           NOP                                                  
+0x7ffbff0f5df0           NOP                                                  
