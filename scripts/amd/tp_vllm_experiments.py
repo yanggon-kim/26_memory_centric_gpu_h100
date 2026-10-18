@@ -21,6 +21,7 @@ from software_decode_experiments import digest, dump
 
 def main(args):
     config = json.loads(Path(args.config).read_text())
+    args.output.mkdir(parents=True, exist_ok=True)
     uuids = args.gpu_uuids.split(',')
     assert len(uuids) == args.tp and args.tp in (2, 4, 8)
     assert config['warmup_trials'] >= 3 and config['trials'] >= 3
