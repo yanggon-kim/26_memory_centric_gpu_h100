@@ -22,7 +22,10 @@ from analyze_trace import classify
 
 def safetensor_bytes(snapshot):
     sizes = {}
-    for f in Path(snapshot).glob('*.safetensors'):
+    files = sorted(Path(snapshot).glob('*.safetensors'))
+    if any(not f.name.startswith('consolidated') for f in files):
+        files = [f for f in files if not f.name.startswith('consolidated')]  # Mistral ships both layouts
+    for f in files:
         with open(f, 'rb') as h:
             n = struct.unpack('<Q', h.read(8))[0]
             header = json.loads(h.read(n))
@@ -39,8 +42,6 @@ def logical(config_path, step):
     sizes = safetensor_bytes(snap)
     if not sizes:
         return None
-    if any(k.startswith('consolidated') for k in snap.glob('*.safetensors')):
-        pass
     total = sum(sizes.values())
     emb = sum(v for k, v in sizes.items() if 'embed_tokens' in k)
     head = sum(v for k, v in sizes.items() if k.startswith('lm_head'))

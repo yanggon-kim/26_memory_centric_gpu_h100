@@ -6,12 +6,12 @@
 set -uo pipefail
 uuid=$1; idx=$2; root=$3; shift 3
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$repo"
-out_root=$root/m6_cumask; mkdir -p "$out_root"; log=$out_root/lane.log
+out_root=$root/m6_cumask; mkdir -p "$out_root"; log=$out_root/lane_${idx}.log
 WORK=${WORK:-/work1/proj_blaisetine/yanggon}
 for acq in 0 1 2; do
   for cus in 304 232 152 96; do
     mask=""; [ "$cus" -lt 304 ] && mask="$idx:0-$((cus-1))"
-    proof=$out_root/proof_cu${cus}_a$acq.json
+    proof=$out_root/proof_gpu${idx}_cu${cus}_a$acq.json
     [ -s "$proof" ] || HIP_VISIBLE_DEVICES=$idx HSA_CU_MASK=$mask timeout -s KILL 60 \
       "$WORK/bin/svc_bench_gfx942" --mode fma --iters 20000 --trials 3 --reps 1 > "$proof" 2>&1
     for name in "$@"; do
