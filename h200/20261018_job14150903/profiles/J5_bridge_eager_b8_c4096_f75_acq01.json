@@ -1,0 +1,64 @@
+{
+  "id": "J5_bridge_eager_b8_c4096_f75_acq01",
+  "status": "rejected",
+  "model": "bridge",
+  "batch": 8,
+  "context": 4096,
+  "engine": "eager",
+  "requested_fraction": 0.75,
+  "acquisition_id": 1,
+  "instrumented_pilot": false,
+  "allocation": {
+    "status": "complete",
+    "allocation": {
+      "stream_handle": 141627072,
+      "actual_sm_count": 104,
+      "green_context_handle": 141392304,
+      "green_context_id": 2,
+      "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+      "requested_fraction": 0.75,
+      "requested_sms": 104,
+      "device_sm_count": 132,
+      "min_partition_size": 8,
+      "alignment": 8,
+      "converted_context_made_current": true,
+      "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+    },
+    "all_kernel_restriction_proof": "requires matching NSYS kernel greenContextId; stream endpoints alone are insufficient"
+  },
+  "actual_sm_case_id": "J5_bridge_eager_b8_c4096_f75_acq01_sm104",
+  "exact_reference_ids": true,
+  "clock_qualification": {
+    "passed": false,
+    "clocks": {
+      "sm_clock_mhz": {
+        "minimum": 1785,
+        "maximum": 1980,
+        "max_min_ratio": 1.1092436974789917,
+        "samples": 144
+      },
+      "memory_clock_mhz": {
+        "minimum": 3201,
+        "maximum": 3201,
+        "max_min_ratio": 1.0,
+        "samples": 144
+      }
+    },
+    "reason": "predeclared <=5% clock envelope; all trials retained"
+  },
+  "run_source": "runs/J5_bridge_eager_b8_c4096_f75_acq01/run.json",
+  "run_sha256": "2ce3af87b502fb1636c4ecdb80bb6487f39084fce2c621b6c9d4613228acf8af",
+  "step_ms": [
+    9.869386571355992,
+    10.095833222352205,
+    9.977832222209564,
+    10.006075793330277,
+    10.267384047250426,
+    9.872760762283136,
+    10.150688635702762,
+    9.967839110657454,
+    9.868023220434903,
+    10.014390190398055
+  ],
+  "harness": "shoreline_restricted_decode.py; VLLM_ENABLE_V1_MULTIPROCESSING=0; identical stream wrapper for fraction1 and restricted arms"
+}
