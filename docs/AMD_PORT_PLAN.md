@@ -2,13 +2,27 @@
 
 Status: plan only. No AMD measurement exists yet. H100/H200/RTX evidence on other branches is not AMD evidence, and nothing here relabels it.
 
-## Goal
+## Goal and governing documents
 
-Pursue the same research question as `docs/primary_specification.md`: under fixed die-area and fixed HBM bandwidth, could moving area from compute into on-chip memory and data movement lower joules per decoded token? Run it on the AMD HPC Fund cluster instead of a rented H100. The research contract in `AGENTS.md` still applies unchanged: BF16, one declared GPU, no TP, seed 20261013, warmup ≥3 and trials ≥3, exact greedy output gates, the prefill/decode separation, energy qualification, and measured/analytical/simulated labels.
+The research question is the shoreline-aware one from `docs/shoreline_aware_research_plan_2.0.md` (copied from `codex/h200-phase01`). It supersedes the architecture scope of `docs/primary_specification.md`:
 
-## Why AMD is still a meaningful testbed
+> Can some GPU compute resources be reallocated to on-chip SRAM, to external-memory PHY/controller capacity and delivered HBM bandwidth, or to both, to improve LLM decode latency/throughput and energy per token under explicit silicon, shoreline, package, thermal and cost constraints?
 
-MI300X/MI325X have a different memory hierarchy: per-XCD L2 (4 MB × 8) plus a 256 MB memory-side Infinity Cache (MALL) in front of HBM3/HBM3E. That last-level cache is already much larger than H100's 50 MiB L2. It is therefore a real-hardware control for part of the hypothesis: does a large on-chip cache at fixed HBM bandwidth actually lower decode traffic and time? Every such claim must still be measured with counters (TCC and MALL/data-fabric), not assumed from spec sheets.
+Candidates (plan 2.0 §7) are compared, not preselected: stock, compute-only trim, compute → SRAM, compute → HBM/MC/PHY (rectangular or stepped die), joint HBM + L2 banks + NoC, a minimal memory-serving engine, and external alternatives (chiplets, bridges).
+
+Precedence on this branch:
+1. This plan, for AMD hardware, allocation and tool routes.
+2. `docs/shoreline_hopper_measurements.md` for the M1–M8 and A–F measurement methods, statistics and acceptance. Its Hopper/NCU/green-context specifics are translated in the AMD mapping below.
+3. `docs/h200_shoreline_jobs.md` for the job order J0–J11 (used as the template).
+4. `AGENTS.md` and the older supplements for the correctness, energy, isolation and labelling gates. The stronger rule always wins.
+
+Statistics follow the common contract for any new quantitative comparison: three independent process acquisitions per condition, ≥3 full warmups and 10 accepted timed trials per acquisition, 64 generated tokens (63 pure-decode ticks after the verified one-token barrier), seed 20261013, and a pooled ≤5% clock envelope over valid samples, declared before looking at performance. Three-trial smoke runs are pilots only. Physical architecture changes, geometry/PPA and simulation are later stages; the real GPU supplies motivation and service-limit evidence.
+
+## Why AMD is a meaningful testbed for this question
+
+- **A real "more HBM, larger LLC" design point.** MI300X uses 8 HBM3 stacks (~5.3 TB/s nominal; H100 SXM has 5 stacks) and a 256 MB memory-side Infinity Cache (MALL) on its I/O dies, in front of per-XCD 4 MB L2s. Its compute dies (XCDs) are stacked on the I/O dies, a chiplet/3D answer to the shoreline limit (plan 2.0 candidate B7). Specs are only context; every traffic or cache effect must be measured with counters.
+- **A same-compute bandwidth pair.** MI325X has the same gfx942 compute (304 CUs) and the same Infinity Cache, with HBM3E at ~6.0 TB/s nominal and 256 GB capacity. MI300X vs MI325X is a real-hardware bandwidth-ratio (`r`) data point at near-fixed compute (`c`). It is confounded by power limit, clocks and HBM type, so it is labelled a cross-SKU comparison, never a controlled stack addition.
+- **Resource restriction without green contexts.** ROCm supports compute-unit masks (`HSA_CU_MASK` per process, `hipExtStreamCreateWithCUMask` per stream). This is the likely route for the M6/M7 SM-allocation sweep and may cover library and graph kernels that CUDA green contexts could not (the H200 graph-restriction attempt failed). Support, granularity and actual placement must be proven before use.
 
 ## Cluster facts (observed 2026-10-18)
 
@@ -44,13 +58,31 @@ MI300X/MI325X have a different memory hierarchy: per-XCD L2 (4 MB × 8) plus a 2
 
 Profiled runs are never baseline timings. Tool setup: `rocprof-compute` 3.3.0 (ROCm 7.1.0, matching the torch module) runs from `$WORK/venvs/rocprof_compute_py312` with `PYTHONPATH=` cleared; the profiled program runs from `$WORK/venvs/hf_rocm_py312`.
 
-## Phased execution
+## AMD mapping of the required measurements (M1–M8, A–F)
 
-1. **Phase 0 (inventory):** on one MI300X, record SKU/serial, CU count, L2/MALL, HBM, clocks, power, ROCm/driver, and profiler permissions (`rocprofv3-avail`, a trial `--pmc` run). Write `results/amd_<date>_<host>/environment.json`. Port `scripts/inventory.py` and `scripts/gpu_target.py` to detect ROCm.
-2. **Runtime:** pull the AMD `rocm/vllm` image to `$WORK`, then run the bridge model (Qwen2.5-1.5B, pinned revision) at B1/C128 with HF eager and vLLM. Check exact-token gates and the HF vs. vLLM comparison.
-3. **Phase 1 baselines:** bridge at B1/4/8 × C128/1024/4096, then 7B/14B/32B. 192 GB HBM fits the whole dense portfolio on one GPU. Collect timing, energy (qualified or NA), timelines and bounded counter sets per kernel class.
-4. **Phase 2:** logical reuse/working-set curves with measured L2/MALL provenance; fixed-bandwidth artifacts from `docs/fixed_bandwidth_collection.md` with AMD counter names. Evaluate the MALL as an existing large-LLC control.
-5. **Simulator feasibility:** document gem5/alternatives; no calibration claims without same-program comparison.
+| ID | Contract requirement | AMD route | Open feasibility question |
+|---|---|---|---|
+| M1 | Strongest graph-optimized and eager baselines; timelines, launch counts, busy-union shares | vLLM (ROCm container) with HIP graphs vs `enforce_eager`; HF eager/compiled; `rocprofv3 --kernel-trace --marker-trace`, `--sys-trace` Perfetto timelines | Container runs on host driver amdgpu 6.16.13 |
+| M2 | Logical bytes/FLOPs vs physical HBM read/write for first/middle/last layers and full decode, ticks 4/5/6 | `rocprofv3 --pmc` on HBM-side counters (TCC→EA read/write requests and sizes) and MALL counters if exposed; `rocprof-compute` memory chart | Exact gfx942 counter names/units via `rocprofv3-avail`; whether MALL hit counters exist; full-range collection |
+| M3 | Per-kernel arithmetic, issue, stalls, occupancy, registers/LDS, launch geometry, actual instructions | `rocprof-compute` (VALU/MFMA busy, wave occupancy, VGPR/SGPR/AGPR, LDS bank conflicts, instruction mix); code objects disassembled with `llvm-objdump`/`roc-obj` | Mapping attention backend (AITER/CK/Triton) tiles and splits |
+| M4, A–D | Independent stream/strided/gather/pointer-chase, scalar/MFMA/reduction, concurrent compute+memory microbenchmarks; footprints below/near/above L2 **and** the 256 MB MALL | New HIP microbenchmarks (`hipcc --offload-arch=gfx942`) with event timing and `--pmc` bytes | None beyond implementation; footprints must straddle both 4 MB L2 and 256 MB MALL |
+| M5 | Normal vs competing-read cache-history pressure; retention policies | Pressure buffer above L2 + MALL capacity (≥512 MiB) between layers | Write-back attribution across MALL |
+| M6/M7 | Software SM-allocation sweep 1.0/.75/.5/.3, repeated with service microbenchmarks | CU masking balanced across the 8 XCDs; verify actual CU use with counters | Mask granularity, graph/library coverage, effect on per-XCD L2 |
+| M8 | Long-window energy with counter vs sampled-power agreement; prefill and larger-batch counterexamples | `amd_nvml.py`: amdsmi energy accumulator and socket power | Counter resolution and update cadence on MI300X; socket-power scope |
+| E/F | Layer events, instrumentation-perturbation and PM pass-layout controls; `T = C + M − X + O` bounds; c/r/f sensitivity | HIP events per layer; rocprofv3 pass layout; same analysis math | Same as contract |
+
+## Phased execution (adapted J0–J11)
+
+1. **J0 – inventory and capability ledger:** SKU, UUID, CU count, L2/MALL, HBM, clocks, power, ROCm/driver; profiler counter permission (a trial `--pmc` run); CU-mask support; container start. Write `results/amd_<date>_<host>/environment.json` and a `shoreline_case_manifest.json` listing every M/A–F family as implemented / needs adapter / unavailable.
+2. **Correctness pilots:** bridge B1/C128 on HF eager (StaticCache gate) and vLLM graph/eager; exact-token checks and HF vs vLLM comparison.
+3. **J1–J3 on the focused contrasts:** bridge B1/C1024 and B8/C4096; a 7B model (Qwen2.5-7B or Mistral-7B) B1/C4096 and B8/C4096 (a compute-active counterexample); 14B, then 32B B1/C4096 (192 GB fits all on one GPU). Then timing, timelines, M2 bytes and M3 kernel evidence.
+4. **J4:** independent service microbenchmarks (A–D).
+5. **J5:** CU-mask sweep (M6) with repeated service controls (M7).
+6. **J7, J8, J10:** retention/pressure, layer timing/overlap bounds, qualified energy and prefill/large-batch negative regimes.
+7. **J9:** c/r/f joint sensitivity using measured inputs, including the MI300X vs MI325X bandwidth pair and the multi-GPU cases below.
+8. **Simulator/trace feasibility:** no NVBit/Accel-Sim on AMD. Check gem5's gfx942 support, and use sampled thread traces (rocprofv3 ATT) plus logical traces. No calibration claim without a same-program comparison.
+
+The original full dense portfolio (bridge/7B/14B/32B × B1/4/8 × C128/1024/4096) remains available as extra controls, run after the focused contrasts.
 
 ## Multi-GPU extension (TP4, TP8)
 
@@ -75,7 +107,11 @@ Profiled runs are never baseline timings. Tool setup: `rocprof-compute` 3.3.0 (R
 - Per-GPU kernel time split into compute kernels vs RCCL collectives, from `rocprofv3` traces on every rank.
 - Per-GPU HBM read/write bytes and TCC/MALL hit rates from `rocprofv3 --pmc` and `rocprof-compute`, giving bytes per token per GPU and summed.
 - Energy as the sum of all participating GPUs' counters, under the same qualification rules. Idle non-participating GPUs are recorded but excluded; any idle subtraction is reported separately.
-- Interpretation separates three effects: (a) less traffic per GPU from residency, (b) more aggregate bandwidth from more GPUs, and (c) communication overhead. Only (a) bears on the on-chip-memory hypothesis; (b) is not a fixed-bandwidth result.
+- Interpretation separates three effects: (a) less traffic per GPU from residency, (b) more aggregate bandwidth from more GPUs, and (c) communication overhead. Under plan 2.0, (a) bears on the compute → SRAM candidate and (b) on the compute → bandwidth candidate; neither is a fixed-bandwidth result on its own.
+
+**Compute-matched variant (if CU masking passes J5).** TP-N with each GPU restricted to about 1/N of its CUs keeps total active CUs near one GPU's while multiplying HBM stacks, bandwidth and Infinity Cache by N. This is a real-hardware probe of "same compute, more delivered bandwidth" (`c` ≈ 1, `r` > 1). It is confounded by inter-GPU communication, per-GPU clocks and power, and by remaining per-GPU fixed costs. It must be reported with those confounds and never presented as an added-stack implementation.
+
+The common contract (`shoreline_hopper_measurements.md`) forbids tensor parallelism. On this branch, the 2026-10-18 owner authorization above overrides that for these labelled cases only.
 
 ## Cost policy
 
