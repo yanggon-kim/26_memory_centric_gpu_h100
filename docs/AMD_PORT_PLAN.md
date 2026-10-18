@@ -52,6 +52,31 @@ Profiled runs are never baseline timings. Tool setup: `rocprof-compute` 3.3.0 (R
 4. **Phase 2:** logical reuse/working-set curves with measured L2/MALL provenance; fixed-bandwidth artifacts from `docs/fixed_bandwidth_collection.md` with AMD counter names. Evaluate the MALL as an existing large-LLC control.
 5. **Simulator feasibility:** document gem5/alternatives; no calibration claims without same-program comparison.
 
+## Multi-GPU extension (TP4, TP8)
+
+**Scope authorization.** On 2026-10-18 the project owner explicitly authorized adding 4- and 8-GPU tensor-parallel runs. This is the scope authorization `AGENTS.md` requires. It adds cases. It does not replace or relabel the single-GPU (TP1) portfolio, which stays primary. BF16, no quantization, and the other contract rules are unchanged.
+
+**Why it matters for the hypothesis.** Tensor parallelism divides each layer's weights (and the KV heads, where the head count allows) across N GPUs. Each GPU keeps its own HBM bandwidth and its own 256 MB Infinity Cache, so the per-GPU working set shrinks roughly as W/N at fixed per-GPU cache and bandwidth. A TP1 → TP4 → TP8 sweep is a real-hardware probe of residency: does a working set that fits better in on-chip cache lower per-GPU HBM bytes per token and step time? Collective communication (all-reduce over xGMI) is the new cost that can erase any gain, and it must be measured, not assumed.
+
+| Size | Hardware | Notes |
+|---|---|---|
+| TP4 | 4 of the 8 MI300X on a `mi3008x` node | Record which GPUs and their xGMI connectivity (`amd-smi topology`) |
+| TP8 | all 8 MI300X on `mi3008x` (and optionally `mi3258x` MI325X) | MI325X results stay labelled separately |
+
+**Route.** Use vLLM in the ROCm container with `tensor_parallel_size` 4 or 8 and RCCL. The HF eager runner stays TP1 only. `gpu_target.select`/`verify_cuda` enforce exactly one visible GPU, so multi-GPU runs need a separate selector. It must record every participating UUID and fail on any other compute process on those GPUs.
+
+**Order and gates.**
+1. Run only after the same model and case pass TP1 vLLM smoke and baseline.
+2. Start with bridge B1/C128 at TP4 then TP8, then the cases where per-GPU weights approach the cache size (bridge, then 7B/14B), then 32B. Head counts must divide by N, otherwise record the case as unsupported.
+3. Correctness: output IDs identical across warmups and trials (required). Compare against TP1 and HF; changed reduction order can legitimately alter BF16 greedy tokens. A mismatch is recorded as a finding, never bypassed, and timing comparisons across TP sizes are reported only where the tokens match or the divergence is documented.
+
+**Measurements.**
+- Per-step decode timing and tokens/s, with prefill kept separate.
+- Per-GPU kernel time split into compute kernels vs RCCL collectives, from `rocprofv3` traces on every rank.
+- Per-GPU HBM read/write bytes and TCC/MALL hit rates from `rocprofv3 --pmc` and `rocprof-compute`, giving bytes per token per GPU and summed.
+- Energy as the sum of all participating GPUs' counters, under the same qualification rules. Idle non-participating GPUs are recorded but excluded; any idle subtraction is reported separately.
+- Interpretation separates three effects: (a) less traffic per GPU from residency, (b) more aggregate bandwidth from more GPUs, and (c) communication overhead. Only (a) bears on the on-chip-memory hypothesis; (b) is not a fixed-bandwidth result.
+
 ## Cost policy
 
-The study needs one GPU. `mi3001x` gives one MI300X at about 1/8 the billing of a full 8-GPU `mi3008x` node. Use `mi3001x` by default once it is verified to work (it is a VM partition, like `devel`, where torch BLAS failed). Use 8-GPU nodes only when they are the only route, and expose a single GPU to the job.
+The study needs one GPU. `mi3001x` gives one MI300X at about 1/8 the billing of a full 8-GPU `mi3008x` node. Use `mi3001x` by default once it is verified to work (it is a VM partition, like `devel`, where torch BLAS failed). Use `mi3008x` for the TP4/TP8 extension, and expose only the declared GPUs to each run. On a full-node allocation, schedule the TP4/TP8 cases in the same job as the TP1 work so the other GPUs are not idle while billed.
