@@ -5,6 +5,7 @@ and output-ID identity against TP1 (reduction order can legitimately change BF16
 import glob, json, re, statistics as st, sys
 from pathlib import Path
 root = Path(sys.argv[1]); m1 = json.loads((root / 'm1/summary.json').read_text())['conditions']
+m6 = json.loads((root / 'm6_cumask/summary.json').read_text())['conditions']
 tp1_ids = {}
 for f in glob.glob(str(root / 'm1/*_graph_*_a0/run.json')):
     d = json.loads(Path(f).read_text())
@@ -21,10 +22,14 @@ for f in glob.glob(str(root / 'tp/tp*_a[0-9]/run.json')):
         g['sha'] |= set(d['cases'][0]['output_sha256'])
 out = {'classification': 'measured-real-GPU (owner-authorized TP extension)', 'scope': __doc__, 'rows': []}
 for (case, tp, var), g in sorted(groups.items()):
-    base = m1.get(case, {}).get('mean_ms_per_step')
+    level = var[len('matched'):] if var.startswith('matched') else ''
+    if level:  # compute level other than one full GPU: compare with TP1 restricted to the same total CUs (M6)
+        base, base_src = m6.get(f'{case}_cu{level}', {}).get('mean_ms_per_step'), f'M6 TP1 at {level} CUs'
+    else:
+        base, base_src = m1.get(case, {}).get('mean_ms_per_step'), 'M1 TP1 at 304 CUs'
     mean = st.mean(g['acq']) if g['acq'] else None
     row = {'case': case, 'tp': tp, 'variant': var, 'acquisitions': len(g['acq']), 'statuses': g['statuses'],
-           'wall_ms_per_step': mean, 'tp1_ms_per_step': base, 'speedup_vs_tp1': base / mean if base and mean else None,
+           'wall_ms_per_step': mean, 'tp1_ms_per_step': base, 'tp1_baseline': base_src, 'speedup_vs_tp1': base / mean if base and mean else None,
            'outputs_match_tp1': (g['sha'] == {tp1_ids.get(case)}) if g['sha'] else None}
     out['rows'].append(row)
     print(f"TP{tp} {case:26s} {var:8s} n={row['acquisitions']} ms={mean and round(mean,4)} tp1={base and round(base,4)} "
