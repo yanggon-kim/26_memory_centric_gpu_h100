@@ -5,6 +5,8 @@
 # while service microbenchmarks profile fine. The HF decode workload therefore runs only the curated
 # single-pass sets and the roofline, filtered to Tensile GEMV/GEMM kernels (-k Cijk) with eager
 # attention (avoids lazily loaded Triton attention). Each run has a hard limit and its own process group.
+# Output uses the rocpd format: rocprof-compute 3.3's CSV conversion fails (Agent_Id str/int merge), and its
+# analysis needs pandas<3 (pinned 2.2.3 in the tool venv).
 # Usage: scripts/amd/lane_rocprof_compute.sh <rocr-index> <result-root>
 set -uo pipefail
 idx=$1; root=$2
@@ -13,9 +15,9 @@ export ROCR_VISIBLE_DEVICES=$idx PATH=$WORK/bin/rpc_shim:$PATH
 out=$root/m3_rocprof_compute; mkdir -p "$out"; cd "$out"
 RPC=(env PYTHONPATH=/opt/rocm-7.1.0/share/amd_smi "$WORK/venvs/rocprof_compute_py312/bin/python" /opt/rocm-7.1.0/bin/rocprof-compute)
 B=$WORK/bin/svc_bench_gfx942
-run() { local name=$1; shift; [ -f "$name.done" ] && return
+run() { local name=${1}_rocpd; shift; [ -f "$name.done" ] && return
   echo "$(date +%FT%T) start $name" >> lane_sets.log
-  setsid "${RPC[@]}" profile -n "$name" "$@" > "$name.log" 2>&1 & local pid=$! t=0
+  setsid "${RPC[@]}" profile -n "$name" --format-rocprof-output rocpd "$@" > "$name.log" 2>&1 & local pid=$! t=0
   while kill -0 $pid 2>/dev/null && [ $t -lt 600 ]; do sleep 5; t=$((t+5)); done
   kill -0 $pid 2>/dev/null && { kill -9 -- -$pid; echo "$(date +%FT%T) killed $name at limit" >> lane_sets.log; }
   wait $pid 2>/dev/null; local rc=$?
