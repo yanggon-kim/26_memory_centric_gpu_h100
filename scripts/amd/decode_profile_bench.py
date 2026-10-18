@@ -25,7 +25,7 @@ def main(args):
     assert path.name == config['model_revision'] and path.is_dir()
     torch.manual_seed(config['seed'])
     model = transformers.AutoModelForCausalLM.from_pretrained(str(path), dtype=torch.bfloat16,
-            local_files_only=True, attn_implementation='sdpa').eval().to('cuda')
+            local_files_only=True, attn_implementation=args.attn).eval().to('cuda')
     generator = torch.Generator().manual_seed(config['seed'])
     prompt = torch.randint(0, model.config.vocab_size, (args.batch, args.context), generator=generator).to('cuda')
     maximum = args.context + args.tokens
@@ -36,7 +36,7 @@ def main(args):
             controlled_trial(model, cache, decode, prompt, args.tokens, torch)
         result = controlled_trial(model, cache, decode, prompt, args.tokens, torch)
     record = {'classification': 'profiling-workload', 'batch': args.batch, 'context': args.context,
-              'generated_tokens': args.tokens, 'warmups': args.warmups, 'compiled': False,
+              'generated_tokens': args.tokens, 'warmups': args.warmups, 'compiled': False, 'attn_implementation': args.attn,
               'model_revision': config['model_revision'], 'seed': config['seed'],
               'output_ids': result['output_ids'],
               'scope': 'eager StaticCache decode under external profiler; timings perturbed, not baseline'}
@@ -54,5 +54,7 @@ if __name__ == '__main__':
     p.add_argument('--context', type=int, default=128)
     p.add_argument('--tokens', type=int, default=8, help='first token from prefill plus tokens-1 decode steps')
     p.add_argument('--warmups', type=int, default=1)
+    p.add_argument('--attn', default='sdpa', choices=['sdpa', 'eager'],
+                   help='eager avoids lazily loaded Triton attention, which crashed counter collection')
     p.add_argument('--output', type=Path, help='append one JSON line per run (profiler replays add lines)')
     main(p.parse_args())

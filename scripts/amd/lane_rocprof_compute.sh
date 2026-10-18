@@ -18,7 +18,7 @@ run() { local name=$1; shift; [ -f "$name.done" ] && return
 run svc_read4g -- "$B" --mode read --bytes 4294967296 --reps 5 --trials 3 --warmups 1
 run svc_mixed16 -- "$B" --mode mixed --bytes 4294967296 --intensity 16 --reps 3 --trials 3 --warmups 1
 for c in "1 1024" "8 4096"; do read -r b x <<< "$c"
-  run hf_bridge_b${b}_c${x}_cijk -k Cijk -- env PYTHONPATH=$PYTHONPATH "$PY" "$repo/scripts/amd/decode_profile_bench.py" \
-    --config "$root/configs/bridge_base.json" --batch $b --context $x --tokens 8 --warmups 1 --output "$out/replay_ids_b${b}_c${x}.jsonl"
+  run hf_bridge_b${b}_c${x}_cijk_eagerattn -k Cijk -- env PYTHONPATH=$PYTHONPATH "$PY" "$repo/scripts/amd/decode_profile_bench.py" \
+    --config "$root/configs/bridge_base.json" --batch $b --context $x --tokens 8 --warmups 1 --attn eager --output "$out/replay_ids_b${b}_c${x}.jsonl"
 done
 echo "$(date +%FT%T) lane complete" >> lane_sets.log
