@@ -1,0 +1,64 @@
+{
+  "id": "J5_bridge_eager_b8_c4096_f50_acq00",
+  "status": "complete",
+  "model": "bridge",
+  "batch": 8,
+  "context": 4096,
+  "engine": "eager",
+  "requested_fraction": 0.5,
+  "acquisition_id": 0,
+  "instrumented_pilot": false,
+  "allocation": {
+    "status": "complete",
+    "allocation": {
+      "stream_handle": 141630176,
+      "actual_sm_count": 72,
+      "green_context_handle": 141395424,
+      "green_context_id": 2,
+      "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+      "requested_fraction": 0.5,
+      "requested_sms": 72,
+      "device_sm_count": 132,
+      "min_partition_size": 8,
+      "alignment": 8,
+      "converted_context_made_current": true,
+      "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+    },
+    "all_kernel_restriction_proof": "requires matching NSYS kernel greenContextId; stream endpoints alone are insufficient"
+  },
+  "actual_sm_case_id": "J5_bridge_eager_b8_c4096_f50_acq00_sm72",
+  "exact_reference_ids": true,
+  "clock_qualification": {
+    "passed": true,
+    "clocks": {
+      "sm_clock_mhz": {
+        "minimum": 1980,
+        "maximum": 1980,
+        "max_min_ratio": 1.0,
+        "samples": 149
+      },
+      "memory_clock_mhz": {
+        "minimum": 3201,
+        "maximum": 3201,
+        "max_min_ratio": 1.0,
+        "samples": 149
+      }
+    },
+    "reason": "predeclared <=5% clock envelope; all trials retained"
+  },
+  "run_source": "runs/J5_bridge_eager_b8_c4096_f50_acq00/run.json",
+  "run_sha256": "e351a0c7a1a4510a4d9626fbe380b3b66bb7b57e6842a7215e954d0cd3b3b6ca",
+  "step_ms": [
+    9.93979552442888,
+    10.089919730533092,
+    10.056817920745484,
+    10.040738889651875,
+    9.964295794137769,
+    10.173387553853294,
+    10.056960237552486,
+    10.04647760326782,
+    10.306753380785858,
+    9.967242269628933
+  ],
+  "harness": "shoreline_restricted_decode.py; VLLM_ENABLE_V1_MULTIPROCESSING=0; identical stream wrapper for fraction1 and restricted arms"
+}
