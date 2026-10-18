@@ -3,6 +3,8 @@
 // Measured-real-GPU when run on the declared GPU; physical HBM bytes need rocprofv3 counters separately.
 #include <hip/hip_runtime.h>
 #include <hip/hip_ext.h>
+#include <chrono>
+#include <thread>
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -31,6 +33,8 @@ struct Args {
   int intensity = 0;              // FMAs per 16 B loaded ("mixed")
   long iters = 4096;              // compute loop length (fma, mfma)
   int passes = 1;                 // in-kernel passes over the buffer ("read"), for cache-resident footprints
+  double seconds = 0;             // >0: competitor mode, run "read" or "fma" for this long and report windows
+  double duty = 1.0;              // competitor busy fraction (host sleeps between launches)
   unsigned long long seed = 20261013ull;
   std::string cu_mask;            // hex mask, LSB = CU0; empty = default stream
 };
@@ -144,6 +148,8 @@ static Args parse(int argc, char** argv) {
     else if (k == "--intensity") a.intensity = std::stoi(v);
     else if (k == "--iters") a.iters = std::stol(v);
     else if (k == "--passes") a.passes = std::stoi(v);
+    else if (k == "--seconds") a.seconds = std::stod(v);
+    else if (k == "--duty") a.duty = std::stod(v);
     else if (k == "--seed") a.seed = std::stoull(v);
     else if (k == "--cu-mask") a.cu_mask = v;
     else { fprintf(stderr, "unknown option %s\n", k.c_str()); exit(1); }
@@ -233,6 +239,34 @@ int main(int argc, char** argv) {
     useful_flops = 2.0 * 8 * a.iters * (double)a.blocks * a.threads * a.reps;
   } else if (a.mode == "mfma") {
     useful_flops = 2.0 * 32 * 32 * 8 * 4 * a.iters * (double)a.blocks * (a.threads / 64) * a.reps;
+  }
+  if (a.seconds > 0) {
+    // Competitor mode (contract J6): owned background load on its own CU mask. Emits one JSON line per
+    // ~0.25 s window with wall timestamps so a concurrently measured decoder can be joined to it.
+    using clk = std::chrono::steady_clock;
+    auto now_ns = [] { return (long long)std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         std::chrono::system_clock::now().time_since_epoch()).count(); };
+    auto end = clk::now() + std::chrono::duration<double>(a.seconds);
+    auto win = clk::now(); double busy = 0, bytes = 0, flops = 0; long long w0 = now_ns();
+    double per_bytes = a.mode == "read" ? (double)n * 16 * a.passes : 0;
+    double per_flops = a.mode == "fma" ? 2.0 * 8 * a.iters * (double)a.blocks * a.threads : 0;
+    while (clk::now() < end) {
+      auto t0 = clk::now();
+      launch();
+      CHECK(hipStreamSynchronize(s));
+      double k = std::chrono::duration<double>(clk::now() - t0).count();
+      busy += k; bytes += per_bytes; flops += per_flops;
+      if (a.duty < 1.0) std::this_thread::sleep_for(std::chrono::duration<double>(k * (1.0 - a.duty) / a.duty));
+      double w = std::chrono::duration<double>(clk::now() - win).count();
+      if (w >= 0.25) {
+        long long w1 = now_ns();
+        printf("{\"t0_unix_ns\":%lld,\"t1_unix_ns\":%lld,\"mode\":\"%s\",\"duty_requested\":%.3f,\"busy_fraction\":%.4f,"
+               "\"gb_per_s\":%.3f,\"tflop_per_s\":%.3f,\"hsa_cu_mask\":\"%s\"}\n", w0, w1, a.mode.c_str(), a.duty, busy / w,
+               bytes / w / 1e9, flops / w / 1e12, getenv("HSA_CU_MASK") ? getenv("HSA_CU_MASK") : "");
+        fflush(stdout); win = clk::now(); w0 = w1; busy = bytes = flops = 0;
+      }
+    }
+    return 0;
   }
   hipEvent_t e0, e1;
   CHECK(hipEventCreate(&e0)); CHECK(hipEventCreate(&e1));

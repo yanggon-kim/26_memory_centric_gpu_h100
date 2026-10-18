@@ -34,7 +34,10 @@ def select(nvml,uuid):
         # here with ~KB of VRAM and no GFX time. Reject real use (>=64 MiB VRAM or GFX activity); record the rest.
         rows=[r for r in nvml.processes_detail(handle) if r['pid']!=os.getpid()]
         OBSERVED_PROCESSES[:]=rows
-        other=[r for r in rows if r['vram_bytes']>=64<<20 or r['gfx_engine_ns']>0]
+        # An owned, declared competitor (contract J6 interference study) may run on disjoint CUs; its PIDs
+        # are named explicitly and recorded, never inferred.
+        allowed={int(x) for x in os.environ.get('RESEARCH_ALLOWED_PIDS','').split(':') if x}
+        other=[r for r in rows if (r['vram_bytes']>=64<<20 or r['gfx_engine_ns']>0) and r['pid'] not in allowed]
     else:
         other=[p.pid for p in nvml.nvmlDeviceGetComputeRunningProcesses(handle) if p.pid!=os.getpid()]
     assert not other,f'target GPU has other compute processes: {other}'

@@ -213,7 +213,7 @@ def main(args):
           'external_instrumentation':args.external_profiler,'baseline_comparison_eligible':not args.external_profiler,
           'versions':{'vllm':vllm.__version__,'torch':torch.__version__,'cuda_runtime':torch.version.cuda},
           'vllm_identity':vllm_identity,
-          'environment':{k:os.environ.get(k,'unset') for k in ['CUDA_HOME','CUDA_VISIBLE_DEVICES','VLLM_ENABLE_V1_MULTIPROCESSING','VLLM_WORKER_MULTIPROC_METHOD','TORCHINDUCTOR_COMPILE_THREADS','MAX_JOBS','OMP_NUM_THREADS']},
+          'environment':{k:os.environ.get(k,'unset') for k in ['CUDA_HOME','CUDA_VISIBLE_DEVICES','HIP_VISIBLE_DEVICES','HSA_CU_MASK','RESEARCH_ALLOWED_PIDS','VLLM_ENABLE_V1_MULTIPROCESSING','VLLM_WORKER_MULTIPROC_METHOD','TORCHINDUCTOR_COMPILE_THREADS','MAX_JOBS','OMP_NUM_THREADS']},
           'timing_scope':'single-process GPU decode after all-request one-token prefill barrier; first token excluded',
           'cuda_event_scope':'same-process CUDA-event elapsed decode interval including launch gaps; synchronized wall reported separately',
           'backend_policy':'default optimized vLLM graph/attention kernels; actual engine log preserved externally',

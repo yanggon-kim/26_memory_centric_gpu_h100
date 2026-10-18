@@ -8,16 +8,17 @@ WORK=${WORK:-/work1/proj_blaisetine/yanggon}
 tp=$1; uuids=$2; idxs=$3; root=$4; shift 4
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$repo"
 out_root=$root/tp; mkdir -p "$out_root"; log=$out_root/lane_tp${tp}_$(echo $idxs | tr , _).log
-per=$(( (304 / tp + 7) / 8 * 8 ))   # ~1/N of 304 CUs, rounded up to a multiple of 8 (XCD-balanced)
+total=${TP_MATCH_TOTAL:-304}          # total active CUs to hold fixed across GPUs (default: one full GPU)
+per=$(( (total / tp + 7) / 8 * 8 ))  # ~total/N CUs per GPU, rounded up to a multiple of 8 (XCD-balanced)
 mask=$(echo $idxs | tr , '\n' | sed "s/\$/:0-$((per-1))/" | paste -sd';')
 for acq in 0 1 2; do
-  for variant in full matched; do
+  for variant in ${TP_VARIANTS:-full matched}; do
     for name in "$@"; do
       out=$out_root/tp${tp}_${name}_${variant}_a$acq
       for attempt in 1 2 3; do
       if python3 -c "import json,sys; sys.exit(0 if json.load(open('$out/run.json'))['status']=='complete' else 1)" 2>/dev/null; then break; fi
       [ -d "$out" ] && { mv "$out" "${out}_failed_$(date +%s)"; mv "$out.log" "${out}_failed_$(date +%s).log" 2>/dev/null; }
-      extra=""; [ $variant = matched ] && extra="HSA_CU_MASK=$mask"
+      extra=""; [ "${variant#matched}" != "$variant" ] && extra="HSA_CU_MASK=$mask"
       echo "$(date +%FT%T) start $name $variant a$acq attempt $attempt ${extra}" >> "$log"
       # Persistent per-case compile cache: workers of one TP run raced when compiling into an empty cache
       # ("Cubin file saved by TritonBundler not found"), leaving the other ranks hung.
