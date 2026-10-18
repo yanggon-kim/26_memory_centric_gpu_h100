@@ -71,6 +71,37 @@ def main():
     import shoreline_queue
     with tempfile.TemporaryDirectory() as directory:
         root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
+        session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2100-01-01T00:00:00+00:00'}))
+        calls=[]
+        with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw:calls.append(command) or 0):
+            shoreline_queue.main(SimpleNamespace(session=session,start_at='J5',schedule='gpu-first',phase='all'))
+        gpu=[cmd[cmd.index('--job')+1] for cmd in calls if '--job' in cmd]
+        assert gpu==['J5','J8','J7','J10','J6','J11']
+        names=[Path(cmd[1]).name for cmd in calls]
+        assert names[:6]==['shoreline_jobs.py']*6
+        assert names[6:]==['shoreline_analyze.py','plot_shoreline.py','shoreline_archive_batch.py','checkpoint_h200.py']
+        assert '--gpu-only' in calls[5]
+        state=json.loads((root/'results/campaign_queue.json').read_text())
+        assert [s['resource'] for s in state['steps']]==['gpu']*6+['cpu']*3
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
+        session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2000-01-01T00:00:00+00:00'}))
+        calls=[]
+        with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw:calls.append(command) or 0):
+            shoreline_queue.main(SimpleNamespace(session=session,start_at=None,schedule='gpu-first',phase='cpu'))
+        assert all('--job' not in cmd for cmd in calls), 'expired allocation must permit CPU-only resumption without a GPU command'
+        assert [Path(cmd[1]).name for cmd in calls]==['shoreline_analyze.py','plot_shoreline.py','shoreline_archive_batch.py','checkpoint_h200.py']
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
+        session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2000-01-01T00:00:00+00:00'}))
+        calls=[]
+        with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw:calls.append(command) or 0):
+            shoreline_queue.main(SimpleNamespace(session=session,start_at='J5',schedule='gpu-first',phase='all'))
+        assert [Path(cmd[1]).name for cmd in calls]==['shoreline_analyze.py','plot_shoreline.py','shoreline_archive_batch.py','checkpoint_h200.py']
+        state=json.loads((root/'results/campaign_queue.json').read_text())
+        assert state['status']=='launch_cutoff_reached'
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'environment/source_snapshots').mkdir(parents=True);(root/'logs').mkdir();(root/'results').mkdir()
         session=root/'session.json';session.write_text(json.dumps({'launch_cutoff':'2000-01-01T00:00:00+00:00'}))
         calls=[]
         with patch.object(shoreline_queue.subprocess,'call',side_effect=lambda command,**kw: calls.append(command) or 0):

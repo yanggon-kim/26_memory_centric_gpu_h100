@@ -45,7 +45,8 @@ def main():
     for job in ('J2','J3','J4'):
         campaign.update_job(root,job,'partial','Prior completed captures retained with hashes; no new acquisition and no quantitative pooling across sessions. See prior_capture_evidence.json and previous completion reviews.')
     campaign.checkpoint(root,'Fresh allocation ready: exact functional controls and prior evidence verified; resume remaining jobs')
-    command=[sys.executable,str(package/'scripts/shoreline_queue.py'),'--session',str(session),'--start-at','J5']
+    schedule=json.loads(session.read_text()).get('queue_schedule','legacy')
+    command=[sys.executable,str(package/'scripts/shoreline_queue.py'),'--session',str(session),'--start-at','J5','--schedule',schedule]
     with (root/'logs/remaining_campaign_v1.log').open('x') as stream:
         code=subprocess.call(command,cwd=package,stdout=stream,stderr=subprocess.STDOUT)
     raise SystemExit(code)

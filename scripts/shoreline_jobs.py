@@ -741,8 +741,12 @@ def retention():
 
 def layer_events():
     campaign.update_job(ROOT,'J8','in_progress')
-    results=[]
+    results=[];smokes={}
     for model,b,c in CONTRASTS:
+        if model not in smokes:smokes[model]=campaign.ensure_model_smoke(ROOT,model)
+        if not smokes[model]:
+            results.append({'model':model,'batch':b,'context':c,'status':'unavailable','reason':'current strict model smoke failed; no timing expansion'})
+            continue
         for acq in range(3):
             for events in (False,'empty',True):results.append(treatment_case('J8',model,b,c,acq,events=events))
     dump(ROOT/'results/shoreline_layer_timing_qualification.json',{'cases':results,
@@ -759,8 +763,12 @@ def energy():
         '--gpu-uuid',UUID,'--output',diagnostic),timeout=120)
     energy_sensor_family_allowed=(diag['status']=='complete' and diagnostic.exists() and sensor_diagnostic_passed(load(diagnostic)))
     publish(f'J10 sensor preflight checkpoint: long-window family allowed={energy_sensor_family_allowed}')
-    results=[]
+    results=[];smokes={}
     for model,b,c in CONTRASTS:
+        if model not in smokes:smokes[model]=campaign.ensure_model_smoke(ROOT,model)
+        if not smokes[model]:
+            results.append({'model':model,'batch':b,'context':c,'status':'unavailable','reason':'current strict model smoke failed'})
+            continue
         if reference(model,'graph',b,c) is None:continue
         for acq in range(3):
             if not energy_sensor_family_allowed:continue
@@ -882,6 +890,9 @@ def traces():
         dump(ROOT/'results/shoreline_trace_qualification.json',{'status':'blocked',
             'retained_semantic_review':retained,'semantic_review':review,
             'new_trace_capture':False,'full_model_gate':'blocked: preserve waits; no safe semantic implementation yet'})
+        if args.gpu_only:
+            disposition('J11','partial','GPU phase: hash-verified prior semantic blocker retained; full trace blocked; archive transfer deferred to CPU phase')
+            return
         archive=PACKAGE/retained['archive']
         assert digest(archive)==retained['archive_sha256']
         outcome=attempt('J11_retained_archive_readback_v1',python_command('shoreline_archive.py',
@@ -965,6 +976,9 @@ def traces():
     elif warnings:pilot['full_model_gate']='pending: native semantic warnings require investigation; no calibrated full-model claim'
     elif review.get('status')!='passed':pilot['full_model_gate']='pending: explicit trace semantic coverage gate has not passed'
     dump(ROOT/'results/shoreline_trace_qualification.json',pilot)
+    if args.gpu_only:
+        disposition('J11','partial','GPU trace/calibration stage ended; archive transfer deferred to CPU phase')
+        return
     for archive in [*sorted((ROOT/'environment').glob('native_trace_micro_*.tar')),*sorted((ROOT/'profiles').glob('bridge_*.tar'))]:
         if not archive.exists():continue
         label='J11_upload_'+archive.stem
@@ -984,6 +998,7 @@ if __name__=='__main__':
     p.add_argument('--semantic-pilot-only',action='store_true',help='J11 native/calibration/semantic pilot without full-model expansion')
     p.add_argument('--representative-only',action='store_true',help='J1 bounded saved-text functional control')
     p.add_argument('--metadata-only',action='store_true',help='J2 separate functional executed-length/page metadata controls')
+    p.add_argument('--gpu-only',action='store_true',help='J11 capture/gate disposition only; archive transfers run after GPU jobs')
     args=p.parse_args();os.environ['H200_SESSION_CONFIG']=str(args.session.resolve())
     from h200_session import DEFAULT_ROOT as ROOT,PACKAGE,PYTHON,UUID,dump,run,python_command,CUDA,verify_allocation
     import shoreline_campaign as campaign

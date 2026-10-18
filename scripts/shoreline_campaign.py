@@ -191,19 +191,24 @@ def acquisition(root, model, engine, batch, context, index, smoke=False):
     return result
 
 
+def ensure_model_smoke(root,model):
+    hf = acquisition(root,model,'hf_eager',1,128,0,smoke=True)
+    graph = acquisition(root,model,'graph',1,128,0,smoke=True)
+    comparison = root/'results'/(model+'_smoke_exact_ids.json')
+    if not comparison.exists() and hf['status'] == graph['status'] == 'passed':
+        run(root,model+'_cross_engine_smoke',python_command('compare_vllm_hf_tokens.py',
+            '--vllm-run',root/graph['output']/'run.json','--hf-run',root/hf['output']/'run.json',
+            '--output',comparison),120)
+    return comparison.exists() and load(comparison)['status']=='passed'
+
+
 def baselines(root):
     update_job(root,'J1','in_progress')
-    contrasts = load(root/'session.json').get('baseline_contrasts',
+    session=load(root/'session.json')
+    contrasts = session.get('baseline_contrasts',
         [('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)])
-    for model in ('bridge','mistral7b','qwen14b'):
-        hf = acquisition(root,model,'hf_eager',1,128,0,smoke=True)
-        graph = acquisition(root,model,'graph',1,128,0,smoke=True)
-        comparison = root/'results'/(model+'_smoke_exact_ids.json')
-        if not comparison.exists() and hf['status'] == graph['status'] == 'passed':
-            run(root,model+'_cross_engine_smoke',python_command('compare_vllm_hf_tokens.py',
-                '--vllm-run',root/graph['output']/'run.json','--hf-run',root/hf['output']/'run.json',
-                '--output',comparison),120)
-        if not comparison.exists() or load(comparison)['status'] != 'passed':
+    for model in session.get('smoke_models',('bridge','mistral7b','qwen14b')):
+        if not ensure_model_smoke(root,model):
             checkpoint(root,f'J1: preserve {model} blocked smoke; continue independent qualified models')
             continue
         for m,b,c in contrasts:

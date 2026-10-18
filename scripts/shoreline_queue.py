@@ -22,14 +22,15 @@ def main(a):
         else:raise RuntimeError('queue history limit reached')
     content=Path(__file__).read_bytes();sha=hashlib.sha256(content).hexdigest()
     snapshot=root/'environment/source_snapshots'/(sha+'.py');snapshot.write_bytes(content)
-    state={'status':'running','steps':[],'queue_source_sha256':sha,'start_at':a.start_at,'queue_attempt':queue_attempt}
+    schedule=getattr(a,'schedule','legacy');phase=getattr(a,'phase','all')
+    state={'status':'running','steps':[],'queue_source_sha256':sha,'start_at':a.start_at,'queue_attempt':queue_attempt,'schedule':schedule,'phase':phase}
     def save():state_path.write_text(json.dumps(state,indent=2)+'\n')
-    def execute(name,command):
+    def execute(name,command,gpu=True):
         session=json.loads(a.session.read_text())
-        if time.time()>=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp():
+        if gpu and time.time()>=datetime.datetime.fromisoformat(session['launch_cutoff']).timestamp():
             state['steps'].append({'id':name,'status':'pending','reason':'launch cutoff preserves closeout buffer'});save();return False
         log_path=root/'logs'/f'queue_{name}_attempt{queue_attempt:02d}.log'
-        row={'id':name,'status':'running','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':command,'log':str(log_path.relative_to(root))}
+        row={'id':name,'status':'running','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'command':command,'log':str(log_path.relative_to(root)),'resource':'gpu' if gpu else 'cpu'}
         state['steps'].append(row);save();print('QUEUE_START',name,flush=True)
         with log_path.open('x') as log:
             code=subprocess.call(command,stdout=log,stderr=subprocess.STDOUT,cwd=package)
@@ -47,6 +48,8 @@ def main(a):
                   ('figures',[python,str(package/'scripts/plot_shoreline.py'),'--root',str(root)]),
                   ('checkpoint',[python,str(package/'scripts/checkpoint_h200.py'),'--root',str(root),
                     '--message',f'Campaign {stage}: publish analysis and scientific gate dispositions','--push'])]
+        if schedule=='gpu-first':
+            commands.insert(2,('archives',[python,str(package/'scripts/shoreline_archive_batch.py'),'--root',str(root)]))
         state['cpu_closeout']=[]
         for name,command in commands:
             log=root/'logs'/f'queue_cpu_{stage}_{name}_attempt{queue_attempt:02d}.log'
@@ -68,12 +71,22 @@ def main(a):
            ('J11_closeout',base+['--job','J11']),
            ('final_analysis',[python,str(package/'scripts/shoreline_analyze.py'),'--root',str(root)]),
            ('final_figures',[python,str(package/'scripts/plot_shoreline.py'),'--root',str(root)])]
+    cpu_names={'J9_analysis','final_analysis','final_figures','private_archives'}
+    if schedule=='gpu-first':
+        selected={name:command for name,command in steps}
+        steps=[(name,selected[name]) for name in ('J5','J8','J7','J10','J6')]
+        steps.append(('J11_gpu',base+['--job','J11','--gpu-only']))
+        steps.extend([('J9_analysis',selected['J9_analysis']),('final_figures',selected['final_figures']),
+                      ('private_archives',[python,str(package/'scripts/shoreline_archive_batch.py'),'--root',str(root)])])
+        if phase=='gpu':steps=[s for s in steps if s[0] not in cpu_names]
+        elif phase=='cpu':steps=[s for s in steps if s[0] in cpu_names]
+    elif phase!='all':raise ValueError('--phase requires --schedule gpu-first')
     if a.start_at:steps=steps[next(i for i,(name,_) in enumerate(steps) if name==a.start_at):]
     for name,command in steps:
-        if not execute(name,command):
+        if not execute(name,command,gpu=name not in cpu_names):
             if state['status']=='running':state['status']='launch_cutoff_reached';save()
             closeout_cpu();return
-        if name in ('J5','J8','J7','J10','J6'):
+        if schedule=='legacy' and name in ('J5','J8','J7','J10','J6'):
             # The GPU producer has exited: analyze and publish this job before
             # starting the next one, so interruption cannot lose its analysis.
             closeout_cpu('after_'+name)
@@ -90,4 +103,6 @@ def main(a):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--session',type=Path,required=True);p.add_argument('--start-at')
+    p.add_argument('--schedule',choices=['legacy','gpu-first'],default='legacy')
+    p.add_argument('--phase',choices=['all','gpu','cpu'],default='all',help='GPU-first CPU phase can resume without a live allocation')
     main(p.parse_args())
