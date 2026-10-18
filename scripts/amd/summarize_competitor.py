@@ -29,7 +29,7 @@ def main(root):
             continue
         trials = d['cases'][0]['trials']
         cell['ms'].append(st.median(t['cuda_event_ms'] / t['decode_iterations'] for t in trials))
-        comp = run_dir / 'competitor.jsonl'
+        comp = run_dir.parent / (run_dir.name + '.competitor.jsonl')
         if comp.exists():
             wins = [json.loads(l) for l in comp.read_text().splitlines() if l.startswith('{')]
             hit = [w for w in wins for t in trials if w['t0_unix_ns'] < t['wall_end_unix_ns'] and w['t1_unix_ns'] > t['wall_start_unix_ns']]

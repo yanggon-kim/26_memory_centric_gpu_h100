@@ -20,13 +20,13 @@ for acq in 0 1 2; do
       out=$out_root/${name}_${t}_a$acq
       if python3 -c "import json,sys; sys.exit(0 if json.load(open('$out/run.json'))['status']=='complete' else 1)" 2>/dev/null; then continue; fi
       [ -d "$out" ] && mv "$out" "${out}_failed_$(date +%s)"
-      mkdir -p "$out"; cpid=""
+      cpid=""  # the runner creates $out itself; competitor logs sit beside it
       case $t in
         read*) duty=$(python3 -c "print(${t#read}/100)")
                setsid env HIP_VISIBLE_DEVICES=$idx HSA_CU_MASK=$idx:232-303 "$B" --mode read --bytes 1073741824 \
-                 --seconds 900 --duty $duty > "$out/competitor.jsonl" 2> "$out/competitor.err" & cpid=$! ;;
+                 --seconds 900 --duty $duty > "$out.competitor.jsonl" 2> "$out.competitor.err" & cpid=$! ;;
         fma*)  setsid env HIP_VISIBLE_DEVICES=$idx HSA_CU_MASK=$idx:232-303 "$B" --mode fma --iters 2000 \
-                 --seconds 900 > "$out/competitor.jsonl" 2> "$out/competitor.err" & cpid=$! ;;
+                 --seconds 900 > "$out.competitor.jsonl" 2> "$out.competitor.err" & cpid=$! ;;
       esac
       [ -n "$cpid" ] && sleep 3
       echo "$(date +%FT%T) start $name $t a$acq competitor_pid=${cpid:-none}" >> "$log"

@@ -7,8 +7,8 @@ they are not published.
 
 ## amd_20261018_mi300x
 
-- Published compact files: 128 (under `results_published/amd_20261018_mi300x/`)
-- Raw files indexed: `results_published/amd_20261018_mi300x/raw_manifest.sha256` (6.48 GB)
+- Published compact files: 134 (under `results_published/amd_20261018_mi300x/`)
+- Raw files indexed: `results_published/amd_20261018_mi300x/raw_manifest.sha256` (6.50 GB)
 - Raw location: `/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi300x`
 
 ## amd_20261018_mi325x_job468949

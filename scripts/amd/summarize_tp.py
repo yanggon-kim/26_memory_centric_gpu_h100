@@ -12,7 +12,7 @@ for f in glob.glob(str(root / 'm1/*_graph_*_a0/run.json')):
         tp1_ids[re.sub(r'_a\d+$', '', Path(f).parent.name)] = d['cases'][0]['trials'][0]['output_sha256']
 groups = {}
 for f in glob.glob(str(root / 'tp/tp*_a[0-9]/run.json')):
-    d = json.loads(Path(f).read_text()); m = re.match(r'tp(\d+)_(.+)_(full|matched)_a\d+$', Path(f).parent.name)
+    d = json.loads(Path(f).read_text()); m = re.match(r'tp(\d+)_(.+)_(full|matched\d*)_a\d+$', Path(f).parent.name)
     tp, case, var = int(m.group(1)), m.group(2), m.group(3)
     g = groups.setdefault((case, tp, var), {'acq': [], 'statuses': [], 'sha': set()})
     g['statuses'].append(d['status'])
