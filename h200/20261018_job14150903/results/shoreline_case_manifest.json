@@ -3,9 +3,11 @@
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
-      "prior_evidence": "h200/20261017_job14134786/STATUS.json"
+      "status": "complete",
+      "scientific_gate": "passed",
+      "prior_evidence": "h200/20261017_job14134786/STATUS.json",
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-18T14:28:06.002211+00:00"
     },
     {
       "id": "J1",
@@ -75,7 +77,44 @@
     }
   ],
   "conditions": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "id": "cpu_contracts",
+      "status": "complete",
+      "source": "results/processes/cpu_contracts.json",
+      "source_sha256": "1e84c605c91f936214c2ef5b2d41236f5ca1a0858e5e337833cd06683dba1ada",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "a40adf1de42a2b025ab7c9fb8f695c5834267af855ece2f753af98ba25b29996"
+    },
+    {
+      "id": "inventory",
+      "status": "complete",
+      "source": "results/processes/inventory.json",
+      "source_sha256": "cd8523c1e4b36a862f38525c778627fa7724cdcdf18f78ab0f2cdc31c696a82f",
+      "gpu_execution": true,
+      "exit_code": 0,
+      "numerical_source_freeze": "a40adf1de42a2b025ab7c9fb8f695c5834267af855ece2f753af98ba25b29996"
+    },
+    {
+      "id": "ncu_catalog",
+      "status": "complete",
+      "source": "results/processes/ncu_catalog.json",
+      "source_sha256": "bcb461799c9f7a891b5973bc05e89dc40ce953643e7b258e95c63ff29a2a2b40",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "a40adf1de42a2b025ab7c9fb8f695c5834267af855ece2f753af98ba25b29996"
+    },
+    {
+      "id": "pip_freeze",
+      "status": "complete",
+      "source": "results/processes/pip_freeze.json",
+      "source_sha256": "16f470e206909fed14499987dbe46a4f26cf099f2aa560fb6b11b4242570cabc",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "a40adf1de42a2b025ab7c9fb8f695c5834267af855ece2f753af98ba25b29996"
+    }
+  ],
   "historical_session": "h200/20261017_job14134786",
   "scope_declaration": "GPU-first fresh matched cohort; historical references functional only"
 }
