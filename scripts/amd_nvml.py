@@ -60,8 +60,10 @@ def nvmlDeviceGetHandleByIndex(index):
 
 
 def nvmlDeviceGetUUID(handle):
-    """HIP UUID as torch reports it, with the package's GPU- prefix."""
-    return 'GPU-' + _enum(handle)['hip_uuid'].removeprefix('GPU-')
+    """Stable ID: GPU- plus the ASIC serial. amdsmi's hip_uuid differs between library versions
+    (host 26.1 returns the serial; the ROCm 7.14 container returns torch's HIP UUID)."""
+    serial = _wrap(lambda: _a.amdsmi_get_gpu_asic_info(handle))['asic_serial']
+    return 'GPU-' + serial.lower().removeprefix('0x')
 
 
 def nvmlDeviceGetHandleByUUID(uuid):
@@ -82,6 +84,12 @@ def nvmlDeviceGetName(handle):
 
 def nvmlDeviceGetPciInfo(handle):
     return SimpleNamespace(busId=_wrap(lambda: _a.amdsmi_get_gpu_device_bdf(handle)))
+
+
+def processes_detail(handle):
+    """Full amdsmi process rows (pid, VRAM bytes, cumulative GFX engine ns)."""
+    return [{'pid': p['pid'], 'name': p['name'], 'vram_bytes': p['memory_usage']['vram_mem'],
+             'gfx_engine_ns': p['engine_usage']['gfx']} for p in _wrap(lambda: _a.amdsmi_get_gpu_process_list(handle))]
 
 
 def _processes(handle):

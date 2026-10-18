@@ -30,12 +30,14 @@ struct Args {
   int line = 128;                 // chase node spacing in bytes
   int intensity = 0;              // FMAs per 16 B loaded ("mixed")
   long iters = 4096;              // compute loop length (fma, mfma)
+  int passes = 1;                 // in-kernel passes over the buffer ("read"), for cache-resident footprints
   unsigned long long seed = 20261013ull;
   std::string cu_mask;            // hex mask, LSB = CU0; empty = default stream
 };
 
-__global__ void k_read(const float4* __restrict__ a, size_t n, float* out) {
+__global__ void k_read(const float4* __restrict__ a, size_t n, float* out, int passes) {
   float4 s = {0, 0, 0, 0};
+  for (int p = 0; p < passes; ++p)
   for (size_t i = blockIdx.x * (size_t)blockDim.x + threadIdx.x; i < n; i += (size_t)gridDim.x * blockDim.x) {
     float4 v = a[i]; s.x += v.x; s.y += v.y; s.z += v.z; s.w += v.w;
   }
@@ -141,6 +143,7 @@ static Args parse(int argc, char** argv) {
     else if (k == "--line") a.line = std::stoi(v);
     else if (k == "--intensity") a.intensity = std::stoi(v);
     else if (k == "--iters") a.iters = std::stol(v);
+    else if (k == "--passes") a.passes = std::stoi(v);
     else if (k == "--seed") a.seed = std::stoull(v);
     else if (k == "--cu-mask") a.cu_mask = v;
     else { fprintf(stderr, "unknown option %s\n", k.c_str()); exit(1); }
@@ -183,7 +186,7 @@ int main(int argc, char** argv) {
   size_t n = a.bytes / 16;
   std::vector<uint32_t> host_next;
   auto launch = [&]() {
-    if (a.mode == "read") hipLaunchKernelGGL(k_read, a.blocks, a.threads, 0, s, (const float4*)buf, n, out);
+    if (a.mode == "read") hipLaunchKernelGGL(k_read, a.blocks, a.threads, 0, s, (const float4*)buf, n, out, a.passes);
     else if (a.mode == "write") hipLaunchKernelGGL(k_write, a.blocks, a.threads, 0, s, (float4*)buf, n, 1.0f);
     else if (a.mode == "copy") hipLaunchKernelGGL(k_copy, a.blocks, a.threads, 0, s, (const float4*)buf, (float4*)buf2, n);
     else if (a.mode == "strided") hipLaunchKernelGGL(k_strided, a.blocks, a.threads, 0, s, (const float4*)buf, n, a.stride, out);
@@ -208,7 +211,7 @@ int main(int argc, char** argv) {
     }
     double per = a.mode == "copy" ? 2.0 * n * 16 : a.mode == "strided" ? (double)(n / a.stride) * 16
                : a.mode == "gather" ? n * 20.0 : n * 16.0;
-    useful_bytes = per * a.reps;
+    useful_bytes = per * a.reps * (a.mode == "read" ? a.passes : 1);
     if (a.mode == "mixed") useful_flops = 2.0 * a.intensity * n * a.reps;
   } else if (a.mode == "chase") {
     size_t nodes = a.bytes / a.line;
@@ -272,11 +275,11 @@ int main(int argc, char** argv) {
   double med = sorted[sorted.size() / 2];
   printf("{\"classification\":\"measured-real-GPU\",\"mode\":\"%s\",\"device\":\"%s\",\"arch\":\"%s\",\"cus\":%d,"
          "\"stream_cu_mask\":\"%s\",\"stream_cus\":%d,\"hsa_cu_mask\":\"%s\",\"footprint_bytes\":%zu,\"blocks\":%d,\"threads\":%d,"
-         "\"reps\":%d,\"warmups\":%d,\"stride\":%d,\"chains\":%d,\"steps\":%ld,\"line\":%d,\"intensity\":%d,\"iters\":%ld,"
+         "\"reps\":%d,\"warmups\":%d,\"stride\":%d,\"chains\":%d,\"steps\":%ld,\"line\":%d,\"intensity\":%d,\"iters\":%ld,\"passes\":%d,"
          "\"seed\":%llu,\"trial_ms\":[",
          a.mode.c_str(), p.name, p.gcnArchName, cus, a.cu_mask.c_str(), mask_cus,
          getenv("HSA_CU_MASK") ? getenv("HSA_CU_MASK") : "", a.bytes, a.blocks, a.threads, a.reps, a.warmups,
-         a.stride, a.chains, a.steps, a.line, a.intensity, a.iters, a.seed);
+         a.stride, a.chains, a.steps, a.line, a.intensity, a.iters, a.passes, a.seed);
   for (size_t i = 0; i < ms.size(); ++i) printf("%s%.6f", i ? "," : "", ms[i]);
   printf("],\"median_ms\":%.6f", med);
   if (useful_bytes > 0) printf(",\"useful_bytes\":%.0f,\"useful_gb_per_s\":%.3f", useful_bytes, useful_bytes / med / 1e6);

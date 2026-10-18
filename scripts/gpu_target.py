@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 
 _LOCKS=[]
+OBSERVED_PROCESSES=[]  # ROCm: other processes seen on the target at selection, kept for provenance
 
 
 def is_rocm():
@@ -28,7 +29,14 @@ def select(nvml,uuid):
     _LOCKS.append(lock)
     handle=nvml.nvmlDeviceGetHandleByUUID(uuid)
     assert nvml.nvmlDeviceGetUUID(handle)==uuid
-    other=[p.pid for p in nvml.nvmlDeviceGetComputeRunningProcesses(handle) if p.pid!=os.getpid()]
+    if is_rocm():
+        # ROCr opens a small context on every GPU even under HIP_VISIBLE_DEVICES, so neighbours' lanes appear
+        # here with ~KB of VRAM and no GFX time. Reject real use (>=64 MiB VRAM or GFX activity); record the rest.
+        rows=[r for r in nvml.processes_detail(handle) if r['pid']!=os.getpid()]
+        OBSERVED_PROCESSES[:]=rows
+        other=[r for r in rows if r['vram_bytes']>=64<<20 or r['gfx_engine_ns']>0]
+    else:
+        other=[p.pid for p in nvml.nvmlDeviceGetComputeRunningProcesses(handle) if p.pid!=os.getpid()]
     assert not other,f'target GPU has other compute processes: {other}'
     def pci(h):
         value=nvml.nvmlDeviceGetPciInfo(h).busId
@@ -49,8 +57,15 @@ def select(nvml,uuid):
 def verify_cuda(torch,uuid,require_h100=True):
     assert torch.cuda.device_count()==1, 'exactly one CUDA-visible GPU required'
     props=torch.cuda.get_device_properties(0)
-    actual=str(props.uuid).removeprefix('GPU-')
-    assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
+    if is_rocm():
+        # torch's ROCm uuid is not the amdsmi UUID (observed on MI300X), so match the PCI bus of the declared GPU.
+        import amd_nvml
+        bdf=amd_nvml.nvmlDeviceGetPciInfo(amd_nvml.nvmlDeviceGetHandleByUUID(uuid)).busId
+        domain,bus=int(bdf.split(':')[0],16),int(bdf.split(':')[1],16)
+        assert (props.pci_domain_id,props.pci_bus_id)==(domain,bus), 'HIP/amdsmi PCI mismatch; stop rather than use another GPU'
+    else:
+        actual=str(props.uuid).removeprefix('GPU-')
+        assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
     if require_h100 and is_rocm():
         arch=props.gcnArchName.split(':')[0]
         assert arch=='gfx942' and 'MI3' in props.name, 'AMD port requires a verified MI300X/MI325X gfx942 allocation'
