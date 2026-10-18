@@ -7,6 +7,13 @@ import subprocess
 
 
 def verify(vllm):
+    import os
+    image = os.environ.get('AMD_VLLM_IMAGE')
+    if image:
+        # ROCm route: a prebuilt AMD rocm/vllm container; identity is the image file hash plus the version.
+        digest = os.environ.get('AMD_VLLM_IMAGE_SHA256', 'unrecorded')
+        return {'version': vllm.__version__, 'identity_route': 'amd-rocm-vllm-container',
+                'image': image, 'image_sha256': digest, 'install_path': str(Path(vllm.__file__).resolve().parent)}
     if vllm.__version__ == '0.22.1':
         return {'version': vllm.__version__, 'identity_route': 'release-version'}
 
