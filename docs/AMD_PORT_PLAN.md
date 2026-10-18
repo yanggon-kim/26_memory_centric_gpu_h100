@@ -36,6 +36,14 @@ MI300X/MI325X have a different memory hierarchy: per-XCD L2 (4 MB × 8) plus a 2
 | Accel-Sim / GPGPU-Sim (sm_90) | gem5 GPU model (check gfx942/MI300 support), or analytical model only | Accel-Sim cannot replay AMD traces. Feasibility check before any simulator claim |
 | `roofline_ceilings` | Re-measure BF16 MFMA GEMM and useful-copy ceilings on the allocated GPU | Same scripts after device-API port |
 
+## Profiling workflow
+
+1. `rocprofv3 --kernel-trace --stats` (plus `--marker-trace` for prefill/decode ranges) on `scripts/amd/decode_profile_bench.py` finds the kernels that dominate decode time. `--sys-trace --output-format pftrace` gives a Perfetto timeline (the Nsight Systems role).
+2. `rocprof-compute profile` (formerly Omniperf; the Nsight Compute role) on the same short workload, filtered to those kernels. It reports L1/L2 hit rates and traffic, HBM bandwidth and memory stalls, LDS bank conflicts, occupancy and VGPR/SGPR use, MFMA utilization and the per-level roofline. It replays the program once per counter pass, so the workload must be short and deterministic. Each replay appends its output IDs to a log for the identity check.
+3. Raw `rocprofv3 --pmc` covers specific counters (for example HBM read/write bytes) on bounded ranges where the full analysis is unnecessary.
+
+Profiled runs are never baseline timings. Tool setup: `rocprof-compute` 3.3.0 (ROCm 7.1.0, matching the torch module) runs from `$WORK/venvs/rocprof_compute_py312` with `PYTHONPATH=` cleared; the profiled program runs from `$WORK/venvs/hf_rocm_py312`.
+
 ## Phased execution
 
 1. **Phase 0 (inventory):** on one MI300X, record SKU/serial, CU count, L2/MALL, HBM, clocks, power, ROCm/driver, and profiler permissions (`rocprofv3-avail`, a trial `--pmc` run). Write `results/amd_<date>_<host>/environment.json`. Port `scripts/inventory.py` and `scripts/gpu_target.py` to detect ROCm.
