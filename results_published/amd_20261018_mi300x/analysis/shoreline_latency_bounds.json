@@ -1,0 +1,6328 @@
+{
+ "classification": "analytical bounds from measured inputs",
+ "scope": "E/F bounded latency decomposition and J9 c/r/f sensitivity for the focused MI300X cases.\n\nInputs (all from this allocation): T = graph-mode decode ms/step (M1 summary); F = useful FLOPs/step\n(analytical: 2*B*linear parameter elements + 4*B*Hq*d*L_hist per layer); D = bytes/step (counter\nFETCH_SIZE+WRITE_SIZE where a qualified capture exists, otherwise logical U_tick, labelled);\nP = measured register-resident BF16 MFMA rate; beta = measured large-footprint streaming read rate.\nFramework (common contract): T = C + M - X + O, C = F/P, M = D/beta, 0 <= X <= min(C,M), O >= 0;\nO_feasible = [max(0, T-C-M), T-max(C,M)]. An empty interval rejects the chosen rates.\nP and beta are independent microbenchmark controls (no circular D/T substitution); both are optimistic\nservice rates, so C and M are lower bounds on the time those resources need.\nSensitivity: C_new = C/c, M_new = M*(1-f)/r, with O and X either held (same-O/same-X, conditional)\nor bounded by the free-overlap envelope [max(C_new,M_new)+O, C_new+M_new+O].",
+ "P_bf16_flops_per_s": 1071119666666666.8,
+ "beta_read_bytes_per_s": 4548498333333.333,
+ "cases": {
+  "bridge_graph_b1_c1024": {
+   "T_s": 0.0021871931449446097,
+   "T_ci95_ms": [
+    2.1815789036019138,
+    2.1943879707780463
+   ],
+   "C_s": 3.047588311172203e-06,
+   "M_s": 0.0006903723732997595,
+   "D_bytes": 3140157589.3333335,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (bridge_eager_b1_c1024, ticks 4-6, eager program)",
+   "F_flops": 3264331776.0,
+   "O_feasible_s": [
+    0.001493773183333678,
+    0.0014968207716448503
+   ],
+   "feasible": true,
+   "M_over_T": 0.31564307655931456,
+   "C_over_T": 0.0013933786863845454,
+   "bandwidth_time_fraction_upper": 0.31564307655931456,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0024830670192159355,
+     "T_envelope_s": [
+      0.0024800194309047632,
+      0.002486114607527108
+     ],
+     "speedup_same_O_X": 0.8808433795859637,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002433754706837381,
+     "T_envelope_s": [
+      0.0024307071185262086,
+      0.0024368022951485532
+     ],
+     "speedup_same_O_X": 0.8986908741459926,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002384442394458827,
+     "T_envelope_s": [
+      0.0023813948061476545,
+      0.002387489982769999
+     ],
+     "speedup_same_O_X": 0.9172765716745341,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002285817769701718,
+     "T_envelope_s": [
+      0.002282770181390546,
+      0.0022888653580128903
+     ],
+     "speedup_same_O_X": 0.9568536800858023,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0021871931449446097,
+     "T_envelope_s": [
+      0.0021841455566334374,
+      0.002190240733255782
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0021526745262796217,
+     "T_envelope_s": [
+      0.0021496269379684494,
+      0.002155722114590794
+     ],
+     "speedup_same_O_X": 1.0160352242030035,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0021181559076146337,
+     "T_envelope_s": [
+      0.0021151083193034614,
+      0.002121203495925806
+     ],
+     "speedup_same_O_X": 1.0325930858449992,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0020491186702846576,
+     "T_envelope_s": [
+      0.0020460710819734857,
+      0.00205216625859583
+     ],
+     "speedup_same_O_X": 1.0673823710955554,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.002072131082727983,
+     "T_envelope_s": [
+      0.0020690834944168107,
+      0.0020751786710391552
+     ],
+     "speedup_same_O_X": 1.0555283703698641,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0020433655671738262,
+     "T_envelope_s": [
+      0.002040317978862654,
+      0.0020464131554849985
+     ],
+     "speedup_same_O_X": 1.070387590004128,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0020146000516196695,
+     "T_envelope_s": [
+      0.0020115524633084977,
+      0.002017647639930842
+     ],
+     "speedup_same_O_X": 1.0856711450921395,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0019570690205113566,
+     "T_envelope_s": [
+      0.0019540214322001843,
+      0.001960116608822529
+     ],
+     "speedup_same_O_X": 1.1175861055595906,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0019899438954303927,
+     "T_envelope_s": [
+      0.0019868963071192204,
+      0.001992991483741565
+     ],
+     "speedup_same_O_X": 1.0991230204867435,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0019652877392411154,
+     "T_envelope_s": [
+      0.0019622401509299435,
+      0.0019683353275522877
+     ],
+     "speedup_same_O_X": 1.1129124256324836,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0019406315830518385,
+     "T_envelope_s": [
+      0.0019375839947406662,
+      0.0019436791713630108
+     ],
+     "speedup_same_O_X": 1.127052225701196,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0018913192706732842,
+     "T_envelope_s": [
+      0.001888271682362112,
+      0.0018943668589844565
+     ],
+     "speedup_same_O_X": 1.1564378256273984,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.002484082881986326,
+     "T_envelope_s": [
+      0.0024800194309047632,
+      0.002487130470297498
+     ],
+     "speedup_same_O_X": 0.880483159722788,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0024347705696077717,
+     "T_envelope_s": [
+      0.0024307071185262086,
+      0.002437818157918944
+     ],
+     "speedup_same_O_X": 0.8983159120807652,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0023854582572292175,
+     "T_envelope_s": [
+      0.0023813948061476545,
+      0.00238850584554039
+     ],
+     "speedup_same_O_X": 0.9168859435356883,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002286833632472109,
+     "T_envelope_s": [
+      0.002282770181390546,
+      0.002289881220783281
+     ],
+     "speedup_same_O_X": 0.9564286242284333,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0021882090077150005,
+     "T_envelope_s": [
+      0.0021841455566334374,
+      0.002191256596026173
+     ],
+     "speedup_same_O_X": 0.9995357560604087,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0021536903890500125,
+     "T_envelope_s": [
+      0.0021496269379684494,
+      0.0021567379773611848
+     ],
+     "speedup_same_O_X": 1.0155559759494377,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0021191717703850244,
+     "T_envelope_s": [
+      0.0021151083193034614,
+      0.0021222193586961967
+     ],
+     "speedup_same_O_X": 1.03209809393942,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0020501345330550483,
+     "T_envelope_s": [
+      0.0020460710819734857,
+      0.0020531821213662206
+     ],
+     "speedup_same_O_X": 1.0668534721403482,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0020731469454983737,
+     "T_envelope_s": [
+      0.0020690834944168107,
+      0.002076194533809546
+     ],
+     "speedup_same_O_X": 1.0550111508949598,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002044381429944217,
+     "T_envelope_s": [
+      0.002040317978862654,
+      0.0020474290182553893
+     ],
+     "speedup_same_O_X": 1.069855709364514,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0020156159143900603,
+     "T_envelope_s": [
+      0.0020115524633084977,
+      0.0020186635027012326
+     ],
+     "speedup_same_O_X": 1.085123970955781,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0019580848832817473,
+     "T_envelope_s": [
+      0.0019540214322001843,
+      0.0019611324715929196
+     ],
+     "speedup_same_O_X": 1.1170062971319594,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0019909597582007835,
+     "T_envelope_s": [
+      0.0019868963071192204,
+      0.0019940073465119557
+     ],
+     "speedup_same_O_X": 1.0985622064612501,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.001966303602011506,
+     "T_envelope_s": [
+      0.0019622401509299435,
+      0.0019693511903226785
+     ],
+     "speedup_same_O_X": 1.1123374552674044,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0019416474458222293,
+     "T_envelope_s": [
+      0.0019375839947406662,
+      0.0019446950341334016
+     ],
+     "speedup_same_O_X": 1.1264625561405146,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.001892335133443675,
+     "T_envelope_s": [
+      0.001888271682362112,
+      0.0018953827217548472
+     ],
+     "speedup_same_O_X": 1.155817014803478,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0024861146075271074,
+     "T_envelope_s": [
+      0.0024800194309047632,
+      0.0024891621958382797
+     ],
+     "speedup_same_O_X": 0.8797636031430468,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0024368022951485532,
+     "T_envelope_s": [
+      0.0024307071185262086,
+      0.0024398498834597255
+     ],
+     "speedup_same_O_X": 0.8975669258433924,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0023874899827699986,
+     "T_envelope_s": [
+      0.0023813948061476545,
+      0.002390537571081171
+     ],
+     "speedup_same_O_X": 0.9161056845176784,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0022888653580128903,
+     "T_envelope_s": [
+      0.002282770181390546,
+      0.0022919129463240626
+     ],
+     "speedup_same_O_X": 0.955579644424105,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.002190240733255782,
+     "T_envelope_s": [
+      0.0021841455566334374,
+      0.0021932883215669543
+     ],
+     "speedup_same_O_X": 0.9986085601162927,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002155722114590794,
+     "T_envelope_s": [
+      0.0021496269379684494,
+      0.0021587697029019663
+     ],
+     "speedup_same_O_X": 1.0145988344883634,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002121203495925806,
+     "T_envelope_s": [
+      0.0021151083193034614,
+      0.0021242510842369782
+     ],
+     "speedup_same_O_X": 1.0311095324637878,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.00205216625859583,
+     "T_envelope_s": [
+      0.0020460710819734857,
+      0.002055213846907002
+     ],
+     "speedup_same_O_X": 1.0657972451224154,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0020751786710391552,
+     "T_envelope_s": [
+      0.0020690834944168107,
+      0.0020782262593503275
+     ],
+     "speedup_same_O_X": 1.0539782311126795,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0020464131554849985,
+     "T_envelope_s": [
+      0.002040317978862654,
+      0.002049460743796171
+     ],
+     "speedup_same_O_X": 1.0687935322748874,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002017647639930842,
+     "T_envelope_s": [
+      0.0020115524633084977,
+      0.002020695228242014
+     ],
+     "speedup_same_O_X": 1.0840312756590043,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.001960116608822529,
+     "T_envelope_s": [
+      0.0019540214322001843,
+      0.001963164197133701
+     ],
+     "speedup_same_O_X": 1.1158484832483966,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.001992991483741565,
+     "T_envelope_s": [
+      0.0019868963071192204,
+      0.0019960390720527373
+     ],
+     "speedup_same_O_X": 1.0974422935508275,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0019683353275522877,
+     "T_envelope_s": [
+      0.0019622401509299435,
+      0.00197138291586346
+     ],
+     "speedup_same_O_X": 1.11118929499908,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0019436791713630106,
+     "T_envelope_s": [
+      0.0019375839947406662,
+      0.001946726759674183
+     ],
+     "speedup_same_O_X": 1.125285066161837,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0018943668589844565,
+     "T_envelope_s": [
+      0.001888271682362112,
+      0.0018974144472956287
+     ],
+     "speedup_same_O_X": 1.15457739063126,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0024922097841494515,
+     "T_envelope_s": [
+      0.0024800194309047632,
+      0.002495257372460624
+     ],
+     "speedup_same_O_X": 0.8776119726578561,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0024428974717708974,
+     "T_envelope_s": [
+      0.0024307071185262086,
+      0.0024459450600820697
+     ],
+     "speedup_same_O_X": 0.8953274421947298,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0023935851593923432,
+     "T_envelope_s": [
+      0.0023813948061476545,
+      0.0023966327477035155
+     ],
+     "speedup_same_O_X": 0.9137728550672791,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002294960534635235,
+     "T_envelope_s": [
+      0.002282770181390546,
+      0.002298008122946407
+     ],
+     "speedup_same_O_X": 0.9530417242195609,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.002196335909878126,
+     "T_envelope_s": [
+      0.0021841455566334374,
+      0.0021993834981892985
+     ],
+     "speedup_same_O_X": 0.995837264740609,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002161817291213138,
+     "T_envelope_s": [
+      0.0021496269379684494,
+      0.0021648648795243104
+     ],
+     "speedup_same_O_X": 1.011738204627474,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0021272986725481505,
+     "T_envelope_s": [
+      0.0021151083193034614,
+      0.002130346260859323
+     ],
+     "speedup_same_O_X": 1.0281551778174691,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0020582614352181745,
+     "T_envelope_s": [
+      0.0020460710819734857,
+      0.0020613090235293468
+     ],
+     "speedup_same_O_X": 1.062641075385435,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0020812738476615,
+     "T_envelope_s": [
+      0.0020690834944168107,
+      0.002084321435972672
+     ],
+     "speedup_same_O_X": 1.0508915717180225,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002052508332107343,
+     "T_envelope_s": [
+      0.002040317978862654,
+      0.0020555559204185154
+     ],
+     "speedup_same_O_X": 1.0656196180694593,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0020237428165531864,
+     "T_envelope_s": [
+      0.0020115524633084977,
+      0.0020267904048643587
+     ],
+     "speedup_same_O_X": 1.0807663538343324,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.001966211785444873,
+     "T_envelope_s": [
+      0.0019540214322001843,
+      0.0019692593737560453
+     ],
+     "speedup_same_O_X": 1.112389398301637,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.001999086660363909,
+     "T_envelope_s": [
+      0.0019868963071192204,
+      0.0020021342486750814
+     ],
+     "speedup_same_O_X": 1.0940962131909069,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0019744305041746323,
+     "T_envelope_s": [
+      0.0019622401509299435,
+      0.0019774780924858046
+     ],
+     "speedup_same_O_X": 1.1077589919321664,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.001949774347985355,
+     "T_envelope_s": [
+      0.0019375839947406662,
+      0.0019528219362965273
+     ],
+     "speedup_same_O_X": 1.1217673200001697,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0019004620356068008,
+     "T_envelope_s": [
+      0.001888271682362112,
+      0.0019035096239179731
+     ],
+     "speedup_same_O_X": 1.1508744210437534,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "bridge_graph_b8_c4096": {
+   "T_s": 0.0031552414344101355,
+   "T_ci95_ms": [
+    3.1450652672500206,
+    3.1684804038395957
+   ],
+   "C_s": 2.8327845696668187e-05,
+   "M_s": 0.0009538726549678117,
+   "D_bytes": 4338688181.333333,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (bridge_eager_b8_c4096, ticks 4-6, eager program)",
+   "F_flops": 30342512640.0,
+   "O_feasible_s": [
+    0.0021730409337456557,
+    0.0022013687794423236
+   ],
+   "feasible": true,
+   "M_over_T": 0.30231368178839085,
+   "C_over_T": 0.008978027921328945,
+   "bandwidth_time_fraction_upper": 0.30231368178839085,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.003564044000824912,
+     "T_envelope_s": [
+      0.003535716155128244,
+      0.00359237184652158
+     ],
+     "speedup_same_O_X": 0.8852981146360265,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0034959102397557826,
+     "T_envelope_s": [
+      0.0034675823940591146,
+      0.0035242380854524505
+     ],
+     "speedup_same_O_X": 0.9025521875614732,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0034277764786866532,
+     "T_envelope_s": [
+      0.0033994486329899853,
+      0.003456104324383321
+     ],
+     "speedup_same_O_X": 0.9204921773718049,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0032915089565483946,
+     "T_envelope_s": [
+      0.003263181110851726,
+      0.0033198368022450625
+     ],
+     "speedup_same_O_X": 0.9586002882151794,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0031552414344101355,
+     "T_envelope_s": [
+      0.003126913588713467,
+      0.0031835692801068034
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.003107547801661745,
+     "T_envelope_s": [
+      0.003079219955965077,
+      0.0031358756473584127
+     ],
+     "speedup_same_O_X": 1.0153476746915644,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0030598541689133545,
+     "T_envelope_s": [
+      0.003031526323216686,
+      0.0030881820146100225
+     ],
+     "speedup_same_O_X": 1.0311737946421988,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002964466903416573,
+     "T_envelope_s": [
+      0.002936139057719905,
+      0.002992794749113241
+     ],
+     "speedup_same_O_X": 1.0643537395454452,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.002996262658582167,
+     "T_envelope_s": [
+      0.0029679348128854987,
+      0.003024590504278835
+     ],
+     "speedup_same_O_X": 1.0530590251734464,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0029565179646251745,
+     "T_envelope_s": [
+      0.0029281901189285066,
+      0.0029848458103218425
+     ],
+     "speedup_same_O_X": 1.0672153770627113,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0029167732706681824,
+     "T_envelope_s": [
+      0.0028884454249715145,
+      0.0029451011163648504
+     ],
+     "speedup_same_O_X": 1.0817575250500442,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002837283882754198,
+     "T_envelope_s": [
+      0.0028089560370575303,
+      0.002865611728450866
+     ],
+     "speedup_same_O_X": 1.112064060134614,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0028827063901336178,
+     "T_envelope_s": [
+      0.00285437854443695,
+      0.0029110342358302857
+     ],
+     "speedup_same_O_X": 1.094541381393991,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002848639509599053,
+     "T_envelope_s": [
+      0.002820311663902385,
+      0.002876967355295721
+     ],
+     "speedup_same_O_X": 1.1076310020197104,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0028145726290644884,
+     "T_envelope_s": [
+      0.0027862447833678205,
+      0.0028429004747611564
+     ],
+     "speedup_same_O_X": 1.1210374896095252,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002746438867995359,
+     "T_envelope_s": [
+      0.002718111022298691,
+      0.002774766713692027
+     ],
+     "speedup_same_O_X": 1.1488482307684365,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.003573486616057135,
+     "T_envelope_s": [
+      0.003535716155128244,
+      0.003601814461753803
+     ],
+     "speedup_same_O_X": 0.8829587944256869,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0035053528549880055,
+     "T_envelope_s": [
+      0.0034675823940591146,
+      0.0035336807006846735
+     ],
+     "speedup_same_O_X": 0.9001209193306537,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003437219093918876,
+     "T_envelope_s": [
+      0.0033994486329899853,
+      0.003465546939615544
+     ],
+     "speedup_same_O_X": 0.9179634315404522,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003300951571780617,
+     "T_envelope_s": [
+      0.003263181110851726,
+      0.003329279417477285
+     ],
+     "speedup_same_O_X": 0.9558581414474124,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.003164684049642358,
+     "T_envelope_s": [
+      0.003126913588713467,
+      0.003193011895339026
+     ],
+     "speedup_same_O_X": 0.9970162534129466,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0031169904168939677,
+     "T_envelope_s": [
+      0.003079219955965077,
+      0.0031453182625906357
+     ],
+     "speedup_same_O_X": 1.012271778991956,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003069296784145577,
+     "T_envelope_s": [
+      0.003031526323216686,
+      0.003097624629842245
+     ],
+     "speedup_same_O_X": 1.0280014141051803,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002973909518648796,
+     "T_envelope_s": [
+      0.002936139057719905,
+      0.003002237364345464
+     ],
+     "speedup_same_O_X": 1.0609742544701657,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0030057052738143896,
+     "T_envelope_s": [
+      0.0029679348128854987,
+      0.0030340331195110575
+     ],
+     "speedup_same_O_X": 1.0497507729378859,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0029659605798573975,
+     "T_envelope_s": [
+      0.0029281901189285066,
+      0.0029942884255540654
+     ],
+     "speedup_same_O_X": 1.0638177242941775,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0029262158859004054,
+     "T_envelope_s": [
+      0.0028884454249715145,
+      0.0029545437315970733
+     ],
+     "speedup_same_O_X": 1.0782667982951157,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002846726497986421,
+     "T_envelope_s": [
+      0.0028089560370575303,
+      0.002875054343683089
+     ],
+     "speedup_same_O_X": 1.108375334491015,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0028921490053658407,
+     "T_envelope_s": [
+      0.00285437854443695,
+      0.0029204768510625086
+     ],
+     "speedup_same_O_X": 1.090967798877643,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002858082124831276,
+     "T_envelope_s": [
+      0.002820311663902385,
+      0.002886409970527944
+     ],
+     "speedup_same_O_X": 1.1039715783521797,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0028240152442967114,
+     "T_envelope_s": [
+      0.0027862447833678205,
+      0.0028523430899933793
+     ],
+     "speedup_same_O_X": 1.1172890942364273,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002755881483227582,
+     "T_envelope_s": [
+      0.002718111022298691,
+      0.00278420932892425
+     ],
+     "speedup_same_O_X": 1.1449118743360613,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0035923718465215803,
+     "T_envelope_s": [
+      0.003535716155128244,
+      0.0036206996922182482
+     ],
+     "speedup_same_O_X": 0.8783170476812668,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0035242380854524505,
+     "T_envelope_s": [
+      0.0034675823940591146,
+      0.0035525659311491185
+     ],
+     "speedup_same_O_X": 0.8952974679646417,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003456104324383321,
+     "T_envelope_s": [
+      0.0033994486329899853,
+      0.003484432170079989
+     ],
+     "speedup_same_O_X": 0.9129473934422193,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0033198368022450625,
+     "T_envelope_s": [
+      0.003263181110851726,
+      0.0033481646479417305
+     ],
+     "speedup_same_O_X": 0.9504206448571152,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.003183569280106804,
+     "T_envelope_s": [
+      0.003126913588713467,
+      0.003211897125803472
+     ],
+     "speedup_same_O_X": 0.991101859829569,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.003135875647358413,
+     "T_envelope_s": [
+      0.003079219955965077,
+      0.003164203493055081
+     ],
+     "speedup_same_O_X": 1.0061755596297435,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0030881820146100225,
+     "T_envelope_s": [
+      0.003031526323216686,
+      0.0031165098603066904
+     ],
+     "speedup_same_O_X": 1.0217148534260152,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0029927947491132415,
+     "T_envelope_s": [
+      0.002936139057719905,
+      0.0030211225948099094
+     ],
+     "speedup_same_O_X": 1.054279260328503,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0030245905042788354,
+     "T_envelope_s": [
+      0.0029679348128854987,
+      0.0030529183499755034
+     ],
+     "speedup_same_O_X": 1.0431962376217443,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002984845810321843,
+     "T_envelope_s": [
+      0.0029281901189285066,
+      0.003013173656018511
+     ],
+     "speedup_same_O_X": 1.0570869099834406,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002945101116364851,
+     "T_envelope_s": [
+      0.0028884454249715145,
+      0.0029734289620615187
+     ],
+     "speedup_same_O_X": 1.071352496821794,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0028656117284508666,
+     "T_envelope_s": [
+      0.0028089560370575303,
+      0.0028939395741475345
+     ],
+     "speedup_same_O_X": 1.1010708125890596,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.002911034235830286,
+     "T_envelope_s": [
+      0.00285437854443695,
+      0.002939362081526954
+     ],
+     "speedup_same_O_X": 1.0838901843111428,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0028769673552957215,
+     "T_envelope_s": [
+      0.002820311663902385,
+      0.0029052952009923894
+     ],
+     "speedup_same_O_X": 1.0967247955046089,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002842900474761157,
+     "T_envelope_s": [
+      0.0027862447833678205,
+      0.0028712283204578247
+     ],
+     "speedup_same_O_X": 1.109867004639063,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002774766713692027,
+     "T_envelope_s": [
+      0.002718111022298691,
+      0.002803094559388695
+     ],
+     "speedup_same_O_X": 1.1371195347128333,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0036490275379149166,
+     "T_envelope_s": [
+      0.003535716155128244,
+      0.0036773553836115845
+     ],
+     "speedup_same_O_X": 0.8646800830155055,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0035808937768457873,
+     "T_envelope_s": [
+      0.0034675823940591146,
+      0.0036092216225424552
+     ],
+     "speedup_same_O_X": 0.8811323739374962,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003512760015776658,
+     "T_envelope_s": [
+      0.0033994486329899853,
+      0.003541087861473326
+     ],
+     "speedup_same_O_X": 0.8982228846374875,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003376492493638399,
+     "T_envelope_s": [
+      0.003263181110851726,
+      0.003404820339335067
+     ],
+     "speedup_same_O_X": 0.9344731079233497,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.00324022497150014,
+     "T_envelope_s": [
+      0.003126913588713467,
+      0.003268552817196808
+     ],
+     "speedup_same_O_X": 0.9737723343787886,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0031925313387517495,
+     "T_envelope_s": [
+      0.003079219955965077,
+      0.0032208591844484174
+     ],
+     "speedup_same_O_X": 0.9883196434475114,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003144837706003359,
+     "T_envelope_s": [
+      0.003031526323216686,
+      0.0031731655517000267
+     ],
+     "speedup_same_O_X": 1.0033081924663128,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003049450440506578,
+     "T_envelope_s": [
+      0.002936139057719905,
+      0.0030777782862032458
+     ],
+     "speedup_same_O_X": 1.034691822663622,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0030812461956721713,
+     "T_envelope_s": [
+      0.0029679348128854987,
+      0.0031095740413688393
+     ],
+     "speedup_same_O_X": 1.0240147115936065,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0030415015017151792,
+     "T_envelope_s": [
+      0.0029281901189285066,
+      0.003069829347411847
+     ],
+     "speedup_same_O_X": 1.0373959811069682,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003001756807758187,
+     "T_envelope_s": [
+      0.0028884454249715145,
+      0.003030084653454855
+     ],
+     "speedup_same_O_X": 1.051131599420466,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002922267419844203,
+     "T_envelope_s": [
+      0.0028089560370575303,
+      0.002950595265540871
+     ],
+     "speedup_same_O_X": 1.0797237148742374,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0029676899272236225,
+     "T_envelope_s": [
+      0.00285437854443695,
+      0.0029960177729202904
+     ],
+     "speedup_same_O_X": 1.0631978110199585,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.002933623046689058,
+     "T_envelope_s": [
+      0.002820311663902385,
+      0.0029619508923857257
+     ],
+     "speedup_same_O_X": 1.0755442618884523,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.002899556166154493,
+     "T_envelope_s": [
+      0.0027862447833678205,
+      0.002927884011851161
+     ],
+     "speedup_same_O_X": 1.0881808296180524,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.002831422405085364,
+     "T_envelope_s": [
+      0.002718111022298691,
+      0.0028597502507820317
+     ],
+     "speedup_same_O_X": 1.1143662029173669,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "mistral7b_graph_b1_c4096": {
+   "T_s": 0.005110634520192626,
+   "T_ci95_ms": [
+    5.071972042669064,
+    5.17557303615348
+   ],
+   "C_s": 1.529026966236888e-05,
+   "M_s": 0.0032555248008225425,
+   "D_bytes": 14807749130.666666,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (mistral7b_eager_b1_c4096, ticks 4-6, eager program)",
+   "F_flops": 16377708544.0,
+   "O_feasible_s": [
+    0.0018398194497077146,
+    0.0018551097193700837
+   ],
+   "feasible": true,
+   "M_over_T": 0.6370099031655736,
+   "C_over_T": 0.0029918534776759128,
+   "bandwidth_time_fraction_upper": 0.6370099031655736,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006505859434830858,
+     "T_envelope_s": [
+      0.00649056916516849,
+      0.006521149704493228
+     ],
+     "speedup_same_O_X": 0.7855433354172207,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00627332194905782,
+     "T_envelope_s": [
+      0.00625803167939545,
+      0.0062886122187201885
+     ],
+     "speedup_same_O_X": 0.8146616038030989,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006040784463284781,
+     "T_envelope_s": [
+      0.0060254941936224125,
+      0.006056074732947151
+     ],
+     "speedup_same_O_X": 0.8460216634535626,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005575709491738704,
+     "T_envelope_s": [
+      0.005560419222076335,
+      0.005590999761401073
+     ],
+     "speedup_same_O_X": 0.9165890955697817,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.005110634520192626,
+     "T_envelope_s": [
+      0.005095344250530257,
+      0.005125924789854995
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004947858280151499,
+     "T_envelope_s": [
+      0.00493256801048913,
+      0.004963148549813869
+     ],
+     "speedup_same_O_X": 1.0328983230368805,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004785082040110372,
+     "T_envelope_s": [
+      0.004769791770448003,
+      0.004800372309772741
+     ],
+     "speedup_same_O_X": 1.0680348795179162,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004459529560028118,
+     "T_envelope_s": [
+      0.004444239290365749,
+      0.004474819829690487
+     ],
+     "speedup_same_O_X": 1.1460030596053281,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004568047053388869,
+     "T_envelope_s": [
+      0.0045527567837265,
+      0.004583337323051238
+     ],
+     "speedup_same_O_X": 1.1187788699333188,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00443240018668793,
+     "T_envelope_s": [
+      0.00441710991702556,
+      0.0044476904563502985
+     ],
+     "speedup_same_O_X": 1.153017395753586,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.00429675331998699,
+     "T_envelope_s": [
+      0.004281463050324622,
+      0.00431204358964936
+     ],
+     "speedup_same_O_X": 1.1894177160275283,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004025459586585112,
+     "T_envelope_s": [
+      0.004010169316922743,
+      0.0040407498562474815
+     ],
+     "speedup_same_O_X": 1.269577897943348,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0041804845771004715,
+     "T_envelope_s": [
+      0.0041651943074381016,
+      0.00419577484676284
+     ],
+     "speedup_same_O_X": 1.222498116172287,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004064215834213952,
+     "T_envelope_s": [
+      0.004048925564551583,
+      0.004079506103876321
+     ],
+     "speedup_same_O_X": 1.2574712388967058,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003947947091327432,
+     "T_envelope_s": [
+      0.003932656821665064,
+      0.003963237360989802
+     ],
+     "speedup_same_O_X": 1.2945043086872423,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0037154096055543938,
+     "T_envelope_s": [
+      0.003700119335892025,
+      0.003730699875216763
+     ],
+     "speedup_same_O_X": 1.3755238487170902,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006510956191384981,
+     "T_envelope_s": [
+      0.00649056916516849,
+      0.006526246461047351
+     ],
+     "speedup_same_O_X": 0.7849284145015135,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006278418705611943,
+     "T_envelope_s": [
+      0.00625803167939545,
+      0.006293708975274311
+     ],
+     "speedup_same_O_X": 0.8140002697852093,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0060458812198389035,
+     "T_envelope_s": [
+      0.0060254941936224125,
+      0.0060611714895012735
+     ],
+     "speedup_same_O_X": 0.8453084561804876,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005580806248292827,
+     "T_envelope_s": [
+      0.005560419222076335,
+      0.005596096517955196
+     ],
+     "speedup_same_O_X": 0.915752006577181,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.005115731276746749,
+     "T_envelope_s": [
+      0.005095344250530257,
+      0.005131021546409118
+     ],
+     "speedup_same_O_X": 0.9990037090929131,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004952955036705621,
+     "T_envelope_s": [
+      0.00493256801048913,
+      0.004968245306367991
+     ],
+     "speedup_same_O_X": 1.0318354360817865,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004790178796664495,
+     "T_envelope_s": [
+      0.004769791770448003,
+      0.004805469066326864
+     ],
+     "speedup_same_O_X": 1.0668984889982127,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004464626316582241,
+     "T_envelope_s": [
+      0.004444239290365749,
+      0.00447991658624461
+     ],
+     "speedup_same_O_X": 1.1446947981314857,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004573143809942992,
+     "T_envelope_s": [
+      0.0045527567837265,
+      0.004588434079605361
+     ],
+     "speedup_same_O_X": 1.117531993872796,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004437496943242053,
+     "T_envelope_s": [
+      0.00441710991702556,
+      0.004452787212904421
+     ],
+     "speedup_same_O_X": 1.151693079580755,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004301850076541113,
+     "T_envelope_s": [
+      0.004281463050324622,
+      0.004317140346203483
+     ],
+     "speedup_same_O_X": 1.1880085147694903,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004030556343139235,
+     "T_envelope_s": [
+      0.004010169316922743,
+      0.004045846612801604
+     ],
+     "speedup_same_O_X": 1.2679724795044454,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.004185581333654594,
+     "T_envelope_s": [
+      0.0041651943074381016,
+      0.0042008716033169625
+     ],
+     "speedup_same_O_X": 1.221009487762201,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0040693125907680745,
+     "T_envelope_s": [
+      0.004048925564551583,
+      0.004084602860430444
+     ],
+     "speedup_same_O_X": 1.2558962739276818,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003953043847881555,
+     "T_envelope_s": [
+      0.003932656821665064,
+      0.003968334117543925
+     ],
+     "speedup_same_O_X": 1.2928352724777963,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003720506362108517,
+     "T_envelope_s": [
+      0.003700119335892025,
+      0.003735796631770886
+     ],
+     "speedup_same_O_X": 1.3736395056978976,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006521149704493228,
+     "T_envelope_s": [
+      0.00649056916516849,
+      0.006536439974155596
+     ],
+     "speedup_same_O_X": 0.783701456304749,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0062886122187201885,
+     "T_envelope_s": [
+      0.00625803167939545,
+      0.0063039024883825585
+     ],
+     "speedup_same_O_X": 0.8126808177134993,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006056074732947151,
+     "T_envelope_s": [
+      0.0060254941936224125,
+      0.006071365002609519
+     ],
+     "speedup_same_O_X": 0.8438856430203873,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005590999761401073,
+     "T_envelope_s": [
+      0.005560419222076335,
+      0.005606290031063442
+     ],
+     "speedup_same_O_X": 0.9140824071349861,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.005125924789854994,
+     "T_envelope_s": [
+      0.005095344250530257,
+      0.005141215059517364
+     ],
+     "speedup_same_O_X": 0.9970170710088002,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004963148549813868,
+     "T_envelope_s": [
+      0.00493256801048913,
+      0.004978438819476237
+     ],
+     "speedup_same_O_X": 1.0297162111708886,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004800372309772741,
+     "T_envelope_s": [
+      0.004769791770448003,
+      0.004815662579435109
+     ],
+     "speedup_same_O_X": 1.0646329472795775,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004474819829690486,
+     "T_envelope_s": [
+      0.004444239290365749,
+      0.004490110099352856
+     ],
+     "speedup_same_O_X": 1.1420872157317936,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004583337323051238,
+     "T_envelope_s": [
+      0.0045527567837265,
+      0.004598627592713607
+     ],
+     "speedup_same_O_X": 1.1150465610483047,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0044476904563502985,
+     "T_envelope_s": [
+      0.00441710991702556,
+      0.004462980726012668
+     ],
+     "speedup_same_O_X": 1.14905355270302,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0043120435896493595,
+     "T_envelope_s": [
+      0.004281463050324622,
+      0.004327333859311729
+     ],
+     "speedup_same_O_X": 1.185200106153891,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004040749856247481,
+     "T_envelope_s": [
+      0.004010169316922743,
+      0.004056040125909851
+     ],
+     "speedup_same_O_X": 1.2647737924907616,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.00419577484676284,
+     "T_envelope_s": [
+      0.0041651943074381016,
+      0.004211065116425209
+     ],
+     "speedup_same_O_X": 1.2180430806804676,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004079506103876321,
+     "T_envelope_s": [
+      0.004048925564551583,
+      0.004094796373538689
+     ],
+     "speedup_same_O_X": 1.2527581501438454,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003963237360989801,
+     "T_envelope_s": [
+      0.003932656821665064,
+      0.00397852763065217
+     ],
+     "speedup_same_O_X": 1.289510078426458,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0037306998752167624,
+     "T_envelope_s": [
+      0.003700119335892025,
+      0.0037459901448791315
+     ],
+     "speedup_same_O_X": 1.3698862656154258,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0065517302438179645,
+     "T_envelope_s": [
+      0.00649056916516849,
+      0.0065670205134803344
+     ],
+     "speedup_same_O_X": 0.7800434892774901,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006319192758044927,
+     "T_envelope_s": [
+      0.00625803167939545,
+      0.006334483027707295
+     ],
+     "speedup_same_O_X": 0.8087480024543179,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006086655272271887,
+     "T_envelope_s": [
+      0.0060254941936224125,
+      0.006101945541934257
+     ],
+     "speedup_same_O_X": 0.8396457974997237,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005621580300725811,
+     "T_envelope_s": [
+      0.005560419222076335,
+      0.00563687057038818
+     ],
+     "speedup_same_O_X": 0.9091099382735464,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0051565053291797325,
+     "T_envelope_s": [
+      0.005095344250530257,
+      0.005171795598842102
+     ],
+     "speedup_same_O_X": 0.9911042836070523,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004993729089138605,
+     "T_envelope_s": [
+      0.00493256801048913,
+      0.005009019358800975
+     ],
+     "speedup_same_O_X": 1.0234104471762977,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004830952849097478,
+     "T_envelope_s": [
+      0.004769791770448003,
+      0.0048462431187598475
+     ],
+     "speedup_same_O_X": 1.0578936867801139,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004505400369015224,
+     "T_envelope_s": [
+      0.004444239290365749,
+      0.004520690638677593
+     ],
+     "speedup_same_O_X": 1.1343352647058293,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004613917862375976,
+     "T_envelope_s": [
+      0.0045527567837265,
+      0.004629208132038345
+     ],
+     "speedup_same_O_X": 1.107656155274698,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004478270995675037,
+     "T_envelope_s": [
+      0.00441710991702556,
+      0.004493561265337405
+     ],
+     "speedup_same_O_X": 1.1412070696767358,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004342624128974097,
+     "T_envelope_s": [
+      0.004281463050324622,
+      0.004357914398636467
+     ],
+     "speedup_same_O_X": 1.1768539869924144,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004071330395572219,
+     "T_envelope_s": [
+      0.004010169316922743,
+      0.004086620665234588
+     ],
+     "speedup_same_O_X": 1.2552738352433161,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.004226355386087578,
+     "T_envelope_s": [
+      0.0041651943074381016,
+      0.004241645655749946
+     ],
+     "speedup_same_O_X": 1.2092297152804377,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004110086643201058,
+     "T_envelope_s": [
+      0.004048925564551583,
+      0.004125376912863427
+     ],
+     "speedup_same_O_X": 1.2434371739210615,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003993817900314538,
+     "T_envelope_s": [
+      0.003932656821665064,
+      0.004009108169976908
+     ],
+     "speedup_same_O_X": 1.2796363399017594,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0037612804145415006,
+     "T_envelope_s": [
+      0.003700119335892025,
+      0.0037765706842038697
+     ],
+     "speedup_same_O_X": 1.358748606042342,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "mistral7b_graph_b8_c4096": {
+   "T_s": 0.0076007963634672614,
+   "T_ci95_ms": [
+    7.56597569379857,
+    7.642946984023644
+   ],
+   "C_s": 0.00012232215729895103,
+   "M_s": 0.004167250761075359,
+   "D_bytes": 18954733141.333332,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (mistral7b_eager_b8_c4096, ticks 4-6, eager program)",
+   "F_flops": 131021668352.0,
+   "O_feasible_s": [
+    0.0033112234450929515,
+    0.0034335456023919025
+   ],
+   "feasible": true,
+   "M_over_T": 0.5482650187952649,
+   "C_over_T": 0.016093334362552406,
+   "bandwidth_time_fraction_upper": 0.5482650187952649,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.009386760975356703,
+     "T_envelope_s": [
+      0.00926443881805775,
+      0.009509083132655652
+     ],
+     "speedup_same_O_X": 0.8097357952782458,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.009089100206708462,
+     "T_envelope_s": [
+      0.00896677804940951,
+      0.009211422364007411
+     ],
+     "speedup_same_O_X": 0.8362539955118201,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008791439438060222,
+     "T_envelope_s": [
+      0.00866911728076127,
+      0.008913761595359173
+     ],
+     "speedup_same_O_X": 0.8645679034722819,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.00819611790076374,
+     "T_envelope_s": [
+      0.008073795743464791,
+      0.008318440058062693
+     ],
+     "speedup_same_O_X": 0.9273654253752248,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0076007963634672614,
+     "T_envelope_s": [
+      0.0074784742061683104,
+      0.0077231185207662124
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007392433825413493,
+     "T_envelope_s": [
+      0.007270111668114542,
+      0.007514755982712444
+     ],
+     "speedup_same_O_X": 1.0281859185992934,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007184071287359726,
+     "T_envelope_s": [
+      0.007061749130060775,
+      0.007306393444658677
+     ],
+     "speedup_same_O_X": 1.0580068124937398,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.00676734621125219,
+     "T_envelope_s": [
+      0.006645024053953239,
+      0.006889668368551141
+     ],
+     "speedup_same_O_X": 1.1231576050933052,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.006906254569954702,
+     "T_envelope_s": [
+      0.006783932412655751,
+      0.007028576727253653
+     ],
+     "speedup_same_O_X": 1.1005670709756525,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006732619121576562,
+     "T_envelope_s": [
+      0.006610296964277611,
+      0.006854941278875513
+     ],
+     "speedup_same_O_X": 1.1289508920990916,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0065589836731984215,
+     "T_envelope_s": [
+      0.0064366615158994705,
+      0.0066813058304973725
+     ],
+     "speedup_same_O_X": 1.158837518459748,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006211712776442143,
+     "T_envelope_s": [
+      0.006089390619143192,
+      0.006334034933741094
+     ],
+     "speedup_same_O_X": 1.223623280247793,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006410153288874302,
+     "T_envelope_s": [
+      0.006287831131575351,
+      0.006532475446173253
+     ],
+     "speedup_same_O_X": 1.185743307677132,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006261322904550182,
+     "T_envelope_s": [
+      0.006139000747251231,
+      0.006383645061849133
+     ],
+     "speedup_same_O_X": 1.2139281872755145,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0061124925202260625,
+     "T_envelope_s": [
+      0.0059901703629271115,
+      0.0062348146775250135
+     ],
+     "speedup_same_O_X": 1.243485589277442,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005814831751577822,
+     "T_envelope_s": [
+      0.005692509594278871,
+      0.005937153908876773
+     ],
+     "speedup_same_O_X": 1.3071395163591497,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.009427535027789685,
+     "T_envelope_s": [
+      0.00926443881805775,
+      0.009549857185088637
+     ],
+     "speedup_same_O_X": 0.8062336911040141,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.009129874259141444,
+     "T_envelope_s": [
+      0.00896677804940951,
+      0.009252196416440397
+     ],
+     "speedup_same_O_X": 0.8325192820543867,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008832213490493205,
+     "T_envelope_s": [
+      0.00866911728076127,
+      0.008954535647792156
+     ],
+     "speedup_same_O_X": 0.8605766121537468,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.008236891953196726,
+     "T_envelope_s": [
+      0.008073795743464791,
+      0.008359214110495675
+     ],
+     "speedup_same_O_X": 0.9227748047025678,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.007641570415900245,
+     "T_envelope_s": [
+      0.0074784742061683104,
+      0.007763892573199196
+     ],
+     "speedup_same_O_X": 0.9946641789300086,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007433207877846477,
+     "T_envelope_s": [
+      0.007270111668114542,
+      0.007555530035145428
+     ],
+     "speedup_same_O_X": 1.0225459166990682,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007224845339792709,
+     "T_envelope_s": [
+      0.007061749130060775,
+      0.00734716749709166
+     ],
+     "speedup_same_O_X": 1.052035857654129,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0068081202636851735,
+     "T_envelope_s": [
+      0.006645024053953239,
+      0.0069304424209841245
+     ],
+     "speedup_same_O_X": 1.1164309778736223,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.006947028622387686,
+     "T_envelope_s": [
+      0.006783932412655751,
+      0.007069350779686637
+     ],
+     "speedup_same_O_X": 1.0941075352666212,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0067733931740095454,
+     "T_envelope_s": [
+      0.006610296964277611,
+      0.0068957153313084964
+     ],
+     "speedup_same_O_X": 1.1221549034880445,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006599757725631405,
+     "T_envelope_s": [
+      0.0064366615158994705,
+      0.006722079882930356
+     ],
+     "speedup_same_O_X": 1.1516780887195501,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006252486828875126,
+     "T_envelope_s": [
+      0.006089390619143192,
+      0.006374808986174077
+     ],
+     "speedup_same_O_X": 1.2156437224890095,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006450927341307286,
+     "T_envelope_s": [
+      0.006287831131575351,
+      0.006573249498606237
+     ],
+     "speedup_same_O_X": 1.1782486395090839,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0063020969569831655,
+     "T_envelope_s": [
+      0.006139000747251231,
+      0.0064244191142821165
+     ],
+     "speedup_same_O_X": 1.2060741710812695,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006153266572659046,
+     "T_envelope_s": [
+      0.0059901703629271115,
+      0.006275588729957997
+     ],
+     "speedup_same_O_X": 1.2352457469078388,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005855605804010806,
+     "T_envelope_s": [
+      0.005692509594278871,
+      0.005977927961309757
+     ],
+     "speedup_same_O_X": 1.2980375759346856,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.009509083132655652,
+     "T_envelope_s": [
+      0.00926443881805775,
+      0.009631405289954605
+     ],
+     "speedup_same_O_X": 0.7993195829117278,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.009211422364007411,
+     "T_envelope_s": [
+      0.00896677804940951,
+      0.009333744521306364
+     ],
+     "speedup_same_O_X": 0.8251490446433671,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008913761595359173,
+     "T_envelope_s": [
+      0.00866911728076127,
+      0.009036083752658124
+     ],
+     "speedup_same_O_X": 0.852703573250659,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.008318440058062693,
+     "T_envelope_s": [
+      0.008073795743464791,
+      0.008440762215361643
+     ],
+     "speedup_same_O_X": 0.9137285729552319,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.0077231185207662124,
+     "T_envelope_s": [
+      0.0074784742061683104,
+      0.007845440678065163
+     ],
+     "speedup_same_O_X": 0.9841615589648085,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007514755982712444,
+     "T_envelope_s": [
+      0.007270111668114542,
+      0.007637078140011395
+     ],
+     "speedup_same_O_X": 1.0114495242364159,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007306393444658677,
+     "T_envelope_s": [
+      0.007061749130060775,
+      0.007428715601957628
+     ],
+     "speedup_same_O_X": 1.0402938770049137,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006889668368551141,
+     "T_envelope_s": [
+      0.006645024053953239,
+      0.007011990525850092
+     ],
+     "speedup_same_O_X": 1.103216578342459,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.007028576727253653,
+     "T_envelope_s": [
+      0.006783932412655751,
+      0.007150898884552604
+     ],
+     "speedup_same_O_X": 1.0814133015002594,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006854941278875513,
+     "T_envelope_s": [
+      0.006610296964277611,
+      0.006977263436174464
+     ],
+     "speedup_same_O_X": 1.108805466633275,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0066813058304973725,
+     "T_envelope_s": [
+      0.0064366615158994705,
+      0.0068036279877963235
+     ],
+     "speedup_same_O_X": 1.1376213806547812,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006334034933741094,
+     "T_envelope_s": [
+      0.006089390619143192,
+      0.006456357091040045
+     ],
+     "speedup_same_O_X": 1.1999928075827608,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006532475446173253,
+     "T_envelope_s": [
+      0.006287831131575351,
+      0.006654797603472204
+     ],
+     "speedup_same_O_X": 1.1635399820629766,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006383645061849133,
+     "T_envelope_s": [
+      0.006139000747251231,
+      0.006505967219148084
+     ],
+     "speedup_same_O_X": 1.190667132935107,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0062348146775250135,
+     "T_envelope_s": [
+      0.0059901703629271115,
+      0.0063571368348239645
+     ],
+     "speedup_same_O_X": 1.2190893806140348,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005937153908876773,
+     "T_envelope_s": [
+      0.005692509594278871,
+      0.006059476066175724
+     ],
+     "speedup_same_O_X": 1.2802087465011036,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.009753727447253554,
+     "T_envelope_s": [
+      0.00926443881805775,
+      0.009876049604552507
+     ],
+     "speedup_same_O_X": 0.7792709407322518,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.009456066678605313,
+     "T_envelope_s": [
+      0.00896677804940951,
+      0.009578388835904266
+     ],
+     "speedup_same_O_X": 0.803801054053937,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.009158405909957075,
+     "T_envelope_s": [
+      0.00866911728076127,
+      0.009280728067256026
+     ],
+     "speedup_same_O_X": 0.8299256921123828,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.008563084372660595,
+     "T_envelope_s": [
+      0.008073795743464791,
+      0.008685406529959545
+     ],
+     "speedup_same_O_X": 0.8876236683751901,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.007967762835364114,
+     "T_envelope_s": [
+      0.0074784742061683104,
+      0.008090084992663065
+     ],
+     "speedup_same_O_X": 0.9539436000444053,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007759400297310346,
+     "T_envelope_s": [
+      0.007270111668114542,
+      0.007881722454609297
+     ],
+     "speedup_same_O_X": 0.9795597690844663,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007551037759256579,
+     "T_envelope_s": [
+      0.007061749130060775,
+      0.00767335991655553
+     ],
+     "speedup_same_O_X": 1.0065896378480805,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007134312683149043,
+     "T_envelope_s": [
+      0.006645024053953239,
+      0.007256634840447994
+     ],
+     "speedup_same_O_X": 1.0653859314885419,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.007273221041851555,
+     "T_envelope_s": [
+      0.006783932412655751,
+      0.007395543199150506
+     ],
+     "speedup_same_O_X": 1.0450385489084923,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007099585593473415,
+     "T_envelope_s": [
+      0.006610296964277611,
+      0.007221907750772366
+     ],
+     "speedup_same_O_X": 1.0705971867505344,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0069259501450952745,
+     "T_envelope_s": [
+      0.0064366615158994705,
+      0.0070482723023942255
+     ],
+     "speedup_same_O_X": 1.0974373485564128,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006578679248338996,
+     "T_envelope_s": [
+      0.006089390619143192,
+      0.006701001405637947
+     ],
+     "speedup_same_O_X": 1.1553681334116317,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006777119760771155,
+     "T_envelope_s": [
+      0.006287831131575351,
+      0.006899441918070106
+     ],
+     "speedup_same_O_X": 1.1215378555745608,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006628289376447035,
+     "T_envelope_s": [
+      0.006139000747251231,
+      0.006750611533745986
+     ],
+     "speedup_same_O_X": 1.146720659251229,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0064794589921229155,
+     "T_envelope_s": [
+      0.0059901703629271115,
+      0.0066017811494218665
+     ],
+     "speedup_same_O_X": 1.1730603392517118,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006181798223474675,
+     "T_envelope_s": [
+      0.005692509594278871,
+      0.006304120380773626
+     ],
+     "speedup_same_O_X": 1.2295445578608668,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "qwen14b_graph_b1_c4096": {
+   "T_s": 0.00863813951280382,
+   "T_ci95_ms": [
+    8.625083996000745,
+    8.650950081638559
+   ],
+   "C_s": 2.9888052321573776e-05,
+   "M_s": 0.006363114817307837,
+   "D_bytes": 28942617141.333332,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (qwen14b_eager_b1_c4096, ticks 4-6, eager program)",
+   "F_flops": 32013680640.0,
+   "O_feasible_s": [
+    0.002245136643174408,
+    0.0022750246954959825
+   ],
+   "feasible": true,
+   "M_over_T": 0.7366302440330069,
+   "C_over_T": 0.003460010373445859,
+   "bandwidth_time_fraction_upper": 0.7366302440330069,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.011365188720221464,
+     "T_envelope_s": [
+      0.01133530066789989,
+      0.011395076772543039
+     ],
+     "speedup_same_O_X": 0.7600524483534925,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.01091068051898519,
+     "T_envelope_s": [
+      0.010880792466663616,
+      0.010940568571306765
+     ],
+     "speedup_same_O_X": 0.791714091322991,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.010456172317748917,
+     "T_envelope_s": [
+      0.010426284265427343,
+      0.010486060370070492
+     ],
+     "speedup_same_O_X": 0.8261282666641728,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.009547155915276368,
+     "T_envelope_s": [
+      0.009517267862954794,
+      0.009577043967597943
+     ],
+     "speedup_same_O_X": 0.9047866809194941,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.00863813951280382,
+     "T_envelope_s": [
+      0.008608251460482245,
+      0.008668027565125393
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.008319983771938426,
+     "T_envelope_s": [
+      0.008290095719616853,
+      0.008349871824260002
+     ],
+     "speedup_same_O_X": 1.0382399472867323,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008001828031073036,
+     "T_envelope_s": [
+      0.007971939978751463,
+      0.00803171608339461
+     ],
+     "speedup_same_O_X": 1.0795207644128109,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007365516549342252,
+     "T_envelope_s": [
+      0.007335628497020678,
+      0.007395404601663827
+     ],
+     "speedup_same_O_X": 1.172781223819966,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.007577620376585846,
+     "T_envelope_s": [
+      0.007547732324264272,
+      0.007607508428907421
+     ],
+     "speedup_same_O_X": 1.1399541127046797,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007312490592531353,
+     "T_envelope_s": [
+      0.007282602540209779,
+      0.007342378644852927
+     ],
+     "speedup_same_O_X": 1.1812855556527382,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.00704736080847686,
+     "T_envelope_s": [
+      0.007017472756155286,
+      0.007077248860798435
+     ],
+     "speedup_same_O_X": 1.2257268710314229,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006517101240367874,
+     "T_envelope_s": [
+      0.0064872131880463,
+      0.006546989292689449
+     ],
+     "speedup_same_O_X": 1.3254573151783995,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006820106707858722,
+     "T_envelope_s": [
+      0.006790218655537149,
+      0.006849994760180297
+     ],
+     "speedup_same_O_X": 1.2665695542344229,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006592852607240586,
+     "T_envelope_s": [
+      0.006562964554919012,
+      0.00662274065956216
+     ],
+     "speedup_same_O_X": 1.3102279130762005,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006365598506622449,
+     "T_envelope_s": [
+      0.006335710454300875,
+      0.006395486558944024
+     ],
+     "speedup_same_O_X": 1.3570035093820532,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0059110903053861755,
+     "T_envelope_s": [
+      0.005881202253064601,
+      0.00594097835770775
+     ],
+     "speedup_same_O_X": 1.4613445348538765,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.011375151404328654,
+     "T_envelope_s": [
+      0.01133530066789989,
+      0.011405039456650229
+     ],
+     "speedup_same_O_X": 0.7593867726030176,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.01092064320309238,
+     "T_envelope_s": [
+      0.010880792466663616,
+      0.010950531255413955
+     ],
+     "speedup_same_O_X": 0.7909918264116322,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.010466135001856107,
+     "T_envelope_s": [
+      0.010426284265427343,
+      0.010496023054177682
+     ],
+     "speedup_same_O_X": 0.8253418775194374,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.00955711859938356,
+     "T_envelope_s": [
+      0.009517267862954794,
+      0.009587006651705135
+     ],
+     "speedup_same_O_X": 0.9038434987466814,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.00864810219691101,
+     "T_envelope_s": [
+      0.008608251460482245,
+      0.008677990249232586
+     ],
+     "speedup_same_O_X": 0.9988479918622205,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00832994645604562,
+     "T_envelope_s": [
+      0.008290095719616853,
+      0.008359834508367192
+     ],
+     "speedup_same_O_X": 1.036998203816127,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008011790715180227,
+     "T_envelope_s": [
+      0.007971939978751463,
+      0.008041678767501802
+     ],
+     "speedup_same_O_X": 1.0781783773304048,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007375479233449444,
+     "T_envelope_s": [
+      0.007335628497020678,
+      0.007405367285771018
+     ],
+     "speedup_same_O_X": 1.1711970489494337,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.007587583060693038,
+     "T_envelope_s": [
+      0.007547732324264272,
+      0.007617471113014612
+     ],
+     "speedup_same_O_X": 1.1384573247775196,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007322453276638544,
+     "T_envelope_s": [
+      0.007282602540209779,
+      0.007352341328960119
+     ],
+     "speedup_same_O_X": 1.179678338182481,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007057323492584052,
+     "T_envelope_s": [
+      0.007017472756155286,
+      0.007087211544905626
+     ],
+     "speedup_same_O_X": 1.2239965366304826,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0065270639244750656,
+     "T_envelope_s": [
+      0.0064872131880463,
+      0.00655695197679664
+     ],
+     "speedup_same_O_X": 1.3234341830808,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006830069391965914,
+     "T_envelope_s": [
+      0.006790218655537149,
+      0.006859957444287489
+     ],
+     "speedup_same_O_X": 1.2647220719257561,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006602815291347777,
+     "T_envelope_s": [
+      0.006562964554919012,
+      0.006632703343669352
+     ],
+     "speedup_same_O_X": 1.308250970479683,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0063755611907296405,
+     "T_envelope_s": [
+      0.006335710454300875,
+      0.006405449243051215
+     ],
+     "speedup_same_O_X": 1.354883006277796,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005921052989493366,
+     "T_envelope_s": [
+      0.005881202253064601,
+      0.005950941041814941
+     ],
+     "speedup_same_O_X": 1.4588856961982604,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.011395076772543037,
+     "T_envelope_s": [
+      0.01133530066789989,
+      0.011424964824864612
+     ],
+     "speedup_same_O_X": 0.7580589130928732,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.010940568571306764,
+     "T_envelope_s": [
+      0.010880792466663616,
+      0.010970456623628338
+     ],
+     "speedup_same_O_X": 0.789551242835642,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.01048606037007049,
+     "T_envelope_s": [
+      0.010426284265427343,
+      0.010515948422392065
+     ],
+     "speedup_same_O_X": 0.8237735820650965,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.009577043967597943,
+     "T_envelope_s": [
+      0.009517267862954794,
+      0.009606932019919516
+     ],
+     "speedup_same_O_X": 0.9019630213695663,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.008668027565125393,
+     "T_envelope_s": [
+      0.008608251460482245,
+      0.008697915617446967
+     ],
+     "speedup_same_O_X": 0.9965519200190568,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00834987182426,
+     "T_envelope_s": [
+      0.008290095719616853,
+      0.008379759876581575
+     ],
+     "speedup_same_O_X": 1.0345236064230683,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008031716083394608,
+     "T_envelope_s": [
+      0.007971939978751463,
+      0.008061604135716185
+     ],
+     "speedup_same_O_X": 1.0755035938910962,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007395404601663826,
+     "T_envelope_s": [
+      0.007335628497020678,
+      0.0074252926539854006
+     ],
+     "speedup_same_O_X": 1.1680415038901864,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.00760750842890742,
+     "T_envelope_s": [
+      0.007547732324264272,
+      0.0076373964812289944
+     ],
+     "speedup_same_O_X": 1.1354755099554215,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007342378644852926,
+     "T_envelope_s": [
+      0.007282602540209779,
+      0.007372266697174501
+     ],
+     "speedup_same_O_X": 1.1764769879934254,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007077248860798434,
+     "T_envelope_s": [
+      0.007017472756155286,
+      0.0071071369131200084
+     ],
+     "speedup_same_O_X": 1.220550482638997,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006546989292689448,
+     "T_envelope_s": [
+      0.0064872131880463,
+      0.006576877345011022
+     ],
+     "speedup_same_O_X": 1.3194063907282405,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006849994760180296,
+     "T_envelope_s": [
+      0.006790218655537149,
+      0.006879882812501871
+     ],
+     "speedup_same_O_X": 1.2610432292617488,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0066227406595621595,
+     "T_envelope_s": [
+      0.006562964554919012,
+      0.006652628711883734
+     ],
+     "speedup_same_O_X": 1.3043149289458817,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006395486558944023,
+     "T_envelope_s": [
+      0.006335710454300875,
+      0.006425374611265597
+     ],
+     "speedup_same_O_X": 1.3506618195801647,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005940978357707748,
+     "T_envelope_s": [
+      0.005881202253064601,
+      0.005970866410029323
+     ],
+     "speedup_same_O_X": 1.453992758885716,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.011454852877186185,
+     "T_envelope_s": [
+      0.01133530066789989,
+      0.01148474092950776
+     ],
+     "speedup_same_O_X": 0.7541030518172597,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.011000344675949911,
+     "T_envelope_s": [
+      0.010880792466663616,
+      0.011030232728271486
+     ],
+     "speedup_same_O_X": 0.7852608047536376,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.010545836474713638,
+     "T_envelope_s": [
+      0.010426284265427343,
+      0.010575724527035212
+     ],
+     "speedup_same_O_X": 0.8191042534668527,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.009636820072241089,
+     "T_envelope_s": [
+      0.009517267862954794,
+      0.009666708124562665
+     ],
+     "speedup_same_O_X": 0.8963682467919087,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.00872780366976854,
+     "T_envelope_s": [
+      0.008608251460482245,
+      0.008757691722090115
+     ],
+     "speedup_same_O_X": 0.9897266070185218,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.008409647928903148,
+     "T_envelope_s": [
+      0.008290095719616853,
+      0.008439535981224723
+     ],
+     "speedup_same_O_X": 1.0271701723820528,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008091492188037758,
+     "T_envelope_s": [
+      0.007971939978751463,
+      0.00812138024035933
+     ],
+     "speedup_same_O_X": 1.0675582836963262,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0074551807063069735,
+     "T_envelope_s": [
+      0.007335628497020678,
+      0.007485068758628548
+     ],
+     "speedup_same_O_X": 1.1586760741421172,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.007667284533550567,
+     "T_envelope_s": [
+      0.007547732324264272,
+      0.007697172585872142
+     ],
+     "speedup_same_O_X": 1.1266230534428423,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007402154749496074,
+     "T_envelope_s": [
+      0.007282602540209779,
+      0.0074320428018176486
+     ],
+     "speedup_same_O_X": 1.1669763474469228,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007137024965441581,
+     "T_envelope_s": [
+      0.007017472756155286,
+      0.007166913017763156
+     ],
+     "speedup_same_O_X": 1.2103277702727444,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006606765397332595,
+     "T_envelope_s": [
+      0.0064872131880463,
+      0.00663665344965417
+     ],
+     "speedup_same_O_X": 1.3074687828769231,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.006909770864823444,
+     "T_envelope_s": [
+      0.006790218655537149,
+      0.006939658917145018
+     ],
+     "speedup_same_O_X": 1.2501340032531656,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006682516764205307,
+     "T_envelope_s": [
+      0.006562964554919012,
+      0.006712404816526882
+     ],
+     "speedup_same_O_X": 1.292647638248174,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.00645526266358717,
+     "T_envelope_s": [
+      0.006335710454300875,
+      0.006485150715908745
+     ],
+     "speedup_same_O_X": 1.3381546132165645,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006000754462350896,
+     "T_envelope_s": [
+      0.005881202253064601,
+      0.0060306425146724706
+     ],
+     "speedup_same_O_X": 1.4395089095879594,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "qwen32b_graph_b1_c4096": {
+   "T_s": 0.017531768443597055,
+   "T_ci95_ms": [
+    17.459469749813987,
+    17.617258287863756
+   ],
+   "C_s": 6.474062093902361e-05,
+   "M_s": 0.014300531187472496,
+   "D_bytes": 65045942272,
+   "D_source": "logical U_tick (analytical)",
+   "F_flops": 69344952320.0,
+   "O_feasible_s": [
+    0.0031664966351855357,
+    0.0032312372561245587
+   ],
+   "feasible": true,
+   "M_over_T": 0.8156924518755739,
+   "C_over_T": 0.0036927604392737773,
+   "bandwidth_time_fraction_upper": 0.8156924518755739,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.02366056752394241,
+     "T_envelope_s": [
+      0.023595826903003388,
+      0.023725308144881434
+     ],
+     "speedup_same_O_X": 0.7409699038645818,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.02263910101055152,
+     "T_envelope_s": [
+      0.022574360389612497,
+      0.022703841631490543
+     ],
+     "speedup_same_O_X": 0.7744021476570971,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.02161763449716063,
+     "T_envelope_s": [
+      0.021552893876221606,
+      0.021682375118099652
+     ],
+     "speedup_same_O_X": 0.8109938414353229,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.01957470147037884,
+     "T_envelope_s": [
+      0.019509960849439817,
+      0.019639442091317863
+     ],
+     "speedup_same_O_X": 0.8956340136337084,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.017531768443597055,
+     "T_envelope_s": [
+      0.01746702782265803,
+      0.017596509064536078
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.016816741884223427,
+     "T_envelope_s": [
+      0.016752001263284404,
+      0.01688148250516245
+     ],
+     "speedup_same_O_X": 1.0425187330754258,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.016101715324849806,
+     "T_envelope_s": [
+      0.016036974703910783,
+      0.01616645594578883
+     ],
+     "speedup_same_O_X": 1.0888137126943391,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.014671662206102555,
+     "T_envelope_s": [
+      0.014606921585163532,
+      0.014736402827041578
+     ],
+     "speedup_same_O_X": 1.1949408456463004,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.015148346579018306,
+     "T_envelope_s": [
+      0.015083605958079283,
+      0.015213087199957329
+     ],
+     "speedup_same_O_X": 1.157338746651069,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.014552491112873617,
+     "T_envelope_s": [
+      0.014487750491934594,
+      0.01461723173381264
+     ],
+     "speedup_same_O_X": 1.2047262772823732,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.013956635646728931,
+     "T_envelope_s": [
+      0.013891895025789908,
+      0.014021376267667954
+     ],
+     "speedup_same_O_X": 1.2561600723384967,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.012764924714439557,
+     "T_envelope_s": [
+      0.012700184093500533,
+      0.01282966533537858
+     ],
+     "speedup_same_O_X": 1.373432968528619,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.013445902390033486,
+     "T_envelope_s": [
+      0.013381161769094463,
+      0.013510643010972509
+     ],
+     "speedup_same_O_X": 1.3038744395907662,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.012935169133338038,
+     "T_envelope_s": [
+      0.012870428512399015,
+      0.012999909754277061
+     ],
+     "speedup_same_O_X": 1.3553567226587027,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.012424435876642593,
+     "T_envelope_s": [
+      0.01235969525570357,
+      0.012489176497581616
+     ],
+     "speedup_same_O_X": 1.4110715864819285,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0114029693632517,
+     "T_envelope_s": [
+      0.011338228742312677,
+      0.011467709984190723
+     ],
+     "speedup_same_O_X": 1.5374739583267327,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.023682147730922087,
+     "T_envelope_s": [
+      0.023595826903003388,
+      0.02374688835186111
+     ],
+     "speedup_same_O_X": 0.7402946997372877,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.022660681217531196,
+     "T_envelope_s": [
+      0.022574360389612497,
+      0.02272542183847022
+     ],
+     "speedup_same_O_X": 0.7736646694466444,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.021639214704140305,
+     "T_envelope_s": [
+      0.021552893876221606,
+      0.02170395532507933
+     ],
+     "speedup_same_O_X": 0.8101850590836202,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.019596281677358517,
+     "T_envelope_s": [
+      0.019509960849439817,
+      0.01966102229829754
+     ],
+     "speedup_same_O_X": 0.8946477057355838,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.017553348650576728,
+     "T_envelope_s": [
+      0.01746702782265803,
+      0.01761808927151575
+     ],
+     "speedup_same_O_X": 0.9987705931552289,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.016838322091203103,
+     "T_envelope_s": [
+      0.016752001263284404,
+      0.016903062712142126
+     ],
+     "speedup_same_O_X": 1.0411826278555527,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.01612329553182948,
+     "T_envelope_s": [
+      0.016036974703910783,
+      0.016188036152768502
+     ],
+     "speedup_same_O_X": 1.0873563911910606,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.01469324241308223,
+     "T_envelope_s": [
+      0.014606921585163532,
+      0.014757983034021253
+     ],
+     "speedup_same_O_X": 1.1931858163578328,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.01516992678599798,
+     "T_envelope_s": [
+      0.015083605958079283,
+      0.015234667406937004
+     ],
+     "speedup_same_O_X": 1.155692357050733,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.014574071319853292,
+     "T_envelope_s": [
+      0.014487750491934594,
+      0.014638811940792315
+     ],
+     "speedup_same_O_X": 1.202942407706945,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.013978215853708606,
+     "T_envelope_s": [
+      0.013891895025789908,
+      0.014042956474647629
+     ],
+     "speedup_same_O_X": 1.2542207551434859,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.012786504921419231,
+     "T_envelope_s": [
+      0.012700184093500533,
+      0.012851245542358255
+     ],
+     "speedup_same_O_X": 1.3711149803124718,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.01346748259701316,
+     "T_envelope_s": [
+      0.013381161769094463,
+      0.013532223217952184
+     ],
+     "speedup_same_O_X": 1.301785119624753,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.012956749340317713,
+     "T_envelope_s": [
+      0.012870428512399015,
+      0.013021489961256736
+     ],
+     "speedup_same_O_X": 1.3530992985287742,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.012446016083622268,
+     "T_envelope_s": [
+      0.01235969525570357,
+      0.01251075670456129
+     ],
+     "speedup_same_O_X": 1.4086249226904934,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.011424549570231375,
+     "T_envelope_s": [
+      0.011338228742312677,
+      0.011489290191170398
+     ],
+     "speedup_same_O_X": 1.5345697732608283,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.023725308144881434,
+     "T_envelope_s": [
+      0.023595826903003388,
+      0.023790048765820457
+     ],
+     "speedup_same_O_X": 0.7389479764198303,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.022703841631490543,
+     "T_envelope_s": [
+      0.022574360389612497,
+      0.022768582252429566
+     ],
+     "speedup_same_O_X": 0.7721939189040259,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.021682375118099652,
+     "T_envelope_s": [
+      0.021552893876221606,
+      0.021747115739038675
+     ],
+     "speedup_same_O_X": 0.8085723242082542,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.019639442091317863,
+     "T_envelope_s": [
+      0.019509960849439817,
+      0.019704182712256886
+     ],
+     "speedup_same_O_X": 0.8926815925869624,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.01759650906453608,
+     "T_envelope_s": [
+      0.01746702782265803,
+      0.017661249685475104
+     ],
+     "speedup_same_O_X": 0.9963208258694047,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.016881482505162453,
+     "T_envelope_s": [
+      0.016752001263284404,
+      0.016946223126101476
+     ],
+     "speedup_same_O_X": 1.0385206653642973,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.016166455945788832,
+     "T_envelope_s": [
+      0.016036974703910783,
+      0.016231196566727855
+     ],
+     "speedup_same_O_X": 1.0844534202416745,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.01473640282704158,
+     "T_envelope_s": [
+      0.014606921585163532,
+      0.014801143447980603
+     ],
+     "speedup_same_O_X": 1.1896911783264994,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.01521308719995733,
+     "T_envelope_s": [
+      0.015083605958079283,
+      0.015277827820896353
+     ],
+     "speedup_same_O_X": 1.1524135905594644,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.014617231733812642,
+     "T_envelope_s": [
+      0.014487750491934594,
+      0.014681972354751665
+     ],
+     "speedup_same_O_X": 1.1993904702928457,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.014021376267667956,
+     "T_envelope_s": [
+      0.013891895025789908,
+      0.014086116888606979
+     ],
+     "speedup_same_O_X": 1.2503600294946617,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.012829665335378581,
+     "T_envelope_s": [
+      0.012700184093500533,
+      0.012894405956317604
+     ],
+     "speedup_same_O_X": 1.3665023977868027,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.01351064301097251,
+     "T_envelope_s": [
+      0.013381161769094463,
+      0.013575383631911533
+     ],
+     "speedup_same_O_X": 1.297626502999068,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.012999909754277063,
+     "T_envelope_s": [
+      0.012870428512399015,
+      0.013064650375216086
+     ],
+     "speedup_same_O_X": 1.3486069345849865,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.012489176497581618,
+     "T_envelope_s": [
+      0.01235969525570357,
+      0.01255391711852064
+     ],
+     "speedup_same_O_X": 1.4037569608365992,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.011467709984190725,
+     "T_envelope_s": [
+      0.011338228742312677,
+      0.011532450605129748
+     ],
+     "speedup_same_O_X": 1.5287941941125283,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.023854789386759487,
+     "T_envelope_s": [
+      0.023595826903003388,
+      0.02391953000769851
+     ],
+     "speedup_same_O_X": 0.7349370459471757,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.02283332287336859,
+     "T_envelope_s": [
+      0.022574360389612497,
+      0.022898063494307612
+     ],
+     "speedup_same_O_X": 0.767815028098475,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.021811856359977698,
+     "T_envelope_s": [
+      0.021552893876221606,
+      0.02187659698091672
+     ],
+     "speedup_same_O_X": 0.8037724141520516,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.019768923333195916,
+     "T_envelope_s": [
+      0.019509960849439817,
+      0.01983366395413494
+     ],
+     "speedup_same_O_X": 0.8868347632345643,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.017725990306414127,
+     "T_envelope_s": [
+      0.01746702782265803,
+      0.01779073092735315
+     ],
+     "speedup_same_O_X": 0.9890431022775188,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0170109637470405,
+     "T_envelope_s": [
+      0.016752001263284404,
+      0.017075704367979522
+     ],
+     "speedup_same_O_X": 1.0306158254347677,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.01629593718766688,
+     "T_envelope_s": [
+      0.016036974703910783,
+      0.0163606778086059
+     ],
+     "speedup_same_O_X": 1.075836770950828,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.014865884068919626,
+     "T_envelope_s": [
+      0.014606921585163532,
+      0.01493062468985865
+     ],
+     "speedup_same_O_X": 1.1793290168494615,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.015342568441835376,
+     "T_envelope_s": [
+      0.015083605958079283,
+      0.0154073090627744
+     ],
+     "speedup_same_O_X": 1.142687973663671,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.014746712975690688,
+     "T_envelope_s": [
+      0.014487750491934594,
+      0.014811453596629711
+     ],
+     "speedup_same_O_X": 1.1888594070080165,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.014150857509546002,
+     "T_envelope_s": [
+      0.013891895025789908,
+      0.014215598130485025
+     ],
+     "speedup_same_O_X": 1.2389191560843809,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.012959146577256627,
+     "T_envelope_s": [
+      0.012700184093500533,
+      0.01302388719819565
+     ],
+     "speedup_same_O_X": 1.3528489965817196,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.013640124252850556,
+     "T_envelope_s": [
+      0.013381161769094463,
+      0.01370486487378958
+     ],
+     "speedup_same_O_X": 1.2853085586763047,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.01312939099615511,
+     "T_envelope_s": [
+      0.012870428512399015,
+      0.013194131617094132
+     ],
+     "speedup_same_O_X": 1.3353070564149674,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.012618657739459664,
+     "T_envelope_s": [
+      0.01235969525570357,
+      0.012683398360398687
+     ],
+     "speedup_same_O_X": 1.3893528777449646,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.011597191226068771,
+     "T_envelope_s": [
+      0.011338228742312677,
+      0.011661931847007794
+     ],
+     "speedup_same_O_X": 1.5117253912471695,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "qwen7b_graph_b1_c4096": {
+   "T_s": 0.004682339477539063,
+   "T_ci95_ms": [
+    4.6671224604208,
+    4.703713149620742
+   ],
+   "C_s": 1.473892017418533e-05,
+   "M_s": 0.0031745101538639678,
+   "D_bytes": 14439254144.0,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (qwen7b_eager_b1_c4096, ticks 4-6, eager program)",
+   "F_flops": 15787147264.0,
+   "O_feasible_s": [
+    0.0014930904035009096,
+    0.001507829323675095
+   ],
+   "feasible": true,
+   "M_over_T": 0.6779752235163483,
+   "C_over_T": 0.003147768384775849,
+   "bandwidth_time_fraction_upper": 0.6779752235163483,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006042843829195049,
+     "T_envelope_s": [
+      0.006028104909020864,
+      0.006057582749369235
+     ],
+     "speedup_same_O_X": 0.7748569398595204,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005816093103919052,
+     "T_envelope_s": [
+      0.005801354183744866,
+      0.005830832024093237
+     ],
+     "speedup_same_O_X": 0.8050661146369832,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005589342378643053,
+     "T_envelope_s": [
+      0.005574603458468868,
+      0.005604081298817239
+     ],
+     "speedup_same_O_X": 0.8377263657045487,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005135840928091059,
+     "T_envelope_s": [
+      0.0051211020079168735,
+      0.005150579848265244
+     ],
+     "speedup_same_O_X": 0.9116986961041728,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.004682339477539063,
+     "T_envelope_s": [
+      0.004667600557364877,
+      0.004697078397713248
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004523613969845864,
+     "T_envelope_s": [
+      0.004508875049671679,
+      0.00453835289002005
+     ],
+     "speedup_same_O_X": 1.0350882079574546,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004364888462152666,
+     "T_envelope_s": [
+      0.0043501495419784805,
+      0.004379627382326851
+     ],
+     "speedup_same_O_X": 1.0727283224162474,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004047437446766269,
+     "T_envelope_s": [
+      0.004032698526592084,
+      0.004062176366940454
+     ],
+     "speedup_same_O_X": 1.1568651867072222,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0041532544518950686,
+     "T_envelope_s": [
+      0.004138515531720883,
+      0.004167993372069254
+     ],
+     "speedup_same_O_X": 1.1273904673484623,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00402098319548407,
+     "T_envelope_s": [
+      0.004006244275309884,
+      0.004035722115658255
+     ],
+     "speedup_same_O_X": 1.1644762611288095,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003888711939073071,
+     "T_envelope_s": [
+      0.0038739730188988857,
+      0.0039034508592472564
+     ],
+     "speedup_same_O_X": 1.204084938895002,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003624169426251074,
+     "T_envelope_s": [
+      0.0036094305060768886,
+      0.0036389083464252593
+     ],
+     "speedup_same_O_X": 1.2919758782862933,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.003775336576435072,
+     "T_envelope_s": [
+      0.003760597656260887,
+      0.0037900754966092576
+     ],
+     "speedup_same_O_X": 1.2402442491525998,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0036619612137970734,
+     "T_envelope_s": [
+      0.003647222293622888,
+      0.0036767001339712588
+     ],
+     "speedup_same_O_X": 1.2786425645082033,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003548585851159074,
+     "T_envelope_s": [
+      0.0035338469309848888,
+      0.0035633247713332595
+     ],
+     "speedup_same_O_X": 1.3194944898993133,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003321835125883077,
+     "T_envelope_s": [
+      0.0033070962057088916,
+      0.0033365740460572623
+     ],
+     "speedup_same_O_X": 1.4095640813281813,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006047756802586445,
+     "T_envelope_s": [
+      0.006028104909020864,
+      0.00606249572276063
+     ],
+     "speedup_same_O_X": 0.77422747481125,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005821006077310447,
+     "T_envelope_s": [
+      0.005801354183744866,
+      0.005835744997484633
+     ],
+     "speedup_same_O_X": 0.8043866327146154,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005594255352034449,
+     "T_envelope_s": [
+      0.005574603458468868,
+      0.005608994272208634
+     ],
+     "speedup_same_O_X": 0.8369906596838216,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005140753901482454,
+     "T_envelope_s": [
+      0.0051211020079168735,
+      0.00515549282165664
+     ],
+     "speedup_same_O_X": 0.9108273936608409,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.004687252450930457,
+     "T_envelope_s": [
+      0.004667600557364877,
+      0.004701991371104643
+     ],
+     "speedup_same_O_X": 0.9989518436562086,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004528526943237259,
+     "T_envelope_s": [
+      0.004508875049671679,
+      0.004543265863411444
+     ],
+     "speedup_same_O_X": 1.033965246586752,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.00436980143554406,
+     "T_envelope_s": [
+      0.0043501495419784805,
+      0.004384540355718246
+     ],
+     "speedup_same_O_X": 1.0715222525794448,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0040523504201576644,
+     "T_envelope_s": [
+      0.004032698526592084,
+      0.00406708934033185
+     ],
+     "speedup_same_O_X": 1.1554626308345979,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004158167425286463,
+     "T_envelope_s": [
+      0.004138515531720883,
+      0.0041729063454606485
+     ],
+     "speedup_same_O_X": 1.1260584287840427,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004025896168875465,
+     "T_envelope_s": [
+      0.004006244275309884,
+      0.00404063508904965
+     ],
+     "speedup_same_O_X": 1.1630552009111947,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003893624912464466,
+     "T_envelope_s": [
+      0.0038739730188988857,
+      0.003908363832638651
+     ],
+     "speedup_same_O_X": 1.202565625299377,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003629082399642469,
+     "T_envelope_s": [
+      0.0036094305060768886,
+      0.0036438213198166543
+     ],
+     "speedup_same_O_X": 1.290226829239358,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.003780249549826467,
+     "T_envelope_s": [
+      0.003760597656260887,
+      0.0037949884700006526
+     ],
+     "speedup_same_O_X": 1.2386323748795913,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0036668741871884684,
+     "T_envelope_s": [
+      0.003647222293622888,
+      0.0036816131073626537
+     ],
+     "speedup_same_O_X": 1.2769294059497553,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003553498824550469,
+     "T_envelope_s": [
+      0.0035338469309848888,
+      0.0035682377447246545
+     ],
+     "speedup_same_O_X": 1.3176701917528835,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003326748099274472,
+     "T_envelope_s": [
+      0.0033070962057088916,
+      0.0033414870194486573
+     ],
+     "speedup_same_O_X": 1.4074824236196997,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.006057582749369235,
+     "T_envelope_s": [
+      0.006028104909020864,
+      0.00607232166954342
+     ],
+     "speedup_same_O_X": 0.772971607862332,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005830832024093237,
+     "T_envelope_s": [
+      0.005801354183744866,
+      0.0058455709442674225
+     ],
+     "speedup_same_O_X": 0.8030311039987851,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005604081298817239,
+     "T_envelope_s": [
+      0.005574603458468868,
+      0.005618820218991424
+     ],
+     "speedup_same_O_X": 0.8355231175049668,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005150579848265244,
+     "T_envelope_s": [
+      0.0051211020079168735,
+      0.00516531876843943
+     ],
+     "speedup_same_O_X": 0.9090897754193853,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.004697078397713248,
+     "T_envelope_s": [
+      0.004667600557364877,
+      0.0047118173178874335
+     ],
+     "speedup_same_O_X": 0.9968621089694051,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00453835289002005,
+     "T_envelope_s": [
+      0.004508875049671679,
+      0.004553091810194235
+     ],
+     "speedup_same_O_X": 1.0317266177858586,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004379627382326851,
+     "T_envelope_s": [
+      0.0043501495419784805,
+      0.004394366302501037
+     ],
+     "speedup_same_O_X": 1.0691182305676845,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004062176366940454,
+     "T_envelope_s": [
+      0.004032698526592084,
+      0.00407691528711464
+     ],
+     "speedup_same_O_X": 1.1526676969630696,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004167993372069254,
+     "T_envelope_s": [
+      0.004138515531720883,
+      0.004182732292243439
+     ],
+     "speedup_same_O_X": 1.1234037724043824,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004035722115658255,
+     "T_envelope_s": [
+      0.004006244275309884,
+      0.00405046103583244
+     ],
+     "speedup_same_O_X": 1.1602234602258634,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0039034508592472564,
+     "T_envelope_s": [
+      0.0038739730188988857,
+      0.003918189779421441
+     ],
+     "speedup_same_O_X": 1.1995384715671835,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0036389083464252593,
+     "T_envelope_s": [
+      0.0036094305060768886,
+      0.0036536472665994447
+     ],
+     "speedup_same_O_X": 1.2867428997322328,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0037900754966092576,
+     "T_envelope_s": [
+      0.003760597656260887,
+      0.003804814416783443
+     ],
+     "speedup_same_O_X": 1.2354211629103582,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0036767001339712588,
+     "T_envelope_s": [
+      0.003647222293622888,
+      0.003691439054145444
+     ],
+     "speedup_same_O_X": 1.27351682403362,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0035633247713332595,
+     "T_envelope_s": [
+      0.0035338469309848888,
+      0.003578063691507445
+     ],
+     "speedup_same_O_X": 1.314036687087355,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0033365740460572623,
+     "T_envelope_s": [
+      0.0033070962057088916,
+      0.0033513129662314477
+     ],
+     "speedup_same_O_X": 1.4033374991548755,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.0060870605897176055,
+     "T_envelope_s": [
+      0.006028104909020864,
+      0.006101799509891791
+     ],
+     "speedup_same_O_X": 0.7692283341895055,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005860309864441608,
+     "T_envelope_s": [
+      0.005801354183744866,
+      0.005875048784615793
+     ],
+     "speedup_same_O_X": 0.7989917915347662,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005633559139165609,
+     "T_envelope_s": [
+      0.005574603458468868,
+      0.005648298059339795
+     ],
+     "speedup_same_O_X": 0.831151206878529,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005180057688613615,
+     "T_envelope_s": [
+      0.0051211020079168735,
+      0.0051947966087878
+     ],
+     "speedup_same_O_X": 0.9039164733302881,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.004726556238061619,
+     "T_envelope_s": [
+      0.004667600557364877,
+      0.004741295158235804
+     ],
+     "speedup_same_O_X": 0.9906450366195813,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00456783073036842,
+     "T_envelope_s": [
+      0.004508875049671679,
+      0.004582569650542606
+     ],
+     "speedup_same_O_X": 1.025068518062491,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.004409105222675222,
+     "T_envelope_s": [
+      0.0043501495419784805,
+      0.004423844142849407
+     ],
+     "speedup_same_O_X": 1.0619704545626734,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.004091654207288825,
+     "T_envelope_s": [
+      0.004032698526592084,
+      0.0041063931274630105
+     ],
+     "speedup_same_O_X": 1.1443634384347527,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.004197471212417625,
+     "T_envelope_s": [
+      0.004138515531720883,
+      0.00421221013259181
+     ],
+     "speedup_same_O_X": 1.1155143753427121,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.004065199956006626,
+     "T_envelope_s": [
+      0.004006244275309884,
+      0.004079938876180811
+     ],
+     "speedup_same_O_X": 1.151810372973307,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.003932928699595627,
+     "T_envelope_s": [
+      0.0038739730188988857,
+      0.003947667619769812
+     ],
+     "speedup_same_O_X": 1.190547766101249,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.00366838618677363,
+     "T_envelope_s": [
+      0.0036094305060768886,
+      0.0036831251069478154
+     ],
+     "speedup_same_O_X": 1.2764030936604336,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.0038195533369576283,
+     "T_envelope_s": [
+      0.003760597656260887,
+      0.0038342922571318137
+     ],
+     "speedup_same_O_X": 1.2258866585873274,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0037061779743196295,
+     "T_envelope_s": [
+      0.003647222293622888,
+      0.003720916894493815
+     ],
+     "speedup_same_O_X": 1.2633876489427451,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0035928026116816302,
+     "T_envelope_s": [
+      0.0035338469309848888,
+      0.0036075415318558156
+     ],
+     "speedup_same_O_X": 1.3032554202434932,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.003366051886405633,
+     "T_envelope_s": [
+      0.0033070962057088916,
+      0.0033807908065798184
+     ],
+     "speedup_same_O_X": 1.3910479206958986,
+     "memory_service_improves": true
+    }
+   ]
+  },
+  "qwen7b_graph_b8_c4096": {
+   "T_s": 0.006653466586965733,
+   "T_ci95_ms": [
+    6.6013132892588455,
+    6.695843489712508
+   ],
+   "C_s": 0.00011791136139348263,
+   "M_s": 0.0037420238999024955,
+   "D_bytes": 17020589472.0,
+   "D_source": "counters FETCH_SIZE+WRITE_SIZE (qwen7b_eager_b8_c4096, ticks 4-6, eager program)",
+   "F_flops": 126297178112.0,
+   "O_feasible_s": [
+    0.0027935313256697548,
+    0.0029114426870632377
+   ],
+   "feasible": true,
+   "M_over_T": 0.562417177721038,
+   "C_over_T": 0.0177217935721618,
+   "bandwidth_time_fraction_upper": 0.562417177721038,
+   "sensitivity": [
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.008257191115495374,
+     "T_envelope_s": [
+      0.008139279754101891,
+      0.008375102476888857
+     ],
+     "speedup_same_O_X": 0.8057784413491283,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.007989903694073767,
+     "T_envelope_s": [
+      0.007871992332680284,
+      0.00810781505546725
+     ],
+     "speedup_same_O_X": 0.8327342658586374,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007722616272652161,
+     "T_envelope_s": [
+      0.007604704911258678,
+      0.007840527634045644
+     ],
+     "speedup_same_O_X": 0.8615560261005624,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007188041429808948,
+     "T_envelope_s": [
+      0.007070130068415465,
+      0.007305952791202431
+     ],
+     "speedup_same_O_X": 0.9256299719383472,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.006653466586965733,
+     "T_envelope_s": [
+      0.00653555522557225,
+      0.006771377948359216
+     ],
+     "speedup_same_O_X": 1.0,
+     "memory_service_improves": false
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006466365391970608,
+     "T_envelope_s": [
+      0.006348454030577126,
+      0.006584276753364091
+     ],
+     "speedup_same_O_X": 1.028934522510505,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006279264196975483,
+     "T_envelope_s": [
+      0.006161352835582001,
+      0.006397175558368966
+     ],
+     "speedup_same_O_X": 1.0595933501524735,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0059050618069852335,
+     "T_envelope_s": [
+      0.0057871504455917515,
+      0.006022973168378716
+     ],
+     "speedup_same_O_X": 1.126739533715836,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.0060297959369819834,
+     "T_envelope_s": [
+      0.005911884575588501,
+      0.006147707298375466
+     ],
+     "speedup_same_O_X": 1.1034314687431872,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005873878274486046,
+     "T_envelope_s": [
+      0.005755966913092564,
+      0.005991789635879529
+     ],
+     "speedup_same_O_X": 1.1327212237042654,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005717960611990109,
+     "T_envelope_s": [
+      0.005600049250596626,
+      0.005835871973383592
+     ],
+     "speedup_same_O_X": 1.1636083279436977,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0054061252869982345,
+     "T_envelope_s": [
+      0.0052882139256047525,
+      0.0055240366483917175
+     ],
+     "speedup_same_O_X": 1.2307274126567807,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.005584316901279305,
+     "T_envelope_s": [
+      0.005466405539885823,
+      0.005702228262672788
+     ],
+     "speedup_same_O_X": 1.19145576882313,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005450673190568502,
+     "T_envelope_s": [
+      0.0053327618291750195,
+      0.0055685845519619845
+     ],
+     "speedup_same_O_X": 1.22066877876268,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005317029479857699,
+     "T_envelope_s": [
+      0.005199118118464217,
+      0.005434940841251182
+     ],
+     "speedup_same_O_X": 1.2513503286319567,
+     "memory_service_improves": true
+    },
+    {
+     "c": 1,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005049742058436092,
+     "T_envelope_s": [
+      0.004931830697042609,
+      0.005167653419829575
+     ],
+     "speedup_same_O_X": 1.317585435052165,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.008296494902626536,
+     "T_envelope_s": [
+      0.008139279754101891,
+      0.008414406264020019
+     ],
+     "speedup_same_O_X": 0.8019611492630886,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.008029207481204928,
+     "T_envelope_s": [
+      0.007871992332680284,
+      0.008147118842598411
+     ],
+     "speedup_same_O_X": 0.8286579469443801,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007761920059783321,
+     "T_envelope_s": [
+      0.007604704911258678,
+      0.007879831421176804
+     ],
+     "speedup_same_O_X": 0.8571933923204395,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007227345216940108,
+     "T_envelope_s": [
+      0.007070130068415465,
+      0.007345256578333591
+     ],
+     "speedup_same_O_X": 0.9205962061104725,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.006692770374096894,
+     "T_envelope_s": [
+      0.00653555522557225,
+      0.006810681735490377
+     ],
+     "speedup_same_O_X": 0.9941274263220985,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0065056691791017685,
+     "T_envelope_s": [
+      0.006348454030577126,
+      0.006623580540495251
+     ],
+     "speedup_same_O_X": 1.0227182483146755,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006318567984106644,
+     "T_envelope_s": [
+      0.006161352835582001,
+      0.006436479345500127
+     ],
+     "speedup_same_O_X": 1.0530022947765179,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005944365594116395,
+     "T_envelope_s": [
+      0.0057871504455917515,
+      0.006062276955509878
+     ],
+     "speedup_same_O_X": 1.1192895998104813,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.006069099724113144,
+     "T_envelope_s": [
+      0.005911884575588501,
+      0.006187011085506627
+     ],
+     "speedup_same_O_X": 1.0962855924958426,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005913182061617207,
+     "T_envelope_s": [
+      0.005755966913092564,
+      0.00603109342301069
+     ],
+     "speedup_same_O_X": 1.1251922429640302,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.0057572643991212705,
+     "T_envelope_s": [
+      0.005600049250596626,
+      0.0058751757605147534
+     ],
+     "speedup_same_O_X": 1.1556645875046576,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005445429074129395,
+     "T_envelope_s": [
+      0.0052882139256047525,
+      0.005563340435522878
+     ],
+     "speedup_same_O_X": 1.2218443205101293,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.005623620688410467,
+     "T_envelope_s": [
+      0.005466405539885823,
+      0.00574153204980395
+     ],
+     "speedup_same_O_X": 1.1831286204415674,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005489976977699663,
+     "T_envelope_s": [
+      0.0053327618291750195,
+      0.005607888339093146
+     ],
+     "speedup_same_O_X": 1.2119297793036612,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005356333266988859,
+     "T_envelope_s": [
+      0.005199118118464217,
+      0.005474244628382342
+     ],
+     "speedup_same_O_X": 1.2421681503597097,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.75,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005089045845567254,
+     "T_envelope_s": [
+      0.004931830697042609,
+      0.005206957206960737
+     ],
+     "speedup_same_O_X": 1.3074094415480944,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.008375102476888857,
+     "T_envelope_s": [
+      0.008139279754101891,
+      0.00849301383828234
+     ],
+     "speedup_same_O_X": 0.7944340508460657,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00810781505546725,
+     "T_envelope_s": [
+      0.007871992332680284,
+      0.008225726416860733
+     ],
+     "speedup_same_O_X": 0.8206238723315695,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.007840527634045642,
+     "T_envelope_s": [
+      0.007604704911258678,
+      0.007958438995439125
+     ],
+     "speedup_same_O_X": 0.8485993414619984,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007305952791202429,
+     "T_envelope_s": [
+      0.007070130068415465,
+      0.007423864152595912
+     ],
+     "speedup_same_O_X": 0.9106911551601596,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.006771377948359216,
+     "T_envelope_s": [
+      0.00653555522557225,
+      0.006889289309752699
+     ],
+     "speedup_same_O_X": 0.9825867995712668,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006584276753364091,
+     "T_envelope_s": [
+      0.006348454030577126,
+      0.006702188114757574
+     ],
+     "speedup_same_O_X": 1.0105083422513021,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006397175558368966,
+     "T_envelope_s": [
+      0.006161352835582001,
+      0.006515086919762449
+     ],
+     "speedup_same_O_X": 1.0400631538494327,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006022973168378716,
+     "T_envelope_s": [
+      0.0057871504455917515,
+      0.006140884529772199
+     ],
+     "speedup_same_O_X": 1.104681425761147,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.006147707298375466,
+     "T_envelope_s": [
+      0.005911884575588501,
+      0.006265618659768949
+     ],
+     "speedup_same_O_X": 1.0822679519442824,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.005991789635879529,
+     "T_envelope_s": [
+      0.005755966913092564,
+      0.006109700997273012
+     ],
+     "speedup_same_O_X": 1.1104306044264316,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005835871973383592,
+     "T_envelope_s": [
+      0.005600049250596626,
+      0.005953783334777075
+     ],
+     "speedup_same_O_X": 1.140098106557349,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.0055240366483917175,
+     "T_envelope_s": [
+      0.0052882139256047525,
+      0.0056419480097852
+     ],
+     "speedup_same_O_X": 1.2044573579907079,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.005702228262672788,
+     "T_envelope_s": [
+      0.005466405539885823,
+      0.005820139624066271
+     ],
+     "speedup_same_O_X": 1.1668187032286697,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0055685845519619845,
+     "T_envelope_s": [
+      0.0053327618291750195,
+      0.005686495913355467
+     ],
+     "speedup_same_O_X": 1.1948218662894345,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005434940841251182,
+     "T_envelope_s": [
+      0.005199118118464217,
+      0.0055528522026446646
+     ],
+     "speedup_same_O_X": 1.2242022096111784,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.5,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005167653419829575,
+     "T_envelope_s": [
+      0.004931830697042609,
+      0.005285564781223058
+     ],
+     "speedup_same_O_X": 1.2875218298182929,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0,
+     "T_same_O_X_s": 0.008610925199675823,
+     "T_envelope_s": [
+      0.008139279754101891,
+      0.008728836561069306
+     ],
+     "speedup_same_O_X": 0.7726773177888269,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.05,
+     "T_same_O_X_s": 0.008343637778254216,
+     "T_envelope_s": [
+      0.007871992332680284,
+      0.008461549139647698
+     ],
+     "speedup_same_O_X": 0.7974299416864036,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.1,
+     "T_same_O_X_s": 0.008076350356832608,
+     "T_envelope_s": [
+      0.007604704911258678,
+      0.008194261718226091
+     ],
+     "speedup_same_O_X": 0.8238209454765527,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 0.7,
+     "f": 0.2,
+     "T_same_O_X_s": 0.007541775513989395,
+     "T_envelope_s": [
+      0.007070130068415465,
+      0.007659686875382878
+     ],
+     "speedup_same_O_X": 0.8822148809155193,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0,
+     "T_same_O_X_s": 0.00700720067114618,
+     "T_envelope_s": [
+      0.00653555522557225,
+      0.007125112032539663
+     ],
+     "speedup_same_O_X": 0.9495184880836892,
+     "memory_service_improves": false
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.05,
+     "T_same_O_X_s": 0.006820099476151056,
+     "T_envelope_s": [
+      0.006348454030577126,
+      0.006938010837544539
+     ],
+     "speedup_same_O_X": 0.9755673814189932,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006632998281155931,
+     "T_envelope_s": [
+      0.006161352835582001,
+      0.006750909642549414
+     ],
+     "speedup_same_O_X": 1.0030858301091305,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1,
+     "f": 0.2,
+     "T_same_O_X_s": 0.006258795891165682,
+     "T_envelope_s": [
+      0.0057871504455917515,
+      0.006376707252559165
+     ],
+     "speedup_same_O_X": 1.0630585663221788,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0,
+     "T_same_O_X_s": 0.006383530021162431,
+     "T_envelope_s": [
+      0.005911884575588501,
+      0.006501441382555914
+     ],
+     "speedup_same_O_X": 1.0422864096994011,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.05,
+     "T_same_O_X_s": 0.0062276123586664945,
+     "T_envelope_s": [
+      0.005755966913092564,
+      0.006345523720059977
+     ],
+     "speedup_same_O_X": 1.0683816210407846,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.1,
+     "T_same_O_X_s": 0.006071694696170558,
+     "T_envelope_s": [
+      0.005600049250596626,
+      0.006189606057564041
+     ],
+     "speedup_same_O_X": 1.0958170527187576,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.2,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005759859371178682,
+     "T_envelope_s": [
+      0.0052882139256047525,
+      0.005877770732572165
+     ],
+     "speedup_same_O_X": 1.1551439294262118,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0,
+     "T_same_O_X_s": 0.005938050985459754,
+     "T_envelope_s": [
+      0.005466405539885823,
+      0.006055962346853237
+     ],
+     "speedup_same_O_X": 1.1204798684379413,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.05,
+     "T_same_O_X_s": 0.00580440727474895,
+     "T_envelope_s": [
+      0.0053327618291750195,
+      0.005922318636142433
+     ],
+     "speedup_same_O_X": 1.1462783833089152,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.1,
+     "T_same_O_X_s": 0.005670763564038147,
+     "T_envelope_s": [
+      0.005199118118464217,
+      0.0057886749254316295
+     ],
+     "speedup_same_O_X": 1.1732928928935638,
+     "memory_service_improves": true
+    },
+    {
+     "c": 0.25,
+     "r": 1.4,
+     "f": 0.2,
+     "T_same_O_X_s": 0.005403476142616541,
+     "T_envelope_s": [
+      0.004931830697042609,
+      0.005521387504010024
+     ],
+     "speedup_same_O_X": 1.2313307973159489,
+     "memory_service_improves": true
+    }
+   ]
+  }
+ }
+}
