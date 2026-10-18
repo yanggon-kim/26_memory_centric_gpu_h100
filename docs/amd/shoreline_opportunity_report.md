@@ -11,7 +11,12 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 3. **Decode is not bandwidth-saturated on MI300X for small and medium models.** The time to stream a step's bytes at the measured 4.55 TB/s is 32% (1.5B) to 82% (32B) of the measured step time. Arithmetic at the measured BF16 rate is under 2%. The remainder (1.5–3.5 ms per step) is latency, kernel and launch inefficiency, and per-step fixed cost. *(analytical from measured inputs)*
 4. **Compute-unit trimming (software proxy) costs decode little but prefill a lot.** At 32% of the compute units, batch-1 decode slows 9–24% (least for the largest models), batch 8–64 decode slows 40–70%, and prefill slows 2.1–2.3×. Arithmetic throughput falls to 36–47%, but HBM streaming keeps 87% of its full-GPU rate. L2-resident reads and random gathers fall roughly in proportion to the compute units: compute units are also the request generators. *(measured)*
 5. **Energy: decode runs at the 750 W power cap from 7B upward.** Masking compute units does not lower power (clocks rise instead) and raises J/token by 10–19%. Energy savings from compute trimming need physically removed or power-gated silicon, which a software proxy cannot show. *(measured)*
-6. **More delivered bandwidth at equal compute helps in proportion to the bandwidth share.** See the TP section (compute-matched TP2: Qwen 32B 1.48×, Qwen 7B 1.17×, 1.5B 0.92×). MI325X vs MI300X (+7–10% measured HBM bandwidth, but also +14% compute) gives 1.04–1.15× decode, again growing with model size. *(measured; cross-configuration confounds stated)*
+6. **Delivered bandwidth at fixed compute moves decode time, in proportion to the bandwidth share.** Three independent routes agree:
+   - Compute-matched TP: about one GPU's CUs spread over 2/4 GPUs gives Qwen 32B 1.48×/1.86×, Qwen 7B 1.16×/1.33×, while the 1.5B loses to communication.
+   - A same-GPU competitor removing up to 1.1–1.9 TB/s slows decode by up to 15–26% at fixed decoder CUs.
+   - MI325X's +7–10% bandwidth (with +14% compute) gives 1.04–1.15×.
+
+   Gains saturate: TP8 matched < TP4 matched. They also need request issuers: at about 160 total CUs, 4 GPUs × 40 CUs < 2 × 80. *(measured; confounds stated per experiment)*
 
 **Implication for plan 2.0:** on this hardware the evidence favours **compute → delivered-bandwidth** (plus request-generation capacity) over **compute → SRAM capacity** for dense small-batch decode. The case is strongest for large models at small batch. Two caveats: (a) roughly 20–70% of step time is neither bandwidth nor arithmetic, so better kernels and lower per-step overhead may beat either hardware change; (b) compute cannot be cut freely, because compute units issue the memory requests, prefill needs them, and larger batches need them. The c/r/f analysis below quantifies this conditionally.
 
@@ -119,9 +124,43 @@ Noninferiority (≤5% decode regression, upper CI bound) holds at 232 CUs only f
 
 All intervals are nonempty (consistency, not validation). The c/r/f grid (c ∈ {1, .75, .5, .25}, r ∈ {.7, 1, 1.2, 1.4}, f ∈ {0, .05, .1, .2}) is in the same file, under same-O/X and envelope assumptions. **M6 falsifies reading c as FLOP capacity:** C/c predicts under 1% slowdown at c = 0.32, but 9–24% was measured, because compute units also generate memory requests and drive L2 bandwidth (M7). Any architecture model must couple "compute" removal to request-generation and on-chip delivery capacity.
 
-## 8. Multi-GPU extension (TP) — owner-authorized 2026-10-18
+## 8. Bandwidth at fixed compute: multi-GPU (TP), owner-authorized 2026-10-18
 
-(Filled from `results/.../tp/summary.json` at close-out.)
+Speedup over TP1 (graph, synchronized-wall ms/step for TP; HIP-event ms/step for TP1, so ratios carry that scope difference), 3 acquisitions each unless noted. **Matched** restricts each GPU to ⌈304/N⌉₈ CUs, so the total active CUs stay at about one GPU (304–320) while HBM stacks, bandwidth and Infinity Cache scale by N. **Matched152** holds about 160 total CUs and compares with TP1 restricted to 152 CUs (M6).
+
+| Case (B1 C4096 unless noted) | TP2 full | TP4 full | TP8 full | TP2 matched | TP4 matched | TP8 matched | TP2 m152 | TP4 m152 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| bridge B1 C1024 | 1.01 | 1.12 | n/a¹ | 0.92 | 0.89 | n/a¹ | — | — |
+| Qwen7B | 1.34 | 1.71 | n/a¹ | 1.16 | 1.33 | n/a¹ | 1.12 | 1.05 |
+| Qwen7B B8 | 1.38 | 1.87 | n/a¹ | 1.11 | 1.21 | n/a¹ | — | — |
+| Mistral7B | 1.31 | 1.64 | 1.90 | 1.19 | 1.29 | 1.07 | — | — |
+| Qwen14B | 1.44 | 1.93 | 2.28 | 1.28 | 1.45 | 1.23 | 1.21 | 1.11 |
+| Qwen32B | 1.63² | 2.43 | 3.16 | 1.48 | 1.86 | 1.74 | 1.39 | 1.33 |
+
+¹ Head count not divisible by 8. ² 2 acquisitions (one attempt failed with a launch failure).
+
+- **Batch-1 output IDs match TP1 exactly in every case. At batch 8 they differ** (changed reduction order); the divergence is recorded, not hidden.
+- **At fixed total compute, more delivered bandwidth helps in order of the bandwidth share:** 32B > 14B > 7B ≈ Mistral > 1.5B (which loses).
+- **The gain saturates and then reverses:** TP8 matched is below TP4 matched for every model, because all-reduce and per-GPU fixed costs grow with N.
+- **With fewer CUs per GPU the extra bandwidth is worth less:** at about 160 total CUs, TP4 (40 CUs per GPU) is below TP2 (80 per GPU). This is the same request-generation coupling as M7: bandwidth must be paired with enough request issuers per HBM stack.
+- Energy was not measured for TP: 64-token windows are below the 5 s qualification minimum.
+
+## 8b. Bandwidth at fixed compute: same-GPU competitor (contract J6)
+
+The decoder is fixed on CUs 0–231 of one GPU. An owned competitor on CUs 232–303 streams HBM at a requested duty, or runs register FMA as a power/clock control. Its achieved bandwidth during the decoder's trials is logged. Ratio to the solo decoder on the same 232 CUs (3 acquisitions):
+
+| Case | read25 | read50 | read75 | read100 | fma100 |
+|---|---:|---:|---:|---:|---:|
+| bridge B1 C1024 | 1.042 (0.48 TB/s taken) | 1.065 (0.95) | 1.101 (1.36) | 1.147 (1.93) | 1.009 |
+| Qwen7B B1 C4096 | 1.051 (0.38) | 1.105 (0.72) | 1.158 (1.08) | 1.236 (1.49) | 1.044 |
+| Qwen7B B8 C4096 | 1.048 (0.41) | 1.115 (0.79) | 1.166 (1.16) | 1.259 (1.62) | 1.032 |
+| Qwen32B B1 C4096 | 1.058 (0.29) | 1.119 (0.55) | 1.178 (0.81) | 1.246 (1.09) | 1.068 |
+
+Decode slows nearly linearly with the bandwidth taken, at constant decoder compute. Power/clock interference alone (the FMA control) accounts for 1–7%. The competitor obtains less bandwidth against the heavier decoders, so the two genuinely contend. This is shared-service sensitivity (L2, Infinity Cache and fabric are shared too), not a physical change of memory interfaces.
+
+## 8c. MI325X vs MI300X
+
+Measured (job 468949, full CUs): HBM stream +7–10%, write +10%, Infinity Cache and L2 equal, latency equal, BF16 MFMA +15%, FMA +14% (higher power limit), decode 1.04× (1.5B) to 1.15× (32B). This is not a same-compute pair. A compute-matched job (MI325X at 264 CUs, job 469084) is queued and self-contained. Its results are added to the repo when it finishes.
 
 ## 9. Limitations and failures
 
