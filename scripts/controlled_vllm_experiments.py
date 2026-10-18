@@ -67,8 +67,11 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
     external = [f'{prefix}_{i}' for i in range(len(prompts))]
     internal = [engine.add_request(rid, {'prompt_token_ids': ids}, sampling)
                 for rid,ids in zip(external,prompts)]
+    torch.cuda.synchronize()
     torch.cuda.nvtx.range_push('prefill')
-    first = engine.step()
+    prefill_start = time.perf_counter()
+    first = engine.step()  # returns after the first token is sampled (host-synchronizing)
+    prefill_wall_ms = (time.perf_counter() - prefill_start) * 1000
     torch.cuda.nvtx.range_pop()
     barrier = {'request_count':len(first),
                'output_token_counts':{o.request_id:len(o.outputs[0].token_ids) for o in first},
@@ -136,7 +139,9 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
     ids=[list(completed[rid].outputs[0].token_ids) for rid in external]
     assert all(completed[rid].outputs[0].finish_reason=='length' for rid in external)
     assert all(completed[rid].prompt_token_ids==prompt for rid,prompt in zip(external,prompts))
-    result={'prefill_barrier':barrier,'request_ids':external,'internal_request_ids':internal,
+    result={'prefill_wall_ms':prefill_wall_ms,
+            'prefill_scope':'first engine.step wall: all-request prefill plus first-token sampling; scheduler/host included',
+            'prefill_barrier':barrier,'request_ids':external,'internal_request_ids':internal,
             'decode_iterations':iterations,'timed_generated_tokens':len(prompts)*iterations,
             'cuda_event_ms':a.elapsed_time(b),'wall_ms':(end-start)*1000,
             'tokens_per_s':len(prompts)*iterations/(end-start),'output_ids':ids,'output_sha256':digest(ids)}

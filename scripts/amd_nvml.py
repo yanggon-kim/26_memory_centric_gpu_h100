@@ -17,6 +17,7 @@ except ImportError:
 
 NVML_CLOCK_SM = _a.AmdSmiClkType.GFX
 NVML_CLOCK_MEM = _a.AmdSmiClkType.MEM
+NVML_TEMPERATURE_GPU = 'hotspot'
 
 
 class NVMLError(Exception):
@@ -117,6 +118,12 @@ def nvmlDeviceGetPowerUsage(handle):
     if not isinstance(value, (int, float)):
         raise NVMLError(f'no numeric socket power: {info}')
     return value * 1000  # W -> mW
+
+
+def nvmlDeviceGetTemperature(handle, sensor=NVML_TEMPERATURE_GPU):
+    """Hotspot (junction) temperature in C, the closest amdsmi analogue of NVML's GPU sensor."""
+    return _wrap(lambda: _a.amdsmi_get_temp_metric(handle, _a.AmdSmiTemperatureType.HOTSPOT,
+                                                   _a.AmdSmiTemperatureMetric.CURRENT))
 
 
 def nvmlDeviceGetTotalEnergyConsumption(handle):
