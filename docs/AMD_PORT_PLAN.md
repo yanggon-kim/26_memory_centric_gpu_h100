@@ -116,3 +116,15 @@ The common contract (`shoreline_hopper_measurements.md`) forbids tensor parallel
 ## Cost policy
 
 The study needs one GPU. `mi3001x` gives one MI300X at about 1/8 the billing of a full 8-GPU `mi3008x` node. Use `mi3001x` by default once it is verified to work (it is a VM partition, like `devel`, where torch BLAS failed). Use `mi3008x` for the TP4/TP8 extension, and expose only the declared GPUs to each run. On a full-node allocation, schedule the TP4/TP8 cases in the same job as the TP1 work so the other GPUs are not idle while billed.
+
+## Added 2026-10-18: bandwidth effect at fixed compute
+
+Requested by the owner during execution. These experiments add r ≠ 1 points at constant compute (c):
+
+| Experiment | How bandwidth changes | How compute is held | Confounds recorded |
+|---|---|---|---|
+| Same-GPU competitor (contract J6) | An owned process on CUs 232–303 streams HBM at 0/25/50/75/100% duty (about 0–2.25 TB/s taken); its windowed bandwidth is logged | Decoder fixed on CUs 0–231 in every treatment | Shared L2/MALL/fabric contention, not only HBM; power/clock interference, isolated by an arithmetic-only competitor at 100% |
+| TP at fixed total CUs | TP1 → TP2 → TP4 (→ TP8) multiplies HBM stacks, bandwidth and Infinity Cache | Total active CUs ≈ 304 (one GPU) and, separately, ≈ 152–160 | Inter-GPU all-reduce cost; per-GPU fixed overheads; slightly different totals after rounding to multiples of 8 |
+| MI325X vs MI300X, compute-matched | MI325X HBM3E (+7–10% measured stream bandwidth) | MI325X restricted to 264 CUs to match MI300X's measured BF16 MFMA rate; full CUs in the same job for pairing | Different power cap and clock behaviour; HBM type; cross-node |
+
+Results are labelled measured; any architecture projection drawn from them stays analytical.
