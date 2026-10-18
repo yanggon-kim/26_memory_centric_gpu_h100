@@ -42,7 +42,7 @@ def main():
     a = p.parse_args()
     assert a.warmups >= 3 and a.trials >= 3
     assert a.gemm_dimension > 0 and a.gemm_repetitions > 0 and a.copy_repetitions > 0
-    import pynvml
+    from gpu_target import load_nvml; pynvml = load_nvml()
     pynvml.nvmlInit()
     from gpu_target import select, verify_cuda, describe
     handle, _ = select(pynvml, a.gpu_uuid)

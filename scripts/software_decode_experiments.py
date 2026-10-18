@@ -256,7 +256,7 @@ def main(args):
     os.environ.update(HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1')
     import torch
     import transformers
-    import pynvml as nvml
+    from gpu_target import load_nvml; nvml = load_nvml()
     nvml.nvmlInit()
     from gpu_target import select, verify_cuda, query_l2
     handle,physical = select(nvml,args.gpu_uuid)

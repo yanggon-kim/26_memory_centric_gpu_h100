@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only host/profiler inventory; optional selected H100 CUDA identity check."""
+"""Read-only host/profiler inventory; optional selected H100 CUDA or MI300X/MI325X ROCm identity check."""
 import argparse
 import importlib.metadata
 import json
@@ -26,8 +26,13 @@ def main(args):
           'commands':{name:command(cmd) for name,cmd in {
            'gpu_list':['nvidia-smi','-L'],'gpu_details':['nvidia-smi','-q'],'nvcc':['nvcc','--version'],
            'ncu':['ncu','--version'],'nsys':['nsys','--version'],'cpu':['lscpu'],'ram':['free','-h'],
-           'storage':['df','-h',str(args.output.parent)],'os':['uname','-a']}.items()},'packages':{}}
-    for package in ['torch','vllm','transformers','nvidia-ml-py','triton','huggingface-hub']:
+           'storage':['df','-h',str(args.output.parent)],'os':['uname','-a'],
+           'amd_smi_static':['amd-smi','static'],'amd_smi_metric':['amd-smi','metric'],'amd_smi_process':['amd-smi','process'],
+           'amd_smi_version':['amd-smi','version'],'rocminfo':['rocminfo'],'hipcc':['hipcc','--version'],
+           'rocprofv3_avail':['rocprofv3-avail','list'],'rocprof_compute':['rocprof-compute','--version']}.items()},'packages':{}}
+    data['environment']={k:os.environ.get(k,'unset') for k in ['ROCM_PATH','HIP_VISIBLE_DEVICES','ROCR_VISIBLE_DEVICES','CUDA_VISIBLE_DEVICES',
+                         'SLURM_JOB_ID','SLURM_JOB_PARTITION','SLURM_JOB_NODELIST','LOADEDMODULES']}
+    for package in ['torch','vllm','transformers','nvidia-ml-py','amdsmi','triton','huggingface-hub']:
         try:data['packages'][package]=importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:data['packages'][package]='unavailable'
     args.output.parent.mkdir(parents=True,exist_ok=True)
@@ -35,7 +40,7 @@ def main(args):
     if args.check_cuda:
         try:
             assert args.gpu_uuid,'--gpu-uuid required for CUDA check'
-            import pynvml as nvml
+            from gpu_target import load_nvml; nvml = load_nvml()
             from gpu_target import select,verify_cuda,query_l2
             nvml.nvmlInit()
             handle,index=select(nvml,args.gpu_uuid)
@@ -43,7 +48,8 @@ def main(args):
             props=verify_cuda(torch,args.gpu_uuid)
             data['selected_cuda']={'name':props.name,'uuid':str(props.uuid),'nvml_index':index,
                                    'capability':list(torch.cuda.get_device_capability()),'total_memory_bytes':props.total_memory,
-                                   'cuda_runtime':torch.version.cuda,'sm_count':props.multi_processor_count}
+                                   'cuda_runtime':torch.version.cuda,'hip_runtime':getattr(torch.version,'hip',None),
+                                   'gcn_arch':getattr(props,'gcnArchName',None),'sm_count':props.multi_processor_count}
             data['selected_cuda'].update(query_l2(torch))
             nvml.nvmlShutdown()
         except Exception as error:

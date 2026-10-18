@@ -146,7 +146,7 @@ def main(args):
     assert config['warmup_trials']>=3 and config['trials']>=3
     os.environ.update(HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',VLLM_NO_USAGE_STATS='1',DO_NOT_TRACK='1',
                       VLLM_ENABLE_V1_MULTIPROCESSING='0')
-    import pynvml as nvml
+    from gpu_target import load_nvml; nvml = load_nvml()
     nvml.nvmlInit()
     from gpu_target import select,verify_cuda
     handle,physical=select(nvml,args.gpu_uuid)

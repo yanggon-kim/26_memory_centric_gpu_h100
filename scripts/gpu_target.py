@@ -1,10 +1,24 @@
-"""Select exactly one declared physical GPU and verify CUDA/NVML identity."""
+"""Select exactly one declared physical GPU and verify CUDA/NVML (or ROCm/AMD SMI) identity."""
 import fcntl
 import os
 from pathlib import Path
 import tempfile
 
 _LOCKS=[]
+
+
+def is_rocm():
+    """ROCm host: a KFD device node and no NVIDIA driver."""
+    return Path('/dev/kfd').exists() and not Path('/proc/driver/nvidia').exists()
+
+
+def load_nvml():
+    """pynvml on NVIDIA; the AMD SMI shim with the same call subset on ROCm."""
+    if is_rocm():
+        import amd_nvml as nvml
+    else:
+        import pynvml as nvml
+    return nvml
 
 def select(nvml,uuid):
     if not uuid.startswith('GPU-'):
@@ -21,6 +35,11 @@ def select(nvml,uuid):
         return value.decode() if isinstance(value,bytes) else value
     ordered=sorted((pci(nvml.nvmlDeviceGetHandleByIndex(i)),i) for i in range(nvml.nvmlDeviceGetCount()))
     physical=nvml.nvmlDeviceGetIndex(handle)
+    if is_rocm():
+        # amdsmi reports the unmasked HIP ordinal; an outer ROCR mask would renumber it.
+        assert not os.environ.get('ROCR_VISIBLE_DEVICES'), 'unset ROCR_VISIBLE_DEVICES; target selection uses unmasked HIP ordinals'
+        os.environ['HIP_VISIBLE_DEVICES']=os.environ['CUDA_VISIBLE_DEVICES']=str(physical)
+        return handle,physical
     ordinal=next(i for i,(_,index) in enumerate(ordered) if index==physical)
     os.environ['CUDA_DEVICE_ORDER']='PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES']=str(ordinal) # vLLM0.22.1 requires numeric entries.
@@ -32,7 +51,10 @@ def verify_cuda(torch,uuid,require_h100=True):
     props=torch.cuda.get_device_properties(0)
     actual=str(props.uuid).removeprefix('GPU-')
     assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
-    if require_h100:
+    if require_h100 and is_rocm():
+        arch=props.gcnArchName.split(':')[0]
+        assert arch=='gfx942' and 'MI3' in props.name, 'AMD port requires a verified MI300X/MI325X gfx942 allocation'
+    elif require_h100:
         assert 'H100' in props.name and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100 sm_90 allocation'
     return props
 
@@ -43,7 +65,8 @@ def query_l2(torch):
     for name in ['L2_cache_size','l2_cache_size']:
         value=getattr(props,name,None)
         if isinstance(value,int) and value>0:
-            return {'l2_bytes':value,'l2_source':'queried CUDA device properties '+name,'l2_unavailable_reason':''}
+            scope=' (ROCm: per-XCD L2 as reported by HIP; Infinity Cache/MALL not included)' if is_rocm() else ''
+            return {'l2_bytes':value,'l2_source':'queried CUDA device properties '+name+scope,'l2_unavailable_reason':''}
     try:
         import ctypes
         driver=ctypes.CDLL('libcuda.so.1')
@@ -61,7 +84,8 @@ def describe(nvml,handle,torch):
     props=torch.cuda.get_device_properties(0)
     data={'uuid':nvml.nvmlDeviceGetUUID(handle),'name':props.name,'sm_count':props.multi_processor_count,
           'compute_capability':list(torch.cuda.get_device_capability()),'total_memory_bytes':props.total_memory,
-          'driver':nvml.nvmlSystemGetDriverVersion(),**query_l2(torch),'readout_scope':'capture setup; clocks/power limits observed, not modified'}
+          'driver':nvml.nvmlSystemGetDriverVersion(),**query_l2(torch),
+          **({'gcn_arch':props.gcnArchName,'hip_runtime':torch.version.hip,'amd_smi':nvml.describe_amd(handle)} if is_rocm() else {}),'readout_scope':'capture setup; clocks/power limits observed, not modified'}
     for key,call in {'sm_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_SM),
                      'memory_clock_mhz':lambda:nvml.nvmlDeviceGetClockInfo(handle,nvml.NVML_CLOCK_MEM),
                      'power_limit_w':lambda:nvml.nvmlDeviceGetPowerManagementLimit(handle)/1000}.items():
