@@ -5,7 +5,7 @@ set -uo pipefail
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$repo"
 msg=${1:-"Refresh intermediate AMD results"}
 d=results/amd_20261018_mi300x; mon=$d/monitor/node_monitor.jsonl
-for sub in m1 m6_cumask m1_gpu6 m1_text j6_competitor; do
+for sub in m1 m6_cumask m1_gpu6 m1_text; do
   [ -d $d/$sub ] && python3 scripts/amd/summarize_timing.py --root $d/$sub --monitor $mon --output $d/$sub/summary.json > $d/$sub/summary.txt 2>&1
 done
 python3 scripts/amd/summarize_energy.py $d/m8_energy > $d/m8_energy/summary.txt 2>&1
