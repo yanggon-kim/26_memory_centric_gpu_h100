@@ -37,3 +37,24 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 12:50 M5 pressure (GPU 7), complete at 13:05 (15 acquisitions).
 - 12:53–13:30 counter-collection crash investigation (see tool findings); lanes restarted with exclusion and retries.
 - 13:06 M6 extension lane on GPU 7 (Mistral, 14B, 32B).
+
+## Additional tool and runtime findings (13:35–15:45)
+
+| Finding | Evidence | Consequence |
+|---|---|---|
+| Energy lane first pass failed silently | `amd_nvml` lacked `nvmlDeviceGetTemperature`; vLLM printed the traceback but exited 0 | Shim fixed (hotspot temperature); lane restarted 13:3x; lanes judge success by `run.json` status |
+| Watchdog kills left lock-holding orphans | next attempts failed instantly with `BlockingIOError` on the GPU lock | Counter lane rewritten: per-attempt process group, in-lane hang detection, lock wait |
+| rocprof-compute 3.3 CSV path broken | `Agent_Id` str/int merge error; analysis fails under pandas 3.0.6 | `--format-rocprof-output rocpd` and pandas 2.2.3 in the tool venv |
+| rocprof-compute full profile crashes LLM kernels | illegal address / launch failure in the first pass even with `-k Cijk`; service benchmarks profile fine (but also failed intermittently later) | Only curated single-pass sets on the HF workload; several sets/roofline still failed and are recorded |
+| Sporadic `unspecified launch failure` | about 1 in 20 vLLM runs across GPUs, with or without CU masks or profilers (e.g. TP2 32B full a0, 7B B4 cu232); zero ECC errors | Bounded retries; all failed runs kept under `*_failed_*`; possibly related to every HIP process opening queues on all 8 GPUs while 8 lanes run |
+| Prefill timing added | `controlled_vllm_experiments.py` now records `prefill_wall_ms` (first `engine.step`) | Present in M6/M8-prefill/TP runs after 13:32, absent from earlier M1 runs |
+
+## Timeline (continued)
+
+- 13:41 M1 complete (17 conditions × 3 acquisitions, 10 trials each).
+- 13:44 counter lanes with Triton exclusion and retries; 15:19 all counter lanes complete (44 groups).
+- 13:56 M6 lane GPU 3 complete; 14:34 GPU 7 extension complete; 15:21 batch-size × CU sweep (GPU 2) complete.
+- 14:25 M8 energy first pass complete (fixed sensor); 14:47 representative text complete.
+- 14:45 TP2 pilot OK; TP2 lane (GPUs 4,7) from 14:50; TP4 lane (GPUs 1,2,3,5) from 15:22.
+- 15:20 MI325X comparison job 468949 started on `mi3258x` (separate node, self-contained).
+- 15:22 prefill-vs-CU lane complete.
