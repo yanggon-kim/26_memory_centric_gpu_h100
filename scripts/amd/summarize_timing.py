@@ -61,6 +61,7 @@ def main(args):
     out = {'classification': 'measured-real-GPU', 'scope': __doc__.strip(), 'conditions': {}}
     for key, runs in sorted(groups.items()):
         acqs, clocks_g, clocks_m, rows, statuses = [], [], [], [], []
+        inner_g, inner_m = [], []
         for name, d in runs:
             statuses.append(d['status'])
             if d['status'] != 'complete':
@@ -74,6 +75,9 @@ def main(args):
                 w = window(mon, uuid, t['wall_start_unix_ns'], t['wall_end_unix_ns'])
                 clocks_g += [s[1] for s in w]
                 clocks_m += [s[2] for s in w]
+                span = t['wall_end_unix_ns'] - t['wall_start_unix_ns']
+                wi = window(mon, uuid, t['wall_start_unix_ns'] + span // 10, t['wall_end_unix_ns'] - span // 10)
+                inner_g += [s[1] for s in wi]; inner_m += [s[2] for s in wi]
             acqs.append(per)
             rows.append({'acquisition': name, 'median_ms_per_step': statistics.median(per), 'trials': len(per),
                          'outputs_identical': case['output_digests_identical'],
@@ -92,7 +96,12 @@ def main(args):
                  'gfx_mhz': {'n': len(clocks_g), 'min': min(valid_g, default=None), 'max': max(valid_g, default=None),
                              'median': statistics.median(valid_g) if valid_g else None},
                  'mem_mhz': {'min': min(valid_m, default=None), 'max': max(valid_m, default=None)},
-                 'clock_qualified': qualified}
+                 'clock_qualified': qualified,
+                 # Post-hoc diagnostic (declared after seeing v1 rejections; not the contract rule):
+                 # same 1.05 envelope using only samples in the middle 80% of each trial window.
+                 'clock_qualified_interior_posthoc': bool(inner_g and inner_m and all(inner_g) and all(inner_m)
+                                                          and max(inner_g) / min(inner_g) <= 1.05 and max(inner_m) / min(inner_m) <= 1.05),
+                 'interior_samples': len(inner_g)}
         if len(acqs) >= 3:
             entry['ci95_ms_per_step'] = bootstrap(acqs)
         out['conditions'][key] = entry
