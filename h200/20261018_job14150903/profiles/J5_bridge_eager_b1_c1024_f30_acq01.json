@@ -1,0 +1,64 @@
+{
+  "id": "J5_bridge_eager_b1_c1024_f30_acq01",
+  "status": "complete",
+  "model": "bridge",
+  "batch": 1,
+  "context": 1024,
+  "engine": "eager",
+  "requested_fraction": 0.3,
+  "acquisition_id": 1,
+  "instrumented_pilot": false,
+  "allocation": {
+    "status": "complete",
+    "allocation": {
+      "stream_handle": 141627136,
+      "actual_sm_count": 40,
+      "green_context_handle": 141392384,
+      "green_context_id": 2,
+      "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+      "requested_fraction": 0.3,
+      "requested_sms": 40,
+      "device_sm_count": 132,
+      "min_partition_size": 8,
+      "alignment": 8,
+      "converted_context_made_current": true,
+      "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+    },
+    "all_kernel_restriction_proof": "requires matching NSYS kernel greenContextId; stream endpoints alone are insufficient"
+  },
+  "actual_sm_case_id": "J5_bridge_eager_b1_c1024_f30_acq01_sm40",
+  "exact_reference_ids": true,
+  "clock_qualification": {
+    "passed": true,
+    "clocks": {
+      "sm_clock_mhz": {
+        "minimum": 1980,
+        "maximum": 1980,
+        "max_min_ratio": 1.0,
+        "samples": 140
+      },
+      "memory_clock_mhz": {
+        "minimum": 3201,
+        "maximum": 3201,
+        "max_min_ratio": 1.0,
+        "samples": 140
+      }
+    },
+    "reason": "predeclared <=5% clock envelope; all trials retained"
+  },
+  "run_source": "runs/J5_bridge_eager_b1_c1024_f30_acq01/run.json",
+  "run_sha256": "f1bd02216f4bd5297f6bf2b2045d90c4c3c170e329e4b1cee594ba68caf1e5b1",
+  "step_ms": [
+    9.551817602995369,
+    9.679754904013068,
+    9.597873952727587,
+    9.665923873110422,
+    9.540650842060883,
+    9.624333569913038,
+    9.547935698979668,
+    9.820942428805644,
+    9.700233236856995,
+    9.65628993608767
+  ],
+  "harness": "shoreline_restricted_decode.py; VLLM_ENABLE_V1_MULTIPROCESSING=0; identical stream wrapper for fraction1 and restricted arms"
+}
