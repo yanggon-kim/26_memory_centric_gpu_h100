@@ -1,0 +1,536 @@
+{
+ "classification": "measured-real-GPU",
+ "scope": "Summarize vLLM timing acquisitions (M1, M6) with clock joins and hierarchical bootstrap CIs.\n\nPer trial: ms per decode step = HIP-event elapsed / decode iterations (63 for 64 tokens).\nClock qualification joins node-monitor samples (gfx/mem MHz) inside each trial's wall window.\nA condition is clock-qualified when pooled in-window GFX and memory samples across all\nacquisitions each stay within max/min <= 1.05, with no missing readings, as declared in\nthe common contract before looking at performance. Bootstrap: 10,000 draws, seed 20261018,\nresampling acquisitions then trials within each acquisition.",
+ "conditions": {
+  "mistral7b_graph_b1_c4096_cu264": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu264_a0",
+     "median_ms_per_step": 5.271203903924851,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu264_a1",
+     "median_ms_per_step": 5.2771943107483885,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu264_a2",
+     "median_ms_per_step": 5.271469600616939,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 5.273415185030175,
+   "tokens_per_s": 189.63043206587153,
+   "gfx_mhz": {
+    "n": 97,
+    "min": 1843,
+    "max": 2074,
+    "median": 2011
+   },
+   "mem_mhz": {
+    "min": 1432,
+    "max": 1498
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 70,
+   "ci95_ms_per_step": [
+    5.269457087441096,
+    5.277512694666625
+   ]
+  },
+  "mistral7b_graph_b1_c4096_cu304": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu304_a0",
+     "median_ms_per_step": 4.742637028769842,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu304_a1",
+     "median_ms_per_step": 4.7473592606801835,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "mistral7b_graph_b1_c4096_cu304_a2",
+     "median_ms_per_step": 4.755049448164682,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 4.748172804413649,
+   "tokens_per_s": 210.6073306915985,
+   "gfx_mhz": {
+    "n": 87,
+    "min": 1791,
+    "max": 2043,
+    "median": 1987
+   },
+   "mem_mhz": {
+    "min": 1324,
+    "max": 1491
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 69,
+   "ci95_ms_per_step": [
+    4.742733215654969,
+    4.7542941784732555
+   ]
+  },
+  "qwen14b_graph_b1_c4096_cu264": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu264_a0",
+     "median_ms_per_step": 8.729402572389633,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu264_a1",
+     "median_ms_per_step": 8.726822141617063,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu264_a2",
+     "median_ms_per_step": 8.731349400111608,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 8.72884008014013,
+   "tokens_per_s": 114.56275871924858,
+   "gfx_mhz": {
+    "n": 162,
+    "min": 1797,
+    "max": 2068,
+    "median": 2043.5
+   },
+   "mem_mhz": {
+    "min": 1399,
+    "max": 1500
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 130,
+   "ci95_ms_per_step": [
+    8.725510531632358,
+    8.732348955749835
+   ]
+  },
+  "qwen14b_graph_b1_c4096_cu304": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu304_a0",
+     "median_ms_per_step": 7.772596813383556,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu304_a1",
+     "median_ms_per_step": 7.798215835813492,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen14b_graph_b1_c4096_cu304_a2",
+     "median_ms_per_step": 7.77420165046813,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 7.782545543852306,
+   "tokens_per_s": 128.49266276249853,
+   "gfx_mhz": {
+    "n": 141,
+    "min": 1711,
+    "max": 1976,
+    "median": 1946
+   },
+   "mem_mhz": {
+    "min": 1279,
+    "max": 1498
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 114,
+   "ci95_ms_per_step": [
+    7.773034845584284,
+    7.798977322048611
+   ]
+  },
+  "qwen32b_graph_b1_c4096_cu264": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu264_a0",
+     "median_ms_per_step": 17.48231433686756,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu264_a1",
+     "median_ms_per_step": 17.413197350880456,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu264_a2",
+     "median_ms_per_step": 17.444787403893848,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 17.446339634486606,
+   "tokens_per_s": 57.318613586042744,
+   "gfx_mhz": {
+    "n": 315,
+    "min": 1730,
+    "max": 2012,
+    "median": 1987
+   },
+   "mem_mhz": {
+    "min": 1394,
+    "max": 1500
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 247,
+   "ci95_ms_per_step": [
+    17.413687698929397,
+    17.480408231543485
+   ]
+  },
+  "qwen32b_graph_b1_c4096_cu304": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu304_a0",
+     "median_ms_per_step": 15.323633587549603,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu304_a1",
+     "median_ms_per_step": 15.317036946614582,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen32b_graph_b1_c4096_cu304_a2",
+     "median_ms_per_step": 15.316011459108383,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 15.318774188006365,
+   "tokens_per_s": 65.27937468932318,
+   "gfx_mhz": {
+    "n": 278,
+    "min": 1617,
+    "max": 1845,
+    "median": 1821.0
+   },
+   "mem_mhz": {
+    "min": 1232,
+    "max": 1500
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 221,
+   "ci95_ms_per_step": [
+    15.314233140087632,
+    15.323341264674273
+   ]
+  },
+  "qwen7b_graph_b1_c4096_cu264": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu264_a0",
+     "median_ms_per_step": 4.932152884347099,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu264_a1",
+     "median_ms_per_step": 4.9389282710968505,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu264_a2",
+     "median_ms_per_step": 4.963924347408234,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 4.945436701698909,
+   "tokens_per_s": 202.20661193711558,
+   "gfx_mhz": {
+    "n": 90,
+    "min": 1827,
+    "max": 2065,
+    "median": 2019.0
+   },
+   "mem_mhz": {
+    "min": 1415,
+    "max": 1496
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 73,
+   "ci95_ms_per_step": [
+    4.933568786944031,
+    4.962829250759548
+   ]
+  },
+  "qwen7b_graph_b1_c4096_cu304": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu304_a0",
+     "median_ms_per_step": 4.3171621655660966,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu304_a1",
+     "median_ms_per_step": 4.331823439825149,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b1_c4096_cu304_a2",
+     "median_ms_per_step": 4.294211251395089,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 4.314352045614252,
+   "tokens_per_s": 231.78451582701703,
+   "gfx_mhz": {
+    "n": 80,
+    "min": 1795,
+    "max": 2003,
+    "median": 1955.0
+   },
+   "mem_mhz": {
+    "min": 1321,
+    "max": 1487
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 66,
+   "ci95_ms_per_step": [
+    4.2957999093191965,
+    4.331842315512359
+   ]
+  },
+  "qwen7b_graph_b8_c4096_cu264": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu264_a0",
+     "median_ms_per_step": 8.170729379805307,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu264_a1",
+     "median_ms_per_step": 8.146446106925843,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu264_a2",
+     "median_ms_per_step": 8.14558870830233,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 8.150455729166667,
+   "tokens_per_s": 981.5402065643696,
+   "gfx_mhz": {
+    "n": 147,
+    "min": 1715,
+    "max": 2085,
+    "median": 2056
+   },
+   "mem_mhz": {
+    "min": 1354,
+    "max": 1499
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 120,
+   "ci95_ms_per_step": [
+    8.137986166010458,
+    8.16643337673611
+   ]
+  },
+  "qwen7b_graph_b8_c4096_cu304": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu304_a0",
+     "median_ms_per_step": 6.2062956794859865,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu304_a1",
+     "median_ms_per_step": 6.212894258045015,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    },
+    {
+     "acquisition": "qwen7b_graph_b8_c4096_cu304_a2",
+     "median_ms_per_step": 6.20445324125744,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 8,
+     "context": 4096
+    }
+   ],
+   "mean_ms_per_step": 6.207310267857143,
+   "tokens_per_s": 1288.8029846720906,
+   "gfx_mhz": {
+    "n": 113,
+    "min": 1597,
+    "max": 2042,
+    "median": 1978
+   },
+   "mem_mhz": {
+    "min": 1348,
+    "max": 1497
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 91,
+   "ci95_ms_per_step": [
+    6.201527025333788,
+    6.213063880880043
+   ]
+  }
+ }
+}

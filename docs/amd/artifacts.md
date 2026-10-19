@@ -17,3 +17,9 @@ they are not published.
 - Raw files indexed: `results_published/amd_20261018_mi325x_job468949/raw_manifest.sha256` (0.02 GB)
 - Raw location: `/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi325x_job468949`
 
+## amd_20261018_mi325x_matched_job469084
+
+- Published compact files: 12 (under `results_published/amd_20261018_mi325x_matched_job469084/`)
+- Raw files indexed: `results_published/amd_20261018_mi325x_matched_job469084/raw_manifest.sha256` (0.02 GB)
+- Raw location: `/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi325x_matched_job469084`
+

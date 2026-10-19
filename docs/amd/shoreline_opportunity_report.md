@@ -1,6 +1,6 @@
 # MI300X shoreline-aware decode study: opportunity report
 
-Allocation 468885 (`mi3008x`, node k002-003, 8× AMD Instinct MI300X), 2026-10-18 12:12–18:57 (cancelled when all planned work was done), plus MI325X job 468949 (complete) and compute-matched MI325X job 469084 (queued). Governing scope: `docs/shoreline_aware_research_plan_2.0.md` and the common measurement contract `docs/shoreline_hopper_measurements.md`, adapted in `docs/AMD_PORT_PLAN.md`. Execution details, failures and tool workarounds are in `docs/amd/experiment_log.md`; artifact locations in `docs/amd/artifacts.md`.
+Allocation 468885 (`mi3008x`, node k002-003, 8× AMD Instinct MI300X), 2026-10-18 12:12–18:57 (cancelled when all planned work was done), plus MI325X jobs 468949 and 469084 (both complete). Governing scope: `docs/shoreline_aware_research_plan_2.0.md` and the common measurement contract `docs/shoreline_hopper_measurements.md`, adapted in `docs/AMD_PORT_PLAN.md`. Execution details, failures and tool workarounds are in `docs/amd/experiment_log.md`; artifact locations in `docs/amd/artifacts.md`.
 
 Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from measured inputs; **profiled** = under rocprofv3/rocprof-compute (timings perturbed, never baselines). Nothing here establishes a physical architecture benefit. Area, PHY, shoreline, package and power models are later stages.
 
@@ -14,7 +14,7 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 6. **Delivered bandwidth at fixed compute moves decode time, in proportion to the bandwidth share.** Three independent routes agree:
    - Compute-matched TP: about one GPU's CUs spread over 2/4 GPUs gives Qwen 32B 1.48×/1.86×, Qwen 7B 1.16×/1.33×, while the 1.5B loses to communication.
    - A same-GPU competitor removing up to 1.1–1.9 TB/s slows decode by up to 15–26% at fixed decoder CUs.
-   - MI325X's +7–10% bandwidth (with +14% compute) gives 1.04–1.15×.
+   - MI325X's +7–10% bandwidth (with +14% compute) gives 1.04–1.15×. A compute-matched MI325X attempt failed to isolate bandwidth, because CU masking also cut its bandwidth by 9–11%.
 
    Gains saturate: TP8 matched < TP4 matched. They also need request issuers: at about 160 total CUs, 4 GPUs × 40 CUs < 2 × 80. *(measured; confounds stated per experiment)*
 
@@ -39,7 +39,7 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 | E/F + J9 | latency bounds and c/r/f grid from measured inputs | analytical, complete |
 | TP extension (owner-authorized) | TP2/TP4/TP8, full and compute-matched at ≈304 and ≈160 total CUs | complete (3 acq; one TP2 cell 2 acq) |
 | J6 same-GPU competitor (added) | 4 cases × {solo, read 25/50/75/100%, FMA} | complete (3 acq) |
-| MI325X comparison | M4 full-CU sweep + 8 graph baselines | complete (job 468949); compute-matched job 469084 queued |
+| MI325X comparison | M4 full-CU sweep + 8 graph baselines (468949); 264-CU vs 304-CU paired runs (469084) | complete; the compute-matched pairing did not hold bandwidth fixed |
 
 ## 2. Baselines (M1, graph mode, mean of 3 acquisitions, 95% CI)
 
@@ -168,7 +168,9 @@ Decode slows nearly linearly with the bandwidth taken, at constant decoder compu
 
 ## 8c. MI325X vs MI300X
 
-Measured (job 468949, full CUs): HBM stream +7–10%, write +10%, Infinity Cache and L2 equal, latency equal, BF16 MFMA +15%, FMA +14% (higher power limit), decode 1.04× (1.5B) to 1.15× (32B). This is not a same-compute pair. A compute-matched job (MI325X at 264 CUs, job 469084) is queued and self-contained. Its results are added to the repo when it finishes.
+Full CUs (job 468949): HBM stream +7–10%, write +10%, Infinity Cache and L2 equal, latency equal, BF16 MFMA +15%, FMA +14% (higher power limit). Decode is 1.04× (1.5B) to 1.15× (32B) faster. This is not a same-compute pair.
+
+**The compute-matched attempt (job 469084, 2026-10-18 19:46–20:41) did not isolate bandwidth.** MI325X was restricted to 264 CUs to match MI300X's MFMA rate; it measured 997 vs 1071 TFLOP/s (FMA 98 vs 95). The restriction also cut MI325X's HBM streaming bandwidth from 4.99 to 4.43 TB/s (4 GiB) and from 4.63 to 4.26 TB/s (16 GiB), below MI300X's full-CU 4.55/4.48 TB/s. Decode ms/step, MI325X@264 vs MI300X@304: 7B B1 4.95 vs 4.68, 7B B8 8.15 vs 6.65, Mistral 5.27 vs 5.11, 14B 8.73 vs 8.64, 32B 17.45 vs 17.53. With r ≈ 0.97 and c ≈ 0.93, this pair adds no r > 1 evidence. It independently confirms M7: removing CUs removes request-generation capacity and hence deliverable bandwidth, on MI325X as on MI300X.
 
 ## 9. Limitations and failures
 
@@ -185,5 +187,5 @@ Measured (job 468949, full CUs): HBM stream +7–10%, write +10%, Infinity Cache
 1. **Architecture modelling (plan 2.0 Phase 2–4).** Use these measured inputs: decode C/M/O per case, M7 service-vs-CU curves (request generation), the competitor and compute-matched TP bandwidth sensitivities, prefill and large-batch penalties, and power-cap behaviour. Couple "compute removal" to request-issue and on-chip delivery capacity, not FLOPs alone.
 2. **Reduce O before adding hardware.** 1.5–3.4 ms per step is neither bandwidth nor arithmetic. Profile graph-mode per-kernel efficiency (wvSplitK at about 2.5 TB/s vs 4.5 TB/s stream) and launch/sync structure. A software fix here is the strongest simpler alternative (plan 2.0 Challenge F).
 3. **Energy.** A proxy for removed or power-gated silicon is needed; CU masking cannot show leakage savings. Collect component power where the platform exposes it.
-4. **MI325X compute-matched job 469084.** Add its results when it completes: same-compute r ≈ 1.07–1.10.
+4. **A clean r > 1 at fixed c is still missing on real hardware.** CU masking couples compute to bandwidth. Future same-compute comparisons should hold CUs fixed and vary memory configuration through the platform (memory partition modes or another SKU at equal CU count), if an admin can provide them.
 5. **Traces.** Address-level reuse needs a tracer that works on gfx942 (rocprofv3 ATT or a binary-instrumentation tool). It was not attempted here.

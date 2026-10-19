@@ -68,3 +68,4 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 18:23–18:55 gap fills: all M6 cells at 3 acquisitions, all counter groups complete, energy at 3 acquisitions (Mistral B8 at 2).
 - 18:56 node monitor stopped; allocation 468885 cancelled at 6 h 45 min elapsed with all planned work done.
 - Clock gate: 2 of 17 M1 conditions pass the contract's ≤5% envelope, and the post-hoc interior-sample diagnostic gives the same 2 of 17; MI300X power management varies clocks by more than 5%.
+- 2026-10-18 19:46–20:41: MI325X compute-matched job 469084 completed on k002-001 (no failed runs). 264 CUs gave 997 TFLOP/s BF16 (target 1071), and HBM stream fell 9–11% versus the same GPU at 304 CUs, so the pairing did not isolate bandwidth. Published 2026-10-19.
