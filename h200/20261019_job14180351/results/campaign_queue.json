@@ -37,7 +37,7 @@
     },
     {
       "id": "J11_gpu",
-      "status": "running",
+      "status": "command_complete",
       "started_utc": "2026-10-19T16:06:13.858502+00:00",
       "command": [
         "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
@@ -49,7 +49,52 @@
         "--gpu-only"
       ],
       "log": "logs/queue_J11_gpu_attempt00.log",
-      "resource": "gpu"
+      "resource": "gpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-19T16:06:16.909692+00:00"
+    },
+    {
+      "id": "J9_analysis",
+      "status": "command_complete",
+      "started_utc": "2026-10-19T16:06:16.911060+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14180351"
+      ],
+      "log": "logs/queue_J9_analysis_attempt00.log",
+      "resource": "cpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-19T16:06:18.064413+00:00"
+    },
+    {
+      "id": "final_figures",
+      "status": "command_complete",
+      "started_utc": "2026-10-19T16:06:18.065605+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/plot_shoreline.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14180351"
+      ],
+      "log": "logs/queue_final_figures_attempt00.log",
+      "resource": "cpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-19T16:06:19.726090+00:00"
+    },
+    {
+      "id": "private_archives",
+      "status": "running",
+      "started_utc": "2026-10-19T16:06:19.727566+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_archive_batch.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14180351"
+      ],
+      "log": "logs/queue_private_archives_attempt00.log",
+      "resource": "cpu"
     }
   ],
   "queue_source_sha256": "38c6ecaba6c314862281438f9a00439beb2777b2e093cd3eef9f72eff77a51b7",
