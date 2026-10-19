@@ -1,0 +1,62 @@
+{
+  "status": "blocked",
+  "retained_semantic_review": {
+    "path": "h200/20261017_job14133085/results/J11_semantic_review_v1.json",
+    "sha256": "c660faf0a4786a31332b9e3e19702705259abf78e95e2196bd4da8d5d3af50c5",
+    "archive": "h200/20261017_job14133085/environment/native_trace_micro_v2.tar",
+    "archive_sha256": "54c3ecd5df0ec95881b5c6156cccb0ee49fc36378e11362cc6d2e4d408a23fa2"
+  },
+  "semantic_review": {
+    "status": "not_passed_pinned_postprocessor_would_prune_waits",
+    "reviewed_utc": "2026-10-17T15:53:39.791187+00:00",
+    "native_instrumented_exact_standalone_prefix": true,
+    "selected_module_scope": "layer0, two pure-decode ticks after all-request one-token barrier",
+    "raw_kernel_count": 24,
+    "binary_versions": [
+      90
+    ],
+    "raw_warp_records": 9275396,
+    "raw_active_lane_record_contributions": 271435296,
+    "record_count_scope": "multi-memory operand records may duplicate an instruction; neither records nor active-lane contributions are issued tensor work",
+    "wait_pruning_rejected_kernel_count": 8,
+    "async_opcode_inventory_raw_records": {
+      "SYNCS.PHASECHK.TRANS64.TRYWAIT": 991955,
+      "UTMALDG.3D": 17472,
+      "UTMALDG.3D.MULTICAST": 17472,
+      "SYNCS.ARRIVE.TRANS64.RED": 17472,
+      "WARPGROUP.ARRIVE": 113376,
+      "HGMMA.64x8x16.F32.BF16": 353280,
+      "SYNCS.ARRIVE.TRANS64.RED.A1T0": 77648,
+      "UTMASTG.3D": 4048,
+      "UTMACMDFLUSH": 4816,
+      "SYNCS.ARRIVE.TRANS64.RED.A0T1": 80,
+      "ARRIVES.LDGSTSBAR.64.TRANSCNT": 80,
+      "SYNCS.ARRIVE.TRANS64.A1T0": 80,
+      "HGMMA.64x128x16.F32.BF16": 512,
+      "HGMMA.64x16x16.F32.BF16": 73728,
+      "UTMASTG.4D": 768
+    },
+    "ordinary_same_program_acquisitions": 3,
+    "ordinary_trials_per_acquisition": 10,
+    "pooled_ordinary_clock_ratio": {
+      "sm_clock_mhz": 1.0,
+      "memory_clock_mhz": 1.0
+    },
+    "postprocessing_passed": false,
+    "model_simulator_replay_passed": false,
+    "full_model_capture_allowed": false,
+    "missing_semantics": [
+      "safe arrival/wait/TMA transaction correspondence without deleting instructions",
+      "async descriptors and complete address/slot/activation aliases",
+      "H200 timing/power calibration"
+    ],
+    "action": "retain all raw waits and failure; no full-model expansion or semantic-success claim; continue core J5-J10",
+    "sources": {
+      "traces/bridge_layer0_semantic_v1/raw_trace_audit.json": "095e9e722b562365f51c908645eb582382644656f0c13ef912b0cd4598777c03",
+      "traces/bridge_layer0_semantic_v1/metadata/trace_metadata.json": "3bc92243e46b0b8dd868f2fc83a79a7dda27e93b6f9d085b08909b284b398bbf",
+      "results/shoreline_trace_eager_calibration.json": "72925172238f4dff474e064ffb911f1ac843418d1658dcb97ec3972a51613f09"
+    }
+  },
+  "new_trace_capture": false,
+  "full_model_gate": "blocked: preserve waits; no safe semantic implementation yet"
+}
