@@ -111,6 +111,24 @@ def checked(command, log, env=None, timeout=1800):
                        stdout=stream, stderr=subprocess.STDOUT, check=True, timeout=timeout)
 
 
+def final_publication(root, job_id, outcome):
+    """Keep the original failure, but fail a successful run if publication fails."""
+    outcome['ended_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
+    write(root / 'results/batch_bootstrap.json', outcome)
+    try:
+        checked([sys.executable, PACKAGE / 'scripts/checkpoint_h200.py', '--root', root,
+                 '--message', f'Batch {job_id}: {outcome["status"]}', '--push'],
+                root / 'logs/batch_final_checkpoint.log', timeout=120)
+    except Exception as error:
+        outcome['final_publication_error_type'] = type(error).__name__
+        if outcome['status'] == 'commands_finished_scientific_gates_separate':
+            outcome['status'] = 'final_publication_failed'
+            write(root / 'results/batch_bootstrap.json', outcome)
+            raise
+        write(root / 'results/batch_bootstrap.json', outcome)
+        print('FINAL_PUBLICATION_UNAVAILABLE', type(error).__name__, flush=True)
+
+
 def prepare_evidence(previous, root):
     audit = []
     for name in ('prior_capture_evidence.json', 'evidence_reuse.json'):
@@ -207,7 +225,8 @@ def main(args):
             env.pop(key, None)
         python = Path(settings['python'])
         checked([sys.executable, '-m', 'venv', python.parent.parent], root / 'logs/batch_venv.log', env)
-        checked([python, '-m', 'pip', 'install', '-r', PACKAGE / plan['runtime_lock']],
+        checked([python, '-m', 'pip', 'install', '-r', PACKAGE / plan['runtime_lock'],
+                 '-r', PACKAGE / plan['tracer_runtime_lock']],
                 root / 'logs/batch_install.log', env, timeout=3600)
         # Query exactly the single device inherited from the GPU-bound Slurm step.
         query = """import json,torch
@@ -263,15 +282,8 @@ print(json.dumps({'uuid':str(p.uuid),'name':p.name,'sm_count':p.multi_processor_
         outcome.update(status='needs_diagnosis', error_type=type(error).__name__, error=str(error))
         raise
     finally:
-        outcome['ended_utc'] = dt.datetime.now(dt.timezone.utc).isoformat()
-        write(root / 'results/batch_bootstrap.json', outcome)
         # Best effort only: SIGKILL/preemption may prevent any final publication.
-        try:
-            checked([sys.executable, PACKAGE / 'scripts/checkpoint_h200.py', '--root', root,
-                     '--message', f'Batch {job_id}: {outcome["status"]}', '--push'],
-                    root / 'logs/batch_final_checkpoint.log', timeout=120)
-        except Exception as error:
-            print('FINAL_PUBLICATION_UNAVAILABLE', type(error).__name__, flush=True)
+        final_publication(root, job_id, outcome)
 
 
 if __name__ == '__main__':

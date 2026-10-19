@@ -21,7 +21,7 @@ test "$(git branch --show-current)" = codex/h200-phase01
 git diff --quiet HEAD -- scripts configs docs batch AGENTS.md
 test -z "$(git diff --cached --name-only)"
 export GIT_TERMINAL_PROMPT=0
-git fetch origin codex/h200-phase01
+timeout 120s git fetch origin codex/h200-phase01
 git merge --ff-only origin/codex/h200-phase01
 bootstrap_python=${H200_BOOTSTRAP_PYTHON:-/usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3}
 # Keep the campaign in the batch lifetime, in a GPU-bound step. No backgrounding.

@@ -13,6 +13,21 @@ import shoreline_queue as queue
 
 
 class BatchContracts(unittest.TestCase):
+    def test_final_push_failure_is_not_reported_as_batch_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            outcome = {'status': 'commands_finished_scientific_gates_separate'}
+            with patch.object(batch, 'checked', side_effect=RuntimeError('push unavailable')):
+                with self.assertRaises(RuntimeError):
+                    batch.final_publication(root, '123', outcome)
+            self.assertEqual(batch.read(root / 'results/batch_bootstrap.json')['status'],
+                             'final_publication_failed')
+            outcome = {'status': 'needs_diagnosis', 'error': 'original GPU failure'}
+            with patch.object(batch, 'checked', side_effect=RuntimeError('push unavailable')):
+                batch.final_publication(root, '123', outcome)
+            self.assertEqual(outcome['error'], 'original GPU failure')
+            self.assertEqual(outcome['status'], 'needs_diagnosis')
+
     def test_scheduler_identity_and_closeout_budget(self):
         now = dt.datetime.now().astimezone()
         end = now + dt.timedelta(hours=2)

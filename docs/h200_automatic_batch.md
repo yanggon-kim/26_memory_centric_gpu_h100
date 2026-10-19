@@ -7,11 +7,17 @@ cd ~/scratch/gpullm/02_mem_centric/26_memory_centric_gpu_h100
 sbatch batch/h200_shoreline.sbatch
 ```
 
+If the preceding research allocation is still scheduled, submit with
+`sbatch --dependency=afterany:PREVIOUS_JOB_ID batch/h200_shoreline.sbatch`.
+This lets Slurm wait for that allocation to end before granting the new one,
+including when its interactive step has ended but preemption cleanup is pending.
+It avoids the bootstrap's deliberate refusal to overlap with a scheduled predecessor.
+
 No Codex session, SQLite directory, interactive shell or follow-up message is needed. This file requests the same account, embers QoS, one H200, 196 GiB and eight-hour limit as the existing allocation script, with eight CPUs. The implementation has not submitted a job or changed the existing file at `/storage/home/hcoda1/6/jkim4112/batch/h200_embers_yg`.
 
 The batch holds a cooperating repository lock, verifies `codex/h200-phase01`, fetches and fast-forwards from origin, and starts a foreground GPU-bound `srun` step. It refuses staged changes, modified research source, a divergent branch, or another automatic campaign. The branch must remain a runnable, reviewed campaign while a job waits in the queue. Git credentials and existing model access must work without prompts on the compute node.
 
-On allocation, `bootstrap_h200_batch.py` discovers the actual scheduler deadline and the single Slurm-visible H200 UUID. It creates a fresh shared-storage result namespace and node-local Python 3.10/CUDA 13 runtime from `configs/runtime.lock.txt`, verifies historical output references/raw checksums, freezes current source, and runs the existing guarded campaign. Models download at first use at their pinned revisions. Runtime installation/download time consumes allocation time. Dependencies are installed in user space; no system, driver, clock, power or MIG changes occur.
+On allocation, `bootstrap_h200_batch.py` discovers the actual scheduler deadline and the single Slurm-visible H200 UUID. It creates a fresh shared-storage result namespace and node-local Python 3.10/CUDA 13 runtime from `configs/runtime.lock.txt` and `configs/tracer_requirements.lock.txt`, verifies historical output references/raw checksums, freezes current source, and runs the existing guarded campaign. Models download at first use at their pinned revisions. Runtime installation/download time consumes allocation time. Dependencies are installed in user space; no system, driver, clock, power or MIG changes occur.
 
 `configs/h200_batch_v1.json` is the versioned continuation policy. It selects the newest earlier campaign ledger, refuses a predecessor still scheduled, and preserves its source/evidence namespaces. An interrupted J5 gets a fresh native-service cohort at full/104/72/40 SMs, including new full-SM controls. Those repeats are necessary for a same-GPU comparison; prior timing and the twelve completed B8 traffic captures are retained separately. The bootstrap checks that all twelve B8 traffic reader results exist and passed before using the native-only scope. No old exhaustive timing matrix is resumed.
 
@@ -25,4 +31,4 @@ Watch `h200-shoreline-JOBID.out` in your submission directory. Detailed logs, `S
 
 Paths can be overridden before submission using `H200_REPO`, `H200_BOOTSTRAP_PYTHON`, and `H200_BATCH_PLAN`. The defaults target this user's shared repository, cluster Python 3.10.13 and the checked-in policy. The pinned CUDA installation must exist on the assigned node. Storage free-space checks cover the filesystems; user-specific inode quotas still need enough headroom for the compact result files.
 
-Validation: shell syntax and CPU contracts exercise allocation/deadline rejection, evidence tampering, interrupted versus command-finished reuse, and queue skipping. Actual batch startup, dependency restoration and GPU measurements require an allocation and have not been claimed as tested by these checks.
+Validation on 2026-10-18: Bash syntax, ShellCheck, six batch CPU contracts and the existing shoreline contracts passed. Slurm `sbatch --test-only` accepted the resource request without submitting a job. The actual predecessor's output-reference hashes, 31 inventoried raw artifacts and all twelve completed B8 traffic readers were verified. Batch contracts cover final-push failure reporting, allocation/deadline rejection, evidence tampering, interrupted versus command-finished reuse and queue skipping. Actual batch startup, dependency restoration and GPU measurements require an allocation and have not been claimed as tested by these checks.
