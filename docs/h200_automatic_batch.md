@@ -4,8 +4,14 @@ Submit the research batch script instead of the old allocate-and-sleep script:
 
 ```bash
 cd ~/scratch/gpullm/02_mem_centric/26_memory_centric_gpu_h100
+git switch codex/h200-phase01
+git pull --no-rebase --ff-only origin codex/h200-phase01
 sbatch batch/h200_shoreline.sbatch
 ```
+
+The explicit `--no-rebase` overrides a local `pull.rebase=true` setting. Generated
+job logs can be modified locally; preserve them in a checkpoint rather than
+discarding or stashing research evidence just to update the branch.
 
 If the preceding research allocation is still scheduled, submit with
 `sbatch --dependency=afterany:PREVIOUS_JOB_ID batch/h200_shoreline.sbatch`.
