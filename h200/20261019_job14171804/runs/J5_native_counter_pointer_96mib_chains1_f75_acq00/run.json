@@ -1,0 +1,612 @@
+{
+  "status": "complete",
+  "classification": "measured-real-GPU",
+  "acquisition_id": 0,
+  "hardware": {
+    "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "compute_capability": [
+      9,
+      0
+    ],
+    "total_memory_bytes": 150156607488,
+    "driver": "615.71.09",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": "",
+    "readout_scope": "capture setup; clocks/power limits observed, not modified",
+    "sm_clock_mhz": 1980,
+    "memory_clock_mhz": 3201,
+    "power_limit_w": 700.0,
+    "power_w": 86.298,
+    "temperature_c": 40,
+    "used_memory_bytes": 1297416192
+  },
+  "allocation": {
+    "stream_handle": 145351632,
+    "actual_sm_count": 104,
+    "green_context_handle": 145288256,
+    "green_context_id": 2,
+    "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+    "requested_fraction": 0.75,
+    "requested_sms": 104,
+    "device_sm_count": 132,
+    "min_partition_size": 8,
+    "alignment": 8,
+    "converted_context_made_current": false,
+    "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+  },
+  "cases": [
+    {
+      "id": "pointer_96mib_chains1",
+      "metadata": {
+        "footprint_bytes": 100663296,
+        "dependent_steps": 12582929,
+        "independent_chains": 1,
+        "useful_read_bytes_per_launch": 100663432,
+        "working_set_proof": "one randomized Hamiltonian cycle; disjoint chain starting positions cover the entire allocation plus 17 links per chain",
+        "cache_level": "conditional; full traversal is proved, cache-level residency requires counters"
+      },
+      "trials": [
+        {
+          "trial": 0,
+          "gpu_event_ms": 4312.05859375,
+          "wall_start_unix_ns": 1792404982368528504,
+          "wall_end_unix_ns": 1792404986680588637,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.014,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 162.662,
+            "temperature_c": 42,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 1,
+          "gpu_event_ms": 3496.73876953125,
+          "wall_start_unix_ns": 1792404986682859142,
+          "wall_end_unix_ns": 1792404990179599771,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 162.662,
+            "temperature_c": 42,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.263,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 2,
+          "gpu_event_ms": 3495.4140625,
+          "wall_start_unix_ns": 1792404990181707532,
+          "wall_end_unix_ns": 1792404993677125492,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.244,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.149,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 3,
+          "gpu_event_ms": 3495.434326171875,
+          "wall_start_unix_ns": 1792404993679244410,
+          "wall_end_unix_ns": 1792404997174680870,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.149,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.152,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 4,
+          "gpu_event_ms": 3495.073974609375,
+          "wall_start_unix_ns": 1792404997176725010,
+          "wall_end_unix_ns": 1792405000671805689,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.152,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.137,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 5,
+          "gpu_event_ms": 3495.52392578125,
+          "wall_start_unix_ns": 1792405000674104534,
+          "wall_end_unix_ns": 1792405004169633099,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.137,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.212,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 6,
+          "gpu_event_ms": 3495.2236328125,
+          "wall_start_unix_ns": 1792405004171902196,
+          "wall_end_unix_ns": 1792405007667129951,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.212,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.142,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 7,
+          "gpu_event_ms": 3495.514404296875,
+          "wall_start_unix_ns": 1792405007671666214,
+          "wall_end_unix_ns": 1792405011167184300,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.142,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.188,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 8,
+          "gpu_event_ms": 3495.037109375,
+          "wall_start_unix_ns": 1792405011169502433,
+          "wall_end_unix_ns": 1792405014664542982,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.188,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.164,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        },
+        {
+          "trial": 9,
+          "gpu_event_ms": 3495.191650390625,
+          "wall_start_unix_ns": 1792405014667303272,
+          "wall_end_unix_ns": 1792405018162496500,
+          "hardware_before": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.164,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "hardware_after": {
+            "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+            "name": "NVIDIA H200",
+            "sm_count": 132,
+            "compute_capability": [
+              9,
+              0
+            ],
+            "total_memory_bytes": 150156607488,
+            "driver": "615.71.09",
+            "l2_bytes": 62914560,
+            "l2_source": "queried CUDA device properties L2_cache_size",
+            "l2_unavailable_reason": "",
+            "readout_scope": "capture setup; clocks/power limits observed, not modified",
+            "sm_clock_mhz": 1980,
+            "memory_clock_mhz": 3201,
+            "power_limit_w": 700.0,
+            "power_w": 131.168,
+            "temperature_c": 41,
+            "used_memory_bytes": 2931097600
+          },
+          "repetitions": 1
+        }
+      ],
+      "physical_read_bytes": null,
+      "physical_write_bytes": null,
+      "scope": "independent native pattern; useful payload is not physical HBM traffic",
+      "repetitions": 1,
+      "correctness": "passed",
+      "stream_proof": {
+        "stream_handle": 145351632,
+        "actual_sm_count": 104,
+        "green_context_handle": 145288256,
+        "green_context_id": 2,
+        "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx"
+      },
+      "compiled_metadata": {
+        "num_warps": "1",
+        "num_ctas": "1",
+        "shared": "0",
+        "n_regs": "None",
+        "n_spills": "None"
+      },
+      "ptx": {
+        "path": "pointer_96mib_chains1.ptx",
+        "sha256": "29cf7372d4e70dbc9c1ca8f8365a13e490643c4c05e0d08e534c25111c043b97"
+      },
+      "dependent_clock_cycles": [
+        6919526273
+      ],
+      "observed_smids": [
+        0
+      ]
+    }
+  ],
+  "versions": {
+    "torch": "2.11.0+cu130",
+    "triton": "3.6.0"
+  },
+  "source_sha256": {
+    "shoreline_native.py": "193d5240e803563e39f89c580d4c14b1baf63649a4040b4cb96ae0ad30e50c58",
+    "shoreline_kernels.py": "74ae7405d8074eb406533640781e8eed26e0982f11e23c8974a8a0c220d7f98f",
+    "shoreline_green.py": "5c915693e16a71b3acba1e6cf4f9bff3d38351a997df2adb92b3d66846f603db"
+  },
+  "policy": {
+    "warmups": 3,
+    "trials": 10,
+    "seed": 20261013,
+    "memory_load_policy": "transfer .cg; dependent .ca; loop-carried read address retained in PTX",
+    "physical_HBM_bytes": null,
+    "missing_reason": "requires separate scope-matched hardware-counter acquisition"
+  },
+  "hardware_after": {
+    "uuid": "GPU-a613c806-89b1-05d1-f71c-3d52ab46d246",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "compute_capability": [
+      9,
+      0
+    ],
+    "total_memory_bytes": 150156607488,
+    "driver": "615.71.09",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": "",
+    "readout_scope": "capture setup; clocks/power limits observed, not modified",
+    "sm_clock_mhz": 1980,
+    "memory_clock_mhz": 3201,
+    "power_limit_w": 700.0,
+    "power_w": 131.16,
+    "temperature_c": 41,
+    "used_memory_bytes": 2931097600
+  }
+}
