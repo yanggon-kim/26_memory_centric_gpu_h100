@@ -1,4 +1,4 @@
-The current continuation is **allocation14162783**, GPU-67ac97bd-50b0-4ea4-ac20-1ef4b3e44409. See its [status](20261018_job14162783/STATUS.json) and [targeted GPU-first plan](20261018_job14162783/analysis/continuation_plan.md). It resumes unfinished J5 B8 traffic/native components while preserving the completed timing cohort, then J8/J7/J10/conditional J6/J11 before broad CPU work. Runtime/preflight must pass before measurements.
+Latest automatic campaign **14171804 was preempted on 2026-10-19 at 06:56:20 EDT** after 69 minutes. See its [recovery report](20261019_job14171804/analysis/preemption_recovery_v1.md) and [status](20261019_job14171804/STATUS.json). J5 native-service capture coverage finished (12 ordinary/36 physical); scientific qualification remains separate. J8 has nine individually passing B1 controls, eight clock-rejected B8 controls and one interrupted acquisition. Remaining GPU order: J8 → J7 → J10 → conditional J6/J11, then CPU analysis/archives. No research GPU job is currently running. Historical allocation descriptions below describe their original recovery boundaries.
 
 # H200 measurements and active assignment
 

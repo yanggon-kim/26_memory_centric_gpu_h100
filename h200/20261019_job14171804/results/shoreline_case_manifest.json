@@ -63,11 +63,11 @@
     },
     {
       "id": "J8",
-      "status": "in_progress",
+      "status": "partial",
       "scientific_gate": "incomplete",
       "prior_evidence": "h200/20261018_job14162783/STATUS.json",
-      "reason": null,
-      "updated_utc": "2026-10-19T10:44:44.054908+00:00"
+      "reason": "17 acquisitions exited: nine B1 per-acquisition checks passed, eight B8 clock rejected; eighteenth acquisition interrupted by Slurm preemption. Larger models and pooled comparisons pending.",
+      "updated_utc": "2026-10-19T11:00:39.089060+00:00"
     },
     {
       "id": "J9",
@@ -1269,6 +1269,15 @@
       "numerical_source_freeze": "d9f68aa2396e4a4fc14a1dcb18a9d367dbaf4dd73a8f1ddbe6b1b4df2d80e99e"
     },
     {
+      "id": "J8_bridge_eager_b8_c4096_normal_eventscomplete_acq02",
+      "status": "interrupted",
+      "source": "results/processes/J8_bridge_eager_b8_c4096_normal_eventscomplete_acq02.json",
+      "source_sha256": "b6543d339473b14f214734c4c6099de5072210c32829dfe5869931f4f1626e08",
+      "gpu_execution": false,
+      "exit_code": null,
+      "numerical_source_freeze": "d9f68aa2396e4a4fc14a1dcb18a9d367dbaf4dd73a8f1ddbe6b1b4df2d80e99e"
+    },
+    {
       "id": "J8_bridge_eager_b8_c4096_normal_eventsempty_acq00",
       "status": "complete",
       "source": "results/processes/J8_bridge_eager_b8_c4096_normal_eventsempty_acq00.json",
@@ -1394,5 +1403,13 @@
       "exit_code": 0,
       "numerical_source_freeze": "d9f68aa2396e4a4fc14a1dcb18a9d367dbaf4dd73a8f1ddbe6b1b4df2d80e99e"
     }
-  ]
+  ],
+  "recovery": {
+    "scheduler_state": "PREEMPTED",
+    "allocation_start_local": "2026-10-19T05:47:08-04:00",
+    "allocation_end_local": "2026-10-19T06:56:20-04:00",
+    "recovered_utc": "2026-10-19T11:00:39.089060+00:00",
+    "exit_code": null,
+    "reason": "Slurm preempted allocation; no child exit record recovered; no successful acquisition inferred"
+  }
 }

@@ -1,5 +1,5 @@
 {
-  "status": "running",
+  "status": "interrupted_preempted",
   "steps": [
     {
       "id": "J5",
@@ -20,7 +20,7 @@
     },
     {
       "id": "J8",
-      "status": "running",
+      "status": "interrupted",
       "started_utc": "2026-10-19T10:44:43.517649+00:00",
       "command": [
         "/tmp/h200_research_3449576_job14171804/runtime/bin/python",
@@ -31,7 +31,16 @@
         "J8"
       ],
       "log": "logs/queue_J8_attempt00.log",
-      "resource": "gpu"
+      "resource": "gpu",
+      "exit_code": null,
+      "recovery": {
+        "scheduler_state": "PREEMPTED",
+        "allocation_start_local": "2026-10-19T05:47:08-04:00",
+        "allocation_end_local": "2026-10-19T06:56:20-04:00",
+        "recovered_utc": "2026-10-19T11:00:39.089060+00:00",
+        "exit_code": null,
+        "reason": "Slurm preempted allocation; no child exit record recovered; no successful acquisition inferred"
+      }
     }
   ],
   "queue_source_sha256": "38c6ecaba6c314862281438f9a00439beb2777b2e093cd3eef9f72eff77a51b7",
@@ -39,5 +48,13 @@
   "queue_attempt": 0,
   "schedule": "gpu-first",
   "phase": "all",
-  "reused_gpu_dispositions": {}
+  "reused_gpu_dispositions": {},
+  "recovery": {
+    "scheduler_state": "PREEMPTED",
+    "allocation_start_local": "2026-10-19T05:47:08-04:00",
+    "allocation_end_local": "2026-10-19T06:56:20-04:00",
+    "recovered_utc": "2026-10-19T11:00:39.089060+00:00",
+    "exit_code": null,
+    "reason": "Slurm preempted allocation; no child exit record recovered; no successful acquisition inferred"
+  }
 }
