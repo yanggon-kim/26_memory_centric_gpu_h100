@@ -1,5 +1,5 @@
 {
-  "status": "running",
+  "status": "interrupted_preempted",
   "steps": [
     {
       "id": "J8",
@@ -37,7 +37,7 @@
     },
     {
       "id": "J10",
-      "status": "running",
+      "status": "interrupted",
       "started_utc": "2026-10-19T13:20:39.810474+00:00",
       "command": [
         "/tmp/h200_research_3449576_job14177052/runtime/bin/python",
@@ -48,7 +48,16 @@
         "J10"
       ],
       "log": "logs/queue_J10_attempt00.log",
-      "resource": "gpu"
+      "resource": "gpu",
+      "exit_code": null,
+      "recovery": {
+        "scheduler_state": "PREEMPTED",
+        "allocation_start_local": "2026-10-19T07:48:27-04:00",
+        "allocation_end_local": "2026-10-19T09:39:11-04:00",
+        "recovered_utc": "2026-10-19T14:32:27.717826+00:00",
+        "exit_code": null,
+        "reason": "Scheduler preemption; missing child exit status stays null, not successful"
+      }
     }
   ],
   "queue_source_sha256": "38c6ecaba6c314862281438f9a00439beb2777b2e093cd3eef9f72eff77a51b7",
@@ -79,5 +88,13 @@
       },
       "scientific_gate": "not inferred from command exit"
     }
+  },
+  "recovery": {
+    "scheduler_state": "PREEMPTED",
+    "allocation_start_local": "2026-10-19T07:48:27-04:00",
+    "allocation_end_local": "2026-10-19T09:39:11-04:00",
+    "recovered_utc": "2026-10-19T14:32:27.717826+00:00",
+    "exit_code": null,
+    "reason": "Scheduler preemption; missing child exit status stays null, not successful"
   }
 }
