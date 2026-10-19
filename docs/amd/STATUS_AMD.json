@@ -1,0 +1,26 @@
+{
+  "branch": "amd/mi300x-phase0",
+  "governing_scope": "docs/shoreline_aware_research_plan_2.0.md + docs/shoreline_hopper_measurements.md, adapted in docs/AMD_PORT_PLAN.md",
+  "allocations": {
+    "468885": {"partition": "mi3008x", "node": "k002-003", "gpus": "8x MI300X", "elapsed": "06:45:04", "state": "cancelled after completion of planned work"},
+    "468949": {"partition": "mi3258x", "gpus": "1x MI325X used", "state": "complete"},
+    "469084": {"partition": "mi3258x", "purpose": "compute-matched MI325X (264 CUs)", "state": "queued; self-contained; results land in results/amd_*_mi325x_matched_job469084"}
+  },
+  "families": {
+    "J0_inventory_identity_tools": "complete",
+    "M1_baselines": "complete (17 conditions x 3 acq x 10 trials); representative text complete; cross-GPU check complete",
+    "M2_counters": "complete for 12 cases x 4 counter groups (L2->memory bytes; no MALL counter)",
+    "M3_kernel_evidence": "partial: rocprofv3 kernel traces with launch/resource fields; rocprof-compute limited to single-pass sets (tool crashes recorded)",
+    "M4_A_to_D_service": "complete (MI300X 4 CU levels; MI325X full)",
+    "M5_pressure": "complete (5 cases x 3 acq; HF compiled path)",
+    "M6_M7_cu_restriction": "complete (13 decode cases + prefill, 3 acq)",
+    "M8_energy": "complete (8 cases; under CU masks for 2 cases); TP energy not measured",
+    "E_F_bounds_J9": "analytical, complete (shoreline_latency_bounds.json)",
+    "J6_competitor": "complete (4 cases x 6 treatments x 3 acq)",
+    "TP_extension": "complete (TP2/TP4/TP8; matched at ~304 and ~160 total CUs)",
+    "native_traces_and_simulator": "not attempted (no NVBit/Accel-Sim route on gfx942)"
+  },
+  "clock_gate": "contract <=5% envelope met by 2/17 M1 conditions; reported, not met",
+  "report": "docs/amd/shoreline_opportunity_report.md",
+  "physical_architecture_claims": "none"
+}

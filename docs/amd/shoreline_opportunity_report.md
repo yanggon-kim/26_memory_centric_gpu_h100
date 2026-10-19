@@ -1,6 +1,6 @@
 # MI300X shoreline-aware decode study: opportunity report
 
-Allocation 468885 (`mi3008x`, node k002-003, 8× AMD Instinct MI300X), 2026-10-18 12:12–(see log), plus MI325X job 468949. Governing scope: `docs/shoreline_aware_research_plan_2.0.md` and the common measurement contract `docs/shoreline_hopper_measurements.md`, adapted in `docs/AMD_PORT_PLAN.md`. Execution details, failures and tool workarounds are in `docs/amd/experiment_log.md`; artifact locations in `docs/amd/artifacts.md`.
+Allocation 468885 (`mi3008x`, node k002-003, 8× AMD Instinct MI300X), 2026-10-18 12:12–18:57 (cancelled when all planned work was done), plus MI325X job 468949 (complete) and compute-matched MI325X job 469084 (queued). Governing scope: `docs/shoreline_aware_research_plan_2.0.md` and the common measurement contract `docs/shoreline_hopper_measurements.md`, adapted in `docs/AMD_PORT_PLAN.md`. Execution details, failures and tool workarounds are in `docs/amd/experiment_log.md`; artifact locations in `docs/amd/artifacts.md`.
 
 Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from measured inputs; **profiled** = under rocprofv3/rocprof-compute (timings perturbed, never baselines). Nothing here establishes a physical architecture benefit. Area, PHY, shoreline, package and power models are later stages.
 
@@ -27,18 +27,19 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 | J0 inventory, identity, tool feasibility | 8× MI300X; counters permitted; CU masks validated | complete |
 | M1 baselines (vLLM 0.23 graph + eager, 3 acq × 10 trials) | bridge B1/C1024, B8/C4096; Qwen7B, Mistral7B B1/B8 C4096; Qwen14B, Qwen32B B1/C4096 | complete (17/17 × 3) |
 | M1 representative text | bridge B1/B4 C128 | complete |
-| M1 cross-GPU reproducibility | 8 graph cases on a second GPU | complete/partial (see manifest) |
+| M1 cross-GPU reproducibility | 8 graph cases on a second GPU | GPU 6 within 0.1–0.8% of GPU 0 (2–3 acq) |
 | HF StaticCache gate + compiled timing | bridge | passed |
-| M2/M3 counters (rocprofv3, per dispatch) | 12 cases × 4 counter groups | 44+ groups; some groups failed 4 attempts (recorded) |
+| M2/M3 counters (rocprofv3, per dispatch) | 12 cases × 4 counter groups | complete (all groups, after retries; failed attempts kept) |
 | M3 rocprof-compute | HF Tensile kernels, single-pass sets; service benchmarks | partial (tool crashes recorded) |
 | M4/A–D service controls | 34 conditions × 4 CU levels × 3 acq + counter acq | complete, 0 failures |
 | M5 cache-history pressure | bridge B1 C1024/2048/4096, B8 C4096; Qwen7B B1 C4096 | complete (3 acq each) |
-| M6 CU-restricted decode | 8 focused cases + Qwen7B batch 1–64 × 4 CU levels | complete (a few cells 1–2 acq) |
+| M6 CU-restricted decode | 8 focused cases + Qwen7B batch 1–64 × 4 CU levels | complete (3 acq each) |
 | M7 service under CU masks | all M4 conditions | complete |
-| M8 energy | 7 graph cases; energy under CU masks (7B, 32B); prefill vs CUs (4 cases) | complete/partial (see manifest) |
+| M8 energy | 8 graph cases (3 acq; Mistral B8 2 acq; all trials qualified); energy under CU masks (7B, 32B); prefill vs CUs (4 cases) | complete |
 | E/F + J9 | latency bounds and c/r/f grid from measured inputs | analytical, complete |
-| TP extension (owner-authorized) | TP2/TP4/TP8, full and compute-matched | see TP section |
-| MI325X comparison | M4 full-CU sweep + 8 graph baselines | complete (job 468949) |
+| TP extension (owner-authorized) | TP2/TP4/TP8, full and compute-matched at ≈304 and ≈160 total CUs | complete (3 acq; one TP2 cell 2 acq) |
+| J6 same-GPU competitor (added) | 4 cases × {solo, read 25/50/75/100%, FMA} | complete (3 acq) |
+| MI325X comparison | M4 full-CU sweep + 8 graph baselines | complete (job 468949); compute-matched job 469084 queued |
 
 ## 2. Baselines (M1, graph mode, mean of 3 acquisitions, 95% CI)
 
@@ -49,26 +50,30 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 | Qwen2.5-7B B1 C4096 | 4.682 | 4.667–4.704 | 214 | 3.594 |
 | Qwen2.5-7B B8 C4096 | 6.654 | 6.601–6.696 | 1202 | 0.659 |
 | Mistral-7B B1 C4096 | 5.111 | 5.072–5.176 | 196 | 3.916 |
-| Mistral-7B B8 C4096 | 7.601 | 7.566–7.643 | 1053 | — |
+| Mistral-7B B8 C4096 | 7.601 | 7.566–7.643 | 1053 | 0.782 (2 acq; third cut by allocation end) |
 | Qwen2.5-14B B1 C4096 | 8.638 | (3 acq) | 116 | 6.742 |
 | Qwen2.5-32B B1 C4096 | 17.532 | (3 acq) | 57 | 14.001 |
 
-Eager vLLM is host-bound at batch 1 (337 launches/step; GPU busy ≈15% of step wall in the profiled trace) and is a separate program, not a baseline. The contract's pooled ≤5% clock envelope failed in most conditions because MI300X's power-managed clocks move with load and the memory clock ramps at trial start. Rows are reported with that flag (`clock_qualified_v1`) rather than dropped. Energy qualification passed (counter vs integrated power within 0.2–1.4%, windows 7–77 s). It is internal consistency only, not absolute calibration, and has socket scope.
+The contract's pooled ≤5% clock envelope passed for only 2 of 17 conditions. A post-hoc diagnostic restricted to the middle 80% of each trial window gives the same 2 of 17. MI300X GFX clocks genuinely vary by more than 5% between trials under power management at the 750 W cap, so this gate cannot be met on this hardware without clock locking, which the contract forbids. Comparisons are reported with the flag; CIs come from three independent acquisitions.
+
+Eager vLLM is host-bound at batch 1 (337 launches/step; GPU busy ≈15% of step wall in the profiled trace) and is a separate program, not a baseline. Energy qualification passed (counter vs integrated power within 0.2–1.4%, windows 7–77 s). It is internal consistency only, not absolute calibration, and has socket scope.
 
 ## 3. Traffic: logical vs physical (M2)
 
 Per decode step (tick 5), L2→memory-side bytes from FETCH_SIZE/WRITE_SIZE. These are bytes leaving the per-XCD L2s, before the Infinity Cache; there is no MALL counter on this stack, so they are an upper bound on HBM bytes.
 
-| Case | Read GB | Logical U GB | D/U | Written MB | L2 hit (requests) |
-|---|---:|---:|---:|---:|---:|
-| bridge B1 C1024 (eager / graph) | 3.133 / 3.131 | 3.117 | 1.005 | 7 | 0.13 |
-| bridge B8 C4096 eager | 4.174 | 4.028 | 1.036 | 164 | 0.21 |
-| Qwen7B B1 C4096 (eager / graph) | 14.41 | 14.38 | 1.002 | 31 | 0.06 |
-| Qwen7B B8 C4096 eager | 16.47 | 16.02 | 1.028 | 550 | 0.09 |
-| Mistral7B B1 C4096 eager | 14.80 | 14.77 | 1.002 | 12 | 0.05 |
-| Qwen14B B1 C4096 eager | 28.85 | 28.79 | 1.002 | 95 | 0.05 |
+| Case | Read GB | Logical U GB | D/U | Written MB | L2 hit (requests) | Issued MFMA / useful FLOPs |
+|---|---:|---:|---:|---:|---:|---:|
+| bridge B1 C1024 (eager / graph) | 3.133 / 3.131 | 3.117 | 1.005 | 7 | 0.13 | 4.9 |
+| bridge B8 C4096 (eager / graph) | 4.174 / 4.175 | 4.028 | 1.036 | 161–164 | 0.21 | 2.2 |
+| Qwen7B B1 C4096 (eager / graph) | 14.41 | 14.38 | 1.002 | 31 | 0.06 | 4.2 |
+| Qwen7B B8 C4096 eager | 16.47 | 16.02 | 1.028 | 550 | 0.09 | 2.1 |
+| Mistral7B B1 C4096 (eager / graph) | 14.80 | 14.77 | 1.002 | 11–12 | 0.05 | 3.6 |
+| Mistral7B B8 C4096 eager | 18.78 | 18.53 | 1.014 | 171 | 0.17 | 1.9 |
+| Qwen14B B1 C4096 eager | 28.85 | 28.79 | 1.002 | 95 | 0.05 | 4.0 |
+| Qwen32B B1 C4096 eager | 65.14 | 65.05 | 1.001 | 130 | 0.04 | 4.0 |
 
-The aggregate D/U near 1 means "about once per step", not a per-address proof. Issued BF16 MFMA work (SQ_INSTS_VALU_MFMA_MOPS_BF16 × 512) is about 4–5× the useful FLOPs at batch 1 (GEMV padded to 16-row MFMA tiles) and about 2× at batch 8. The ×512 unit is the rocprof-compute convention, not independently verified here.
+The aggregate D/U near 1 means "about once per step", not a per-address proof. The issued/useful column uses SQ_INSTS_VALU_MFMA_MOPS_BF16 × 512. That unit is the rocprof-compute convention, not independently verified here. At batch 1 the GEMVs are padded to 16-row MFMA tiles.
 
 ## 4. Service controls (M4, A–D; M7 under CU masks)
 
@@ -115,12 +120,15 @@ Noninferiority (≤5% decode regression, upper CI bound) holds at 232 CUs only f
 | Case | T ms | C ms | M ms | M/T | O feasible ms |
 |---|---:|---:|---:|---:|---|
 | bridge B1 C1024 | 2.187 | 0.003 | 0.690 | 0.32 | 1.49–1.50 |
-| bridge B8 C4096 | 3.155 | 0.028 | 0.886 | 0.28 | 2.24–2.27 |
-| Qwen7B B1 C4096 | 4.682 | 0.015 | 3.161 | 0.68 | 1.51–1.52 |
-| Qwen7B B8 C4096 | 6.653 | 0.118 | 3.523 | 0.53 | 3.01–3.13 |
-| Mistral7B B1 C4096 | 5.111 | 0.015 | 3.246 | 0.64 | 1.85–1.86 |
-| Qwen14B B1 C4096 | 8.638 | 0.030 | 6.329 | 0.73 | 2.28–2.31 |
-| Qwen32B B1 C4096 | 17.532 | 0.065 | 14.301 | 0.82 | 3.17–3.23 |
+| bridge B8 C4096 | 3.155 | 0.028 | 0.954 | 0.30 | 2.17–2.20 |
+| Qwen7B B1 C4096 | 4.682 | 0.015 | 3.175 | 0.68 | 1.49–1.51 |
+| Qwen7B B8 C4096 | 6.653 | 0.118 | 3.742 | 0.56 | 2.79–2.91 |
+| Mistral7B B1 C4096 | 5.111 | 0.015 | 3.256 | 0.64 | 1.84–1.86 |
+| Mistral7B B8 C4096 | 7.601 | 0.122 | 4.167 | 0.55 | 3.31–3.43 |
+| Qwen14B B1 C4096 | 8.638 | 0.030 | 6.363 | 0.74 | 2.25–2.28 |
+| Qwen32B B1 C4096 | 17.532 | 0.065 | 14.349 | 0.82 | 3.12–3.18 |
+
+D comes from counters (FETCH_SIZE + WRITE_SIZE, eager program, ticks 4–6) for every case.
 
 All intervals are nonempty (consistency, not validation). The c/r/f grid (c ∈ {1, .75, .5, .25}, r ∈ {.7, 1, 1.2, 1.4}, f ∈ {0, .05, .1, .2}) is in the same file, under same-O/X and envelope assumptions. **M6 falsifies reading c as FLOP capacity:** C/c predicts under 1% slowdown at c = 0.32, but 9–24% was measured, because compute units also generate memory requests and drive L2 bandwidth (M7). Any architecture model must couple "compute" removal to request-generation and on-chip delivery capacity.
 
@@ -171,3 +179,11 @@ Measured (job 468949, full CUs): HBM stream +7–10%, write +10%, Infinity Cache
 - TP and MI325X comparisons change several things at once (communication, power caps, HBM type) and are reported as such.
 - The common contract's ≤5% clock envelope failed for most conditions (power-managed clocks); flagged, not dropped.
 - No native instruction/address traces (no NVBit on AMD); reuse is from counters and pressure controls, not traces. Simulator calibration is not attempted.
+
+## 10. Recommended next steps
+
+1. **Architecture modelling (plan 2.0 Phase 2–4).** Use these measured inputs: decode C/M/O per case, M7 service-vs-CU curves (request generation), the competitor and compute-matched TP bandwidth sensitivities, prefill and large-batch penalties, and power-cap behaviour. Couple "compute removal" to request-issue and on-chip delivery capacity, not FLOPs alone.
+2. **Reduce O before adding hardware.** 1.5–3.4 ms per step is neither bandwidth nor arithmetic. Profile graph-mode per-kernel efficiency (wvSplitK at about 2.5 TB/s vs 4.5 TB/s stream) and launch/sync structure. A software fix here is the strongest simpler alternative (plan 2.0 Challenge F).
+3. **Energy.** A proxy for removed or power-gated silicon is needed; CU masking cannot show leakage savings. Collect component power where the platform exposes it.
+4. **MI325X compute-matched job 469084.** Add its results when it completes: same-compute r ≈ 1.07–1.10.
+5. **Traces.** Address-level reuse needs a tracer that works on gfx942 (rocprofv3 ATT or a binary-instrumentation tool). It was not attempted here.

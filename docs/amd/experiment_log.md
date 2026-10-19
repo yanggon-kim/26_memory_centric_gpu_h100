@@ -58,3 +58,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 14:45 TP2 pilot OK; TP2 lane (GPUs 4,7) from 14:50; TP4 lane (GPUs 1,2,3,5) from 15:22.
 - 15:20 MI325X comparison job 468949 started on `mi3258x` (separate node, self-contained).
 - 15:22 prefill-vs-CU lane complete.
+
+## Close-out (15:45–18:57)
+
+- 16:00 TP4 qwen14b hung 30 min after one rank's Inductor/Triton cache race ("Cubin file saved by TritonBundler not found"); TP lanes switched to persistent per-case compile caches with rank-failure detection and retries.
+- 17:05 Owner requested more bandwidth-at-fixed-compute measurements: added the same-GPU competitor (J6), TP at about 160 total CUs, and a compute-matched MI325X job (469084, queued for 2026-10-19 04:29).
+- 17:07 Two stale TP8 waiters started duplicate lanes while GPU 0 was busy; both were killed within a minute and one clean TP8 lane ran 17:08–17:36.
+- 17:37 J6 first pass failed (the runner requires a fresh output directory, which the lane had pre-created); fixed and rerun 17:49–18:31.
+- 18:23–18:55 gap fills: all M6 cells at 3 acquisitions, all counter groups complete, energy at 3 acquisitions (Mistral B8 at 2).
+- 18:56 node monitor stopped; allocation 468885 cancelled at 6 h 45 min elapsed with all planned work done.
+- Clock gate: 2 of 17 M1 conditions pass the contract's ≤5% envelope, and the post-hoc interior-sample diagnostic gives the same 2 of 17; MI300X power management varies clocks by more than 5%.
