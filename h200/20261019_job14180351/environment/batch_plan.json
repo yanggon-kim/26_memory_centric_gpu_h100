@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "previous_session": "latest",
+  "minimum_previous_job_id": 14162783,
+  "traffic_completed_session": "h200/20261018_job14162783",
+  "runtime_lock": "configs/runtime.lock.txt",
+  "tracer_runtime_lock": "configs/tracer_requirements.lock.txt",
+  "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+  "closeout_buffer_s": 1800,
+  "minimum_launch_budget_s": 1200,
+  "minimum_tmp_free_gib": 100,
+  "minimum_shared_free_gib": 10,
+  "session_overrides": {
+    "collection_scope_version": "automatic_native_continuation_v1",
+    "queue_schedule": "gpu-first",
+    "sm_components": [
+      "native"
+    ],
+    "sm_engines": [
+      "eager"
+    ],
+    "smoke_models": [
+      "bridge"
+    ],
+    "baseline_contrasts": [],
+    "rejected_acquisition_retry_limit": 0
+  },
+  "reason": "Reuse completed decoder timing and B8 physical traffic. If J5 was interrupted, acquire a fresh same-GPU native-service cohort (including full-SM control); never pool acquisitions across GPUs. Reuse command-finished GPU job dispositions from prior queue ledgers. Then J8, J7, J10, conditional J6/J11, followed by CPU analysis and archive closeout."
+}
