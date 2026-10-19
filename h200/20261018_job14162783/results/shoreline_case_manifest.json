@@ -3,9 +3,11 @@
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
-      "prior_evidence": "h200/20261018_job14150903/STATUS.json"
+      "status": "complete",
+      "scientific_gate": "passed",
+      "prior_evidence": "h200/20261018_job14150903/STATUS.json",
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-19T02:34:59.061283+00:00"
     },
     {
       "id": "J1",
@@ -75,7 +77,44 @@
     }
   ],
   "conditions": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "id": "cpu_contracts",
+      "status": "complete",
+      "source": "results/processes/cpu_contracts.json",
+      "source_sha256": "5fbe1479bd3dedef9da2dbd485452ebbc5ff0a30a75a5de87edd738fc3fde108",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "4d5ef70a6a9d986b5b7227d99f5c2f766c7208a00febc564a4bd29c17f8de86b"
+    },
+    {
+      "id": "inventory",
+      "status": "complete",
+      "source": "results/processes/inventory.json",
+      "source_sha256": "87672805c25be158c4f3fef8f3295d0133a2fa384abbc7ff8f1cbf5c72bc3168",
+      "gpu_execution": true,
+      "exit_code": 0,
+      "numerical_source_freeze": "4d5ef70a6a9d986b5b7227d99f5c2f766c7208a00febc564a4bd29c17f8de86b"
+    },
+    {
+      "id": "ncu_catalog",
+      "status": "complete",
+      "source": "results/processes/ncu_catalog.json",
+      "source_sha256": "7cbbed1dd48fd79fd7633420a60369d7fefdeab968dae5f7a93ac936b837c30b",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "4d5ef70a6a9d986b5b7227d99f5c2f766c7208a00febc564a4bd29c17f8de86b"
+    },
+    {
+      "id": "pip_freeze",
+      "status": "complete",
+      "source": "results/processes/pip_freeze.json",
+      "source_sha256": "83d2bac74f2e5666bc64e78c16c126ca71de16042f7ab197ef3e7093fd35e167",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "4d5ef70a6a9d986b5b7227d99f5c2f766c7208a00febc564a4bd29c17f8de86b"
+    }
+  ],
   "historical_session": "h200/20261018_job14150903",
   "scope_declaration": "Targeted J5 traffic/native completion; completed timing and B1 traffic retained in prior cohorts, no cross-GPU pooling"
 }
