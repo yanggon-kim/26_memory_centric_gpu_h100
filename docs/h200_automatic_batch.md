@@ -1,5 +1,11 @@
 # Automatic H200 campaign
 
+Current default: the targeted [version2 gap-remediation plan](h200_gap_remediation.md).
+The completed broad continuation is retained in `configs/h200_batch_v1.json` as historical policy.
+Both the standard entry point below and `batch/h200_gap_v2.sbatch` now use
+`configs/h200_batch_gap_v2.json`: corrected J6, J7 counters, then CPU closeout.
+The original broad-continuation behavior described below applies to version1.
+
 Submit the research batch script instead of the old allocate-and-sleep script:
 
 ```bash

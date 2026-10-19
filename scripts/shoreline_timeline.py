@@ -46,6 +46,9 @@ def read(path,expected_green_id=None):
         for k in kernels:
             name=k['symbol'];v=grouped.setdefault(name,{'launches':0,'duration_ns_sum':0})
             v['launches']+=1;v['duration_ns_sum']+=k['end']-k['start']
+            v.setdefault('green_context_ids',[])
+            context=k['greenContextId'] or 0
+            if context not in v['green_context_ids']:v['green_context_ids'].append(context)
         contexts=sorted(set(k['greenContextId'] or 0 for k in kernels))
         cross_context=[(max(a['start'],b['start']),min(a['end'],b['end'])) for i,a in enumerate(kernels)
                        for b in kernels[i+1:] if a['greenContextId'] and b['greenContextId'] and
@@ -61,3 +64,26 @@ def read(path,expected_green_id=None):
     db.close()
     return {'status':'complete','windows':windows,'expected_green_context_id':expected_green_id,
             'restriction_passed':None if expected_green_id is None else all(w['restriction_passed'] for w in windows)}
+
+
+def competition_gate(timeline,allocation,producer_complete,exact_outputs):
+    """Prove each kernel's role/placement as well as same-pass overlap."""
+    import re
+    decoder=allocation['decoder']['green_context_id']
+    competitor=allocation['competitor']['green_context_id']
+    if not (producer_complete and exact_outputs and decoder and competitor and decoder!=competitor):return False
+    if not allocation.get('disjoint_api_resources'):return False
+    observed=allocation.get('observed_smids',[])
+    if len(observed)!=2 or not all(observed) or set(observed[0])&set(observed[1]):return False
+    windows=timeline.get('windows',[])
+    if not windows:return False
+    for w in windows:
+        if w['green_context_ids']!=sorted([decoder,competitor]) or w['distinct_green_context_kernel_overlap_ms']<=0:return False
+        roles=set()
+        for symbol,kernel in w['kernels'].items():
+            owned=bool(re.search(r'\b(?:transfer|condition)\b',symbol))
+            wanted=competitor if owned else decoder
+            if kernel.get('green_context_ids')!=[wanted]:return False
+            roles.add('competitor' if owned else 'decoder')
+        if roles!={'decoder','competitor'}:return False
+    return True

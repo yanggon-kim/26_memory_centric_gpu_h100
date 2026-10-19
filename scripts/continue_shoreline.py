@@ -19,6 +19,7 @@ def main():
     verify_allocation()
     steps=[('runtime_dependency_check_v1',[sys.executable,'-m','pip','check']),
            ('batch_recovery_contracts_v1',[sys.executable,str(package/'scripts/test_h200_batch.py')]),
+           ('gap_repair_contracts_v2',[sys.executable,str(package/'scripts/test_h200_gaps.py')]),
            ('continuation_contracts_v1',[sys.executable,str(package/'scripts/test_shoreline_contracts.py')]),
            ('J0_inventory',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J0']),
            ('J1_functional_smokes',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J1'])]

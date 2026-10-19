@@ -71,7 +71,7 @@ def main(a):
            ('J11_closeout',base+['--job','J11']),
            ('final_analysis',[python,str(package/'scripts/shoreline_analyze.py'),'--root',str(root)]),
            ('final_figures',[python,str(package/'scripts/plot_shoreline.py'),'--root',str(root)])]
-    cpu_names={'J9_analysis','final_analysis','final_figures','private_archives'}
+    cpu_names={'J9_analysis','final_analysis','final_figures','private_archives','consolidated_evidence'}
     if schedule=='gpu-first':
         selected={name:command for name,command in steps}
         steps=[(name,selected[name]) for name in ('J5','J8','J7','J10','J6')]
@@ -82,6 +82,17 @@ def main(a):
         elif phase=='cpu':steps=[s for s in steps if s[0] in cpu_names]
     elif phase!='all':raise ValueError('--phase requires --schedule gpu-first')
     if a.start_at:steps=steps[next(i for i,(name,_) in enumerate(steps) if name==a.start_at):]
+    requested=json.loads(a.session.read_text()).get('gpu_job_order')
+    if requested is not None:
+        allowed={'J5','J8','J7','J10','J6','J11_gpu'}
+        if schedule!='gpu-first' or not requested or len(set(requested))!=len(requested) or not set(requested)<=allowed:
+            raise ValueError('invalid explicit GPU repair sequence')
+        lookup=dict(steps)
+        steps=([(name,lookup[name]) for name in requested] if phase!='cpu' else [])+[(name,cmd) for name,cmd in steps if name in cpu_names]
+        if phase!='gpu':
+            index=next(i for i,(name,_) in enumerate(steps) if name=='J9_analysis')+1
+            steps.insert(index,('consolidated_evidence',[python,str(package/'scripts/consolidate_h200.py'),
+                '--output',str(root/'analysis/consolidated'),'--repair-root',str(root)]))
     reused=json.loads(a.session.read_text()).get('queue_reused_jobs',{})
     allowed_reuse={'J5','J8','J7','J10','J6','J11_gpu'}
     if not set(reused)<=allowed_reuse:raise ValueError('unknown reusable GPU step')

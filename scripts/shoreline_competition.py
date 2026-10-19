@@ -15,7 +15,7 @@ def main(a):
     import triton
     from cuda.core import Device,ContextOptions,SMResourceOptions
     from gpu_target import verify_cuda
-    from shoreline_green import stream_proof
+    from shoreline_green import stream_proof,retain_for_process
     from shoreline_kernels import arithmetic,transfer,condition
     from software_decode_experiments import dump
     verify_cuda(torch,a.gpu_uuid)
@@ -27,6 +27,10 @@ def main(a):
     dc=device.create_context(ContextOptions(resources=[groups[0]]))
     cc=device.create_context(ContextOptions(resources=[remainder]))
     ds,cs=dc.create_stream(),cc.create_stream()
+    # Framework allocator/event caches outlive this function. Retain both CUDA
+    # contexts and their streams until process exit, as in the reviewed J5 fix.
+    retain_for_process(dc,ds)
+    retain_for_process(cc,cs)
     decoder=torch.cuda.ExternalStream(int(ds.handle),device=0)
     competitor=torch.cuda.ExternalStream(int(cs.handle),device=0)
     proof={'decoder':stream_proof(decoder),'competitor':stream_proof(competitor),
@@ -34,6 +38,7 @@ def main(a):
            'parent_sm_count':resource.sm_count,'requested_decoder_sm_count':count,
            'returned_group_sm_count':groups[0].sm_count,'returned_remainder_sm_count':remainder.sm_count,
            'disjoint_api_resources':groups[0].handle!=remainder.handle}
+    proof['lifetime_protocol']='disjoint_lifetime_v2; process-lifetime retained contexts and streams'
     assert proof['decoder']['green_context_id']!=proof['competitor']['green_context_id']
     assert proof['decoder']['actual_sm_count']+proof['competitor']['actual_sm_count']<=resource.sm_count
     # Probe actual SM IDs on both contexts, in addition to resource API evidence.

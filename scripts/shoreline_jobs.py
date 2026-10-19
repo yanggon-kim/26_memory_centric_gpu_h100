@@ -95,6 +95,7 @@ def profile_config(model,engine,batch,context,label):
     if not base.exists():campaign.make_config(ROOT,model,engine,batch,context)
     config=load(base);config['trials']=3
     config['shoreline_protocol'].update(trials_per_acquisition=3,
+        counter_range_protocol=load(ROOT/'session.json').get('profile_protocol','range_api_v2'),
         scope='instrumented counter/timeline process; not ordinary timing; first measured trial ticks 4/5/6 selected')
     target=ROOT/'configs'/(label+'.json')
     if target.exists():assert load(target)==config
@@ -728,7 +729,10 @@ def treatment_case(job,model,batch,context,acq,pressure='normal',events=False):
 def retention():
     campaign.update_job(ROOT,'J7','in_progress')
     results=[];selected=[];reference_gates=[]
-    for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
+    session=load(ROOT/'session.json')
+    components=session.get('retention_components',['timing','traffic'])
+    assert components and set(components)<={'timing','traffic'}
+    for b,c in session.get('retention_shapes',[(1,1024),(1,2048),(1,4096),(8,4096)]):
         if reference('bridge','eager',b,c) is None:
             campaign.acquisition(ROOT,'bridge','hf_eager',b,c,0,smoke=True)
             campaign.acquisition(ROOT,'bridge','eager',b,c,0,smoke=True)
@@ -741,14 +745,22 @@ def retention():
     dump(ROOT/'results/J7_functional_reference_gates.json',{'failures':reference_gates,'qualified_shapes':selected,'scope':'functional references only; smoke timings excluded'})
     publish('J7 checkpoint: establish independent exact-output references before treatment comparisons')
     for b,c in selected:
+        if 'timing' not in components:continue
         for acq in range(3):
             # Predetermined alternating order; never choose by observed latency.
             for pressure in (('normal','pressure') if acq%2==0 else ('pressure','normal')):
                 results.append(treatment_case('J7','bridge',b,c,acq,pressure))
     physical=[]
     for b,c in selected:
+        if 'traffic' not in components:continue
         for pressure in ('normal','pressure'):
-            for acq in range(3):physical.append(counter_case('bridge','eager',b,c,acq,job='J7',pressure=pressure))
+            rows=bounded_acquisitions(lambda acq:counter_case('bridge','eager',b,c,acq,job='J7',pressure=pressure))
+            physical.extend(rows)
+            if rows[0]['status']!='complete':
+                dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,'physical':physical,
+                    'reason':'corrected first counter pilot failed; no automatic expansion'})
+                disposition('J7','partial','corrected counter pilot failed; preserve attempt for versioned diagnosis')
+                return
     dump(ROOT/'results/shoreline_retention_qualification.json',{'cases':results,'physical':physical,
         'physical_traffic':'full decode ticks include pressure and its direct read/write cost; no logical byte subtraction',
         'interpretation':'pressure is cache-history competition; no guaranteed flush or measured larger-SRAM benefit'})
@@ -871,16 +883,22 @@ def competition():
             from shoreline_timeline import read
             timeline=read(db);allocation=load(output/'disjoint_allocation.json')
             expected=sorted([allocation['decoder']['green_context_id'],allocation['competitor']['green_context_id']])
-            valid=pilot['status']=='complete' and all(w['green_context_ids']==expected and
-                    w['distinct_green_context_kernel_overlap_ms']>0 for w in timeline['windows'])
+            from shoreline_timeline import competition_gate
+            native=output/'run.json';ref=reference('bridge',engine,batch,context)
+            exact=bool(native.exists() and ref and load(native)['status']=='complete' and
+                all(t['output_ids']==load(ref)['cases'][0]['trials'][0]['output_ids']
+                    for case in load(native)['cases'] for t in case['trials']))
+            valid=competition_gate(timeline,allocation,pilot['status']=='complete',exact)
             if engine=='graph':valid=valid and all(w['graph_kernel_count']>0 for w in timeline['windows'])
-            proof={'timeline':timeline,'allocation':allocation,'both_contexts_observed':valid}
+            proof={'timeline':timeline,'allocation':allocation,'both_contexts_observed':valid,'exact_reference_ids':exact}
         dump(ROOT/'profiles'/(label+'.json'),{'status':'complete' if valid else 'failed',**proof})
         publish(f'J6 concurrency pilot checkpoint: {label} proved={valid}')
         if not valid:
             results.append({'id':label,'status':'unavailable','reason':'actual disjoint concurrent decode not proved'});continue
         for acq in range(3):
-            for treatment in ('idle','memory50','memory100','arithmetic50','arithmetic100'):
+            treatments=('idle','memory50','memory100','arithmetic50','arithmetic100')
+            if acq%2:treatments=tuple(reversed(treatments))
+            for treatment in treatments:
                 label=f'J6_{engine}_b{batch}_c{context}_{treatment}_acq{acq:02d}'
                 output=ROOT/'runs'/label
                 config=ROOT/'configs'/f'bridge_{engine}_b{batch}_c{context}_t10.json'
@@ -891,6 +909,10 @@ def competition():
                     d=load(output/'run.json');expected=load(reference('bridge',engine,batch,context))['cases'][0]['trials'][0]['output_ids']
                     result['exact_reference_ids']=d['status']=='complete' and all(t['output_ids']==expected for c in d['cases'] for t in c['trials'])
                     result['clock_qualification']=campaign.clock_qualification(d,row['monitor']['source'])
+                    result.update(step_ms=[t['wall_ms']/t['decode_iterations'] for c in d['cases'] for t in c['trials']],
+                        run_source=str((output/'run.json').relative_to(ROOT)),run_sha256=digest(output/'run.json'),
+                        allocation_proof=load(output/'disjoint_allocation.json'),
+                        concurrency_pilot=f'profiles/J6_concurrent_pilot_{engine}_b{batch}_c{context}.json')
                     if not result['exact_reference_ids'] or not result['clock_qualification']['passed']:result['status']='rejected'
                 results.append(result)
                 dump(ROOT/'profiles'/(label+'.json'),result)

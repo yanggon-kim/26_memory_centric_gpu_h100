@@ -93,6 +93,19 @@ def reused_jobs(previous):
     return reused
 
 
+def apply_reopen_policy(reused,plan):
+    """Reopen an old adapter disposition once per explicitly versioned repair."""
+    reopened={}
+    for step in plan.get('reopen_gpu_jobs',[]):
+        if step not in GPU_STEPS:raise ValueError('unknown repair job')
+        proof=reused.get(step)
+        if not proof:continue
+        original=evidence_path(proof['path']).parents[1]/'session.json'
+        if read(original).get('collection_scope_version')!=plan['session_overrides']['collection_scope_version']:
+            reopened[step]=reused.pop(step)
+    return reopened
+
+
 def allocation(state, hostname, now, buffer_s, minimum_s):
     fields = dict(x.split('=', 1) for x in state.split() if '=' in x)
     if fields.get('JobState') != 'RUNNING' or fields.get('NodeList') != hostname.split('.')[0]:
@@ -209,6 +222,7 @@ def main(args):
                         closeout_buffer_s=plan['closeout_buffer_s'], old_session=str(previous.relative_to(PACKAGE)),
                         accel_root=str(workspace / 'tools/accel-sim-framework'),
                         queue_reused_jobs=reused_jobs(previous))
+        settings['reopened_gpu_dispositions']=apply_reopen_policy(settings['queue_reused_jobs'],plan)
         write(root / 'session.json', settings)
         manifest = {'schema_version': 1, 'jobs': [
             {'id': f'J{i}', 'status': 'planned', 'scientific_gate': 'pending',

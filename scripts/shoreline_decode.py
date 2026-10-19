@@ -49,6 +49,10 @@ def main(a):
                             False,observer,hardware_sampler)
         original_step=engine.step
         calls=0;ledger=[];capturing=False
+        # Pressure hooks require observing all trials. Only the selected measured
+        # trial may expose the outer counter range to application-range replay.
+        # Ordinary controls retain their existing NVTX instrumentation costs.
+        emit_nvtx=profile_capture or getattr(a,'ordinary_control',False)
         range_start=torch.cuda.Event(enable_timing=True) if not profile_capture else None
         range_end=torch.cuda.Event(enable_timing=True) if not profile_capture else None
         ordinary_windows={}
@@ -70,18 +74,19 @@ def main(a):
             if tick==4:
                 if profile_capture:
                     dump(output_dir/'selected_interval.json',{'status':'running','pid':os.getpid(),
+                        'trial':prefix,
                         'ticks':[4,5,6],'scope':'three complete engine.step calls; prefill/first selected token excluded'})
                     torch.cuda.synchronize();torch.cuda.profiler.start()
                 else:range_start.record()
-                torch.cuda.nvtx.range_push('shoreline_ticks_4_6')
+                if emit_nvtx:torch.cuda.nvtx.range_push('shoreline_ticks_4_6')
                 capturing=True
-            if capturing:torch.cuda.nvtx.range_push('tick_'+str(tick))
+            if capturing and emit_nvtx:torch.cuda.nvtx.range_push('tick_'+str(tick))
             outputs=original_step()
             if not profile_capture:
                 for (first,last),(begin,end) in ordinary_windows.items():
                     if last!=6 and tick==last:end.record()
             if capturing:
-                torch.cuda.nvtx.range_pop()
+                if emit_nvtx:torch.cuda.nvtx.range_pop()
                 ledger.append({'tick':tick,'query_tokens_per_request':1,
                     'output_token_counts':[len(o.outputs[0].token_ids) for o in outputs],
                     'request_ids':[o.request_id for o in outputs],
@@ -91,12 +96,13 @@ def main(a):
             if tick==6:
                 if profile_capture:torch.cuda.synchronize()
                 else:range_end.record()
-                torch.cuda.nvtx.range_pop()
+                if emit_nvtx:torch.cuda.nvtx.range_pop()
                 if profile_capture:torch.cuda.profiler.stop()
                 capturing=False
                 assert [r['tick'] for r in ledger]==[4,5,6]
                 assert all(r['output_token_counts']==[r['tick']+1]*len(prompts) for r in ledger)
                 selected_result={'status':'complete','pid':os.getpid(),
+                    'trial':prefix,
                     'ticks':[4,5,6],'ledger':ledger,'timed_tokens':3*len(prompts),
                     'scope':'full engine.step includes graph/model, LM head, sampling and cache updates',
                     'actual_backend_attention_lengths':None,
@@ -112,7 +118,7 @@ def main(a):
             if not profile_capture:
                 selected_result['gpu_event_ms']=range_start.elapsed_time(range_end)
                 selected_result['scope_note']='event-marked three-step interval; no synchronous file publication inside timed decode'
-                dump(output_dir/'selected_interval.json',selected_result)
+                if not getattr(a,'external_profiler',False):dump(output_dir/'selected_interval.json',selected_result)
                 result['selected_three_step_event_interval']=selected_result
                 result['ordinary_decode_windows']=[{'ticks':list(range(first,last+1)),
                     'gpu_event_ms':begin.elapsed_time(end),

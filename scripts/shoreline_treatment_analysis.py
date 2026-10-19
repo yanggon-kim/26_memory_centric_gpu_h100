@@ -27,13 +27,23 @@ def analyze(root):
         groups={mode:[] for mode in (left,right)};sources=[];clocks=[];raw={};exact=[];identities=[]
         for mode in groups:
             for acq in range(3):
-                p=root/'profiles'/f'{job}_{model}_eager_b{b}_c{c}_{mode}_acq{acq:02d}.json'
+                prefix=f'{job}_{model}_eager' if job!='J6' else 'J6_eager'
+                p=root/'profiles'/f'{prefix}_b{b}_c{c}_{mode}_acq{acq:02d}.json'
                 if not p.exists():continue
                 d=load(p)
                 if not d.get('step_ms'):continue
                 groups[mode].append(d['step_ms']);sources.append(str(p.relative_to(root)))
                 clocks.append(d.get('clock_qualification',{}));exact.append(d.get('exact_reference_ids',False))
                 identities.append(provenance(root,d))
+                if job=='J6':
+                    allocation=d.get('allocation_proof',{})
+                    pilot=root/d.get('concurrency_pilot','missing')
+                    partition_ok=(allocation.get('decoder',{}).get('actual_sm_count')==104 and
+                        allocation.get('competitor',{}).get('actual_sm_count')==28 and
+                        allocation.get('disjoint_api_resources') is True and pilot.is_file() and
+                        load(pilot).get('status')=='complete' and load(pilot).get('exact_reference_ids') is True and
+                        load(pilot).get('both_contexts_observed') is True)
+                    if not partition_ok:identities[-1]=None
             raw[mode]=[statistics.median(a) for a in groups[mode]]
         valid=(all(len(a)==3 and all(len(t)==10 for t in a) for a in groups.values()) and all(exact) and
                len(clocks)==6 and all(q.get('passed') for q in clocks) and
@@ -56,6 +66,9 @@ def analyze(root):
             comparisons.append(compare('J8',model,b,c,mode,'normal_eventsnone'))
     for b,c in [(1,1024),(1,2048),(1,4096),(8,4096)]:
         comparisons.append(compare('J7','bridge',b,c,'pressure_eventsnone','normal_eventsnone'))
+    for b,c in [(1,1024),(8,4096)]:
+        for mode in ('memory50','memory100','arithmetic50','arithmetic100'):
+            comparisons.append(compare('J6','bridge',b,c,mode,'idle'))
     result={'comparisons':comparisons,'interpretation':'pressure is cache competition, event timing is instrumented; neither creates SRAM/PHY area'}
     (root/'results/shoreline_treatment_statistics.json').write_text(json.dumps(result,indent=2)+'\n')
     return result

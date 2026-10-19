@@ -27,4 +27,4 @@ bootstrap_python=${H200_BOOTSTRAP_PYTHON:-/usr/local/pace-apps/manual/packages/a
 # Keep the campaign in the batch lifetime, in a GPU-bound step. No backgrounding.
 srun --ntasks=1 --cpus-per-task="${SLURM_CPUS_PER_TASK:-8}" --gpu-bind=single:1 \
   "$bootstrap_python" -u scripts/bootstrap_h200_batch.py \
-  --plan "${H200_BATCH_PLAN:-configs/h200_batch_v1.json}"
+  --plan "${H200_BATCH_PLAN:-configs/h200_batch_gap_v2.json}"
