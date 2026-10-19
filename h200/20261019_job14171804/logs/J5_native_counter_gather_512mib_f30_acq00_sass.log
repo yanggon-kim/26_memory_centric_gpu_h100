@@ -1,0 +1,540 @@
+------------------ --------------------------------------------------
+Kernel Name        transfer                                          
+------------------ --------------------------------------------------
+Address            Source                                            
+0x100057dad00            LDC R1, c[0x0][0x28]                        
+0x100057dad10            S2R R3, SR_TID.X                            
+0x100057dad20            ULDC.64 UR6, c[0x0][0x210]                  
+0x100057dad30            ULDC.64 UR4, c[0x0][0x208]                  
+0x100057dad40            S2R R0, SR_CTAID.X                          
+0x100057dad50            IMAD.SHL.U32 R3, R3, 0x4, RZ                
+0x100057dad60            IMAD.SHL.U32 R4, R0, 0x1000, RZ             
+0x100057dad70            LOP3.LUT R2, R4, 0x1fc, R3, 0xf8, !PT       
+0x100057dad80            IMAD.IADD R3, R3, 0x1, R4                   
+0x100057dad90            LOP3.LUT R4, R2, 0x1, RZ, 0xfc, !PT         
+0x100057dada0            VIADD R6, R3, 0xe01                         
+0x100057dadb0            LOP3.LUT R20, R2, 0x201, RZ, 0xfc, !PT      
+0x100057dadc0            IMAD.WIDE R28, R2, 0x41c64e6d, RZ           
+0x100057dadd0            LOP3.LUT R10, R2, 0x202, RZ, 0xfc, !PT      
+0x100057dade0            LOP3.LUT R16, R2, 0x401, RZ, 0xfc, !PT      
+0x100057dadf0            VIADD R32, R3, 0xe00                        
+0x100057dae00            IADD3 R13, P0, R28, 0x3039, RZ              
+0x100057dae10            IMAD.WIDE R6, R6, 0x41c64e6d, RZ            
+0x100057dae20            LOP3.LUT R42, R2, 0x402, RZ, 0xfc, !PT      
+0x100057dae30            VIADD R8, R3, 0xe02                         
+0x100057dae40            IADD3 R24, P1, R6, 0x3039, RZ               
+0x100057dae50            IMAD.WIDE R32, R32, 0x41c64e6d, RZ          
+0x100057dae60            LOP3.LUT R6, R2, 0x2, RZ, 0xfc, !PT         
+0x100057dae70            IMAD.WIDE R8, R8, 0x41c64e6d, RZ            
+0x100057dae80            IMAD.X R28, RZ, RZ, R29, P0                 
+0x100057dae90            IADD3 R41, P0, R32, 0x3039, RZ              
+0x100057daea0            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057daeb0            IMAD.X R35, RZ, RZ, R7, P1                  
+0x100057daec0            IADD3 R22, P1, R8, 0x3039, RZ               
+0x100057daed0            IMAD.X R32, RZ, RZ, R33, P0                 
+0x100057daee0            LOP3.LUT R8, R2, 0x3, RZ, 0xfc, !PT         
+0x100057daef0            IMAD.WIDE R6, R6, 0x41c64e6d, RZ            
+0x100057daf00            IADD3 R30, P0, R4, 0x3039, RZ               
+0x100057daf10            LOP3.LUT R4, R2, 0x200, RZ, 0xfc, !PT       
+0x100057daf20            IMAD.X R29, RZ, RZ, R9, P1                  
+0x100057daf30            IMAD.WIDE R8, R8, 0x41c64e6d, RZ            
+0x100057daf40            IMAD.X R33, RZ, RZ, R5, P0                  
+0x100057daf50            IADD3 R12, P0, R6, 0x3039, RZ               
+0x100057daf60            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057daf70            IADD3 R38, P1, R8, 0x3039, RZ               
+0x100057daf80            LOP3.LUT R8, R2, 0x203, RZ, 0xfc, !PT       
+0x100057daf90            IMAD.WIDE R20, R20, 0x41c64e6d, RZ          
+0x100057dafa0            SHF.R.S32.HI R23, RZ, 0x1f, R33             
+0x100057dafb0            IMAD.X R34, RZ, RZ, R7, P0                  
+0x100057dafc0            IADD3 R6, P0, R4, 0x3039, RZ                
+0x100057dafd0            IMAD.X R39, RZ, RZ, R9, P1                  
+0x100057dafe0            IADD3 R25, P1, R20, 0x3039, RZ              
+0x100057daff0            IMAD.WIDE R10, R10, 0x41c64e6d, RZ          
+0x100057db000            LOP3.LUT R4, R2, 0x400, RZ, 0xfc, !PT       
+0x100057db010            IMAD.WIDE R8, R8, 0x41c64e6d, RZ            
+0x100057db020            IMAD.X R7, RZ, RZ, R5, P0                   
+0x100057db030            IADD3 R18, P0, R10, 0x3039, RZ              
+0x100057db040            IMAD.X R20, RZ, RZ, R21, P1                 
+0x100057db050            IADD3 R26, P1, R8, 0x3039, RZ               
+0x100057db060            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057db070            SHF.R.S32.HI R8, RZ, 0x1f, R28              
+0x100057db080            IMAD.WIDE R16, R16, 0x41c64e6d, RZ          
+0x100057db090            LEA.HI R8, P2, R8, R13, RZ, 0x1b            
+0x100057db0a0            IMAD.X R21, RZ, RZ, R11, P0                 
+0x100057db0b0            IADD3 R37, P0, R4, 0x3039, RZ               
+0x100057db0c0            IMAD.X R19, RZ, RZ, R9, P1                  
+0x100057db0d0            IADD3 R15, P1, R16, 0x3039, RZ              
+0x100057db0e0            IMAD.WIDE R42, R42, 0x41c64e6d, RZ          
+0x100057db0f0            SHF.R.S32.HI R9, RZ, 0x1f, R35              
+0x100057db100            SHF.R.S32.HI R4, RZ, 0x1f, R32              
+0x100057db110            IMAD.X R14, RZ, RZ, R5, P0                  
+0x100057db120            LEA.HI R9, P6, R9, R24, RZ, 0x1b            
+0x100057db130            IMAD.X R16, RZ, RZ, R17, P1                 
+0x100057db140            SHF.R.S32.HI R5, RZ, 0x1f, R29              
+0x100057db150            IMAD.X R11, RZ, RZ, R28, P2                 
+0x100057db160            IADD3 R17, P1, R42, 0x3039, RZ              
+0x100057db170            IMAD.X R10, RZ, RZ, R35, P6                 
+0x100057db180            LOP3.LUT R8, R8, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db190            LEA.HI R4, P0, R4, R41, RZ, 0x1b            
+0x100057db1a0            IMAD.X R42, RZ, RZ, R43, P1                 
+0x100057db1b0            LOP3.LUT R9, R9, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db1c0            LEA.HI R5, P4, R5, R22, RZ, 0x1b            
+0x100057db1d0            IADD3 R13, P5, -R8, R13, RZ                 
+0x100057db1e0            LOP3.LUT R4, R4, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db1f0            LOP3.LUT R11, R11, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db200            IADD3 R24, P1, -R9, R24, RZ                 
+0x100057db210            IMAD.X R9, RZ, RZ, R32, P0                  
+0x100057db220            LOP3.LUT R5, R5, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db230            IMAD.X R28, R28, 0x1, ~R11, P5              
+0x100057db240            IADD3 R41, P3, -R4, R41, RZ                 
+0x100057db250            IMAD.X R4, RZ, RZ, R29, P4                  
+0x100057db260            SHF.R.S32.HI R11, RZ, 0x1f, R34             
+0x100057db270            IADD3 R8, P5, -R5, R22, RZ                  
+0x100057db280            LOP3.LUT R10, R10, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db290            LEA.HI R23, P2, R23, R30, RZ, 0x1b          
+0x100057db2a0            LOP3.LUT R5, R9, 0x3fffffff, RZ, 0xc0, !PT  
+0x100057db2b0            IMAD.X R35, R35, 0x1, ~R10, P1              
+0x100057db2c0            LEA.HI R11, P0, R11, R12, RZ, 0x1b          
+0x100057db2d0            IMAD.X R10, RZ, RZ, R33, P2                 
+0x100057db2e0            LOP3.LUT R4, R4, 0x3fffffff, RZ, 0xc0, !PT  
+0x100057db2f0            IMAD.X R32, R32, 0x1, ~R5, P3               
+0x100057db300            LOP3.LUT R23, R23, 0xf8000000, RZ, 0xc0, !PT
+0x100057db310            LOP3.LUT R9, R11, 0xf8000000, RZ, 0xc0, !PT 
+0x100057db320            IMAD.X R29, R29, 0x1, ~R4, P5               
+0x100057db330            SHF.R.S32.HI R5, RZ, 0x1f, R7               
+0x100057db340            SHF.R.S32.HI R11, RZ, 0x1f, R39             
+0x100057db350            SHF.R.S32.HI R4, RZ, 0x1f, R20              
+0x100057db360            IADD3 R30, P4, -R23, R30, RZ                
+0x100057db370            IMAD.X R23, RZ, RZ, R34, P0                 
+0x100057db380            LOP3.LUT R10, R10, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db390            LEA.HI R5, P5, R5, R6, RZ, 0x1b             
+0x100057db3a0            LEA.HI R11, P1, R11, R38, RZ, 0x1b          
+0x100057db3b0            IMAD.X R33, R33, 0x1, ~R10, P4              
+0x100057db3c0            LEA.HI R4, P2, R4, R25, RZ, 0x1b            
+0x100057db3d0            IMAD.X R31, RZ, RZ, R7, P5                  
+0x100057db3e0            LOP3.LUT R5, R5, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db3f0            IMAD.X R10, RZ, RZ, R39, P1                 
+0x100057db400            LOP3.LUT R4, R4, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db410            IMAD.X R36, RZ, RZ, R20, P2                 
+0x100057db420            IADD3 R9, P3, -R9, R12, RZ                  
+0x100057db430            LOP3.LUT R11, R11, 0xf8000000, RZ, 0xc0, !PT
+0x100057db440            LOP3.LUT R23, R23, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db450            IADD3 R6, P0, -R5, R6, RZ                   
+0x100057db460            SHF.R.S32.HI R5, RZ, 0x1f, R21              
+0x100057db470            IMAD.X R34, R34, 0x1, ~R23, P3              
+0x100057db480            IADD3 R25, P1, -R4, R25, RZ                 
+0x100057db490            IADD3 R38, P4, -R11, R38, RZ                
+0x100057db4a0            LOP3.LUT R4, R10, 0x3fffffff, RZ, 0xc0, !PT 
+0x100057db4b0            LEA.HI R5, P3, R5, R18, RZ, 0x1b            
+0x100057db4c0            SHF.R.S32.HI R40, RZ, 0x1f, R14             
+0x100057db4d0            IMAD.X R39, R39, 0x1, ~R4, P4               
+0x100057db4e0            LOP3.LUT R4, R2, 0x403, RZ, 0xfc, !PT       
+0x100057db4f0            IMAD.X R12, RZ, RZ, R21, P3                 
+0x100057db500            LOP3.LUT R5, R5, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db510            SHF.R.S32.HI R11, RZ, 0x1f, R19             
+0x100057db520            IADD3 R18, P5, -R5, R18, RZ                 
+0x100057db530            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057db540            LEA.HI R11, P4, R11, R26, RZ, 0x1b          
+0x100057db550            LOP3.LUT R10, R2, 0x600, RZ, 0xfc, !PT      
+0x100057db560            IADD3 R22, P6, R4, 0x3039, RZ               
+0x100057db570            LEA.HI R4, P3, R40, R37, RZ, 0x1b           
+0x100057db580            LOP3.LUT R40, R31, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db590            IMAD.X R23, RZ, RZ, R5, P6                  
+0x100057db5a0            LOP3.LUT R4, R4, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db5b0            IMAD.X R43, RZ, RZ, R14, P3                 
+0x100057db5c0            LOP3.LUT R11, R11, 0xf8000000, RZ, 0xc0, !PT
+0x100057db5d0            IMAD.X R7, R7, 0x1, ~R40, P0                
+0x100057db5e0            LOP3.LUT R5, R36, 0x3fffffff, RZ, 0xc0, !PT 
+0x100057db5f0            IMAD.X R36, RZ, RZ, R19, P4                 
+0x100057db600            IADD3 R37, P0, -R4, R37, RZ                 
+0x100057db610            IADD3 R26, P2, -R11, R26, RZ                
+0x100057db620            IMAD.WIDE R10, R10, 0x41c64e6d, RZ          
+0x100057db630            SHF.R.S32.HI R4, RZ, 0x1f, R42              
+0x100057db640            LOP3.LUT R40, R12, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db650            IMAD.X R20, R20, 0x1, ~R5, P1               
+0x100057db660            SHF.R.S32.HI R12, RZ, 0x1f, R16             
+0x100057db670            LOP3.LUT R36, R36, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db680            IMAD.X R21, R21, 0x1, ~R40, P5              
+0x100057db690            LEA.HI R4, P4, R4, R17, RZ, 0x1b            
+0x100057db6a0            SHF.R.S32.HI R5, RZ, 0x1f, R23              
+0x100057db6b0            IMAD.X R19, R19, 0x1, ~R36, P2              
+0x100057db6c0            IADD3 R27, P6, R10, 0x3039, RZ              
+0x100057db6d0            IMAD.X R31, RZ, RZ, R42, P4                 
+0x100057db6e0            LEA.HI R12, P1, R12, R15, RZ, 0x1b          
+0x100057db6f0            LOP3.LUT R4, R4, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db700            IMAD.X R10, RZ, RZ, R11, P6                 
+0x100057db710            LEA.HI R5, P2, R5, R22, RZ, 0x1b            
+0x100057db720            IMAD.X R11, RZ, RZ, R16, P1                 
+0x100057db730            IADD3 R17, P3, -R4, R17, RZ                 
+0x100057db740            LOP3.LUT R12, R12, 0xf8000000, RZ, 0xc0, !PT
+0x100057db750            LOP3.LUT R5, R5, 0xf8000000, RZ, 0xc0, !PT  
+0x100057db760            LOP3.LUT R4, R2, 0x601, RZ, 0xfc, !PT       
+0x100057db770            IADD3 R15, P5, -R12, R15, RZ                
+0x100057db780            IADD3 R22, P1, -R5, R22, RZ                 
+0x100057db790            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057db7a0            LOP3.LUT R11, R11, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db7b0            LOP3.LUT R43, R43, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db7c0            LOP3.LUT R31, R31, 0x3fffffff, RZ, 0xc0, !PT
+0x100057db7d0            IMAD.X R16, R16, 0x1, ~R11, P5              
+0x100057db7e0            IADD3 R11, P4, R4, 0x3039, RZ               
+0x100057db7f0            IMAD.X R14, R14, 0x1, ~R43, P0              
+0x100057db800            ISETP.GE.AND P0, PT, R2, 0x8000000, PT      
+0x100057db810            IMAD.X R42, R42, 0x1, ~R31, P3              
+0x100057db820            LEA R44, P3, R13, UR6, 0x2                  
+0x100057db830            IMAD.X R31, RZ, RZ, R5, P4                  
+0x100057db840            LEA R12, P5, R41, UR6, 0x2                  
+0x100057db850            LEA R4, P4, R24, UR6, 0x2                   
+0x100057db860            LEA.HI.X R45, R13, UR7, R28, 0x2, P3        
+0x100057db870            LEA.HI.X R13, R41, UR7, R32, 0x2, P5        
+0x100057db880            IMAD.MOV.U32 R32, RZ, RZ, RZ                
+0x100057db890            LEA.HI.X R5, R24, UR7, R35, 0x2, P4         
+0x100057db8a0            LOP3.LUT R24, R2, 0x602, RZ, 0xfc, !PT      
+0x100057db8b0            LEA R40, P3, R8, UR6, 0x2                   
+0x100057db8c0      @!P0  LDG.E.STRONG.GPU R32, desc[UR4][R44.64]     
+0x100057db8d0            LEA.HI.X R41, R8, UR7, R29, 0x2, P3         
+0x100057db8e0            CS2R R28, SRZ                               
+0x100057db8f0            SHF.R.S32.HI R36, RZ, 0x1f, R10             
+0x100057db900            IMAD.WIDE R44, R24, 0x41c64e6d, RZ          
+0x100057db910            SHF.R.S32.HI R24, RZ, 0x1f, R31             
+0x100057db920      @!P0  LDG.E.STRONG.GPU R28, desc[UR4][R12.64]     
+0x100057db930            LEA.HI R35, P4, R24, R11, RZ, 0x1b          
+0x100057db940      @!P0  LDG.E.STRONG.GPU R29, desc[UR4][R4.64]      
+0x100057db950            IADD3 R8, P5, R44, 0x3039, RZ               
+0x100057db960            LEA.HI R36, P3, R36, R27, RZ, 0x1b          
+0x100057db970            LEA R44, P6, R30, UR6, 0x2                  
+0x100057db980            IMAD.X R24, RZ, RZ, R45, P5                 
+0x100057db990            LOP3.LUT R12, R35, 0xf8000000, RZ, 0xc0, !PT
+0x100057db9a0            LOP3.LUT R36, R36, 0xf8000000, RZ, 0xc0, !PT
+0x100057db9b0            IMAD.X R4, RZ, RZ, R23, P2                  
+0x100057db9c0            IADD3 R11, P2, -R12, R11, RZ                
+0x100057db9d0            LEA.HI.X R45, R30, UR7, R33, 0x2, P6        
+0x100057db9e0            IMAD.MOV.U32 R30, RZ, RZ, RZ                
+0x100057db9f0            LOP3.LUT R12, R4, 0x3fffffff, RZ, 0xc0, !PT 
+0x100057dba00            IMAD.X R43, RZ, RZ, R10, P3                 
+0x100057dba10            IADD3 R13, P5, -R36, R27, RZ                
+0x100057dba20            SHF.R.S32.HI R35, RZ, 0x1f, R24             
+0x100057dba30      @!P0  LDG.E.STRONG.GPU R30, desc[UR4][R40.64]     
+0x100057dba40            LOP3.LUT R27, R2, 0x800, RZ, 0xfc, !PT      
+0x100057dba50            IMAD.X R23, R23, 0x1, ~R12, P1              
+0x100057dba60            LOP3.LUT R4, R2, 0x603, RZ, 0xfc, !PT       
+0x100057dba70            IMAD.MOV.U32 R33, RZ, RZ, RZ                
+0x100057dba80            LEA.HI R35, P1, R35, R8, RZ, 0x1b           
+0x100057dba90            LOP3.LUT R43, R43, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dbaa0            IMAD.WIDE R4, R4, 0x41c64e6d, RZ            
+0x100057dbab0            LOP3.LUT R35, R35, 0xf8000000, RZ, 0xc0, !PT
+0x100057dbac0      @!P0  LDG.E.STRONG.GPU R33, desc[UR4][R44.64]     
+0x100057dbad0            IMAD.WIDE R40, R27, 0x41c64e6d, RZ          
+0x100057dbae0            IADD3 R12, P3, -R35, R8, RZ                 
+0x100057dbaf0            IADD3 R35, P6, R4, 0x3039, RZ               
+0x100057dbb00            IMAD.X R10, R10, 0x1, ~R43, P5              
+0x100057dbb10            IADD3 R36, P5, R40, 0x3039, RZ              
+0x100057dbb20            IMAD.X R27, RZ, RZ, R5, P6                  
+0x100057dbb30            LEA R8, P6, R9, UR6, 0x2                    
+0x100057dbb40            IMAD.X R40, RZ, RZ, R41, P5                 
+0x100057dbb50            LEA R4, P5, R38, UR6, 0x2                   
+0x100057dbb60            LEA.HI.X R9, R9, UR7, R34, 0x2, P6          
+0x100057dbb70            IMAD.MOV.U32 R34, RZ, RZ, RZ                
+0x100057dbb80            LEA.HI.X R5, R38, UR7, R39, 0x2, P5         
+0x100057dbb90            LEA R38, P5, R6, UR6, 0x2                   
+0x100057dbba0            SHF.R.S32.HI R44, RZ, 0x1f, R27             
+0x100057dbbb0            IMAD.X R43, RZ, RZ, R31, P4                 
+0x100057dbbc0            LEA.HI.X R39, R6, UR7, R7, 0x2, P5          
+0x100057dbbd0      @!P0  LDG.E.STRONG.GPU R34, desc[UR4][R8.64]      
+0x100057dbbe0            LEA.HI R6, P5, R44, R35, RZ, 0x1b           
+0x100057dbbf0            SHF.R.S32.HI R41, RZ, 0x1f, R40             
+0x100057dbc00            LOP3.LUT R6, R6, 0xf8000000, RZ, 0xc0, !PT  
+0x100057dbc10            LEA.HI R41, P6, R41, R36, RZ, 0x1b          
+0x100057dbc20            IADD3 R7, P4, -R6, R35, RZ                  
+0x100057dbc30            IMAD.X R9, RZ, RZ, R24, P1                  
+0x100057dbc40            LOP3.LUT R8, R43, 0x3fffffff, RZ, 0xc0, !PT 
+0x100057dbc50            IMAD.MOV.U32 R35, RZ, RZ, RZ                
+0x100057dbc60            LOP3.LUT R41, R41, 0xf8000000, RZ, 0xc0, !PT
+0x100057dbc70            LOP3.LUT R9, R9, 0x3fffffff, RZ, 0xc0, !PT  
+0x100057dbc80            IMAD.X R8, R31, 0x1, ~R8, P2                
+0x100057dbc90            LEA R44, P2, R25, UR6, 0x2                  
+0x100057dbca0      @!P0  LDG.E.STRONG.GPU R35, desc[UR4][R4.64]      
+0x100057dbcb0            LOP3.LUT R31, R2, 0x801, RZ, 0xfc, !PT      
+0x100057dbcc0            IMAD.X R9, R24, 0x1, ~R9, P3                
+0x100057dbcd0            LEA.HI.X R45, R25, UR7, R20, 0x2, P2        
+0x100057dbce0            CS2R R24, SRZ                               
+0x100057dbcf0            IADD3 R6, P1, -R41, R36, RZ                 
+0x100057dbd00            LEA R20, P2, R18, UR6, 0x2                  
+0x100057dbd10            LOP3.LUT R36, R2, 0x802, RZ, 0xfc, !PT      
+0x100057dbd20            IMAD.WIDE R4, R31, 0x41c64e6d, RZ           
+0x100057dbd30            LEA.HI.X R21, R18, UR7, R21, 0x2, P2        
+0x100057dbd40      @!P0  LDG.E.STRONG.GPU R24, desc[UR4][R38.64]     
+0x100057dbd50            LEA R18, P3, R26, UR6, 0x2                  
+0x100057dbd60            IADD3 R4, P2, R4, 0x3039, RZ                
+0x100057dbd70      @!P0  LDG.E.STRONG.GPU R25, desc[UR4][R44.64]     
+0x100057dbd80            LEA.HI.X R19, R26, UR7, R19, 0x2, P3        
+0x100057dbd90            IMAD.WIDE R38, R36, 0x41c64e6d, RZ          
+0x100057dbda0            LEA R36, P3, R37, UR6, 0x2                  
+0x100057dbdb0            IMAD.X R31, RZ, RZ, R5, P2                  
+0x100057dbdc0            IADD3 R5, P2, R38, 0x3039, RZ               
+0x100057dbdd0            LEA.HI.X R37, R37, UR7, R14, 0x2, P3        
+0x100057dbde0            IMAD.X R38, RZ, RZ, R39, P2                 
+0x100057dbdf0            LEA R14, P2, R15, UR6, 0x2                  
+0x100057dbe00            SHF.R.S32.HI R39, RZ, 0x1f, R31             
+0x100057dbe10            LEA.HI.X R15, R15, UR7, R16, 0x2, P2        
+0x100057dbe20            LEA R16, P2, R17, UR6, 0x2                  
+0x100057dbe30            SHF.R.S32.HI R44, RZ, 0x1f, R38             
+0x100057dbe40            LEA.HI R39, P3, R39, R4, RZ, 0x1b           
+0x100057dbe50            LEA.HI.X R17, R17, UR7, R42, 0x2, P2        
+0x100057dbe60            LEA.HI R42, P2, R44, R5, RZ, 0x1b           
+0x100057dbe70            LOP3.LUT R39, R39, 0xf8000000, RZ, 0xc0, !PT
+0x100057dbe80            IMAD.X R41, RZ, RZ, R27, P5                 
+0x100057dbe90            LOP3.LUT R42, R42, 0xf8000000, RZ, 0xc0, !PT
+0x100057dbea0            IADD3 R4, P5, -R39, R4, RZ                  
+0x100057dbeb0            IMAD.X R39, RZ, RZ, R40, P6                 
+0x100057dbec0            IADD3 R5, P6, -R42, R5, RZ                  
+0x100057dbed0            LOP3.LUT R42, R41, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dbee0            IMAD.MOV.U32 R26, RZ, RZ, RZ                
+0x100057dbef0            LOP3.LUT R39, R39, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dbf00            IMAD.X R42, R27, 0x1, ~R42, P4              
+0x100057dbf10            IMAD.MOV.U32 R27, RZ, RZ, RZ                
+0x100057dbf20      @!P0  LDG.E.STRONG.GPU R26, desc[UR4][R20.64]     
+0x100057dbf30            LOP3.LUT R46, R2, 0x803, RZ, 0xfc, !PT      
+0x100057dbf40            IMAD.X R39, R40, 0x1, ~R39, P1              
+0x100057dbf50            LOP3.LUT R40, R2, 0xa00, RZ, 0xfc, !PT      
+0x100057dbf60            LEA R44, P4, R22, UR6, 0x2                  
+0x100057dbf70      @!P0  LDG.E.STRONG.GPU R27, desc[UR4][R18.64]     
+0x100057dbf80            CS2R R20, SRZ                               
+0x100057dbf90            IMAD.WIDE R46, R46, 0x41c64e6d, RZ          
+0x100057dbfa0            LOP3.LUT R41, R2, 0xa01, RZ, 0xfc, !PT      
+0x100057dbfb0            IMAD.X R18, RZ, RZ, R31, P3                 
+0x100057dbfc0      @!P0  LDG.E.STRONG.GPU R20, desc[UR4][R36.64]     
+0x100057dbfd0            LEA.HI.X R45, R22, UR7, R23, 0x2, P4        
+0x100057dbfe0            CS2R R22, SRZ                               
+0x100057dbff0      @!P0  LDG.E.STRONG.GPU R21, desc[UR4][R14.64]     
+0x100057dc000      @!P0  LDG.E.STRONG.GPU R22, desc[UR4][R16.64]     
+0x100057dc010            IMAD.WIDE R36, R40, 0x41c64e6d, RZ          
+0x100057dc020            LOP3.LUT R40, R18, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc030      @!P0  LDG.E.STRONG.GPU R23, desc[UR4][R44.64]     
+0x100057dc040            IADD3 R18, P1, R46, 0x3039, RZ              
+0x100057dc050            IMAD.WIDE R14, R41, 0x41c64e6d, RZ          
+0x100057dc060            IADD3 R43, P3, R36, 0x3039, RZ              
+0x100057dc070            IMAD.X R16, RZ, RZ, R47, P1                 
+0x100057dc080            IADD3 R17, P1, R14, 0x3039, RZ              
+0x100057dc090            IMAD.X R41, R31, 0x1, ~R40, P5              
+0x100057dc0a0            IMAD.X R40, RZ, RZ, R37, P3                 
+0x100057dc0b0            LEA R36, P3, R13, UR6, 0x2                  
+0x100057dc0c0            IMAD.X R31, RZ, RZ, R15, P1                 
+0x100057dc0d0            LEA R14, P1, R11, UR6, 0x2                  
+0x100057dc0e0            LEA.HI.X R37, R13, UR7, R10, 0x2, P3        
+0x100057dc0f0            SHF.R.S32.HI R13, RZ, 0x1f, R16             
+0x100057dc100            LEA.HI.X R15, R11, UR7, R8, 0x2, P1         
+0x100057dc110            LEA.HI R11, P4, R13, R18, RZ, 0x1b          
+0x100057dc120            IMAD.X R13, RZ, RZ, R38, P2                 
+0x100057dc130            LOP3.LUT R13, R13, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc140            LOP3.LUT R11, R11, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc150            IMAD.X R44, R38, 0x1, ~R13, P6              
+0x100057dc160            IMAD.X R13, RZ, RZ, R16, P4                 
+0x100057dc170            IADD3 R11, P1, -R11, R18, RZ                
+0x100057dc180            SHF.R.S32.HI R10, RZ, 0x1f, R31             
+0x100057dc190            LOP3.LUT R13, R13, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc1a0            LEA.HI R10, P2, R10, R17, RZ, 0x1b          
+0x100057dc1b0            IMAD.X R38, R16, 0x1, ~R13, P1              
+0x100057dc1c0            LEA R46, P1, R7, UR6, 0x2                   
+0x100057dc1d0            LOP3.LUT R10, R10, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc1e0            LEA.HI.X R47, R7, UR7, R42, 0x2, P1         
+0x100057dc1f0            LEA R48, P1, R6, UR6, 0x2                   
+0x100057dc200            SHF.R.S32.HI R8, RZ, 0x1f, R40              
+0x100057dc210            IADD3 R10, P4, -R10, R17, RZ                
+0x100057dc220            CS2R R16, SRZ                               
+0x100057dc230            LEA.HI.X R49, R6, UR7, R39, 0x2, P1         
+0x100057dc240            LEA.HI R8, P3, R8, R43, RZ, 0x1b            
+0x100057dc250            LOP3.LUT R6, R2, 0xa02, RZ, 0xfc, !PT       
+0x100057dc260      @!P0  LDG.E.STRONG.GPU R16, desc[UR4][R36.64]     
+0x100057dc270            LOP3.LUT R8, R8, 0xf8000000, RZ, 0xc0, !PT  
+0x100057dc280            LOP3.LUT R7, R2, 0xa03, RZ, 0xfc, !PT       
+0x100057dc290            CS2R R18, SRZ                               
+0x100057dc2a0            IADD3 R43, P5, -R8, R43, RZ                 
+0x100057dc2b0      @!P0  LDG.E.STRONG.GPU R17, desc[UR4][R14.64]     
+0x100057dc2c0            IMAD.WIDE R36, R6, 0x41c64e6d, RZ           
+0x100057dc2d0            LEA R8, P6, R12, UR6, 0x2                   
+0x100057dc2e0      @!P0  LDG.E.STRONG.GPU R19, desc[UR4][R46.64]     
+0x100057dc2f0            IMAD.WIDE R6, R7, 0x41c64e6d, RZ            
+0x100057dc300            IADD3 R45, P1, R36, 0x3039, RZ              
+0x100057dc310            IMAD.X R13, RZ, RZ, R40, P3                 
+0x100057dc320            LEA.HI.X R9, R12, UR7, R9, 0x2, P6          
+0x100057dc330            IMAD.X R39, RZ, RZ, R37, P1                 
+0x100057dc340            IADD3 R42, P3, R6, 0x3039, RZ               
+0x100057dc350            LOP3.LUT R13, R13, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc360      @!P0  LDG.E.STRONG.GPU R18, desc[UR4][R8.64]      
+0x100057dc370            LEA R6, P1, R4, UR6, 0x2                    
+0x100057dc380            IMAD.X R40, R40, 0x1, ~R13, P5              
+0x100057dc390            IMAD.X R9, RZ, RZ, R7, P3                   
+0x100057dc3a0            LEA R36, P3, R5, UR6, 0x2                   
+0x100057dc3b0            LEA.HI.X R7, R4, UR7, R41, 0x2, P1          
+0x100057dc3c0            LEA R4, P5, R43, UR6, 0x2                   
+0x100057dc3d0            LEA R46, P1, R11, UR6, 0x2                  
+0x100057dc3e0            LEA.HI.X R37, R5, UR7, R44, 0x2, P3         
+0x100057dc3f0            IMAD.MOV.U32 R13, RZ, RZ, RZ                
+0x100057dc400            LEA.HI.X R5, R43, UR7, R40, 0x2, P5         
+0x100057dc410            LOP3.LUT R40, R2, 0xc00, RZ, 0xfc, !PT      
+0x100057dc420            LEA.HI.X R47, R11, UR7, R38, 0x2, P1        
+0x100057dc430            CS2R R14, SRZ                               
+0x100057dc440            LOP3.LUT R38, R2, 0xc01, RZ, 0xfc, !PT      
+0x100057dc450            IMAD.WIDE R40, R40, 0x41c64e6d, RZ          
+0x100057dc460            SHF.R.S32.HI R44, RZ, 0x1f, R39             
+0x100057dc470      @!P0  LDG.E.STRONG.GPU R13, desc[UR4][R6.64]      
+0x100057dc480            LEA.HI R44, P5, R44, R45, RZ, 0x1b          
+0x100057dc490      @!P0  LDG.E.STRONG.GPU R14, desc[UR4][R36.64]     
+0x100057dc4a0            IADD3 R11, P1, R40, 0x3039, RZ              
+0x100057dc4b0            IMAD.X R40, RZ, RZ, R31, P2                 
+0x100057dc4c0            IMAD.MOV.U32 R8, RZ, RZ, RZ                 
+0x100057dc4d0            SHF.R.S32.HI R43, RZ, 0x1f, R9              
+0x100057dc4e0            IMAD.WIDE R6, R38, 0x41c64e6d, RZ           
+0x100057dc4f0      @!P0  LDG.E.STRONG.GPU R15, desc[UR4][R46.64]     
+0x100057dc500            LOP3.LUT R36, R44, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc510            IMAD.X R41, RZ, RZ, R41, P1                 
+0x100057dc520            IADD3 R6, P2, R6, 0x3039, RZ                
+0x100057dc530      @!P0  LDG.E.STRONG.GPU R8, desc[UR4][R4.64]       
+0x100057dc540            IADD3 R45, P1, -R36, R45, RZ                
+0x100057dc550            IMAD.X R36, RZ, RZ, R7, P2                  
+0x100057dc560            LOP3.LUT R40, R40, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc570            LEA.HI R37, P3, R43, R42, RZ, 0x1b          
+0x100057dc580            SHF.R.S32.HI R5, RZ, 0x1f, R36              
+0x100057dc590            IMAD.X R7, R31, 0x1, ~R40, P4               
+0x100057dc5a0            LEA.HI R5, P4, R5, R6, RZ, 0x1b             
+0x100057dc5b0            IMAD.X R31, RZ, RZ, R9, P3                  
+0x100057dc5c0            LOP3.LUT R37, R37, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc5d0            LOP3.LUT R5, R5, 0xf8000000, RZ, 0xc0, !PT  
+0x100057dc5e0            IADD3 R4, P2, -R37, R42, RZ                 
+0x100057dc5f0            IADD3 R5, P3, -R5, R6, RZ                   
+0x100057dc600            LOP3.LUT R6, R31, 0x3fffffff, RZ, 0xc0, !PT 
+0x100057dc610            SHF.R.S32.HI R38, RZ, 0x1f, R41             
+0x100057dc620            IMAD.X R40, RZ, RZ, R39, P5                 
+0x100057dc630            IMAD.X R31, R9, 0x1, ~R6, P2                
+0x100057dc640            LEA.HI R38, P6, R38, R11, RZ, 0x1b          
+0x100057dc650            IMAD.X R9, RZ, RZ, R36, P4                  
+0x100057dc660            LOP3.LUT R40, R40, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc670            IMAD.MOV.U32 R12, RZ, RZ, RZ                
+0x100057dc680            LOP3.LUT R38, R38, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc690            IMAD.X R44, RZ, RZ, R41, P6                 
+0x100057dc6a0            LOP3.LUT R9, R9, 0x3fffffff, RZ, 0xc0, !PT  
+0x100057dc6b0            IMAD.X R40, R39, 0x1, ~R40, P1              
+0x100057dc6c0            IADD3 R11, P5, -R38, R11, RZ                
+0x100057dc6d0      @!P0  LDG.E.STRONG.GPU R12, desc[UR4][R48.64]     
+0x100057dc6e0            LOP3.LUT R44, R44, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc6f0            IMAD.X R42, R36, 0x1, ~R9, P3               
+0x100057dc700            LEA R36, P2, R45, UR6, 0x2                  
+0x100057dc710            LEA R6, P1, R10, UR6, 0x2                   
+0x100057dc720            IMAD.X R44, R41, 0x1, ~R44, P5              
+0x100057dc730            LEA.HI.X R37, R45, UR7, R40, 0x2, P2        
+0x100057dc740            IMAD.MOV.U32 R9, RZ, RZ, RZ                 
+0x100057dc750            LOP3.LUT R48, R2, 0xc02, RZ, 0xfc, !PT      
+0x100057dc760            LEA.HI.X R7, R10, UR7, R7, 0x2, P1          
+0x100057dc770            LEA R40, P2, R11, UR6, 0x2                  
+0x100057dc780            IMAD.WIDE R48, R48, 0x41c64e6d, RZ          
+0x100057dc790            LEA R38, P1, R4, UR6, 0x2                   
+0x100057dc7a0      @!P0  LDG.E.STRONG.GPU R9, desc[UR4][R6.64]       
+0x100057dc7b0            LEA.HI.X R41, R11, UR7, R44, 0x2, P2        
+0x100057dc7c0            LOP3.LUT R44, R2, 0xc03, RZ, 0xfc, !PT      
+0x100057dc7d0            LEA.HI.X R39, R4, UR7, R31, 0x2, P1         
+0x100057dc7e0            IMAD.MOV.U32 R4, RZ, RZ, RZ                 
+0x100057dc7f0            VIADD R6, R3, 0xe03                         
+0x100057dc800            IADD3 R3, P1, R48, 0x3039, RZ               
+0x100057dc810            IMAD.WIDE R44, R44, 0x41c64e6d, RZ          
+0x100057dc820            LEA R46, P2, R5, UR6, 0x2                   
+0x100057dc830      @!P0  LDG.E.STRONG.GPU R4, desc[UR4][R40.64]      
+0x100057dc840            IMAD.MOV.U32 R10, RZ, RZ, RZ                
+0x100057dc850            IMAD.X R48, RZ, RZ, R49, P1                 
+0x100057dc860            LEA.HI.X R47, R5, UR7, R42, 0x2, P2         
+0x100057dc870            IMAD.WIDE R6, R6, 0x41c64e6d, RZ            
+0x100057dc880            IADD3 R31, P2, R44, 0x3039, RZ              
+0x100057dc890      @!P0  LDG.E.STRONG.GPU R10, desc[UR4][R36.64]     
+0x100057dc8a0            SHF.R.S32.HI R40, RZ, 0x1f, R48             
+0x100057dc8b0            IMAD.MOV.U32 R11, RZ, RZ, RZ                
+0x100057dc8c0            IMAD.X R44, RZ, RZ, R45, P2                 
+0x100057dc8d0            LEA.HI R40, P2, R40, R3, RZ, 0x1b           
+0x100057dc8e0      @!P0  LDG.E.STRONG.GPU R11, desc[UR4][R38.64]     
+0x100057dc8f0            IADD3 R36, P1, R6, 0x3039, RZ               
+0x100057dc900            IMAD.X R37, RZ, RZ, R48, P2                 
+0x100057dc910            IMAD.X R6, RZ, RZ, R7, P1                   
+0x100057dc920            LOP3.LUT R40, R40, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc930            SHF.R.S32.HI R38, RZ, 0x1f, R44             
+0x100057dc940            SHF.R.S32.HI R7, RZ, 0x1f, R6               
+0x100057dc950            IADD3 R3, P1, -R40, R3, RZ                  
+0x100057dc960            LOP3.LUT R37, R37, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dc970            LEA.HI R38, P3, R38, R31, RZ, 0x1b          
+0x100057dc980            LEA.HI R7, P5, R7, R36, RZ, 0x1b            
+0x100057dc990            IMAD.X R48, R48, 0x1, ~R37, P1              
+0x100057dc9a0            LOP3.LUT R38, R38, 0xf8000000, RZ, 0xc0, !PT
+0x100057dc9b0            IMAD.X R39, RZ, RZ, R44, P3                 
+0x100057dc9c0            LOP3.LUT R7, R7, 0xf8000000, RZ, 0xc0, !PT  
+0x100057dc9d0            IMAD.X R37, RZ, RZ, R6, P5                  
+0x100057dc9e0            IADD3 R31, P4, -R38, R31, RZ                
+0x100057dc9f0            IADD3 R7, P2, -R7, R36, RZ                  
+0x100057dca00            LOP3.LUT R39, R39, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dca10            LOP3.LUT R37, R37, 0x3fffffff, RZ, 0xc0, !PT
+0x100057dca20            LEA R40, P3, R7, UR6, 0x2                   
+0x100057dca30            IMAD.X R44, R44, 0x1, ~R39, P4              
+0x100057dca40            IMAD.X R42, R6, 0x1, ~R37, P2               
+0x100057dca50            LEA R38, P2, R31, UR6, 0x2                  
+0x100057dca60            IMAD.MOV.U32 R5, RZ, RZ, RZ                 
+0x100057dca70            LEA.HI.X R39, R31, UR7, R44, 0x2, P2        
+0x100057dca80            IMAD.MOV.U32 R31, RZ, RZ, RZ                
+0x100057dca90            LEA.HI.X R41, R7, UR7, R42, 0x2, P3         
+0x100057dcaa0            CS2R R6, SRZ                                
+0x100057dcab0      @!P0  LDG.E.STRONG.GPU R5, desc[UR4][R46.64]      
+0x100057dcac0      @!P0  LDG.E.STRONG.GPU R31, desc[UR4][R40.64]     
+0x100057dcad0      @!P0  LDG.E.STRONG.GPU R7, desc[UR4][R38.64]      
+0x100057dcae0            LEA R36, P1, R3, UR6, 0x2                   
+0x100057dcaf0            LEA.HI.X R37, R3, UR7, R48, 0x2, P1         
+0x100057dcb00            IMAD.SHL.U32 R43, R0, 0x1000, RZ            
+0x100057dcb10            S2R R3, SR_TID.X                            
+0x100057dcb20            ULDC.64 UR6, c[0x0][0x218]                  
+0x100057dcb30      @!P0  LDG.E.STRONG.GPU R6, desc[UR4][R36.64]      
+0x100057dcb40            BSSY B0, 0x100057dcc00                      
+0x100057dcb50            IMAD.SHL.U32 R42, R3, 0x4, RZ               
+0x100057dcb60            IMAD.IADD R43, R42, 0x1, R43                
+0x100057dcb70            LEA R42, P1, R2, UR6, 0x2                   
+0x100057dcb80            VIADD R44, R43, 0xe00                       
+0x100057dcb90            LEA.HI.X.SX32 R43, R2, UR7, 0x2, P1         
+0x100057dcba0            LEA R36, P1, R44, UR6, 0x2                  
+0x100057dcbb0            LEA.HI.X.SX32 R37, R44, UR7, 0x2, P1        
+0x100057dcbc0      @P0   BRA 0x100057dcbf0                           
+0x100057dcbd0            STG.E.128 desc[UR4][R42.64], R32            
+0x100057dcbe0            STG.E.128 desc[UR4][R42.64+0x800], R24      
+0x100057dcbf0            BSYNC B0                                    
+0x100057dcc00            BSSY B0, 0x100057dcd00                      
+0x100057dcc10            BSSY B1, 0x100057dcce0                      
+0x100057dcc20      @P0   BRA 0x100057dcc60                           
+0x100057dcc30            STG.E.128 desc[UR4][R42.64+0x1000], R20     
+0x100057dcc40      @P0   BRA 0x100057dcc80                           
+0x100057dcc50            STG.E.128 desc[UR4][R42.64+0x1800], R16     
+0x100057dcc60      @P0   BRA 0x100057dcca0                           
+0x100057dcc70            STG.E.128 desc[UR4][R42.64+0x2000], R12     
+0x100057dcc80      @P0   BRA 0x100057dccd0                           
+0x100057dcc90            STG.E.128 desc[UR4][R42.64+0x2800], R8      
+0x100057dcca0      @P0   BREAK B1                                    
+0x100057dccb0      @P0   BRA 0x100057dccf0                           
+0x100057dccc0            STG.E.128 desc[UR4][R42.64+0x3000], R4      
+0x100057dccd0            BSYNC B1                                    
+0x100057dcce0      @!P0  STG.E.128 desc[UR4][R36.64], R28            
+0x100057dccf0            BSYNC B0                                    
+0x100057dcd00            WARPSYNC.ALL                                
+0x100057dcd10            NOP                                         
+0x100057dcd20            LDC.64 R6, c[0x0][0x220]                    
+0x100057dcd30            S2R R5, SR_VIRTUALSMID                      
+0x100057dcd40            LOP3.LUT P0, RZ, R3, 0x7f, RZ, 0xc0, !PT    
+0x100057dcd50            LEA R2, P1, R0, R6, 0x2                     
+0x100057dcd60            LEA.HI.X R3, R0, R7, RZ, 0x2, P1            
+0x100057dcd70      @P0   EXIT                                        
+0x100057dcd80            STG.E desc[UR4][R2.64], R5                  
+0x100057dcd90            EXIT                                        
+0x100057dcda0            BRA `(.L_x_0) 0x100057dcda0                 
+0x100057dcdb0            NOP                                         
+0x100057dcdc0            NOP                                         
+0x100057dcdd0            NOP                                         
+0x100057dcde0            NOP                                         
+0x100057dcdf0            NOP                                         
+0x100057dce00            NOP                                         
+0x100057dce10            NOP                                         
+0x100057dce20            NOP                                         
+0x100057dce30            NOP                                         
+0x100057dce40            NOP                                         
+0x100057dce50            NOP                                         
+0x100057dce60            NOP                                         
+0x100057dce70            NOP                                         
