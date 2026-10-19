@@ -82,6 +82,12 @@ def main(a):
         elif phase=='cpu':steps=[s for s in steps if s[0] in cpu_names]
     elif phase!='all':raise ValueError('--phase requires --schedule gpu-first')
     if a.start_at:steps=steps[next(i for i,(name,_) in enumerate(steps) if name==a.start_at):]
+    reused=json.loads(a.session.read_text()).get('queue_reused_jobs',{})
+    allowed_reuse={'J5','J8','J7','J10','J6','J11_gpu'}
+    if not set(reused)<=allowed_reuse:raise ValueError('unknown reusable GPU step')
+    if reused and schedule!='gpu-first':raise ValueError('reuse requires GPU-first schedule')
+    state['reused_gpu_dispositions']=reused
+    steps=[(name,command) for name,command in steps if name not in reused]
     for name,command in steps:
         if not execute(name,command,gpu=name not in cpu_names):
             if state['status']=='running':state['status']='launch_cutoff_reached';save()

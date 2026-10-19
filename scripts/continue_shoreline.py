@@ -18,6 +18,7 @@ def main():
     from h200_session import verify_allocation,run,python_command,dump
     verify_allocation()
     steps=[('runtime_dependency_check_v1',[sys.executable,'-m','pip','check']),
+           ('batch_recovery_contracts_v1',[sys.executable,str(package/'scripts/test_h200_batch.py')]),
            ('continuation_contracts_v1',[sys.executable,str(package/'scripts/test_shoreline_contracts.py')]),
            ('J0_inventory',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J0']),
            ('J1_functional_smokes',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J1'])]
@@ -44,6 +45,10 @@ def main():
         assert hashlib.sha256((package/row['path']).read_bytes()).hexdigest()==row['sha256']
     for job in ('J2','J3','J4'):
         campaign.update_job(root,job,'partial','Prior completed captures retained with hashes; no new acquisition and no quantitative pooling across sessions. See prior_capture_evidence.json and previous completion reviews.')
+    for step,proof in json.loads(session.read_text()).get('queue_reused_jobs',{}).items():
+        assert hashlib.sha256((package/proof['path']).read_bytes()).hexdigest()==proof['sha256']
+        campaign.update_job(root,'J11' if step=='J11_gpu' else step,'partial',
+            'Prior command-finished disposition retained; no new measurement or scientific pass inferred. See session.queue_reused_jobs.')
     campaign.checkpoint(root,'Fresh allocation ready: exact functional controls and prior evidence verified; resume remaining jobs')
     schedule=json.loads(session.read_text()).get('queue_schedule','legacy')
     command=[sys.executable,str(package/'scripts/shoreline_queue.py'),'--session',str(session),'--start-at','J5','--schedule',schedule]
