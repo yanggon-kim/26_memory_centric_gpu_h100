@@ -351,7 +351,10 @@ def native_counter_suite(job='J4',fraction=1,selected=None):
     for case,acq in [('stream_512mib',0)]+[(case,acq) for case in selected for acq in range(3)]:
         label=f'{job}_native_counter_{case}{suffix}_acq{acq:02d}'
         target=ROOT/'profiles'/(label+'.json')
-        if target.exists():results.append(load(target));continue
+        if target.exists():
+            cached=load(target);results.append(cached)
+            if len(results)==1 and cached['status']!='complete':break
+            continue
         out=ROOT/'runs'/label;report=ROOT/'profiles'/(label+'.ncu-rep')
         cmd=[NCU,'--replay-mode','kernel','--profile-from-start','off','--clock-control','none',
              '--cache-control','none','--nvtx','--nvtx-include',case+'/','--launch-count','1',

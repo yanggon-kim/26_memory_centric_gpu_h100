@@ -80,6 +80,19 @@ def main():
             decoder.clear();physical.clear();native.clear();native_profiles.clear();shoreline_jobs.sm_allocations()
             assert sum(not args[6] if len(args)>6 else True for args,kw in decoder)==24
             assert not physical and not native
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);(root/'profiles').mkdir();saved=[]
+        first=root/'profiles/J5_native_counter_stream_512mib_acq00.json'
+        first.write_text(json.dumps({'id':'pilot','status':'failed'}))
+        with patch.multiple(shoreline_jobs,ROOT=root,dump=lambda p,d:saved.append(d),create=True),patch.object(shoreline_jobs,'attempt',side_effect=AssertionError('cached failed pilot must prevent expansion')):
+            shoreline_jobs.native_counter_suite('J5',1,['gather_512mib'])
+        assert len(saved)==1 and saved[0]['cases']==[{'id':'pilot','status':'failed'}]
+        for acq in range(3):
+            (root/'profiles'/f'J5_native_counter_stream_512mib_acq{acq:02d}.json').write_text(json.dumps({'id':str(acq),'status':'complete'}))
+        saved.clear()
+        with patch.multiple(shoreline_jobs,ROOT=root,dump=lambda p,d:saved.append(d),create=True),patch.object(shoreline_jobs,'attempt',side_effect=AssertionError('completed cached captures must not be repeated')):
+            shoreline_jobs.native_counter_suite('J5',1,['stream_512mib'])
+        assert len(saved)==1 and len(saved[0]['cases'])==3
     import run_trace,signal,subprocess
     child=SimpleNamespace(pid=987654321,poll=lambda:None)
     waited=[]
