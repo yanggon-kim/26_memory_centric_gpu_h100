@@ -1,3 +1,5 @@
+The current continuation is **allocation14162783**, GPU-67ac97bd-50b0-4ea4-ac20-1ef4b3e44409. See its [status](20261018_job14162783/STATUS.json) and [targeted GPU-first plan](20261018_job14162783/analysis/continuation_plan.md). It resumes unfinished J5 B8 traffic/native components while preserving the completed timing cohort, then J8/J7/J10/conditional J6/J11 before broad CPU work. Runtime/preflight must pass before measurements.
+
 # H200 measurements and active assignment
 
 Read [the new H200 research direction and jobs J0–J11](../docs/h200_shoreline_jobs.md) first. Updated2026-10-16: stop automatic expansion of the old portfolio at the next safe case boundary, publish actual local progress, preserve qualified work and prioritize shoreline-aware motivation/service experiments. This is an instruction update, not a new H200 measurement or completion claim.

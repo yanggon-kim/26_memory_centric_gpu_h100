@@ -615,11 +615,18 @@ def restricted_case(model,engine,batch,context,fraction,acq,pilot=False,attempt_
 
 
 def sm_allocations():
-    campaign.update_job(ROOT,'J5','in_progress')
-    engines=load(ROOT/'session.json').get('sm_engines',('graph','eager'))
+    session=load(ROOT/'session.json')
+    engines=session.get('sm_engines',('graph','eager'))
     assert engines and set(engines)<=set(('graph','eager'))
+    components=session.get('sm_components',('timing','traffic','native'))
+    assert components and set(components)<=set(('timing','traffic','native'))
+    shapes=session.get('sm_decoder_shapes',[(1,1024),(8,4096)])
+    assert shapes and all(len(s)==2 and all(isinstance(x,int) and x>0 for x in s) for s in shapes)
+    assert len({tuple(s) for s in shapes})==len(shapes)
+    if not set(components)&{'timing','traffic'}:shapes=[]
+    campaign.update_job(ROOT,'J5','in_progress')
     results=[];qualified={};qualified_proofs={}
-    for b,c in [(1,1024),(8,4096)]:
+    for b,c in shapes:
         for engine in engines:
             for attempt_id in range(2):
                 result=restricted_case('bridge',engine,b,c,.75,0,True,attempt_id)
@@ -644,17 +651,20 @@ def sm_allocations():
         results.append(primary)
         if primary['status']!='complete':continue
         counter_proofs[(b,c,1)]=engine if engine=='graph' else counter_proofs.get((b,c,1),engine)
-        for acq in range(3):results.append(restricted_case('bridge',engine,b,c,1,acq))
+        if 'timing' in components:
+            for acq in range(3):results.append(restricted_case('bridge',engine,b,c,1,acq))
         for fraction in (.75,.5,.3):
             # Each resource setting needs its own all-kernel proof; a 75% pilot does not prove 30%.
             proof=qualified_proofs[(engine,b,c)] if fraction==.75 else restricted_case('bridge',engine,b,c,fraction,0,True)
             results.append(proof)
             if proof['status']!='complete':continue
             counter_proofs[(b,c,fraction)]=engine if engine=='graph' else counter_proofs.get((b,c,fraction),engine)
-            for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
+            if 'timing' in components:
+                for acq in range(3):results.append(restricted_case('bridge',engine,b,c,fraction,acq))
     for (b,c,fraction),engine in counter_proofs.items():
-        results.extend(bounded_acquisitions(lambda acq:counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction)))
-    for fraction in (1,.75,.5,.3):
+        if 'traffic' in components:
+            results.extend(bounded_acquisitions(lambda acq:counter_case('bridge',engine,b,c,acq,job='J5',fraction=fraction)))
+    for fraction in ((1,.75,.5,.3) if 'native' in components else ()):
         def acquire_native(acq):
             label=f'J5_native_f{int(fraction*100)}_acq{acq:02d}';out=ROOT/'runs'/label
             outcome=attempt(label,python_command('shoreline_native.py','--gpu-uuid',UUID,'--output',out,
@@ -666,6 +676,9 @@ def sm_allocations():
         native_counter_suite('J5',fraction,load(ROOT/'session.json').get('native_sm_counter_conditions',
                              ['stream_512mib','gather_512mib','pointer_96mib_chains1']))
     dump(ROOT/'results/shoreline_sm_allocation_qualification.json',{'cases':results,
+         'selected_components':components,'selected_decoder_shapes':shapes,
+         'new_decoder_timing_collected':'timing' in components,
+         'timing_join_scope':'only same-session matched ordinary cohorts; historical qualified timing remains separate',
          'interpretation':'software SM restriction removes arithmetic, issue, LSU and MLP together; it creates no SRAM or physical area'})
     disposition('J5','partial','publish actual SM allocations, all-kernel restriction proofs and service sweeps; CI/traffic/unsupported gates remain explicit')
 
@@ -829,6 +842,12 @@ def competition():
         for engine in ('graph','eager'):
             proofs=[ROOT/'profiles'/f'J5_bridge_{engine}_b{batch}_c{context}_f75_acq00_pilot{i}.json' for i in range(2)]
             if any(p.exists() and load(p)['status']=='complete' for p in proofs):supported.append(engine)
+        if not supported:
+            # A targeted J5 traffic resume may intentionally omit this shape.
+            # Establish its actual current-GPU placement rather than treating
+            # missing evidence as unsupported hardware.
+            proof=restricted_case('bridge','eager',batch,context,.75,0,True)
+            if proof['status']=='complete':supported.append('eager')
         if not supported:
             results.append({'batch':batch,'context':context,'status':'unavailable',
                 'reason':'no all-kernel decoder restriction proof from J5'});continue

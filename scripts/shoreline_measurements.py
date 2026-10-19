@@ -29,6 +29,7 @@ def emit(root):
                 'model':d['model'],'engine':d['engine'],'batch':d['batch'],'context':d['context'],
                 'acquisition_id':d['acquisition_id'],'ticks':d['ticks'],'scope':d['scope'],'layer':d['layer'],
                 'pressure':d.get('pressure'),'requested_sm_fraction':d.get('requested_sm_fraction'),
+                'actual_sm_count':d.get('actual_sm_count'),'actual_sm_case_id':d.get('actual_sm_case_id',d['id']),
                 'replay_mode':d['replay_mode'],'cache_control':d['cache_control'],'clock_control':d['clock_control'],
                 'full_output_replay_qualified':True,'clock_join_qualified':False,
                 'clock_join_missing_reason':d['clock_join_qualification'],'source':source(path)})

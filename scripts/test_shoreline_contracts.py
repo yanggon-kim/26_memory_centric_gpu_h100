@@ -54,6 +54,32 @@ def main():
     assert observed==[True], 'owned CUDA thread IDs must resolve through Tgid'
     assert monitor.owned(1) is False
     from unittest.mock import patch
+    import shoreline_jobs
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory);settings={'sm_engines':['eager'],'sm_components':['traffic','native'],'sm_decoder_shapes':[[8,4096]]}
+        session=root/'session.json';session.write_text(json.dumps(settings))
+        decoder=[];physical=[];native=[];native_profiles=[]
+        def restricted(*args,**kwargs):decoder.append((args,kwargs));return {'status':'complete'}
+        def counter(*args,**kwargs):physical.append((args,kwargs));return {'status':'complete'}
+        def acquire(label,*args,**kwargs):native.append(label);return {'status':'complete'}
+        with patch.multiple(shoreline_jobs,ROOT=root,campaign=SimpleNamespace(update_job=lambda *args:None),
+             restricted_case=restricted,counter_case=counter,attempt=acquire,
+             native_counter_suite=lambda *args:native_profiles.append(args),publish=lambda *args:None,
+             dump=lambda *args:None,disposition=lambda *args:None,UUID='fixture',
+             python_command=lambda *args:list(args),create=True):
+            shoreline_jobs.sm_allocations()
+            assert len(decoder)==4 and all(args[2:4]==(8,4096) and args[6] is True for args,kw in decoder)
+            assert len(physical)==12 and all(args[2:4]==(8,4096) for args,kw in physical)
+            assert {kw['fraction'] for args,kw in physical}=={1,.75,.5,.3}, 'fresh full-SM traffic control is mandatory'
+            assert len(native)==12 and len(native_profiles)==4
+            decoder.clear();physical.clear();native.clear();native_profiles.clear()
+            session.write_text(json.dumps({**settings,'sm_components':['native']}));shoreline_jobs.sm_allocations()
+            assert not decoder and not physical and len(native)==12
+            session.write_text(json.dumps({**settings,'sm_components':['unknown']}));rejected(shoreline_jobs.sm_allocations)
+            session.write_text(json.dumps({**settings,'sm_components':['timing'],'sm_decoder_shapes':[[1,1024],[8,4096]]}))
+            decoder.clear();physical.clear();native.clear();native_profiles.clear();shoreline_jobs.sm_allocations()
+            assert sum(not args[6] if len(args)>6 else True for args,kw in decoder)==24
+            assert not physical and not native
     import run_trace,signal,subprocess
     child=SimpleNamespace(pid=987654321,poll=lambda:None)
     waited=[]
