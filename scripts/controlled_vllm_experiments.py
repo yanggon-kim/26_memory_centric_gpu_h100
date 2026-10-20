@@ -94,7 +94,8 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
     completed={}
     iterations=0
     hardware_before = hardware_sampler() if hardware_sampler else None
-    torch.cuda.nvtx.range_push('decode')
+    selected_full=profile_capture and getattr(engine,'_h200_calibration_full_range',False)
+    torch.cuda.nvtx.range_push('calibration_decode_selected' if selected_full else 'decode')
     wall_start_unix_ns=time.time_ns()
     start=time.perf_counter()
     a.record()
@@ -127,6 +128,11 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
         dump(output_dir/'profile_interval_output.json',{'output_ids':native_ids,
              'output_sha256':digest(native_ids),'decode_iterations':iterations,
              'timed_generated_tokens':len(prompts)*iterations,'prefix':prefix,
+             'prompt_sha256':digest(prompts),'prefill_barrier':barrier,
+             'wall_start_unix_ns':wall_start_unix_ns,'wall_end_unix_ns':wall_end_unix_ns,
+             'hardware_before':hardware_before,'hardware_after':hardware_after,
+             'post_prefill_conditioning':conditioning,
+             'full_decode_calibration':selected_full,
              'scope':'native completed decode interval before profiler stop/replay; correctness only'})
         torch.cuda.profiler.stop()
     telemetry=None
@@ -225,6 +231,7 @@ def main(args):
     assert not torch.distributed.is_initialized(), 'runner requires ownership of newly initialized process groups'
     llm=vllm.LLM(**settings)
     engine=llm.llm_engine
+    engine._h200_calibration_full_range=config.get('calibration_whole_decode_range',False)
     if config.get('decode_conditioning'):
         from decode_precondition import create
         engine._h200_predecode_condition=create(torch,config['decode_conditioning'])

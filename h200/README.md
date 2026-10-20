@@ -23,3 +23,5 @@ The committed session is `20261016_job14073758`. Its [environment inventory](202
 Keep H200, historical H100 and RTX evidence separate. Use actual H200 UUID/SKU/cache/backend and existing seed20261013. New matched quantitative comparisons require three independent process acquisitions, ten timed trials each and three warmups. Existing three-trial data keeps its original scope. No presumed H10050MiBL2 or RTX64MiBL2 default.
 
 Large profiler databases, model weights and traces stay outside Git with verified locations/hashes. Runtime/cache/build paths and launch deadlines in current scripts are allocation-specific. Inventory the live allocation before reuse; no new Slurm job, clocks/power/driver change, MIG or multi-GPU execution is requested. Follow the new assignment's closeout and trace-budget gates.
+
+Decoder calibration/held-out validation is implemented in `docs/h200_decoder_calibration_v4.md`; GPU outcomes remain pending until the new batch runs.

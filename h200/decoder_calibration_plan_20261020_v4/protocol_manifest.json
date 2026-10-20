@@ -1,0 +1,78 @@
+{
+  "classification": "implemented measurement/validation protocol; no new GPU measurements or successful validation yet",
+  "created_utc": "2026-10-20T19:23:13.112757+00:00",
+  "design_identity": "7357676ff94591d22d16b00f840fd41987f1c4afed6978dc30e887ce2ad7763e",
+  "conditions": [
+    {
+      "id": "b1_c128",
+      "batch": 1,
+      "context": 128,
+      "split": "train",
+      "status": "planned"
+    },
+    {
+      "id": "b1_c1024",
+      "batch": 1,
+      "context": 1024,
+      "split": "train",
+      "status": "planned"
+    },
+    {
+      "id": "b2_c512",
+      "batch": 2,
+      "context": 512,
+      "split": "train",
+      "status": "planned"
+    },
+    {
+      "id": "b8_c4096",
+      "batch": 8,
+      "context": 4096,
+      "split": "train",
+      "status": "planned"
+    },
+    {
+      "id": "b2_c2048",
+      "batch": 2,
+      "context": 2048,
+      "split": "held_out",
+      "status": "planned"
+    },
+    {
+      "id": "b4_c1536",
+      "batch": 4,
+      "context": 1536,
+      "split": "held_out",
+      "status": "planned"
+    }
+  ],
+  "acquisitions": 3,
+  "ordinary_timed_trials": 10,
+  "warmups": 3,
+  "generated_tokens": 64,
+  "timed_steps": 63,
+  "counter_scope": "full63 steps; instrumented timing excluded",
+  "readiness_required_job": "14215309",
+  "model": "two common coefficients eta/O; frozen before held-out decoder acquisition",
+  "acceptance": "strict exact outputs, source/isolation and global pooled <=5% clocks, feasible bounds, <=10% max train and held-out errors",
+  "source_sha256": {
+    "scripts/decoder_calibration_model.py": "57483605b104ca03ba8c49164b0af1265f6005acf055feaa6c78e6c1f35638c4",
+    "scripts/decoder_calibration_worker.py": "0cb5c9eff9ec6eb421a9f4e1a22831e393907b9b751412d0543244bcafbc1bda",
+    "scripts/decoder_calibration_kernels.py": "0fc44df220341edda7443c73249ab77f7da3ca342fdae93e39c7ce8e61f1888c",
+    "scripts/calibrate_h200_decoder.py": "bcbb996f75a2bf22c3aa5ce6ea558951fa65c5d7c17f248a6783f7817ef167b3",
+    "scripts/test_decoder_calibration.py": "75662f01937021eeabce3f72223282033e7ba1aa6835f95140a3a615e06aef97",
+    "scripts/controlled_vllm_experiments.py": "b14a317648ac88f7bbd88874a58725ac07f5515d0195e8a246dd7c7308a562c8",
+    "scripts/continue_shoreline.py": "b4d989b218b9806c3b50edcad88a078caeddc1292c0c266fbba3b12a2ee50a77",
+    "configs/h200_batch_decoder_calibration_v4.json": "4122cc24966e91196f3d9c0d6ca4256999681379d0bb83eb4530fdfd1da432ce",
+    "batch/h200_decoder_calibration_v4.sbatch": "d945d5e64565e159717b9858384ce907f87562ca3d0f622ab756d9d4ae801237",
+    "docs/h200_decoder_calibration_v4.md": "f8721f1982e620f666140472e030bc070f5fd6b0a4162c22648386ff8f71a2d7"
+  },
+  "validation": [
+    "6 decoder-calibration contracts passed",
+    "6 failure-recovery contracts passed",
+    "7 gap and6 batch contracts passed",
+    "CPU and shoreline contracts passed",
+    "Bash syntax and ShellCheck passed",
+    "Slurm test-only accepted dependency configuration; no submission by that check"
+  ]
+}
