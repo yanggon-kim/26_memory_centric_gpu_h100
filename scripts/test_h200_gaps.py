@@ -14,6 +14,24 @@ from shoreline_timeline import competition_gate
 
 
 class GapContracts(unittest.TestCase):
+    def test_remaining_pressure_only_collects_three_new_captures(self):
+        import shoreline_jobs as jobs
+        plan=json.loads((Path(__file__).resolve().parents[1]/'configs/h200_batch_gap_remaining_v2.json').read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);batch.write(root/'session.json',plan['session_overrides'])
+            calls=[]
+            def counter(*args,**kw):
+                calls.append((args,kw));return {'status':'complete'}
+            with patch.multiple(jobs,ROOT=root,campaign=SimpleNamespace(update_job=lambda *a:None),
+                reference=lambda *a:Path('functional-proof'),counter_case=counter,
+                treatment_case=lambda *a,**kw:self.fail('repeated ordinary timing'),
+                dump=batch.write,publish=lambda *a:None,disposition=lambda *a:None,create=True):
+                jobs.retention()
+            self.assertEqual(len(calls),3)
+            self.assertEqual([a[0][4] for a in calls],[0,1,2])
+            self.assertTrue(all(a[0][2:4]==(8,4096) and a[1]['pressure']=='pressure' for a in calls))
+            self.assertEqual(plan['session_overrides']['gpu_job_order'],['J7'])
+
     def test_failed_first_repaired_counter_stops_expansion_and_skips_timing(self):
         import shoreline_jobs as jobs
         with tempfile.TemporaryDirectory() as directory:

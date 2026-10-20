@@ -732,6 +732,8 @@ def retention():
     session=load(ROOT/'session.json')
     components=session.get('retention_components',['timing','traffic'])
     assert components and set(components)<={'timing','traffic'}
+    states=session.get('retention_states',['normal','pressure'])
+    assert states and len(states)==len(set(states)) and set(states)<={'normal','pressure'}
     for b,c in session.get('retention_shapes',[(1,1024),(1,2048),(1,4096),(8,4096)]):
         if reference('bridge','eager',b,c) is None:
             campaign.acquisition(ROOT,'bridge','hf_eager',b,c,0,smoke=True)
@@ -753,7 +755,7 @@ def retention():
     physical=[]
     for b,c in selected:
         if 'traffic' not in components:continue
-        for pressure in ('normal','pressure'):
+        for pressure in states:
             rows=bounded_acquisitions(lambda acq:counter_case('bridge','eager',b,c,acq,job='J7',pressure=pressure))
             physical.extend(rows)
             if rows[0]['status']!='complete':

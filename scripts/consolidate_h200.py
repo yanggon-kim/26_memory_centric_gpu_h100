@@ -170,6 +170,15 @@ def main(destination,repair_root=None):
                 'hbm_read_bytes':read(p).get('hbm_read_bytes'),'hbm_write_bytes':read(p).get('hbm_write_bytes')} for p in counter_paths],
             'interpretation':'repair cohort remains separate from earlier timing/service acquisitions; counter replay can perturb cache history and does not establish a cross-GPU timing join'}
         accepted['repair_cohort']=repair
+        retained=[]
+        for name in read(repair_root/'session.json').get('retained_repair_sessions',[]):
+            prior=(PACKAGE/name).resolve()
+            assert prior.is_relative_to(PACKAGE/'h200') and prior!=repair_root
+            evidence=prior/'analysis/consolidated/results/qualified_evidence.json'
+            cohort=read(evidence)['repair_cohort']
+            retained.append({'source':str(evidence.relative_to(PACKAGE)),
+                'sha256':sha(evidence),'cohort':cohort})
+        accepted['retained_repair_cohorts']=retained
     write(destination/'results/diagnoses.json',diagnoses)
     write(destination/'results/qualified_evidence.json',accepted)
     dispositions=[
@@ -188,12 +197,23 @@ def main(destination,repair_root=None):
     jobs=[{'id':f'J{i}','scientific_gate':gate,'disposition':why} for i,(gate,why) in enumerate(dispositions)]
     if repair:
         for job in jobs:
-            if job['id']=='J6' and any(x['job']=='J6' and x['qualified'] for x in repair['treatment_comparisons']):
+            comparisons=repair['treatment_comparisons']+[x for p in accepted.get('retained_repair_cohorts',[])
+                for x in p['cohort']['treatment_comparisons']]
+            if job['id']=='J6' and any(x['job']=='J6' and x['qualified'] for x in comparisons):
                 job.update(scientific_gate='partial',disposition='corrected cohort has qualified fixed-partition comparisons; see per-treatment gates and shared-service limits')
             if job['id']=='J7' and len(repair['physical_counter_captures'])==18 and all(x['status']=='complete' for x in repair['physical_counter_captures']):
                 job.update(scientific_gate='partial',disposition='corrected single-range counters passed; prior timing and new physical cohort remain separate')
+            if job['id']=='J7' and accepted.get('retained_repair_cohorts'):
+                captures=repair['physical_counter_captures']+[x for p in accepted['retained_repair_cohorts']
+                    for x in p['cohort']['physical_counter_captures']]
+                completed={tuple(read(PACKAGE/x['path'])[k] for k in ('batch','context','pressure','acquisition_id'))
+                    for x in captures if x['status']=='complete'}
+                expected={(b,c,state,acq) for b,c in ((1,1024),(1,2048),(8,4096))
+                    for state in ('normal','pressure') for acq in range(3)}
+                if completed==expected:
+                    job.update(scientific_gate='partial',disposition='all18 individual counter captures retained across separate allocations; no pooled timing/clocks or matched cross-allocation treatment claim')
     write(destination/'STATUS.json',{'status':'consolidated_with_explicit_gaps','jobs':jobs,
-        'required_gpu_repairs':['J6 context lifetime and strict per-role placement pilot','J7 single selected profiler range'],
+        'required_gpu_repairs':[j['id'] for j in jobs if j['scientific_gate']=='needs_gpu_repair'],
         'clock_rejected_families':'retained; not automatically resampled','trace_and_archive':'blocked independently of GPU collection'})
     lines=['# Consolidated H200 evidence and gap diagnosis','',accepted['scope']+'.','',
         '## Accepted results','',
@@ -223,6 +243,13 @@ def main(destination,repair_root=None):
         for row in repair['treatment_comparisons']:
             if row['job']=='J6':lines.append(f'|{row["numerator"]}/idle|B{row["batch"]}/C{row["context"]}|{row["qualified"]}|{row["ratio_ci95"]}|')
         lines+=['','Physical J7 counter dispositions: '+str(dict(collections.Counter(x['status'] for x in repair['physical_counter_captures']))),repair['interpretation']]
+        for prior in accepted.get('retained_repair_cohorts',[]):
+            cohort=prior['cohort']
+            lines+=['','Retained allocation cohort: '+cohort['session'],
+                'Source: '+prior['source']+' (SHA256 '+prior['sha256']+').',
+                'Qualified J6 comparisons: '+str(sum(x['job']=='J6' and x['qualified'] for x in cohort['treatment_comparisons'])),
+                'Retained physical counter dispositions: '+str(dict(collections.Counter(x['status'] for x in cohort['physical_counter_captures']))),
+                'These acquisitions remain separate; no cross-allocation timing or clock pooling.']
     (destination/'report.md').write_text('\n'.join(lines)+'\n')
     print(json.dumps({'output':str(destination),'qualified_treatments':len(accepted['treatment_comparisons']),
         'qualified_energy_families':[x['id'] for x in energy if x['qualified']],
