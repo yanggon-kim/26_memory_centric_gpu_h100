@@ -3,9 +3,11 @@
   "jobs": [
     {
       "id": "J0",
-      "status": "planned",
-      "scientific_gate": "pending",
-      "prior_evidence": "h200/20261019_job14180351/STATUS.json"
+      "status": "complete",
+      "scientific_gate": "passed",
+      "prior_evidence": "h200/20261019_job14180351/STATUS.json",
+      "reason": "current allocation/runtime inventory and CPU contracts qualified; native families retain separate gates",
+      "updated_utc": "2026-10-20T01:46:22.042698+00:00"
     },
     {
       "id": "J1",
@@ -74,5 +76,42 @@
       "prior_evidence": "h200/20261019_job14180351/STATUS.json"
     }
   ],
-  "attempts": []
+  "attempts": [
+    {
+      "id": "cpu_contracts",
+      "status": "complete",
+      "source": "results/processes/cpu_contracts.json",
+      "source_sha256": "b6ecf0066941c6e88b69231de6f07487bd25454a5bfb61572dac68611b99f221",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "2009fd4aae434facb5745b5c56d7f3b33cc5a56b6b1f084d916feeb50ab836bc"
+    },
+    {
+      "id": "inventory",
+      "status": "complete",
+      "source": "results/processes/inventory.json",
+      "source_sha256": "ed87620c7340fa6650e980b08735d15d9a5fdc4da1f4102ca8a9ce142057d4d2",
+      "gpu_execution": true,
+      "exit_code": 0,
+      "numerical_source_freeze": "2009fd4aae434facb5745b5c56d7f3b33cc5a56b6b1f084d916feeb50ab836bc"
+    },
+    {
+      "id": "ncu_catalog",
+      "status": "complete",
+      "source": "results/processes/ncu_catalog.json",
+      "source_sha256": "092836fd77d2d0ff8b1ab006f00901b9c122fcf3b9e7020dbab3d7d29ccb2e78",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "2009fd4aae434facb5745b5c56d7f3b33cc5a56b6b1f084d916feeb50ab836bc"
+    },
+    {
+      "id": "pip_freeze",
+      "status": "complete",
+      "source": "results/processes/pip_freeze.json",
+      "source_sha256": "964fa2a78c5a0ffa3a96e40eefdc1dea0c3dd9a96327edf361f28e276f7905fd",
+      "gpu_execution": false,
+      "exit_code": 0,
+      "numerical_source_freeze": "2009fd4aae434facb5745b5c56d7f3b33cc5a56b6b1f084d916feeb50ab836bc"
+    }
+  ]
 }
