@@ -21,6 +21,8 @@ def main(session):
     os.environ['H200_SESSION_CONFIG']=str(session.resolve())
     import h200_session as env
     import shoreline_campaign as campaign
+    # Fit/feature mathematics must use the same sealed tree as the GPU workers.
+    sys.path.insert(0,str(Path(env.SESSION['frozen_source_root'])/'scripts'))
     from shoreline_jobs import records,value
     from decoder_calibration_model import CONDITIONS,design_identity,fit,validate,predict,parameter_uncertainty,resampled_center,full_decode_publication
     from shoreline_statistics import hierarchical_interval,latency_bounds
