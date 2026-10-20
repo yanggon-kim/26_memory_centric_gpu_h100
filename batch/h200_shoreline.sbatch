@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=h200-shoreline
+#SBATCH --job-name=yg_h200-shoreline
 #SBATCH --account=gts-dmahajan7
 #SBATCH --qos=embers
 #SBATCH --nodes=1

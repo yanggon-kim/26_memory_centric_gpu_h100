@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=h200-gap-tail
+#SBATCH --job-name=yg_h200-gap-tail
 #SBATCH --account=gts-dmahajan7
 #SBATCH --qos=embers
 #SBATCH --nodes=1

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=h200-cal-v4
+#SBATCH --job-name=yg_h200-cal-v4
 #SBATCH --account=gts-dmahajan7
 #SBATCH --qos=embers
 #SBATCH --nodes=1
