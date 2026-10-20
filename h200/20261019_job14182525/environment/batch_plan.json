@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "previous_session": "latest",
+  "minimum_previous_job_id": 14180351,
+  "traffic_completed_session": "h200/20261018_job14162783",
+  "runtime_lock": "configs/runtime.lock.txt",
+  "tracer_runtime_lock": "configs/tracer_requirements.lock.txt",
+  "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+  "closeout_buffer_s": 1800,
+  "minimum_launch_budget_s": 1200,
+  "minimum_tmp_free_gib": 100,
+  "minimum_shared_free_gib": 10,
+  "reopen_gpu_jobs": [
+    "J6",
+    "J7"
+  ],
+  "session_overrides": {
+    "collection_scope_version": "gap_remediation_v2",
+    "queue_schedule": "gpu-first",
+    "gpu_job_order": [
+      "J6",
+      "J7"
+    ],
+    "profile_protocol": "ticks_only_v5",
+    "competition_protocol": "disjoint_lifetime_v2",
+    "retention_components": [
+      "traffic"
+    ],
+    "retention_shapes": [
+      [
+        1,
+        1024
+      ],
+      [
+        1,
+        2048
+      ],
+      [
+        8,
+        4096
+      ]
+    ],
+    "sm_components": [
+      "native"
+    ],
+    "sm_engines": [
+      "eager"
+    ],
+    "smoke_models": [
+      "bridge"
+    ],
+    "baseline_contrasts": [],
+    "rejected_acquisition_retry_limit": 0
+  },
+  "reason": "One versioned repair of J6 context lifetime/placement and J7 excess outer profiler ranges. Fresh allocation/functional guards precede one concurrency pilot per shape and a bounded counter pilot before expansion. Retain clock-rejected J8/J10 and B1C4096 correctness failure; no favorable resampling or full trace. Reuse completed v2 jobs after preemption."
+}
