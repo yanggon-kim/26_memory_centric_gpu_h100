@@ -132,6 +132,27 @@ D comes from counters (FETCH_SIZE + WRITE_SIZE, eager program, ticks 4–6) for 
 
 All intervals are nonempty (consistency, not validation). The c/r/f grid (c ∈ {1, .75, .5, .25}, r ∈ {.7, 1, 1.2, 1.4}, f ∈ {0, .05, .1, .2}) is in the same file, under same-O/X and envelope assumptions. **M6 falsifies reading c as FLOP capacity:** C/c predicts under 1% slowdown at c = 0.32, but 9–24% was measured, because compute units also generate memory requests and drive L2 bandwidth (M7). Any architecture model must couple "compute" removal to request-generation and on-chip delivery capacity.
 
+### 7b. What the residual O is made of (per-kernel classification)
+
+`scripts/amd/classify_kernels.py`; output `results/.../analysis/kernel_classification.json`. Each kernel in decode ticks 4–6 is joined across the FETCH, WRITE and MFMA counter runs, with kernel names checked to match. It is labelled memory-bound (≥60% of the 4.55 TB/s stream rate), compute-bound (≥60% of 1071 TFLOP/s), small/overhead (<10 µs otherwise), latency-bound (the rest) or uncounted (runtime Triton kernels excluded from counter collection). Results at 50% and 70% thresholds are in the JSON. Kernel durations come from profiled runs. Idle/launch time is the clean M1 step time minus the profiled busy union, because profiled gaps are inflated by counter serialization. The table assumes profiling does not stretch the kernels themselves much. Analytical, from measured and profiled inputs.
+
+Graph mode (the baseline program), ms per step:
+
+| Case | T | Memory kernels at peak rate | Memory kernels' excess over peak | Latency-bound kernels | Small kernels (<10 µs) | Uncounted (fused Triton norm/act/rotary) | Idle / launch |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| bridge B1 C1024 | 2.187 | 0.600 (27%) | 0.164 (7%) | 0.025 | 0.660 (30%) | 0.457 (21%) | 0.282 (13%) |
+| bridge B8 C4096 | 3.155 | 0.171 | 0.071 | 1.369 (43%) | 0.608 (19%) | 0.468 (15%) | 0.468 (15%) |
+| Qwen7B B1 C4096 | 4.682 | 3.047 (65%) | 0.280 (6%) | 0.015 | 0.514 (11%) | 0.452 (10%) | 0.375 (8%) |
+| Mistral7B B1 C4096 | 5.111 | 3.132 (61%) | 0.347 (7%) | 0 | 0.555 (11%) | 0.536 (10%) | 0.540 (11%) |
+
+Eager-mode counter runs (14B, 32B and batch 8) classify kernels the same way. Their idle share is host launch overhead in the eager program, not a graph-mode property. For Qwen32B B1, memory-bound GEMV kernels run at 4.60 TB/s, close to the 4.55 TB/s stream reference. Above 4.55 is possible because counter bytes exclude Infinity Cache hits.
+
+Reading:
+- At batch 1, the weight-streaming GEMVs are genuinely memory-bound and run close to the stream rate: 3.6 TB/s (1.5B), 4.2 TB/s (7B), 4.6 TB/s (32B). Their excess over peak is only 6–7% of T.
+- The residual O is mostly not "slow memory". It is many small per-layer kernels: batch-1 attention (about 56 calls of ~6 µs), KV-cache writes, copies, and the fused norm/activation/rotary Triton kernels. Together with idle and launch time between them, these are 37–64% of T at batch 1 (less for larger models).
+- At batch 8, part of the GEMV and attention time becomes latency-bound (2.2–2.7 TB/s, larger tiles, more arithmetic per byte).
+- Implication: for small models, fusing or launching fewer small kernels would cut decode time more than more bandwidth or SRAM would. For large models, weight streaming dominates and bandwidth matters. Reducing compute must keep the small kernels' latency-critical path intact.
+
 ## 8. Bandwidth at fixed compute: multi-GPU (TP), owner-authorized 2026-10-18
 
 Speedup over TP1 (graph, synchronized-wall ms/step for TP; HIP-event ms/step for TP1, so ratios carry that scope difference), 3 acquisitions each unless noted. **Matched** restricts each GPU to ⌈304/N⌉₈ CUs, so the total active CUs stay at about one GPU (304–320) while HBM stacks, bandwidth and Infinity Cache scale by N. **Matched152** holds about 160 total CUs and compares with TP1 restricted to 152 CUs (M6).

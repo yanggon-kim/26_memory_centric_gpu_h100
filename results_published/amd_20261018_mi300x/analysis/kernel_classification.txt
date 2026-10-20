@@ -1,0 +1,25 @@
+--- decomposition of clean T (ms): ideal-memory | memory excess | latency-bound | small kernels | uncounted | idle/launch
+bridge_eager_b1_c1024      T= 8.281 |  0.589 | 0.170 | 0.043 | 0.948 | 0.182 |  6.350
+bridge_eager_b8_c4096      T=14.210 |  0.112 | 0.031 | 1.429 | 0.965 | 0.200 | 11.474
+bridge_graph_b1_c1024      T= 2.187 |  0.600 | 0.164 | 0.025 | 0.660 | 0.457 |  0.282
+bridge_graph_b8_c4096      T= 3.155 |  0.171 | 0.071 | 1.369 | 0.608 | 0.468 |  0.468
+mistral7b_eager_b1_c4096   T= 9.493 |  3.132 | 0.666 | 0.000 | 0.989 | 0.252 |  4.454
+mistral7b_eager_b8_c4096   T=16.559 |  3.892 | 1.571 | 0.523 | 0.815 | 0.292 |  9.466
+mistral7b_graph_b1_c4096   T= 5.111 |  3.132 | 0.347 | 0.000 | 0.555 | 0.536 |  0.540
+qwen14b_eager_b1_c4096     T=13.299 |  6.061 | 0.308 | 0.454 | 1.104 | 0.338 |  5.032
+qwen32b_eager_b1_c4096     T=19.003 | 13.597 | 0.321 | 0.632 | 1.438 | 0.742 |  2.273
+qwen7b_eager_b1_c4096      T= 7.839 |  3.066 | 0.291 | 0.011 | 0.805 | 0.273 |  3.393
+qwen7b_eager_b8_c4096      T=13.537 |  3.003 | 0.880 | 1.371 | 0.684 | 0.298 |  7.300
+qwen7b_graph_b1_c4096      T= 4.682 |  3.047 | 0.280 | 0.015 | 0.514 | 0.452 |  0.375
+bridge_eager_b1_c1024      busy=1.931ms gaps=21.181ms mism=0  overhead:0.948ms(ideal 0.077, 0.37TB/s)  memory-bound:0.760ms(ideal 0.589, 3.56TB/s)  uncounted:0.182ms(ideal 0.000, 0.00TB/s)  latency-bound:0.043ms(ideal 0.018, 1.97TB/s)
+bridge_eager_b8_c4096      busy=2.736ms gaps=19.319ms mism=0  latency-bound:1.429ms(ideal 0.763, 2.43TB/s)  overhead:0.965ms(ideal 0.079, 0.37TB/s)  uncounted:0.200ms(ideal 0.000, 0.00TB/s)  memory-bound:0.143ms(ideal 0.112, 3.56TB/s)
+bridge_graph_b1_c1024      busy=1.906ms gaps=16.494ms mism=0  memory-bound:0.764ms(ideal 0.600, 3.60TB/s)  overhead:0.660ms(ideal 0.077, 0.53TB/s)  uncounted:0.457ms(ideal 0.000, 0.00TB/s)  latency-bound:0.025ms(ideal 0.008, 1.50TB/s)
+bridge_graph_b8_c4096      busy=2.688ms gaps=16.177ms mism=0  latency-bound:1.369ms(ideal 0.705, 2.34TB/s)  overhead:0.608ms(ideal 0.077, 0.58TB/s)  uncounted:0.468ms(ideal 0.000, 0.00TB/s)  memory-bound:0.242ms(ideal 0.171, 3.21TB/s)
+mistral7b_eager_b1_c4096   busy=5.039ms gaps=24.926ms mism=0  memory-bound:3.798ms(ideal 3.132, 3.75TB/s)  overhead:0.989ms(ideal 0.123, 0.57TB/s)  uncounted:0.252ms(ideal 0.000, 0.00TB/s)
+mistral7b_eager_b8_c4096   busy=7.092ms gaps=25.341ms mism=0  memory-bound:5.463ms(ideal 3.892, 3.24TB/s)  overhead:0.815ms(ideal 0.019, 0.10TB/s)  latency-bound:0.523ms(ideal 0.257, 2.23TB/s)  uncounted:0.292ms(ideal 0.000, 0.00TB/s)
+mistral7b_graph_b1_c4096   busy=4.571ms gaps=20.056ms mism=2  memory-bound:3.479ms(ideal 3.132, 4.10TB/s)  overhead:0.555ms(ideal 0.122, 1.00TB/s)  uncounted:0.536ms(ideal 0.000, 0.00TB/s)
+qwen14b_eager_b1_c4096     busy=8.266ms gaps=36.706ms mism=0  memory-bound:6.370ms(ideal 6.061, 4.40TB/s)  overhead:1.104ms(ideal 0.024, 0.10TB/s)  latency-bound:0.454ms(ideal 0.180, 1.80TB/s)  uncounted:0.338ms(ideal 0.000, 0.00TB/s)
+qwen32b_eager_b1_c4096     busy=16.730ms gaps=45.771ms mism=0  memory-bound:13.919ms(ideal 13.597, 4.60TB/s)  overhead:1.438ms(ideal 0.021, 0.07TB/s)  uncounted:0.742ms(ideal 0.000, 0.00TB/s)  latency-bound:0.632ms(ideal 0.250, 1.80TB/s)
+qwen7b_eager_b1_c4096      busy=4.446ms gaps=19.177ms mism=0  memory-bound:3.357ms(ideal 3.066, 4.21TB/s)  overhead:0.805ms(ideal 0.066, 0.37TB/s)  uncounted:0.273ms(ideal 0.000, 0.00TB/s)  latency-bound:0.011ms(ideal 0.000, 0.06TB/s)
+qwen7b_eager_b8_c4096      busy=6.237ms gaps=19.324ms mism=0  memory-bound:3.884ms(ideal 3.003, 3.52TB/s)  latency-bound:1.371ms(ideal 0.724, 2.40TB/s)  overhead:0.684ms(ideal 0.015, 0.10TB/s)  uncounted:0.298ms(ideal 0.000, 0.00TB/s)
+qwen7b_graph_b1_c4096      busy=4.307ms gaps=15.911ms mism=0  memory-bound:3.327ms(ideal 3.047, 4.23TB/s)  overhead:0.514ms(ideal 0.081, 0.71TB/s)  uncounted:0.452ms(ideal 0.000, 0.00TB/s)  latency-bound:0.015ms(ideal 0.002, 0.62TB/s)

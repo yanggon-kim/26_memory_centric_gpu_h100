@@ -17,6 +17,7 @@ python3 scripts/amd/summarize_m6.py $d > $d/analysis/m6_prefill_summary.txt 2>&1
 [ -f scripts/amd/summarize_competitor.py ] && [ -d $d/j6_competitor ] && python3 scripts/amd/summarize_competitor.py $d > $d/j6_competitor/summary_competitor.txt 2>&1
 python3 scripts/amd/latency_bounds.py --m1 $d/m1/summary.json --service $d/m4_service/summary.json --counters $d/m2_counters/summary.json \
   --configs $d/configs --output $d/analysis/shoreline_latency_bounds.json > $d/analysis/shoreline_latency_bounds.txt 2>&1
+python3 scripts/amd/classify_kernels.py --root $d/m2_counters --output $d/analysis/kernel_classification.json > $d/analysis/kernel_classification.txt 2>&1
 python3 scripts/amd/consolidate_shoreline.py --root $d > /dev/null
 roots=$(ls -d results/amd_2026101*_* | tr '\n' ' ')
 for r in $roots; do [ -d $r/m1 ] && [ -f $r/node_monitor.jsonl ] && \
