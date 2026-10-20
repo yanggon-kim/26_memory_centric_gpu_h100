@@ -108,6 +108,8 @@ def make_config(root, model, engine, batch, context, trials=10):
     if engine == 'eager':
         config['engine']['compilation_config'] = {'mode':0}
     config['shoreline_protocol'] = {'acquisitions':3,'trials_per_acquisition':trials,'seed':20261013}
+    conditioning=load(root/'session.json').get('decode_conditioning')
+    if conditioning:config['decode_conditioning']=conditioning
     name = f'{model}_{engine}_b{batch}_c{context}_t{trials}'
     path = root/'configs'/(name+'.json')
     if path.exists():

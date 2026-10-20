@@ -854,7 +854,7 @@ def competition():
     if outcome['status']!='complete':
         disposition('J6','unavailable','native disjoint-context allocation probe failed; owned competition not expanded');return
     results=[]
-    for batch,context in [(1,1024),(8,4096)]:
+    for batch,context in load(ROOT/'session.json').get('competition_shapes',[(1,1024),(8,4096)]):
         supported=[]
         for engine in ('graph','eager'):
             proofs=[ROOT/'profiles'/f'J5_bridge_{engine}_b{batch}_c{context}_f75_acq00_pilot{i}.json' for i in range(2)]

@@ -17,6 +17,20 @@ def write(path,value):
     path.write_text(json.dumps(value,indent=2)+'\n')
 
 
+def compact_energy(root):
+    raw=root/'results/shoreline_energy_qualification.json'
+    compact=root/'results/energy_qualification_compact_v1.json'
+    if compact.exists():return compact
+    ledger=read(raw)
+    for row in ledger['cases']:
+        if 'raw_sensors' in row:
+            row['raw_sensors']=[{k:v for k,v in sensor.items() if k!='samples'} for sensor in row['raw_sensors']]
+    ledger['parent']={'path':str(raw.relative_to(PACKAGE)),'sha256':sha(raw),
+        'storage':'persistent shared workspace; duplicate aggregate may be excluded from Git; per-acquisition run.json retains raw samples'}
+    write(compact,ledger)
+    return compact
+
+
 def energy_family(root):
     from shoreline_statistics import hierarchical_interval
     ledger=read(root/'results/energy_qualification_compact_v1.json')
@@ -72,16 +86,7 @@ def main(destination,repair_root=None):
     treatment_analysis(treatment_root)
     treatments=artifact('h200/20261019_job14177052/results/shoreline_treatment_statistics.json')
     energy_root=PACKAGE/'h200/20261019_job14180351'
-    raw_energy=energy_root/'results/shoreline_energy_qualification.json'
-    compact=energy_root/'results/energy_qualification_compact_v1.json'
-    if not compact.exists():
-        ledger=read(raw_energy)
-        for row in ledger['cases']:
-            if 'raw_sensors' in row:
-                row['raw_sensors']=[{k:v for k,v in sensor.items() if k!='samples'} for sensor in row['raw_sensors']]
-        ledger['parent']={'path':str(raw_energy.relative_to(PACKAGE)),'sha256':sha(raw_energy),
-            'storage':'persistent shared workspace; 11MiB duplicate aggregate excluded from Git; per-acquisition run.json retains raw samples'}
-        write(compact,ledger)
+    compact=compact_energy(energy_root)
     artifact('h200/20261019_job14180351/results/energy_qualification_compact_v1.json')
     energy=energy_family(energy_root)
     range_diagnostics=[]
@@ -170,6 +175,12 @@ def main(destination,repair_root=None):
                 'hbm_read_bytes':read(p).get('hbm_read_bytes'),'hbm_write_bytes':read(p).get('hbm_write_bytes')} for p in counter_paths],
             'interpretation':'repair cohort remains separate from earlier timing/service acquisitions; counter replay can perturb cache history and does not establish a cross-GPU timing join'}
         accepted['repair_cohort']=repair
+        if (repair_root/'results/shoreline_energy_qualification.json').exists():
+            compact_energy(repair_root)
+            repair['energy_families']=energy_family(repair_root)
+        if read(repair_root/'session.json').get('decode_conditioning'):
+            repair['decode_conditioning']=read(repair_root/'session.json')['decode_conditioning']
+            repair['interpretation']+=' Explicit post-prefill memory conditioning changes cache history and adds untimed TTFT; these are conditioned-decode results, not repaired original unconditioned latency.'
         retained=[]
         for name in read(repair_root/'session.json').get('retained_repair_sessions',[]):
             prior=(PACKAGE/name).resolve()
@@ -238,11 +249,14 @@ def main(destination,repair_root=None):
         'One versioned H200 repair job will run corrected J6 pilots/treatments and J7 physical counters for already output-qualified shapes, keeping three acquisitions/ten ordinary trials and the existing correctness/clock/isolation gates. It will reuse all other job dispositions, retain failures and commit/push at acquisition boundaries. It does not repeat the completed matrix or clock-rejected families.','',
         'The architecture motivation remains compute/request-delivery co-design with workload-specific retention. Area, placeable shoreline, package, energy advantage and validated decoder speedup predictions remain unproven.']
     if repair:
-        lines+=['','## Version2 repair cohort','',repair['session'],
+        lines+=['','## Current repair/diagnostic cohort','',repair['session'],
             '', '| Comparison | Shape | Qualified | Ratio95%CI |','|---|---|---|---|']
         for row in repair['treatment_comparisons']:
-            if row['job']=='J6':lines.append(f'|{row["numerator"]}/idle|B{row["batch"]}/C{row["context"]}|{row["qualified"]}|{row["ratio_ci95"]}|')
+            if row['job'] in ('J6','J8'):lines.append(f'|{row["job"]} {row["numerator"]}/{row["denominator"]}|B{row["batch"]}/C{row["context"]}|{row["qualified"]}|{row["ratio_ci95"]}|')
         lines+=['','Physical J7 counter dispositions: '+str(dict(collections.Counter(x['status'] for x in repair['physical_counter_captures']))),repair['interpretation']]
+        for energy_row in repair.get('energy_families',[]):
+            lines+=['','Current-cohort energy: '+energy_row['id']+' qualified='+str(energy_row['qualified'])+
+                ', J/timed token='+str(energy_row['joules_per_timed_token'])+'.']
         for prior in accepted.get('retained_repair_cohorts',[]):
             cohort=prior['cohort']
             lines+=['','Retained allocation cohort: '+cohort['session'],

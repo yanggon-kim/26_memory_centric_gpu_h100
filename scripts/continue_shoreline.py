@@ -20,6 +20,7 @@ def main():
     steps=[('runtime_dependency_check_v1',[sys.executable,'-m','pip','check']),
            ('batch_recovery_contracts_v1',[sys.executable,str(package/'scripts/test_h200_batch.py')]),
            ('gap_repair_contracts_v2',[sys.executable,str(package/'scripts/test_h200_gaps.py')]),
+           ('failure_recovery_contracts_v3',[sys.executable,str(package/'scripts/test_failure_recovery.py')]),
            ('continuation_contracts_v1',[sys.executable,str(package/'scripts/test_shoreline_contracts.py')]),
            ('J0_inventory',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J0']),
            ('J1_functional_smokes',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J1'])]
@@ -51,6 +52,9 @@ def main():
         campaign.update_job(root,'J11' if step=='J11_gpu' else step,'partial',
             'Prior command-finished disposition retained; no new measurement or scientific pass inferred. See session.queue_reused_jobs.')
     campaign.checkpoint(root,'Fresh allocation ready: exact functional controls and prior evidence verified; resume remaining jobs')
+    if json.loads(session.read_text()).get('failure_diagnostics_version')=='failure_recovery_v3':
+        raise SystemExit(subprocess.call([sys.executable,str(package/'scripts/recover_h200_failures.py'),
+            '--session',str(session)],cwd=package))
     schedule=json.loads(session.read_text()).get('queue_schedule','legacy')
     command=[sys.executable,str(package/'scripts/shoreline_queue.py'),'--session',str(session),'--start-at','J5','--schedule',schedule]
     with (root/'logs/remaining_campaign_v1.log').open('x') as stream:

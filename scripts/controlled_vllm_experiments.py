@@ -82,6 +82,7 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
         dump(output_dir/'prefill_barrier_failure.json', {'requested_ids':external,'internal_ids':internal,'barrier':barrier})
     assert barrier['passed'], 'all-request one-token prefill barrier failed; see prefill_barrier_failure.json'
     torch.cuda.synchronize()
+    conditioning=engine._h200_predecode_condition() if hasattr(engine,'_h200_predecode_condition') else None
     if observer:
         observer(prefix,0)
     if profile_capture:
@@ -144,6 +145,11 @@ def run_trial(engine, prompts, sampling, prefix, torch, output_dir, sensor=None,
                   hardware_before=hardware_before,hardware_after=hardware_after)
     if telemetry:
         result['telemetry']=telemetry
+    if conditioning:result['post_prefill_conditioning']=conditioning
+    if getattr(sampling,'logprobs',None) is not None:
+        result['diagnostic_logprobs']=[[
+            {str(k):{'logprob':float(v.logprob),'rank':v.rank} for k,v in step.items()}
+            for step in completed[rid].outputs[0].logprobs] for rid in external]
     return result
 
 
@@ -219,6 +225,9 @@ def main(args):
     assert not torch.distributed.is_initialized(), 'runner requires ownership of newly initialized process groups'
     llm=vllm.LLM(**settings)
     engine=llm.llm_engine
+    if config.get('decode_conditioning'):
+        from decode_precondition import create
+        engine._h200_predecode_condition=create(torch,config['decode_conditioning'])
     cleanup_callback=lambda: cleanup_owned_engine(engine,args.output)
     atexit.register(cleanup_callback)
     data['engine_client_class']=type(engine.engine_core).__name__
@@ -241,7 +250,11 @@ def main(args):
     count=args.generated_tokens or (1024 if args.mode=='energy' else 64)
     assert 2<=count<=4096
     sampling=vllm.SamplingParams(temperature=0,repetition_penalty=1.0,ignore_eos=True,detokenize=False,
-                                 max_tokens=count,seed=config['seed'],output_kind=RequestOutputKind.CUMULATIVE)
+                                 max_tokens=count,seed=config['seed'],output_kind=RequestOutputKind.CUMULATIVE,
+                                 logprobs=config.get('diagnostic_logprobs'))
+    if config.get('diagnostic_logprobs'):
+        data['baseline_comparison_eligible']=False
+        data['diagnostic_scope']='top-token logprobs requested; correctness diagnostic, not ordinary timing'
     pairs=config.get('energy_cases',[[1,1024]]) if args.mode=='energy' else [[b,c] for b in config['batch_sizes'] for c in config['context_lengths']]
     pairs=[[b,c] for b,c in pairs if (args.batch is None or b==args.batch) and (args.context is None or c==args.context)]
     assert pairs,'no selected cases'
