@@ -3,7 +3,7 @@
   "steps": [
     {
       "id": "J7",
-      "status": "running",
+      "status": "command_complete",
       "started_utc": "2026-10-20T10:20:52.525868+00:00",
       "command": [
         "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
@@ -14,7 +14,69 @@
         "J7"
       ],
       "log": "logs/queue_J7_attempt00.log",
-      "resource": "gpu"
+      "resource": "gpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-20T10:25:49.786949+00:00"
+    },
+    {
+      "id": "J9_analysis",
+      "status": "command_complete",
+      "started_utc": "2026-10-20T10:25:49.789412+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590"
+      ],
+      "log": "logs/queue_J9_analysis_attempt00.log",
+      "resource": "cpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-20T10:25:50.167816+00:00"
+    },
+    {
+      "id": "consolidated_evidence",
+      "status": "command_complete",
+      "started_utc": "2026-10-20T10:25:50.169267+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/consolidate_h200.py",
+        "--output",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590/analysis/consolidated",
+        "--repair-root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590"
+      ],
+      "log": "logs/queue_consolidated_evidence_attempt00.log",
+      "resource": "cpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-20T10:26:16.241542+00:00"
+    },
+    {
+      "id": "final_figures",
+      "status": "command_complete",
+      "started_utc": "2026-10-20T10:26:16.243776+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/plot_shoreline.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590"
+      ],
+      "log": "logs/queue_final_figures_attempt00.log",
+      "resource": "cpu",
+      "exit_code": 0,
+      "ended_utc": "2026-10-20T10:26:18.073787+00:00"
+    },
+    {
+      "id": "private_archives",
+      "status": "running",
+      "started_utc": "2026-10-20T10:26:18.075428+00:00",
+      "command": [
+        "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_archive_batch.py",
+        "--root",
+        "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590"
+      ],
+      "log": "logs/queue_private_archives_attempt00.log",
+      "resource": "cpu"
     }
   ],
   "queue_source_sha256": "d995718344abbf1295208877daecb6db5f7454fde4efda02dbd520a7e4aa8dc4",
