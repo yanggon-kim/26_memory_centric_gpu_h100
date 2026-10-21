@@ -1,0 +1,312 @@
+{
+  "capabilities": [
+    {
+      "family": "baseline graph/eager and HF StaticCache",
+      "status": "implemented; current native smoke pending"
+    },
+    {
+      "family": "whole-range ticks 4/5/6 and per-pass proof",
+      "status": "requires adapter; previous ranges failed"
+    },
+    {
+      "family": "independent native service and overlap controls",
+      "status": "requires adapter and bounded native pilot"
+    },
+    {
+      "family": "green contexts and resource/concurrency proofs",
+      "status": "requires capability query and pilot"
+    },
+    {
+      "family": "pressure/retention controls",
+      "status": "requires matched allocation/tick adapter"
+    },
+    {
+      "family": "native trace",
+      "status": "previous micro evidence retained; current tools/semantics require validation"
+    }
+  ],
+  "new_quantitative_protocol": {
+    "schema_version": 1,
+    "slurm_job_id": "14215309",
+    "expected_hostname": "atl1-1-02-012-23-0.pace.gatech.edu",
+    "workspace": "/tmp/h200_research_3449576_job14215309",
+    "python": "/tmp/h200_research_3449576_job14215309/runtime/bin/python",
+    "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+    "launch_cutoff": "2026-10-21T04:52:59-04:00",
+    "allocation_end": "2026-10-21T05:22:59-04:00",
+    "warmup_trials": 3,
+    "trials": 10,
+    "acquisitions": 3,
+    "seed": 20261013,
+    "retry_limit": 2,
+    "monitor_period_s": 0.05,
+    "clock_envelope_max_ratio": 1.05,
+    "old_session": "h200/20261020_job14201590",
+    "rejected_acquisition_retry_limit": 0,
+    "retry_policy_reason": "two separately versioned conditioning pilots failed the same clock envelope; preserve all raw trials and collect remaining independent acquisitions once; clock gate unchanged",
+    "accel_root": "/tmp/h200_research_3449576_job14215309/tools/accel-sim-framework",
+    "idle_required_s": 10,
+    "profile_protocol": "ticks_only_v5",
+    "native_prediction_max_relative_error": 0.1,
+    "collection_scope_version": "failure_recovery_v3",
+    "traffic_layer_contrasts": [],
+    "kernel_profile_contrasts": [
+      [
+        "bridge",
+        1,
+        1024
+      ],
+      [
+        "bridge",
+        8,
+        4096
+      ],
+      [
+        "mistral7b",
+        1,
+        4096
+      ]
+    ],
+    "native_counter_conditions": [
+      "stream_1mib",
+      "stream_28mib",
+      "stream_32mib",
+      "stream_512mib",
+      "stride17_512mib",
+      "gather_512mib",
+      "paged128_512mib",
+      "pointer_0.03125mib_chains1",
+      "pointer_96mib_chains1",
+      "pointer_96mib_chains32",
+      "fma_blocks528",
+      "bf16_gemm_4096",
+      "softmax_width8192"
+    ],
+    "native_sm_counter_conditions": [
+      "stream_512mib",
+      "gather_512mib",
+      "pointer_96mib_chains1"
+    ],
+    "trace_preserve_waits": true,
+    "trace_semantic_pilot_timeout_s": 180,
+    "traffic_contrasts": [
+      [
+        "qwen14b",
+        1,
+        4096
+      ]
+    ],
+    "traffic_engines": [
+      "graph"
+    ],
+    "baseline_contrasts": [],
+    "kernel_filter_protocols": {
+      "attention_forward": "filter_v2",
+      "attention_combine": "filter_v2",
+      "kv_update": "filter_v2"
+    },
+    "kernel_reader_protocol": "identity_v3",
+    "metadata_probe_protocol": "v2",
+    "closeout_buffer_s": 1800,
+    "sm_engines": [
+      "eager"
+    ],
+    "reused_graph_limitation": {
+      "review": "h200/20261017_job14133085/results/J5_graph_scope_review_v3.json",
+      "reason": "Reviewed corrected green-context graph route unsupported; unchanged numerical green adapter; eager supported route only"
+    },
+    "retained_trace_blocker": {
+      "path": "h200/20261017_job14133085/results/J11_semantic_review_v1.json",
+      "sha256": "c660faf0a4786a31332b9e3e19702705259abf78e95e2196bd4da8d5d3af50c5",
+      "archive": "h200/20261017_job14133085/environment/native_trace_micro_v2.tar",
+      "archive_sha256": "54c3ecd5df0ec95881b5c6156cccb0ee49fc36378e11362cc6d2e4d408a23fa2"
+    },
+    "smoke_models": [
+      "bridge"
+    ],
+    "queue_schedule": "gpu-first",
+    "sm_components": [
+      "native"
+    ],
+    "sm_decoder_shapes": [
+      [
+        8,
+        4096
+      ]
+    ],
+    "gpu_job_order": [
+      "J6",
+      "J8",
+      "J10"
+    ],
+    "competition_protocol": "disjoint_lifetime_v2",
+    "retention_components": [
+      "traffic"
+    ],
+    "retention_shapes": [
+      [
+        8,
+        4096
+      ]
+    ],
+    "reopened_gpu_dispositions": {},
+    "retention_states": [
+      "pressure"
+    ],
+    "retained_repair_sessions": [
+      "h200/20261019_job14182525",
+      "h200/20261020_job14201590"
+    ],
+    "failure_diagnostics_version": "failure_recovery_v3",
+    "decode_conditioning": {
+      "protocol": "memory_settle_v3",
+      "seconds": 1.0,
+      "buffer_bytes": 268435456,
+      "scope": "conditioned_decode_only"
+    },
+    "competition_shapes": [
+      [
+        8,
+        4096
+      ]
+    ],
+    "queue_reused_jobs": {
+      "J7": {
+        "path": "h200/20261020_job14201590/results/campaign_queue.json",
+        "sha256": "1421474297d2122e0dff6bf5b4f33c01df3658558cbb9655ca6b28932fb114fd",
+        "disposition": {
+          "id": "J7",
+          "status": "command_complete",
+          "started_utc": "2026-10-20T10:20:52.525868+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14201590/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261020_job14201590/session.json",
+            "--job",
+            "J7"
+          ],
+          "log": "logs/queue_J7_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-20T10:25:49.786949+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      },
+      "J6": {
+        "path": "h200/20261019_job14182525/results/campaign_queue.json",
+        "sha256": "a10fc9fdee7db8195f223a0077f3f17133a148cc1ccd7f88d5c924e54fa237a4",
+        "disposition": {
+          "id": "J6",
+          "status": "command_complete",
+          "started_utc": "2026-10-20T01:49:48.617139+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14182525/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14182525/session.json",
+            "--job",
+            "J6"
+          ],
+          "log": "logs/queue_J6_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-20T02:15:11.457413+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      },
+      "J10": {
+        "path": "h200/20261019_job14180351/results/campaign_queue.json",
+        "sha256": "0f1715ba0d1e7c5c57247096fa17f99a996c7e0892f2c82aa7ea1afa33b2efa3",
+        "disposition": {
+          "id": "J10",
+          "status": "command_complete",
+          "started_utc": "2026-10-19T15:09:17.417592+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14180351/session.json",
+            "--job",
+            "J10"
+          ],
+          "log": "logs/queue_J10_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-19T16:03:06.426849+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      },
+      "J11_gpu": {
+        "path": "h200/20261019_job14180351/results/campaign_queue.json",
+        "sha256": "0f1715ba0d1e7c5c57247096fa17f99a996c7e0892f2c82aa7ea1afa33b2efa3",
+        "disposition": {
+          "id": "J11_gpu",
+          "status": "command_complete",
+          "started_utc": "2026-10-19T16:06:13.858502+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14180351/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14180351/session.json",
+            "--job",
+            "J11",
+            "--gpu-only"
+          ],
+          "log": "logs/queue_J11_gpu_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-19T16:06:16.909692+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      },
+      "J8": {
+        "path": "h200/20261019_job14177052/results/campaign_queue.json",
+        "sha256": "a918de9edf6d6722ab8b449d04d5b45ad9980a0d0c51de5a90b29b351d1ddbcb",
+        "disposition": {
+          "id": "J8",
+          "status": "command_complete",
+          "started_utc": "2026-10-19T11:55:05.141385+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14177052/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14177052/session.json",
+            "--job",
+            "J8"
+          ],
+          "log": "logs/queue_J8_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-19T12:37:37.695361+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      },
+      "J5": {
+        "path": "h200/20261019_job14171804/results/campaign_queue.json",
+        "sha256": "8b8d2249d62a3f501cd92400bbe9ccb6e35da2637723fa9e5ec10b7fa56e42b9",
+        "disposition": {
+          "id": "J5",
+          "status": "command_complete",
+          "started_utc": "2026-10-19T09:54:15.467840+00:00",
+          "command": [
+            "/tmp/h200_research_3449576_job14171804/runtime/bin/python",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py",
+            "--session",
+            "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261019_job14171804/session.json",
+            "--job",
+            "J5"
+          ],
+          "log": "logs/queue_J5_attempt00.log",
+          "resource": "gpu",
+          "exit_code": 0,
+          "ended_utc": "2026-10-19T10:44:43.476465+00:00"
+        },
+        "scientific_gate": "not inferred from command exit"
+      }
+    },
+    "gpu_uuid": "GPU-a8b3bfdd-4e70-0f09-1b1f-4ea18dae6cd3",
+    "frozen_source_root": "/tmp/h200_research_3449576_job14215309/frozen/db49ebe59251cd18295010a6927a9dbdc9a7bc135a6883cc96f09c0cef7eb53d",
+    "frozen_source_identity": "db49ebe59251cd18295010a6927a9dbdc9a7bc135a6883cc96f09c0cef7eb53d"
+  }
+}
