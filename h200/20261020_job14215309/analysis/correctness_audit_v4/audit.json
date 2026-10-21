@@ -1,0 +1,92 @@
+{
+  "classification": "CPU audit of preserved GPU evidence; no new measurements",
+  "B8": [
+    {
+      "engine": "hf_eager",
+      "source": "h200/20261020_job14215309/runs/bridge_hf_eager_b8_c4096_smoke_attempt0/run.json",
+      "sha256": "5d2728778f8fb73df685f0a9df8f170073a03861bca7a4863d272daeee1d7d7d",
+      "status": "complete",
+      "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+      "first_difference": null,
+      "trial_count": 3,
+      "all_trials_identical": true
+    },
+    {
+      "engine": "eager",
+      "source": "h200/20261020_job14215309/runs/bridge_eager_b8_c4096_smoke_attempt0/run.json",
+      "sha256": "0f7c882857cc9dcd6e29381a32f64a52edfce9db37da1ca16ac7c4e80fa33846",
+      "status": "complete",
+      "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+      "first_difference": {
+        "request": 0,
+        "token_index": 5,
+        "hf_token": 4,
+        "engine_token": 15
+      },
+      "trial_count": 3,
+      "all_trials_identical": true
+    },
+    {
+      "engine": "graph",
+      "source": "h200/20261020_job14215309/runs/bridge_graph_b8_c4096_smoke_attempt0/run.json",
+      "sha256": "26463824a32f2f935e4bed6dbd794c44111bbe050bd41abc38b01460ab4cb876",
+      "status": "complete",
+      "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+      "first_difference": {
+        "request": 0,
+        "token_index": 5,
+        "hf_token": 4,
+        "engine_token": 15
+      },
+      "trial_count": 3,
+      "all_trials_identical": true
+    }
+  ],
+  "C4096_routes": [
+    {
+      "backend": "sdpa",
+      "cache": "static",
+      "deterministic": true,
+      "exact_vllm_ids": false,
+      "valid_attention_mask": true,
+      "first_difference": {
+        "request": 0,
+        "token_index": 5,
+        "reference": 4,
+        "actual": 15
+      }
+    },
+    {
+      "backend": "sdpa",
+      "cache": "dynamic",
+      "deterministic": true,
+      "exact_vllm_ids": true,
+      "valid_attention_mask": true,
+      "first_difference": null
+    },
+    {
+      "backend": "eager",
+      "cache": "static",
+      "deterministic": true,
+      "exact_vllm_ids": true,
+      "valid_attention_mask": false,
+      "first_difference": null
+    },
+    {
+      "backend": "eager",
+      "cache": "dynamic",
+      "deterministic": true,
+      "exact_vllm_ids": false,
+      "valid_attention_mask": true,
+      "first_difference": {
+        "request": 0,
+        "token_index": 5,
+        "reference": 4,
+        "actual": 15
+      }
+    }
+  ],
+  "diagnostic_correction": "Legacy eager/static used a Boolean 4D mask; pinned Qwen2 eager attention adds the mask to scores, so unused KV slots were not excluded. Its agreement is invalid correctness evidence. Original SDPA/Boolean mask remains valid for that interface; its mismatch remains unresolved.",
+  "exact_gate_relaxed": false,
+  "CPU_consolidation": "analysis/consolidated/report.md regenerated after corrected import; original batch failure retained"
+}

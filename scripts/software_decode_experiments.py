@@ -208,11 +208,20 @@ def controlled_trial(model, cache, decode, prompt, count, torch, sensor=None, mi
     return result
 
 
-def make_decode(model, cache, maximum, torch, compile_enabled, return_logits=False):
+def make_decode(model, cache, maximum, torch, compile_enabled, return_logits=False, mask_kind=None):
     cache_indices = torch.arange(maximum, device='cuda')
+    # Transformers eager attention ADDS its 4D mask; SDPA accepts Boolean keep masks.
+    # Preserve the original SDPA route; fix only the previously invalid eager diagnostic.
+    if mask_kind is None:
+        mask_kind = 'additive' if model.config._attn_implementation == 'eager' else 'boolean'
+    assert mask_kind in ('boolean', 'additive', 'builtin')
     def forward(token, position):
         # Explicit 4D causal mask prevents Python mask construction / graph breaks.
         mask = (cache_indices <= position.reshape(1, 1)).reshape(1, 1, 1, maximum)
+        if mask_kind == 'additive':
+            mask = torch.zeros(mask.shape, device=mask.device, dtype=model.dtype).masked_fill(~mask, torch.finfo(model.dtype).min)
+        elif mask_kind == 'builtin':
+            mask = None
         logits = model(input_ids=token, past_key_values=cache, cache_position=position,
                        position_ids=position.unsqueeze(0), attention_mask=mask,
                        use_cache=True, logits_to_keep=1).logits[:, -1:]
