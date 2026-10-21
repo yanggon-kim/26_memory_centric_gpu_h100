@@ -36,3 +36,64 @@ END bridge_graph_b8_c4096_smoke_attempt0 complete 38.33
 To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
    86f62b66..b8dd051a  HEAD -> codex/h200-phase01
 {"commit": "b8dd051afccfba4209313fe875f5eae3a8da58d1", "remote_verified": true, "selected_files": 311, "omitted_raw_file_count": 12}
+
+To https://github.com/yanggon-kim/26_memory_centric_gpu_h100.git
+   b8dd051a..de27e4f2  HEAD -> codex/h200-phase01
+{"commit": "de27e4f2a7511b04f9471a38f8265ce0ba742eb6", "remote_verified": true, "selected_files": 313, "omitted_raw_file_count": 12}
+{
+  "output": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261021_job14243981/analysis/consolidated",
+  "qualified_treatments": 4,
+  "qualified_energy_families": [
+    "J10_bridge_graph_b1_c1024_n2048"
+  ],
+  "counter_range_counts": {
+    "6": 18
+  },
+  "concurrency_diagnoses": [
+    {
+      "id": "J6_concurrent_pilot_eager_b1_c1024",
+      "producer_status": "failed",
+      "exit_code": 134,
+      "native_run_status": "complete",
+      "instrumented_role_placement_and_overlap_observed": true,
+      "actual_overlap_ms": [
+        6.090776
+      ],
+      "reason": "process failed after complete native outputs with cudaErrorContextIsDestroyed during interpreter/allocator teardown; both contexts lacked J5-style lifetime retention",
+      "accepted_quantitative_measurement": false,
+      "sources": [
+        {
+          "path": "h200/20261019_job14180351/results/processes/J6_concurrent_pilot_eager_b1_c1024.json",
+          "sha256": "edce359a2a5ea801467aff2f90a014c6015fa69380b6a174bf4c4abe963567a8"
+        },
+        {
+          "path": "h200/20261019_job14180351/profiles/J6_concurrent_pilot_eager_b1_c1024.json",
+          "sha256": "702a44c8648355bad8732a1c93c0814c7800c347c59a5dc1617e1b9535fa0a35"
+        }
+      ]
+    },
+    {
+      "id": "J6_concurrent_pilot_eager_b8_c4096",
+      "producer_status": "failed",
+      "exit_code": 134,
+      "native_run_status": "complete",
+      "instrumented_role_placement_and_overlap_observed": true,
+      "actual_overlap_ms": [
+        7.50124
+      ],
+      "reason": "process failed after complete native outputs with cudaErrorContextIsDestroyed during interpreter/allocator teardown; both contexts lacked J5-style lifetime retention",
+      "accepted_quantitative_measurement": false,
+      "sources": [
+        {
+          "path": "h200/20261019_job14180351/results/processes/J6_concurrent_pilot_eager_b8_c4096.json",
+          "sha256": "810abe849ccae21fb94097bc61e38cff1275f3ea53355998a1c79ee232bff15c"
+        },
+        {
+          "path": "h200/20261019_job14180351/profiles/J6_concurrent_pilot_eager_b8_c4096.json",
+          "sha256": "957480682202ce53893907392d56c2944c1406bb145597c83eaa190dd83d9e21"
+        }
+      ]
+    }
+  ]
+}
+{"output": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261021_job14243981/analysis/figures", "figures": ["illustrative_joint_sensitivity.png"]}
