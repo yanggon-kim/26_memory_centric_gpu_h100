@@ -121,7 +121,7 @@ def main(session):
         jobs.args.job='J10';stage('J10_conditioned_acquisitions',lambda:jobs.energy())
 
     def analysis():
-        from shoreline_analyze import analyze
+        from shoreline_analyze import main as analyze
         analyze(root);treatments(root)
         for script in ('consolidate_h200.py','plot_shoreline.py'):
             command=[sys.executable,str(package/'scripts'/script)]
