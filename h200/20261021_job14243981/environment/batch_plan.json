@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "previous_session": "h200/20261020_job14215309",
+  "minimum_previous_job_id": 14215309,
+  "traffic_completed_session": "h200/20261018_job14162783",
+  "runtime_lock": "configs/runtime.lock.txt",
+  "tracer_runtime_lock": "configs/tracer_requirements.lock.txt",
+  "cuda_home": "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3",
+  "closeout_buffer_s": 1800,
+  "minimum_launch_budget_s": 1200,
+  "minimum_tmp_free_gib": 100,
+  "minimum_shared_free_gib": 10,
+  "reopen_gpu_jobs": [],
+  "session_overrides": {
+    "collection_scope_version": "failure_recovery_v4",
+    "queue_schedule": "gpu-first",
+    "gpu_job_order": [
+      "J6",
+      "J8",
+      "J10"
+    ],
+    "profile_protocol": "ticks_only_v5",
+    "competition_protocol": "disjoint_lifetime_v2",
+    "sm_components": [
+      "native"
+    ],
+    "sm_engines": [
+      "eager"
+    ],
+    "smoke_models": [
+      "bridge"
+    ],
+    "baseline_contrasts": [],
+    "rejected_acquisition_retry_limit": 0,
+    "retained_repair_sessions": [
+      "h200/20261019_job14182525",
+      "h200/20261020_job14201590"
+    ],
+    "failure_diagnostics_version": "failure_recovery_v4",
+    "decode_conditioning": {
+      "protocol": "memory_settle_v3",
+      "seconds": 1.0,
+      "buffer_bytes": 268435456,
+      "scope": "conditioned_decode_only"
+    },
+    "competition_shapes": [
+      [
+        8,
+        4096
+      ]
+    ],
+    "decoder_calibration_version": null,
+    "required_graph_pilot_job_id": null,
+    "required_graph_pilot_current_allocation": true,
+    "required_graph_pilot_label": "D4_graph_clock"
+  },
+  "reason": "Correct the eager diagnostic mask, collect forced-common-prefix B8/B1 backend/cache diagnostics, and retain unchanged HF SDPA/StaticCache exact gate. Only passing fresh original references and conditioned graph clock pilot enable decoder calibration in this same allocation. Original rejects remain; no favorable retries or alternate backend substitution. Conditional J6/J8/J10 pilots/acquisitions and CPU consolidation retained."
+}
