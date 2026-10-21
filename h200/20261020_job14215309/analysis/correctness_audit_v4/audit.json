@@ -88,5 +88,11 @@
   ],
   "diagnostic_correction": "Legacy eager/static used a Boolean 4D mask; pinned Qwen2 eager attention adds the mask to scores, so unused KV slots were not excluded. Its agreement is invalid correctness evidence. Original SDPA/Boolean mask remains valid for that interface; its mismatch remains unresolved.",
   "exact_gate_relaxed": false,
-  "CPU_consolidation": "analysis/consolidated/report.md regenerated after corrected import; original batch failure retained"
+  "CPU_consolidation": "analysis/consolidated/report.md regenerated after corrected import; original batch failure retained",
+  "B1_valid_sdpa_common_prefix": {
+    "token_index": 5,
+    "hf_prefers_token15_over4_logprob_margin": 0.0625,
+    "vllm_prefers_token4_over15_logprob_margin": 0.0,
+    "interpretation": "opposite rankings at the same saved five-token prefix; compatible with backend-sensitive numerical execution but not proof of its cause or cache correctness; exact gate stays rejected"
+  }
 }
