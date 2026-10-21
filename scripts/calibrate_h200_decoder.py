@@ -95,12 +95,15 @@ def main(session):
             if max(c['maximum'] for c in clocks)/min(c['minimum'] for c in clocks)>1.05:return False
         return True
     try:
-        prerequisite=env.SESSION.get('required_graph_pilot_job_id')
+        prerequisite=(env.SESSION['slurm_job_id'] if env.SESSION.get('required_graph_pilot_current_allocation')
+                      else env.SESSION.get('required_graph_pilot_job_id'))
         if prerequisite:
             candidates=list((package/'h200').glob('*job'+str(prerequisite)))
             if len(candidates)!=1:raise RuntimeError('required recovery allocation evidence is unavailable')
-            proof=candidates[0]/'results/D3_graph_clock.json'
-            producer=candidates[0]/'results/processes/D3_graph_clock.json'
+            label=env.SESSION.get('required_graph_pilot_label','D3_graph_clock')
+            assert label in ('D3_graph_clock','D4_graph_clock')
+            proof=candidates[0]/'results'/(label+'.json')
+            producer=candidates[0]/'results/processes'/(label+'.json')
             if not proof.exists() or not producer.exists():raise RuntimeError('graph clock pilot was not completed; no identical clock-rejection retry')
             p=load(proof);native=load(producer)
             result['readiness_prerequisite']={'path':str(proof.relative_to(package)),'sha256':sha(proof),

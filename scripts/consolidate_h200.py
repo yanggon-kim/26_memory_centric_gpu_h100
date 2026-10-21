@@ -175,6 +175,14 @@ def main(destination,repair_root=None):
                 'hbm_read_bytes':read(p).get('hbm_read_bytes'),'hbm_write_bytes':read(p).get('hbm_write_bytes')} for p in counter_paths],
             'interpretation':'repair cohort remains separate from earlier timing/service acquisitions; counter replay can perturb cache history and does not establish a cross-GPU timing join'}
         accepted['repair_cohort']=repair
+        diagnostic_sources=[]
+        for path in [repair_root/'results/campaign_queue.json',
+                     *sorted((repair_root/'analysis').glob('correctness_audit_*/audit.json')),
+                     *sorted((repair_root/'runs').glob('D4_*_common_prefix/diagnosis.json'))]:
+            if path.exists():
+                diagnostic_sources.append({'path':str(path.relative_to(PACKAGE)),
+                    'sha256':sha(path),'evidence':read(path)})
+        repair['diagnostics']=diagnostic_sources
         if (repair_root/'results/shoreline_energy_qualification.json').exists():
             compact_energy(repair_root)
             repair['energy_families']=energy_family(repair_root)
@@ -253,6 +261,16 @@ def main(destination,repair_root=None):
             '', '| Comparison | Shape | Qualified | Ratio95%CI |','|---|---|---|---|']
         for row in repair['treatment_comparisons']:
             if row['job'] in ('J6','J8'):lines.append(f'|{row["job"]} {row["numerator"]}/{row["denominator"]}|B{row["batch"]}/C{row["context"]}|{row["qualified"]}|{row["ratio_ci95"]}|')
+        if repair['diagnostics']:
+            lines+=['','### Latest diagnostic evidence','',
+                'The gap list above describes the original cohorts. Current diagnostics below supersede its historical statements about missing logits and pending repair commands; scientific acceptance remains separate.']
+            for source in repair['diagnostics']:
+                lines+=['','- '+source['path']+' (SHA256 '+source['sha256']+')']
+                data=source['evidence']
+                if data.get('protocol')=='failure_recovery_v3':
+                    lines+=['  Original recovery status: '+data['status']+'. The B8 exact reference and CPU-import failure are retained; later CPU consolidation does not relabel the batch successful.']
+                if data.get('diagnostic_correction'):
+                    lines+=['  '+data['diagnostic_correction']]
         lines+=['','Physical J7 counter dispositions: '+str(dict(collections.Counter(x['status'] for x in repair['physical_counter_captures']))),repair['interpretation']]
         for energy_row in repair.get('energy_families',[]):
             lines+=['','Current-cohort energy: '+energy_row['id']+' qualified='+str(energy_row['qualified'])+

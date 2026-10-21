@@ -3219,6 +3219,141 @@
     ],
     "physical_counter_captures": [],
     "interpretation": "repair cohort remains separate from earlier timing/service acquisitions; counter replay can perturb cache history and does not establish a cross-GPU timing join Explicit post-prefill memory conditioning changes cache history and adds untimed TTFT; these are conditioned-decode results, not repaired original unconditioned latency.",
+    "diagnostics": [
+      {
+        "path": "h200/20261020_job14215309/results/campaign_queue.json",
+        "sha256": "0e28d7e714caa15d6f572cc447bbf9262e79cb7fb9957abb441032418198ae28",
+        "evidence": {
+          "status": "needs_diagnosis",
+          "protocol": "failure_recovery_v3",
+          "steps": [
+            {
+              "id": "C4096_correctness_diagnosis",
+              "status": "command_complete",
+              "started_utc": "2026-10-21T01:30:43.387853+00:00",
+              "result": true,
+              "exit_code": 0,
+              "ended_utc": "2026-10-21T01:31:40.151908+00:00"
+            },
+            {
+              "id": "B8_functional_references",
+              "status": "command_failed",
+              "started_utc": "2026-10-21T01:31:43.165368+00:00",
+              "exit_code": 1,
+              "error": "HF/engine smoke output mismatch",
+              "traceback": "Traceback (most recent call last):\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 44, in stage\n    try:row['result']=function();row.update(status='command_complete',exit_code=0)\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 82, in references\n    return jobs.functional_smoke_reference(root,'bridge','eager',8,4096) is not None and jobs.functional_smoke_reference(root,'bridge','graph',8,4096) is not None\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py\", line 75, in functional_smoke_reference\n    assert outputs[0]==outputs[1] and prompts[0]==prompts[1],'HF/engine smoke output mismatch'\nAssertionError: HF/engine smoke output mismatch\n",
+              "ended_utc": "2026-10-21T01:33:55.190765+00:00"
+            },
+            {
+              "id": "CPU_analysis_and_consolidation",
+              "status": "command_failed",
+              "started_utc": "2026-10-21T01:34:02.450883+00:00",
+              "exit_code": 1,
+              "error": "cannot import name 'analyze' from 'shoreline_analyze' (/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py)",
+              "traceback": "Traceback (most recent call last):\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 44, in stage\n    try:row['result']=function();row.update(status='command_complete',exit_code=0)\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 124, in analysis\n    from shoreline_analyze import analyze\nImportError: cannot import name 'analyze' from 'shoreline_analyze' (/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py)\n",
+              "ended_utc": "2026-10-21T01:34:02.560067+00:00"
+            }
+          ],
+          "interpretation": "new conditioned-decode program; original rejections retained; no claim of unconditioned latency repair"
+        }
+      },
+      {
+        "path": "h200/20261020_job14215309/analysis/correctness_audit_v4/audit.json",
+        "sha256": "ee4b5e32ba73774f1d9ef196093e24732255536978624eb00721cb5b0430de2f",
+        "evidence": {
+          "classification": "CPU audit of preserved GPU evidence; no new measurements",
+          "B8": [
+            {
+              "engine": "hf_eager",
+              "source": "h200/20261020_job14215309/runs/bridge_hf_eager_b8_c4096_smoke_attempt0/run.json",
+              "sha256": "5d2728778f8fb73df685f0a9df8f170073a03861bca7a4863d272daeee1d7d7d",
+              "status": "complete",
+              "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+              "first_difference": null,
+              "trial_count": 3,
+              "all_trials_identical": true
+            },
+            {
+              "engine": "eager",
+              "source": "h200/20261020_job14215309/runs/bridge_eager_b8_c4096_smoke_attempt0/run.json",
+              "sha256": "0f7c882857cc9dcd6e29381a32f64a52edfce9db37da1ca16ac7c4e80fa33846",
+              "status": "complete",
+              "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+              "first_difference": {
+                "request": 0,
+                "token_index": 5,
+                "hf_token": 4,
+                "engine_token": 15
+              },
+              "trial_count": 3,
+              "all_trials_identical": true
+            },
+            {
+              "engine": "graph",
+              "source": "h200/20261020_job14215309/runs/bridge_graph_b8_c4096_smoke_attempt0/run.json",
+              "sha256": "26463824a32f2f935e4bed6dbd794c44111bbe050bd41abc38b01460ab4cb876",
+              "status": "complete",
+              "prompt_sha256": "b73346ab0fa6709965d9e7243376d4eb33bde5e540db571f620921a4e9aa1fa9",
+              "first_difference": {
+                "request": 0,
+                "token_index": 5,
+                "hf_token": 4,
+                "engine_token": 15
+              },
+              "trial_count": 3,
+              "all_trials_identical": true
+            }
+          ],
+          "C4096_routes": [
+            {
+              "backend": "sdpa",
+              "cache": "static",
+              "deterministic": true,
+              "exact_vllm_ids": false,
+              "valid_attention_mask": true,
+              "first_difference": {
+                "request": 0,
+                "token_index": 5,
+                "reference": 4,
+                "actual": 15
+              }
+            },
+            {
+              "backend": "sdpa",
+              "cache": "dynamic",
+              "deterministic": true,
+              "exact_vllm_ids": true,
+              "valid_attention_mask": true,
+              "first_difference": null
+            },
+            {
+              "backend": "eager",
+              "cache": "static",
+              "deterministic": true,
+              "exact_vllm_ids": true,
+              "valid_attention_mask": false,
+              "first_difference": null
+            },
+            {
+              "backend": "eager",
+              "cache": "dynamic",
+              "deterministic": true,
+              "exact_vllm_ids": false,
+              "valid_attention_mask": true,
+              "first_difference": {
+                "request": 0,
+                "token_index": 5,
+                "reference": 4,
+                "actual": 15
+              }
+            }
+          ],
+          "diagnostic_correction": "Legacy eager/static used a Boolean 4D mask; pinned Qwen2 eager attention adds the mask to scores, so unused KV slots were not excluded. Its agreement is invalid correctness evidence. Original SDPA/Boolean mask remains valid for that interface; its mismatch remains unresolved.",
+          "exact_gate_relaxed": false,
+          "CPU_consolidation": "analysis/consolidated/report.md regenerated after corrected import; original batch failure retained"
+        }
+      }
+    ],
     "decode_conditioning": {
       "protocol": "memory_settle_v3",
       "seconds": 1.0,

@@ -21,6 +21,7 @@ def main():
            ('batch_recovery_contracts_v1',[sys.executable,str(package/'scripts/test_h200_batch.py')]),
            ('gap_repair_contracts_v2',[sys.executable,str(package/'scripts/test_h200_gaps.py')]),
            ('failure_recovery_contracts_v3',[sys.executable,str(package/'scripts/test_failure_recovery.py')]),
+           ('correctness_recovery_contracts_v4',[sys.executable,str(package/'scripts/test_correctness_recovery_v4.py')]),
            ('decoder_calibration_contracts_v4',[sys.executable,str(package/'scripts/test_decoder_calibration.py')]),
            ('continuation_contracts_v1',[sys.executable,str(package/'scripts/test_shoreline_contracts.py')]),
            ('J0_inventory',[sys.executable,str(package/'scripts/shoreline_campaign.py'),'--session',str(session),'--job','J0']),
@@ -56,7 +57,7 @@ def main():
     if json.loads(session.read_text()).get('decoder_calibration_version')=='decoder_calibration_v4':
         raise SystemExit(subprocess.call([sys.executable,str(package/'scripts/calibrate_h200_decoder.py'),
             '--session',str(session)],cwd=package))
-    if json.loads(session.read_text()).get('failure_diagnostics_version')=='failure_recovery_v3':
+    if json.loads(session.read_text()).get('failure_diagnostics_version') in ('failure_recovery_v3','failure_recovery_v4'):
         raise SystemExit(subprocess.call([sys.executable,str(package/'scripts/recover_h200_failures.py'),
             '--session',str(session)],cwd=package))
     schedule=json.loads(session.read_text()).get('queue_schedule','legacy')

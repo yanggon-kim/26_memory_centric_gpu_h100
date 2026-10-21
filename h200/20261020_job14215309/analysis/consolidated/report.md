@@ -69,6 +69,16 @@ h200/20261020_job14215309
 |J6 arithmetic50/idle|B8/C4096|False|None|
 |J6 arithmetic100/idle|B8/C4096|False|None|
 
+### Latest diagnostic evidence
+
+The gap list above describes the original cohorts. Current diagnostics below supersede its historical statements about missing logits and pending repair commands; scientific acceptance remains separate.
+
+- h200/20261020_job14215309/results/campaign_queue.json (SHA256 0e28d7e714caa15d6f572cc447bbf9262e79cb7fb9957abb441032418198ae28)
+  Original recovery status: needs_diagnosis. The B8 exact reference and CPU-import failure are retained; later CPU consolidation does not relabel the batch successful.
+
+- h200/20261020_job14215309/analysis/correctness_audit_v4/audit.json (SHA256 ee4b5e32ba73774f1d9ef196093e24732255536978624eb00721cb5b0430de2f)
+  Legacy eager/static used a Boolean 4D mask; pinned Qwen2 eager attention adds the mask to scores, so unused KV slots were not excluded. Its agreement is invalid correctness evidence. Original SDPA/Boolean mask remains valid for that interface; its mismatch remains unresolved.
+
 Physical J7 counter dispositions: {}
 repair cohort remains separate from earlier timing/service acquisitions; counter replay can perturb cache history and does not establish a cross-GPU timing join Explicit post-prefill memory conditioning changes cache history and adds untimed TTFT; these are conditioned-decode results, not repaired original unconditioned latency.
 
