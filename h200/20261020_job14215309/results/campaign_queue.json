@@ -18,6 +18,15 @@
       "error": "HF/engine smoke output mismatch",
       "traceback": "Traceback (most recent call last):\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 44, in stage\n    try:row['result']=function();row.update(status='command_complete',exit_code=0)\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 82, in references\n    return jobs.functional_smoke_reference(root,'bridge','eager',8,4096) is not None and jobs.functional_smoke_reference(root,'bridge','graph',8,4096) is not None\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_jobs.py\", line 75, in functional_smoke_reference\n    assert outputs[0]==outputs[1] and prompts[0]==prompts[1],'HF/engine smoke output mismatch'\nAssertionError: HF/engine smoke output mismatch\n",
       "ended_utc": "2026-10-21T01:33:55.190765+00:00"
+    },
+    {
+      "id": "CPU_analysis_and_consolidation",
+      "status": "command_failed",
+      "started_utc": "2026-10-21T01:34:02.450883+00:00",
+      "exit_code": 1,
+      "error": "cannot import name 'analyze' from 'shoreline_analyze' (/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py)",
+      "traceback": "Traceback (most recent call last):\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 44, in stage\n    try:row['result']=function();row.update(status='command_complete',exit_code=0)\n  File \"/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/recover_h200_failures.py\", line 124, in analysis\n    from shoreline_analyze import analyze\nImportError: cannot import name 'analyze' from 'shoreline_analyze' (/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/shoreline_analyze.py)\n",
+      "ended_utc": "2026-10-21T01:34:02.560067+00:00"
     }
   ],
   "interpretation": "new conditioned-decode program; original rejections retained; no claim of unconditioned latency repair"
