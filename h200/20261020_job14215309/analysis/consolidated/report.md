@@ -76,7 +76,7 @@ The gap list above describes the original cohorts. Current diagnostics below sup
 - h200/20261020_job14215309/results/campaign_queue.json (SHA256 0e28d7e714caa15d6f572cc447bbf9262e79cb7fb9957abb441032418198ae28)
   Original recovery status: needs_diagnosis. The B8 exact reference and CPU-import failure are retained; later CPU consolidation does not relabel the batch successful.
 
-- h200/20261020_job14215309/analysis/correctness_audit_v4/audit.json (SHA256 ee4b5e32ba73774f1d9ef196093e24732255536978624eb00721cb5b0430de2f)
+- h200/20261020_job14215309/analysis/correctness_audit_v4/audit.json (SHA256 e1d34752dbcb03d36335e273cc5ca2c80e2ac3c66bdb9af9416b6256448209ef)
   Legacy eager/static used a Boolean 4D mask; pinned Qwen2 eager attention adds the mask to scores, so unused KV slots were not excluded. Its agreement is invalid correctness evidence. Original SDPA/Boolean mask remains valid for that interface; its mismatch remains unresolved.
 
 Physical J7 counter dispositions: {}
