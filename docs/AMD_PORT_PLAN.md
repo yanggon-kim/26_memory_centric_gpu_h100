@@ -1,5 +1,7 @@
 # AMD Instinct port plan (branch `amd/mi300x-phase0`)
 
+**Active follow-up, 2026-10-26:** read [the new E0–E8 execution handoff](amd/compute_bandwidth_followup_20261026.md) first. AMD measurements now exist; the "plan only" statement and tool-feasibility questions below describe the original starting state. The new handoff governs follow-up ordering and comparison gates, preserves original results, and requires reconciling current MI325X work before any new launch. It does not claim that its new experiments have run.
+
 Status: plan only. No AMD measurement exists yet. H100/H200/RTX evidence on other branches is not AMD evidence, and nothing here relabels it.
 
 ## Goal and governing documents

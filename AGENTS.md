@@ -1,5 +1,9 @@
 # Research contract
 
+## Active AMD follow-up — updated 2026-10-26
+
+On `amd/mi300x-phase0`, read [docs/amd/compute_bandwidth_followup_20261026.md](docs/amd/compute_bandwidth_followup_20261026.md) FIRST. It is the owner-requested E0–E8 assignment for CU noninferiority, a fixed-partition CU-by-shared-service matrix, request-generation controls, matched graph traffic, held-out models and energy/prefill guardrails. It supersedes old automatic portfolio ordering for new work; stronger numerical/clock/isolation/energy gates remain binding. Reconcile actual ongoing MI325X jobs/results first; do not duplicate, interrupt or relabel them. This documentation publishes no new measurements and authorizes no clock/power/driver changes or new allocation submission. Owned disjoint-CU competition in that assignment is explicitly within scope. Preserve MI300X/MI325X cohorts, failures and raw evidence separately. The H100-specific start instructions below are historical context on this AMD branch, not the active execution order.
+
 Read `docs/primary_specification.md` thoroughly, beginning with Sections 0 and 14. It is the primary specification. This repository contains partial H100 Phase 0–2 evidence. Start with `docs/RENTAL_RESUME.md`, then `STATUS.json`, `results/case_manifest.json` and `docs/opportunity_report.md`. Resume unfinished gates; do not call the prior study complete or repeat expensive completed captures by default. Historical RTX evidence is not H100 evidence. A recorded running process belongs to the previous rental and is not evidence of a live process or successful build here.
 
 Read `docs/fixed_bandwidth_collection.md` before Phase 1 profiling and Phase 2 capture. It defines mandatory traffic, residency, register/shared-memory, split and whole-model evidence for the fixed-bandwidth hypothesis. These measurements are pending; logical byte counts and aggregate L2 hit rates cannot substitute for actual HBM traffic.

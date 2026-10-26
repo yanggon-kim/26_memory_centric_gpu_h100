@@ -1,5 +1,7 @@
 # H100 LLM decode research package
 
+**AMD branch continuation (2026-10-26):** agents on `amd/mi300x-phase0` should start with [the MI300 compute/bandwidth follow-up](docs/amd/compute_bandwidth_followup_20261026.md), then the [AMD port plan](docs/AMD_PORT_PLAN.md). The new handoff defines E0–E8, historical evidence/corrections, pilot and bulk-release gates, required measurements and closeout. Reconcile existing MI325X campaign progress before starting new work. The H100 onboarding below is historical context for this branch.
+
 A portable package for evidence-driven H100 Phase 0–2 research and Accel-Sim 2.0 trace collection. A selected BF16 H100 bridge, real sm_90 micro/partial-layer/two-step whole-model HF capture with one-kernel replay smokes and analytical reuse study have now been run; the optimized baseline, quantitative bottleneck, semantic calibration and architecture benefit remain unestablished. For a new rental, start with [the continuation handoff](docs/RENTAL_RESUME.md). Read [the primary specification](docs/primary_specification.md), Sections 0 and 14 first, then [the execution playbook](docs/phase02_playbook.md) and [current opportunity report](docs/opportunity_report.md).
 
 The historical [RTX 5080 findings](docs/rtx5080_findings.md) motivate falsifiable tests: small-batch weight delivery can be busy, larger batches consume compute, ideal pinning differs from naive LRU expansion, and disagreement between energy sensors can invalidate J/token. None transfers automatically to H100.
