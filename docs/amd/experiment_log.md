@@ -78,3 +78,16 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   so the job idled ~8.6 h until TIMEOUT. Fixed in `scripts/amd/mi325x_full.sbatch` (`wait_lanes` skips the
   monitor), and added `PHASES` to select phases.
 - Resubmitted phases 2–4 only as job 481072 (`PHASES="2 3 4"`); dry run checked. Allocation used: 286.38 / 450.
+
+## 2026-10-26 — compute/bandwidth follow-up (cubw_v1): E0 and submissions
+
+- Owner authorized running the whole follow-up (docs/amd/compute_bandwidth_followup_20261026.md) without further
+  intervention: E0, MI300X pilot and production on mi3008x, and a separate MI325X cohort job after 481072.
+- E0 delivered: `scripts/amd/cubw/` (commits b428ec06, 2da9ae35) and
+  [cubw_e0_reconciliation_20261026.md](cubw_e0_reconciliation_20261026.md). CPU fixtures 17/17 pass;
+  svc_bench_v3 smoke-tested on an MI210 devel node; dry runs enumerate 216 (pilot) and 763 (MI325X auto) steps.
+- Submitted from frozen release `$WORK/cubw_release/2da9ae35…`:
+  - 481167 `cubw-mi300x-pilot` (mi3008x, 1:45:00) — plan `$WORK/cubw_plans/mi300x_pilot_20261026_144349_2da9ae35.json`.
+  - 481168 `cubw-mi325x-auto` (mi3258x, 3:45:00, `afterany:481072`, user hold until the MI300X pilot validates
+    the tools) — plan `$WORK/cubw_plans/mi325x_auto_20261026_144357_2da9ae35.json`.
+- MI300X production is submitted only after the pilot is reviewed (gates, boundary level, cost).
