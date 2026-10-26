@@ -77,9 +77,10 @@ class Plan:
                      out=f'{exp}/{cell}/a{acq}', est_s=est, timeout_s=max(900, 3 * est))
         if tokens:
             s['generated_tokens'] = tokens
-        if profile:
+        if profile:  # rocprofv3 has hung before; bound the cost of a hang
             s['profile'] = profile
             s['no_retry'] = True
+            s['timeout_s'] = 1200
         if comp_mask:
             s['competitor_mask'] = comp_mask
         if requires:
