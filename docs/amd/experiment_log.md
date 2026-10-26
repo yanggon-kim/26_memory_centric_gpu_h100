@@ -69,3 +69,12 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 18:56 node monitor stopped; allocation 468885 cancelled at 6 h 45 min elapsed with all planned work done.
 - Clock gate: 2 of 17 M1 conditions pass the contract's ≤5% envelope, and the post-hoc interior-sample diagnostic gives the same 2 of 17; MI300X power management varies clocks by more than 5%.
 - 2026-10-18 19:46–20:41: MI325X compute-matched job 469084 completed on k002-001 (no failed runs). 264 CUs gave 997 TFLOP/s BF16 (target 1071), and HBM stream fell 9–11% versus the same GPU at 304 CUs, so the pairing did not isolate bandwidth. Published 2026-10-19.
+
+## 2026-10-26 — MI325X job 470176 attempt 3 and resume job 481072
+
+- Attempt 3 (Oct 25 17:57 – Oct 26 05:57, k002-001) completed all of phase 1; every lane ended rc=0 by 21:20
+  (`$WORK/results_amd/amd_20261025_mi325x_full_job470176`, which supersedes the partial attempts of Oct 20 and Oct 23).
+- Phases 2–4 never started: the phase-1 `wait` also waited on the background node monitor, which never exits,
+  so the job idled ~8.6 h until TIMEOUT. Fixed in `scripts/amd/mi325x_full.sbatch` (`wait_lanes` skips the
+  monitor), and added `PHASES` to select phases.
+- Resubmitted phases 2–4 only as job 481072 (`PHASES="2 3 4"`); dry run checked. Allocation used: 286.38 / 450.

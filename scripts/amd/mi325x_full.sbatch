@@ -16,6 +16,7 @@
 # Before each phase the remaining SLURM time is checked; a phase that cannot finish is recorded as
 # skipped. Progress is appended to <root>/RUN_STATUS.log.
 #
+# PHASES selects phases 1-4 (default all; phase 0 always runs), e.g. sbatch --export=ALL,PHASES="2 3 4".
 # Dry run on the login node: DRY_RUN=1 bash scripts/amd/mi325x_full.sbatch
 # (prints every lane command with placeholder GPU IDs, checks every referenced config/binary, no GPU use)
 set -uo pipefail
@@ -23,6 +24,7 @@ repo=/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100
 src=$repo/results/amd_20261018_mi300x
 WORK=${WORK:-/work1/proj_blaisetine/yanggon}
 DRY=${DRY_RUN:-0}
+PHASES=${PHASES:-1 2 3 4}
 cd "$repo"
 if [ "$DRY" = 1 ]; then name=dryrun_mi325x_full_$(date +%Y%m%d_%H%M%S); else name=amd_$(date +%Y%m%d)_mi325x_full_job${SLURM_JOB_ID}; fi
 root=$WORK/results_amd/$name
@@ -88,6 +90,7 @@ remaining() {  # seconds left in this allocation (large in a dry run)
   local end; end=$(squeue -h -j "$SLURM_JOB_ID" -o %e); echo $(( $(date -d "$end" +%s) - $(date +%s) ))
 }
 phase_ok() {  # phase_ok <name> <needed-seconds>
+  [[ " $PHASES " == *" ${1#phase} "* ]] || { status "$1 not selected (PHASES=$PHASES)"; return 1; }
   local left; left=$(remaining)
   if [ "$left" -lt "$2" ]; then status "$1 SKIPPED: ${left}s left < ${2}s needed"; return 1; fi
   status "$1 start (${left}s left)"; return 0
@@ -99,6 +102,9 @@ if [ "$DRY" != 1 ]; then
   MON=$!
 fi
 A=scripts/amd
+wait_lanes() {  # a bare `wait` would also wait for the node monitor, which never exits
+  local p; for p in $(jobs -p); do [ "$p" = "${MON:-}" ] || wait "$p"; done
+}
 
 # ---- Phase 1: single-GPU lanes (same GPU roles as MI300X) ----
 if phase_ok phase1 14400; then
@@ -126,7 +132,7 @@ if phase_ok phase1 14400; then
     for p in 1 2; do lane g7_cumask_p$p $A/lane_cumask.sh ${U[7]} 7 $root mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 \
       qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096; done
     lane g7_text $A/lane_cases.sh ${U[7]} $root m1_text bridge_graph_text_b1_c128 bridge_graph_text_b4_c128 ) &
-  wait
+  wait_lanes
   status "phase1 end"
 fi
 
@@ -138,7 +144,7 @@ if phase_ok phase2 7200; then
     mistral7b_graph_b1_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096 &
   lane j6_g6 $A/lane_competitor.sh ${U[6]} 6 $root bridge_graph_b1_c1024 qwen7b_graph_b1_c4096 &
   lane j6_g7 $A/lane_competitor.sh ${U[7]} 7 $root qwen32b_graph_b1_c4096 qwen7b_graph_b8_c4096 &
-  wait
+  wait_lanes
   status "phase2 end"
 fi
 
@@ -155,7 +161,7 @@ if phase_ok phase4 3600; then
   lane tp2_152a env TP_VARIANTS=matched152 TP_MATCH_TOTAL=152 $A/lane_tp.sh 2 ${U[4]},${U[5]} 4,5 $root \
     qwen7b_graph_b1_c4096 qwen14b_graph_b1_c4096 &
   lane tp2_152b env TP_VARIANTS=matched152 TP_MATCH_TOTAL=152 $A/lane_tp.sh 2 ${U[6]},${U[7]} 6,7 $root qwen32b_graph_b1_c4096 &
-  wait
+  wait_lanes
   status "phase4 end"
 fi
 
