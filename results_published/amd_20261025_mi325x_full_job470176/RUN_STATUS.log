@@ -1,0 +1,50 @@
+2026-10-25T17:57:51 phase0 preflight start (job 470176 on k002-001.hpcfund)
+2026-10-25T17:58:01 phase0 preflight ok: {"fatal": [], "gpus": 8, "container": "0.23.1.dev1+g9ddef7117.d20260901 8", "counter_kb": 65548.0, "cu_mask": {"fma_full_tflops": 102.932, "fma_152cu_tflops": 64.532}}
+2026-10-25T17:58:01 inputs ok (51 files)
+2026-10-25T17:58:01 phase1 start (43189s left)
+2026-10-25T17:58:01 g0_m1_p1 start: scripts/amd/lane_m1_baselines.sh GPU-aa71f114af3bed6d /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176
+2026-10-25T17:58:01 g1_counters_p1 start: scripts/amd/lane_counters.sh GPU-9d95c7d965754a23 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_eager_b1_c1024 bridge_graph_b1_c1024 bridge_eager_b8_c4096 qwen7b_eager_b1_c4096 qwen7b_eager_b8_c4096
+2026-10-25T17:58:01 g5_counters_p1 start: scripts/amd/lane_counters.sh GPU-24d82f87c792a716 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b8_c4096 mistral7b_eager_b1_c4096 mistral7b_graph_b1_c4096 mistral7b_eager_b8_c4096 qwen14b_eager_b1_c4096 qwen32b_eager_b1_c4096 qwen7b_graph_b1_c4096
+2026-10-25T17:58:01 g4_energy_p1 start: scripts/amd/lane_energy.sh GPU-9d10d9528c677241 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T17:58:01 g3_cumask_p1 start: scripts/amd/lane_cumask.sh GPU-183763f7d77caea7 3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b1_c1024 bridge_eager_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096
+2026-10-25T17:58:01 g2_service start: scripts/amd/service_sweep_lane.sh GPU-e2ec0ce821299f33 2 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176
+2026-10-25T17:58:01 g6_rocprof_compute start: scripts/amd/lane_rocprof_compute.sh 6 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176
+2026-10-25T17:58:01 g7_pressure start: scripts/amd/lane_pressure.sh GPU-4b2c461fdef6ba6a /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge 1 1024 bridge 1 2048 bridge 1 4096 bridge 8 4096 qwen7b 1 4096
+2026-10-25T18:06:40 g7_pressure end rc=0
+2026-10-25T18:06:40 g7_cumask_p1 start: scripts/amd/lane_cumask.sh GPU-4b2c461fdef6ba6a 7 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T18:49:15 g2_service end rc=0
+2026-10-25T18:49:15 g2_batch_p1 start: scripts/amd/lane_cumask.sh GPU-e2ec0ce821299f33 2 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 qwen7b_graph_b1_c1024 qwen7b_graph_b4_c1024 qwen7b_graph_b16_c1024 qwen7b_graph_b32_c1024 qwen7b_graph_b64_c1024
+2026-10-25T18:52:40 g4_energy_p1 end rc=0
+2026-10-25T18:52:40 g4_energy_p2 start: scripts/amd/lane_energy.sh GPU-9d10d9528c677241 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:02:03 g6_rocprof_compute end rc=0
+2026-10-25T19:02:03 g6_repro_p1 start: scripts/amd/lane_cases.sh GPU-ce14bc05c9da4a79 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 m1_gpu6 bridge_graph_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:06:20 g0_m1_p1 end rc=0
+2026-10-25T19:06:20 g0_m1_p2 start: scripts/amd/lane_m1_baselines.sh GPU-aa71f114af3bed6d /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176
+2026-10-25T19:09:09 g4_energy_p2 end rc=0
+2026-10-25T19:09:09 g4_energy_cu start: scripts/amd/lane_energy_cu.sh GPU-9d10d9528c677241 4 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 qwen7b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:10:31 g0_m1_p2 end rc=0
+2026-10-25T19:14:47 g3_cumask_p1 end rc=0
+2026-10-25T19:14:47 g3_cumask_p2 start: scripts/amd/lane_cumask.sh GPU-183763f7d77caea7 3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b1_c1024 bridge_eager_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096
+2026-10-25T19:26:16 g3_cumask_p2 end rc=0
+2026-10-25T19:26:16 g3_prefill_p1 start: scripts/amd/lane_prefill.sh GPU-183763f7d77caea7 3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 bridge_graph_b8_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:32:26 g7_cumask_p1 end rc=0
+2026-10-25T19:32:26 g7_cumask_p2 start: scripts/amd/lane_cumask.sh GPU-4b2c461fdef6ba6a 7 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:34:11 g7_cumask_p2 end rc=0
+2026-10-25T19:34:11 g7_text start: scripts/amd/lane_cases.sh GPU-4b2c461fdef6ba6a /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 m1_text bridge_graph_text_b1_c128 bridge_graph_text_b4_c128
+2026-10-25T19:40:17 g6_repro_p1 end rc=0
+2026-10-25T19:40:17 g6_repro_p2 start: scripts/amd/lane_cases.sh GPU-ce14bc05c9da4a79 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 m1_gpu6 bridge_graph_b1_c1024 bridge_graph_b8_c4096 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 mistral7b_graph_b8_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-25T19:40:18 g6_repro_p2 end rc=0
+2026-10-25T19:41:45 g7_text end rc=0
+2026-10-25T20:08:27 g4_energy_cu end rc=0
+2026-10-25T20:18:06 g1_counters_p1 end rc=0
+2026-10-25T20:18:06 g1_counters_p2 start: scripts/amd/lane_counters.sh GPU-9d95c7d965754a23 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_eager_b1_c1024 bridge_graph_b1_c1024 bridge_eager_b8_c4096 qwen7b_eager_b1_c4096 qwen7b_eager_b8_c4096
+2026-10-25T20:24:43 g2_batch_p1 end rc=0
+2026-10-25T20:24:43 g2_batch_p2 start: scripts/amd/lane_cumask.sh GPU-e2ec0ce821299f33 2 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 qwen7b_graph_b1_c1024 qwen7b_graph_b4_c1024 qwen7b_graph_b16_c1024 qwen7b_graph_b32_c1024 qwen7b_graph_b64_c1024
+2026-10-25T20:28:14 g3_prefill_p1 end rc=0
+2026-10-25T20:28:14 g3_prefill_p2 start: scripts/amd/lane_prefill.sh GPU-183763f7d77caea7 3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 bridge_graph_b8_c4096 qwen32b_graph_b1_c4096
+2026-10-25T20:31:31 g2_batch_p2 end rc=0
+2026-10-25T20:43:02 g3_prefill_p2 end rc=0
+2026-10-25T20:45:25 g1_counters_p2 end rc=0
+2026-10-25T20:57:15 g5_counters_p1 end rc=0
+2026-10-25T20:57:15 g5_counters_p2 start: scripts/amd/lane_counters.sh GPU-24d82f87c792a716 /work1/proj_blaisetine/yanggon/results_amd/amd_20261025_mi325x_full_job470176 bridge_graph_b8_c4096 mistral7b_eager_b1_c4096 mistral7b_graph_b1_c4096 mistral7b_eager_b8_c4096 qwen14b_eager_b1_c4096 qwen32b_eager_b1_c4096 qwen7b_graph_b1_c4096
+2026-10-25T21:20:13 g5_counters_p2 end rc=0

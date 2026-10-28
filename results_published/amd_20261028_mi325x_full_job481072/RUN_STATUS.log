@@ -1,0 +1,27 @@
+2026-10-28T07:20:33 phase0 preflight start (job 481072 on k002-001.hpcfund)
+2026-10-28T07:20:43 phase0 preflight ok: {"fatal": [], "gpus": 8, "container": "0.23.1.dev1+g9ddef7117.d20260901 8", "counter_kb": 65548.0, "cu_mask": {"fma_full_tflops": 99.528, "fma_152cu_tflops": 63.33}}
+2026-10-28T07:20:43 inputs ok (51 files)
+2026-10-28T07:20:43 phase1 not selected (PHASES=2 3 4)
+2026-10-28T07:20:43 phase2 start (43189s left)
+2026-10-28T07:20:43 j6_g6 start: scripts/amd/lane_competitor.sh GPU-ce14bc05c9da4a79 6 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 bridge_graph_b1_c1024 qwen7b_graph_b1_c4096
+2026-10-28T07:20:43 tp2 start: scripts/amd/lane_tp.sh 2 GPU-9d10d9528c677241,GPU-24d82f87c792a716 4,5 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 bridge_graph_b1_c1024 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-28T07:20:43 tp4 start: scripts/amd/lane_tp.sh 4 GPU-aa71f114af3bed6d,GPU-9d95c7d965754a23,GPU-e2ec0ce821299f33,GPU-183763f7d77caea7 0,1,2,3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 bridge_graph_b1_c1024 qwen7b_graph_b1_c4096 qwen7b_graph_b8_c4096 mistral7b_graph_b1_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-28T07:20:43 j6_g7 start: scripts/amd/lane_competitor.sh GPU-4b2c461fdef6ba6a 7 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 qwen32b_graph_b1_c4096 qwen7b_graph_b8_c4096
+2026-10-28T08:11:40 j6_g6 end rc=0
+2026-10-28T08:11:56 tp4 end rc=0
+2026-10-28T08:14:56 tp2 end rc=0
+2026-10-28T08:34:34 j6_g7 end rc=0
+2026-10-28T08:34:34 phase2 end
+2026-10-28T08:34:34 phase3 start (38758s left)
+2026-10-28T08:34:34 tp8 start: scripts/amd/lane_tp.sh 8 GPU-aa71f114af3bed6d,GPU-9d95c7d965754a23,GPU-e2ec0ce821299f33,GPU-183763f7d77caea7,GPU-9d10d9528c677241,GPU-24d82f87c792a716,GPU-ce14bc05c9da4a79,GPU-4b2c461fdef6ba6a 0,1,2,3,4,5,6,7 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 mistral7b_graph_b1_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-28T09:02:36 tp8 end rc=0
+2026-10-28T09:02:36 phase3 end
+2026-10-28T09:02:36 phase4 start (37076s left)
+2026-10-28T09:02:36 tp4_152 start: env TP_VARIANTS=matched152 TP_MATCH_TOTAL=152 scripts/amd/lane_tp.sh 4 GPU-aa71f114af3bed6d,GPU-9d95c7d965754a23,GPU-e2ec0ce821299f33,GPU-183763f7d77caea7 0,1,2,3 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 qwen7b_graph_b1_c4096 qwen14b_graph_b1_c4096 qwen32b_graph_b1_c4096
+2026-10-28T09:02:36 tp2_152a start: env TP_VARIANTS=matched152 TP_MATCH_TOTAL=152 scripts/amd/lane_tp.sh 2 GPU-9d10d9528c677241,GPU-24d82f87c792a716 4,5 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 qwen7b_graph_b1_c4096 qwen14b_graph_b1_c4096
+2026-10-28T09:02:36 tp2_152b start: env TP_VARIANTS=matched152 TP_MATCH_TOTAL=152 scripts/amd/lane_tp.sh 2 GPU-ce14bc05c9da4a79,GPU-4b2c461fdef6ba6a 6,7 /work1/proj_blaisetine/yanggon/results_amd/amd_20261028_mi325x_full_job481072 qwen32b_graph_b1_c4096
+2026-10-28T09:08:36 tp2_152b end rc=0
+2026-10-28T09:11:06 tp2_152a end rc=0
+2026-10-28T09:17:06 tp4_152 end rc=0
+2026-10-28T09:17:06 phase4 end
+2026-10-28T09:17:06 COMPLETE

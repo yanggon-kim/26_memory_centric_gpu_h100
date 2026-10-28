@@ -1,0 +1,112 @@
+{
+ "classification": "measured-real-GPU",
+ "scope": "Summarize vLLM timing acquisitions (M1, M6) with clock joins and hierarchical bootstrap CIs.\n\nPer trial: ms per decode step = HIP-event elapsed / decode iterations (63 for 64 tokens).\nClock qualification joins node-monitor samples (gfx/mem MHz) inside each trial's wall window.\nA condition is clock-qualified when pooled in-window GFX and memory samples across all\nacquisitions each stay within max/min <= 1.05, with no missing readings, as declared in\nthe common contract before looking at performance. Bootstrap: 10,000 draws, seed 20261018,\nresampling acquisitions then trials within each acquisition.",
+ "conditions": {
+  "bridge_graph_text_b1_c128": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "bridge_graph_text_b1_c128_a0",
+     "median_ms_per_step": 2.0854713803245906,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 128
+    },
+    {
+     "acquisition": "bridge_graph_text_b1_c128_a1",
+     "median_ms_per_step": 2.1607076251317583,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 128
+    },
+    {
+     "acquisition": "bridge_graph_text_b1_c128_a2",
+     "median_ms_per_step": 2.091759333534846,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 1,
+     "context": 128
+    }
+   ],
+   "mean_ms_per_step": 2.1161994893714864,
+   "tokens_per_s": 472.5452420825416,
+   "gfx_mhz": {
+    "n": 20,
+    "min": 1985,
+    "max": 2093,
+    "median": 2087.5
+   },
+   "mem_mhz": {
+    "min": 1499,
+    "max": 1500
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 13,
+   "ci95_ms_per_step": [
+    2.0896697190703537,
+    2.1523290402044064
+   ]
+  },
+  "bridge_graph_text_b4_c128": {
+   "statuses": [
+    "complete",
+    "complete",
+    "complete"
+   ],
+   "qualified_acquisitions": 3,
+   "acquisitions": [
+    {
+     "acquisition": "bridge_graph_text_b4_c128_a0",
+     "median_ms_per_step": 2.5049862331814237,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 4,
+     "context": 128
+    },
+    {
+     "acquisition": "bridge_graph_text_b4_c128_a1",
+     "median_ms_per_step": 2.5603924705868675,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 4,
+     "context": 128
+    },
+    {
+     "acquisition": "bridge_graph_text_b4_c128_a2",
+     "median_ms_per_step": 2.4978922283838667,
+     "trials": 10,
+     "outputs_identical": true,
+     "batch": 4,
+     "context": 128
+    }
+   ],
+   "mean_ms_per_step": 2.529710299375827,
+   "tokens_per_s": 1581.208726148187,
+   "gfx_mhz": {
+    "n": 27,
+    "min": 1874,
+    "max": 2071,
+    "median": 2066
+   },
+   "mem_mhz": {
+    "min": 1496,
+    "max": 1500
+   },
+   "clock_qualified": false,
+   "clock_qualified_interior_posthoc": false,
+   "interior_samples": 22,
+   "ci95_ms_per_step": [
+    2.500378813566985,
+    2.568849634241175
+   ]
+  }
+ }
+}

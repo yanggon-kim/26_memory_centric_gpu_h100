@@ -107,3 +107,14 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 481072 (MI325X phases 2–4) ran 07:20–09:17 on k002-001: phase 2 (J6 competitor, TP2, TP4), phase 3 (TP8),
   phase 4 (152-CU-matched TP). 180/180 run.json `complete` (TP 108, J6 72). With 470176 phase 1, the old
   MI325X campaign now has all four phases on disk; not yet published.
+
+## 2026-10-28 — MI325X full campaign (470176 phase 1 + 481072 phases 2–4) published
+
+- Summarizers rerun on both roots (unchanged scripts). The TP summary reads the phase-1 M1/M6 baselines through a
+  view directory (`$WORK/results_amd/view_mi325x_full_470176_481072`).
+- Compact evidence: `results_published/amd_20261025_mi325x_full_job470176/` and
+  `results_published/amd_20261028_mi325x_full_job481072/`; raw manifests are indexed in [artifacts.md](artifacts.md).
+- Report: [mi325x_full_campaign_results_20261028.md](mi325x_full_campaign_results_20261028.md).
+  - Clock gate passes for M1 1/16 and M6 6/56, so the results are observational.
+  - Energy has 2/3 acquisitions per case (a0 hit an amdsmi file error at start), and rocprof-compute completed 5/13 sets.
+  - All other families are complete at 3 acquisitions.
