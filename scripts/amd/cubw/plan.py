@@ -14,6 +14,14 @@ seed. Kinds:
                production stage (used for the MI325X cohort, whose job cannot be reviewed between stages)
 
   plan.py --kind pilot --cohort mi300x --out plan.json [--boundary 152]
+  plan.py --kind auto --pilot minimal --cohort mi300x --boundary 200 --out plan.json
+
+v1.1 (after the MI300X pilot, job 481167): graph-mode rocprofv3 counter collection is not planned (both
+pilot attempts failed: illegal memory access, then a hang to the 1200 s timeout, leaving PPID=1 rocprofv3
+processes); kernel-trace timelines stay. Leak probes gain placement-proven native co-runner references
+(leak_suite) and E3 release uses leak_ok_v11 (scripts/amd/cubw/analyze.py). A "minimal" pilot stage
+re-proves only placement, lifecycle (fixed residual-process check and orphan sweep), leak references and
+Qwen32B outputs/clocks before the production stage of the same allocation.
 """
 import argparse
 import hashlib
@@ -101,12 +109,14 @@ class Plan:
         return self.add(lane, stage, exp, kind='shell', id=f'{exp}:{name}', cell=name, cmd=cmd,
                         out=f'{exp}/{name}', est_s=est, timeout_s=timeout, no_retry=True)
 
-    def competitor_only(self, lane, stage, exp, name, treatment, seconds, comp_mask=None, acq=0):
+    def competitor_only(self, lane, stage, exp, name, treatment, seconds, comp_mask=None, acq=0, corunner=None):
         s = self.add(lane, stage, exp, kind='competitor_only', id=f'{exp}:{name}:a{acq}', cell=name, acquisition=acq,
                      treatment=treatment, seconds=seconds, out=f'{exp}/{name}/a{acq}', est_s=seconds + 20,
                      timeout_s=seconds + 120, no_retry=True)
         if comp_mask:
             s['competitor_mask'] = comp_mask
+        if corunner:
+            s['corunner'] = corunner
         return s
 
 
@@ -159,6 +169,44 @@ def caps(plan, lane, stage):
                '$PY scripts/amd/cubw/counter_probe.py --out-dir "$CUBW_STEP_DIR"', est=400, timeout=1500)
 
 
+def leak_suite(plan, lane, stage, rng):
+    """FMA probe on n..303: alone, beside placement-proven native co-runners (fma, read) on 0..n-1, and beside the
+    decoder on 0..n-1 (n=232 is the E3 competitor partition). Names carry the lane: refs pair within a GPU."""
+    for n, treatment in ((232, 'arith100'), (152, 'leakprobe')):
+        probe = f'{n}-303'
+        steps = [lambda: plan.competitor_only(lane, stage, 'e1_leak', f'alone_fma_{probe}_{lane}', 'leakprobe', 30,
+                                              comp_mask=probe)]
+        for co in ('arith100', 'mem100'):
+            steps.append(lambda co=co: plan.competitor_only(lane, stage, 'e1_leak', f'corun_{co}_0-{n - 1}_fma_{probe}_{lane}',
+                                                            'leakprobe', 30, comp_mask=probe,
+                                                            corunner={'treatment': co, 'mask': f'0-{n - 1}'}))
+        steps.append(lambda: plan.vllm(lane, stage, 'e1_leak', 'qwen32b', n, treatment, comp_mask=probe, tag=f'_{lane}'))
+        rng.shuffle(steps)
+        for f in steps:
+            f()
+
+
+def build_minimal_pilot(cohort):
+    """v1.1 re-pilot: placement on every GPU, lifecycle, leak references on two GPUs, Qwen32B outputs/clocks."""
+    p = Plan('pilot', cohort)
+    st = 'pilot'
+    placement_core(p, st)
+    rng = random.Random(f'{SEED}:minimal_pilot:{cohort}')
+    leak_suite(p, 'L0', st, rng)
+    leak_suite(p, 'L1', st, rng)
+    p.competitor_only('L2', st, 'e1_e3_pilot', 'alone_fma_232-303', 'arith100', 30)
+    p.competitor_only('L2', st, 'e1_e3_pilot', 'alone_read100_232-303', 'mem100', 30)
+    p.competitor_only('L2', st, 'e1_e3_pilot', 'alone_idle_232-303', 'inactive', 10)
+    tr = ['absent', 'inactive', 'mem100', 'arith100']; rng.shuffle(tr)
+    for t in tr:
+        p.vllm('L2', st, 'e1_e3_pilot', 'qwen32b', 232, t)
+    for lane in ('L3', 'L4'):
+        order = LEVELS[:]; rng.shuffle(order)
+        for n in order:
+            p.vllm(lane, st, 'e1_e2_pilot', 'qwen32b', n, tag=f'__{lane}')
+    return p
+
+
 def build_pilot(cohort, reduced=False):
     p = Plan('pilot', cohort)
     st = 'pilot'
@@ -197,10 +245,8 @@ def build_pilot(cohort, reduced=False):
     rng.shuffle(tr)
     for t in tr:
         p.vllm('L3', st, 'e1_e3_pilot', 'qwen32b', 152, t)
-    # graph-mask leak probes: decoder on 0..n-1, FMA probe on n..303; compare with the probe alone
-    for n in (152, 96):
-        p.competitor_only('L3', st, 'e1_leak', f'alone_fma_{n}-303', 'leakprobe', 30, comp_mask=f'{n}-303')
-        p.vllm('L3', st, 'e1_leak', 'qwen32b', n, 'leakprobe', comp_mask=f'{n}-303')
+    # graph-mask leak probes with native co-runner references (v1.1)
+    leak_suite(p, 'L3', st, rng)
     order = LEVELS[:]; rng.shuffle(order)
     for n in order:
         p.vllm('L4', st, 'e1_e2_pilot', 'qwen14b', n)
@@ -208,9 +254,6 @@ def build_pilot(cohort, reduced=False):
     for n in (304, 152):
         p.vllm('L5', st, 'e1_timeline', 'qwen32b', n)
         p.vllm('L5', st, 'e1_timeline', 'qwen32b', n, profile={'kind': 'kernel_trace'}, tag='__ktrace')
-    p.vllm('L5', st, 'e5_pilot', 'qwen32b', 304, profile={'kind': 'pmc', 'counters': ['FETCH_SIZE']}, tag='__pmc_FETCH_SIZE')
-    p.vllm('L7', st, 'e5_pilot', 'qwen32b', 304, profile={'kind': 'pmc', 'counters': ['FETCH_SIZE'],
-           'exclude_regex': '^(_|triton)'}, tag='__pmc_FETCH_SIZE_excl')
     # E8 guardrail pilots
     for n in (304, 152):
         p.vllm('L6', st, 'e8_pilot', 'qwen7b_b8', n)
@@ -266,12 +309,9 @@ def production(p, st, models_blocks, boundary, energy_levels, e3_full_requires='
         for name, args in suite:
             p.native(lane, st, 'e4', name, args, COMPETITOR_MASK if n == 'competitor' else mask_for(n), acq=acq,
                      level=n)
-    # E5: graph-mode traffic for baseline and boundary cells (one counter group per run) plus a timeline
+    # E5: kernel-trace timelines for baseline and boundary cells (graph-mode counters unavailable, v1.1)
     e5_lanes = iter(lane_ids * 4)
     for n in sorted({304, boundary}):
-        for counters in (['FETCH_SIZE'], ['WRITE_SIZE'], ['TCC_HIT', 'TCC_MISS']):
-            p.vllm(next(e5_lanes), st, 'e5', 'qwen32b', n, profile={'kind': 'pmc', 'counters': counters,
-                   'exclude_regex': '^(_|triton)'}, tag='__pmc_' + '+'.join(counters), requires='release_e5e8')
         p.vllm(next(e5_lanes), st, 'e5', 'qwen32b', n, profile={'kind': 'kernel_trace'}, tag='__ktrace',
                requires='release_e5e8')
     # E8: guardrails at baseline/boundary/96 and matched energy at baseline and boundary
@@ -300,7 +340,7 @@ def finalize(p, src, args):
     longest = sum(max(v.values()) for v in stages.values())  # stages run one after another
     rates = {'mi300x': 8.0, 'mi325x': 12.8}  # allocation units per node-hour observed on this account
     plan = {
-        'version': 'cubw_v1', 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
+        'version': 'cubw_v1.1', 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
         'assignment': 'docs/amd/compute_bandwidth_followup_20261026.md',
         'full_cus': FULL, 'competitor_mask': COMPETITOR_MASK, 'levels': LEVELS, 'e3_levels': E3_LEVELS,
         'e3_treatments': E3_TREATMENTS, 'e3_minimal_subset': E3_MINIMAL, 'boundary_level': args.boundary,
@@ -312,12 +352,16 @@ def finalize(p, src, args):
             'placement_ok': 'every decoder/competitor mask: distinct physical CUs == requested, per-XCD counts differ by <= 1',
             'lifecycle_ok': 'every competitor: started event, stopped event, PID gone, no owned residual GPU process',
             'outputs_ok': 'Qwen32B pilot runs complete with one output digest across all CU levels and treatments',
-            'leak_ok': 'probe TFLOP/s during decoder trials >= 0.85 x probe alone on the same mask',
+            'leak_ok': 'v1, recorded only: probe TFLOP/s during decoder trials >= 0.85 x probe alone on the same mask',
+            'leak_ok_v11': 'every decoder probe ratio (probe during decoder / probe alone) >= 0.85 x the highest ratio of the '
+                           'same probe beside a placement-proven native co-runner (fma or read) on the decoder mask, same GPU',
             'clock_ok': 'pooled in-window gfx and memory clocks over Qwen32B E2 pilot trials: max/min <= 1.05, coverage >= 0.5',
             'release_e2': 'placement_ok and outputs_ok (observational label if clock_ok fails)',
-            'release_e3_full': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok and clock_ok',
-            'release_e3_minimal': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok',
+            'release_e3_full': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v11 and clock_ok',
+            'release_e3_minimal': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v11',
             'release_e5e8': 'outputs_ok'},
+        'unavailable': {'e5_graph_counters': 'rocprofv3 --pmc on graph-mode vLLM decode failed in both MI300X pilot '
+                                              'attempts (illegal memory access; hang to timeout), job 481167'},
         'retry_policy': 'two attempts maximum, only for execution/tool failures; correctness failures never retried',
         'timeouts': 'per step: max(900 s, 3 x estimate) for decoder steps; native 120 s; competitor alone seconds+120',
         'reserve_s': 1800,
@@ -338,6 +382,10 @@ def main(args):
     elif args.kind == 'production':
         p = Plan('production', args.cohort)
         production(p, 'production', [('qwen32b', 5), ('qwen14b', 3)], args.boundary, sorted({304, args.boundary}))
+    elif args.pilot == 'minimal':  # auto after a full pilot of this cohort: v1.1 re-pilot, gate, production
+        p = build_minimal_pilot(args.cohort)
+        p.kind = 'auto'
+        production(p, 'production', [('qwen32b', 5), ('qwen14b', 3)], args.boundary, sorted({304, args.boundary}))
     else:  # auto: reduced pilot, gate, then a budget-limited production stage
         p = build_pilot(args.cohort, reduced=True)
         p.kind = 'auto'
@@ -357,6 +405,7 @@ if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     q.add_argument('--kind', choices=['pilot', 'production', 'auto'], required=True)
     q.add_argument('--cohort', choices=['mi300x', 'mi325x'], required=True)
+    q.add_argument('--pilot', choices=['reduced', 'minimal'], default='reduced', help='pilot stage of an auto plan')
     q.add_argument('--boundary', type=int, default=152, help='E2 boundary level used by E5/E8 (set after the pilot)')
     q.add_argument('--config-source', default='/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi300x')
     q.add_argument('--out', type=Path, required=True)

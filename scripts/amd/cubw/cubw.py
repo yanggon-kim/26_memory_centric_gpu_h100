@@ -9,13 +9,19 @@ appends every attempt to <root>/journal/<lane>.jsonl. Step kinds:
            under rocprofv3 (kernel trace or one counter group).
   native   one svc_bench_v3 process (one acquisition of a service control or a placement probe).
   shell    a recorded capability command (counter lists, version strings).
-  competitor_only  the competitor alone for a fixed time (probe-alone reference, lifecycle checks).
+  competitor_only  the competitor alone for a fixed time (probe-alone reference, lifecycle checks), or
+           beside a placement-proven native co-runner on the decoder mask (v1.1 leak reference).
 
 Command completion is recorded separately from scientific status; nothing here decides qualification
 (scripts/amd/cubw/analyze.py does). A step is retried once (two attempts total) only for a diagnosed
 execution/tool failure, never for a correctness failure or to obtain different timings. Each attempt
 has its own directory; nothing is overwritten. Owned processes run in their own process groups and are
 stopped with SIGTERM, then SIGKILL after a bounded wait; their exit is verified by PID, never by name.
+
+v1.1 (after the MI300X pilot, job 481167): the residual-process check applies the existing
+scripts/gpu_target.py rule (VRAM >= 64 MiB or GFX engine time on the target GPU) instead of listing every
+KFD process on the node; every owned process carries a per-attempt CUBW_STEP_TAG and processes that
+escaped their process group (rocprofv3 left PPID=1 orphans) are found by that tag, killed and recorded.
 
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
@@ -65,14 +71,40 @@ class Journal:
 
 
 def gpu_processes(uuid):
-    """PIDs with a context on the target GPU (amdsmi); None if the query itself fails."""
+    """PIDs holding VRAM (>= 64 MiB) or GFX engine time on the target GPU, the scripts/gpu_target.py rule.
+    amdsmi lists every KFD process on the node for every GPU, so the unfiltered list is not per GPU."""
     try:
         import amd_nvml as n
         n.nvmlInit()
         h = n.nvmlDeviceGetHandleByUUID(uuid)
-        return sorted({p['pid'] for p in n.processes_detail(h)})
+        return sorted({p['pid'] for p in n.processes_detail(h) if p['vram_bytes'] >= 64 << 20 or p['gfx_engine_ns'] > 0})
     except Exception as error:  # recorded, not fatal
         return {'error': str(error)[:200]}
+
+
+def sweep_tag(tag, wait=30):
+    """Kill owned processes that escaped their process group, found by CUBW_STEP_TAG in their environment."""
+    needle = f'CUBW_STEP_TAG={tag}'.encode()
+    found = []
+    for d in Path('/proc').iterdir():
+        if not d.name.isdigit() or int(d.name) == os.getpid():
+            continue
+        try:
+            if needle in (d / 'environ').read_bytes().split(b'\0'):
+                found.append({'pid': int(d.name), 'cmd': (d / 'cmdline').read_bytes().replace(b'\0', b' ').decode(errors='replace')[:200]})
+        except OSError:
+            continue
+    for f in found:
+        try:
+            os.kill(f['pid'], signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    end = now() + wait
+    for f in found:
+        while now() < end and Path(f'/proc/{f["pid"]}').exists():
+            time.sleep(0.2)
+        f['gone'] = not Path(f'/proc/{f["pid"]}').exists()
+    return found
 
 
 def stop_group(proc, grace=15):
@@ -104,7 +136,7 @@ def stop_group(proc, grace=15):
     return out
 
 
-def start_competitor(step, gpu, adir, seconds):
+def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
     mode, duty = TREATMENTS[step['treatment']]
     mask = step.get('competitor_mask') or step['plan_competitor_mask']
     args = [str(BIN), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
@@ -112,9 +144,9 @@ def start_competitor(step, gpu, adir, seconds):
         args += ['--bytes', str(COMPETITOR_BYTES)]
     elif mode == 'fma':
         args += ['--iters', '2000']
-    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}")
-    out = open(adir / 'competitor.jsonl', 'w')
-    err = open(adir / 'competitor.err', 'w')
+    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
+    out = open(adir / f'{name}.jsonl', 'w')
+    err = open(adir / f'{name}.err', 'w')
     proc = subprocess.Popen(args, env=env, stdout=out, stderr=err, start_new_session=True)
     rec = {'argv': args, 'hsa_cu_mask': env['HSA_CU_MASK'], 'pid': proc.pid, 'mode': mode, 'duty_requested': duty}
     deadline = now() + 90
@@ -122,7 +154,7 @@ def start_competitor(step, gpu, adir, seconds):
         if proc.poll() is not None:
             rec['start_failed'] = f'exited rc={proc.returncode}'
             return proc, rec
-        txt = (adir / 'competitor.jsonl').read_text()
+        txt = (adir / f'{name}.jsonl').read_text()
         if '"event":"started"' in txt:
             rec['started_unix'] = now()
             return proc, rec
@@ -133,27 +165,39 @@ def start_competitor(step, gpu, adir, seconds):
 
 def run_attempt(step, gpu, root, adir, plan):
     """One attempt of a vllm or competitor_only step. Returns the journal record."""
-    rec = {'step': step['id'], 'attempt_dir': str(adir), 'kind': step['kind']}
+    tag = f"{os.getpid()}-{adir.parent.name}-{adir.name}-{int(now() * 1e6)}"
+    rec = {'step': step['id'], 'attempt_dir': str(adir), 'kind': step['kind'], 'step_tag': tag}
     comp = None
     if step['kind'] == 'competitor_only':
-        proc, crec = start_competitor(step, gpu, adir, step['seconds'] + 60)
+        proc, crec = start_competitor(step, gpu, adir, step['seconds'] + 60, tag)
         rec['competitor'] = crec
-        if 'start_failed' not in crec:
+        co = step.get('corunner')
+        if co and 'start_failed' not in crec:  # placement-proven native co-runner on the decoder mask
+            cstep = dict(step, treatment=co['treatment'], competitor_mask=co['mask'])
+            cproc, corec = start_competitor(cstep, gpu, adir, step['seconds'] + 60, tag, name='corunner')
+            rec['corunner'] = corec
+        if 'start_failed' not in crec and 'start_failed' not in rec.get('corunner', {}):
             time.sleep(step['seconds'])
+        if co and 'corunner' in rec:
+            rec['corunner']['stop'] = stop_group(cproc)
+            rec['corunner']['stopped_unix'] = now()
         crec['stop'] = stop_group(proc)
+        rec['orphans'] = sweep_tag(tag)
         rec['residual_gpu_pids'] = gpu_processes(gpu['uuid'])
-        rec['command_completed'] = 'start_failed' not in crec and crec['stop']['gone']
+        rec['command_completed'] = ('start_failed' not in crec and crec['stop']['gone']
+                                    and 'start_failed' not in rec.get('corunner', {})
+                                    and rec.get('corunner', {}).get('stop', {}).get('gone', True))
         return rec
     t = TREATMENTS[step.get('treatment', 'absent')]
     if t is not None:
-        comp, crec = start_competitor(step, gpu, adir, step['timeout_s'] + 120)
+        comp, crec = start_competitor(step, gpu, adir, step['timeout_s'] + 120, tag)
         rec['competitor'] = crec
         if 'start_failed' in crec:
             crec['stop'] = stop_group(comp)
             rec['command_completed'] = False
             rec['failure_class'] = 'execution:competitor_start'
             return rec
-    extra = []
+    extra = [f'CUBW_STEP_TAG={tag}']
     mask = decoder_mask(step['decoder_cus'], plan['full_cus'])
     if mask:
         extra.append(f"HSA_CU_MASK={gpu['index']}:{mask}")
@@ -193,6 +237,7 @@ def run_attempt(step, gpu, root, adir, plan):
         rec['competitor']['stop'] = stop_group(comp)
         txt = (adir / 'competitor.jsonl').read_text()
         rec['competitor']['stopped_event'] = '"event":"stopped"' in txt
+    rec['orphans'] = sweep_tag(tag)
     rec['residual_gpu_pids'] = gpu_processes(gpu['uuid'])
     run = adir / 'run' / 'run.json'
     status = json.loads(run.read_text())['status'] if run.exists() else 'missing'
@@ -269,6 +314,9 @@ def describe(step, gpu, plan):
     if t:
         parts.append(f"competitor[{t[0]} duty={t[1]} mask={step.get('competitor_mask') or step['plan_competitor_mask']}]")
     if step['kind'] == 'competitor_only':
+        if step.get('corunner'):
+            c = step['corunner']
+            parts.append(f"corunner[{TREATMENTS[c['treatment']][0]} mask={c['mask']}]")
         return ' + '.join(parts) + f" for {step['seconds']} s"
     mask = decoder_mask(step['decoder_cus'], plan['full_cus'])
     prof = step.get('profile')

@@ -194,8 +194,41 @@ def test_gates():
     check('no placement probes -> placement_ok false -> nothing released', not g['placement_ok'] and not g['release_e2'])
 
 
+def test_v11_gates():
+    """v1.1: profiled runs are outside outputs_ok; leak is judged against placement-proven native co-runners."""
+    def acq(cell, n, profiled=False, comp=None, lane='L0', disp='complete'):
+        return {'model': 'qwen32b', 'case': 'qwen32b_graph_b1_c4096', 'mode': 'timing', 'generated_tokens': None,
+                'profiled': profiled, 'disposition': disp, 'output_sha256': 'd0', 'experiment': 'e1_leak', 'cell': cell,
+                'n': n, 'lane': lane, 'competitor': comp, 'lifecycle_ok': True}
+    def probe(tf, mask='232-303'):
+        return {'mode': 'fma', 'mask': f'0:{mask}', 'tflop_per_s_during_trials': tf}
+    def ref(tf, corun=None, lane='L0', mask='232-303'):
+        return {'tflop_per_s': tf, 'gb_per_s': 0.0, 'windows': 30, 'events': ['started', 'stopped'], 'gone': True,
+                'residual_gpu_pids': [], 'orphans': [], 'lane': lane, 'probe_mask': mask, 'probe_mode': 'fma',
+                'corunner': corun, 'corunner_gone': True if corun else None}
+    plan = {'levels': [304, 232]}
+    acqs = [acq('x__n232__absent', 232), acq('x__n304__absent__pmc', 304, profiled=True, disp='failed'),
+            acq('x__n232__arith100', 232, comp=probe(10.5))]
+    comp_only = {'alone': ref(17.4), 'co_fma': ref(10.0, {'treatment': 'arith100', 'mask': '0-231'}),
+                 'co_read': ref(11.0, {'treatment': 'mem100', 'mask': '0-231'})}
+    g = A.gates_from(plan, acqs, {}, comp_only)
+    check('failed profiled run is outside outputs_ok', g['outputs_ok'] is True and g['outputs_detail']['runs'] == 2,
+          str(g['outputs_detail']))
+    check('v1 leak gate still computed and failing (0.60 < 0.85)', g['leak_ok'] is False)
+    r = g['leak_v11']['x__n232__arith100']
+    check('v1.1 leak relative to the gentlest co-runner', abs(r['relative'] - 10.5 / 11.0) < 1e-9 and g['leak_ok_v11'] is True,
+          str(r))
+    comp_only['co_read'] = ref(16.0, {'treatment': 'mem100', 'mask': '0-231'})
+    g = A.gates_from(plan, acqs, {}, comp_only)
+    check('decoder far below a gentle co-runner fails leak_ok_v11', g['leak_ok_v11'] is False and not g['release_e3_minimal'])
+    comp_only['co_read']['orphans'] = [{'pid': 1, 'gone': False}]
+    g = A.gates_from(plan, acqs, {}, comp_only)
+    check('an orphan that survived the sweep fails lifecycle_ok', g['lifecycle_ok'] is False)
+
+
 if __name__ == '__main__':
-    for f in (test_status_separation, test_nesting, test_missing_clocks_and_coverage, test_overlapping_windows, test_gates):
+    for f in (test_status_separation, test_nesting, test_missing_clocks_and_coverage, test_overlapping_windows, test_gates,
+              test_v11_gates):
         print(f'-- {f.__name__}')
         f()
     print(f'{check.failed} failures')

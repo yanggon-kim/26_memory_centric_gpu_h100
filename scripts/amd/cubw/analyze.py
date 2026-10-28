@@ -20,6 +20,16 @@ with each decoder trial window, and averaged weighted by intersected duration; c
 Uniform throughput inside a window is assumed (labelled as an attribution estimate). The achieved
 competitor rate is a response as well as an intervention; it is not subtracted from decoder bandwidth.
 
+v1.1 (after the MI300X pilot, job 481167; the v1 gates are still computed and reported unchanged):
+- outputs_ok counts only unprofiled timing runs (the v1 reader also counted rocprofv3 runs, contrary to
+  its own declared definition);
+- leak_ok_v11: the v1 probe ratio (probe TFLOP/s during decoder trials / probe alone) is compared with
+  the same probe beside a placement-proven native co-runner (svc_bench fma and read) on the decoder
+  mask. A ratio well below 1 that a placement-proven co-runner also produces is inter-process
+  contention, not CU leakage; leak_ok_v11 requires every decoder probe ratio >= 0.85 x the gentlest
+  (highest) native co-runner ratio on the same probe mask and GPU;
+- lifecycle also requires every owned process found by the per-attempt tag sweep to be gone.
+
   analyze.py report --root <root> [--out <dir>]     tables + summary.md
   analyze.py gate   --root <pilot-root> --out gates.json
 """
@@ -194,6 +204,7 @@ def acquisition(step, atts, samples, plan):
     # isolation and competitor
     comp = rec.get('competitor')
     a['isolation_ok'] = rec.get('residual_gpu_pids') == []
+    a['orphans'] = rec.get('orphans')
     if comp:
         wins, events = competitor_windows(Path(rec['attempt_dir']) / 'competitor.jsonl')
         joined = [overlap_rates(wins, lo, hi) for lo, hi in a['windows']]
@@ -210,7 +221,8 @@ def acquisition(step, atts, samples, plan):
                            'realtime_step_ns': realtime_step_ns(wins),
                            'attribution': 'uniform throughput within each ~0.25 s window (estimate)'}
         a['lifecycle_ok'] = bool(a['competitor']['started'] and a['competitor']['stopped_event'] and a['competitor']['gone']
-                                 and a['isolation_ok'] and a['competitor']['trial_coverage'] >= 0.95)
+                                 and a['isolation_ok'] and a['competitor']['trial_coverage'] >= 0.95
+                                 and all(o.get('gone') for o in rec.get('orphans') or []))
     a['counts_ok'] = a['trials'] == 10 or a['mode'] == 'energy' or a['profiled']
     a['disposition'] = 'complete' if (a['command_completed'] and a['correctness']) else 'failed'
     return a
@@ -464,22 +476,33 @@ def build(root):
             rec = final_attempt(attempts.get(s['id'], []))
             if rec:
                 wins, ev = competitor_windows(Path(rec['attempt_dir']) / 'competitor.jsonl')
+                co = rec.get('corunner')
+                if co and co.get('started_unix') and co.get('stopped_unix'):  # probe windows inside the co-run only
+                    lo, hi = co['started_unix'] * 1e9, co['stopped_unix'] * 1e9
+                    wins = [w for w in wins if w['t0_unix_ns'] >= lo and w['t1_unix_ns'] <= hi]
                 steady = wins[1:-1] or wins
                 comp_only[s['cell']] = {'tflop_per_s': st.mean(w['tflop_per_s'] for w in steady) if steady else None,
                                         'gb_per_s': st.mean(w['gb_per_s'] for w in steady) if steady else None,
                                         'windows': len(wins), 'events': [e['event'] for e in ev],
                                         'gone': rec['competitor'].get('stop', {}).get('gone'),
-                                        'residual_gpu_pids': rec.get('residual_gpu_pids')}
+                                        'residual_gpu_pids': rec.get('residual_gpu_pids'),
+                                        'orphans': rec.get('orphans'), 'lane': rec.get('lane'),
+                                        'probe_mask': rec['competitor']['hsa_cu_mask'].split(':', 1)[1],
+                                        'probe_mode': rec['competitor']['mode'],
+                                        'corunner': s.get('corunner'),
+                                        'corunner_gone': (co or {}).get('stop', {}).get('gone')}
     return plan, acqs, nat, ptab, comp_only, attempts, samples
 
 
 def gates_from(plan, acqs, ptab, comp_only):
     g = {'placement_ok': placement_ok(ptab)}
     comp = [a for a in acqs if a.get('competitor')]
-    alone_ok = all(v['gone'] and v['residual_gpu_pids'] == [] and 'stopped' in v['events'] for v in comp_only.values())
+    alone_ok = all(v['gone'] and v['residual_gpu_pids'] == [] and 'stopped' in v['events']
+                   and all(o.get('gone') for o in v.get('orphans') or []) and v.get('corunner_gone', True) is not False
+                   for v in comp_only.values())
     g['lifecycle_ok'] = bool(comp) and all(a.get('lifecycle_ok') for a in comp) and alone_ok
     q = [a for a in acqs if a.get('model') == 'qwen32b' and a['case'] == 'qwen32b_graph_b1_c4096' and a['mode'] == 'timing'
-         and not a.get('generated_tokens')]
+         and not a.get('generated_tokens') and not a.get('profiled')]
     digests = {a.get('output_sha256') for a in q if a.get('disposition') == 'complete'}
     g['outputs_ok'] = bool(q) and all(a.get('disposition') == 'complete' for a in q) and len(digests) == 1
     g['outputs_detail'] = {'runs': len(q), 'complete': sum(a.get('disposition') == 'complete' for a in q),
@@ -494,11 +517,30 @@ def gates_from(plan, acqs, ptab, comp_only):
             leak[a['cell']] = a['competitor']['tflop_per_s_during_trials'] / ref['tflop_per_s']
     g['leak_ratios'] = leak
     g['leak_ok'] = bool(leak) and all(v >= LEAK_MIN for v in leak.values())
+    # v1.1: decoder probe ratio relative to the gentlest placement-proven native co-runner on the same mask/GPU
+    v11 = {}
+    for a in comp:
+        if a['competitor']['mode'] != 'fma' or not a['competitor']['tflop_per_s_during_trials']:
+            continue
+        mask = a['competitor']['mask'].split(':', 1)[1]
+        def ref(corun):
+            rows = [v for v in comp_only.values() if v['probe_mask'] == mask and v['probe_mode'] == 'fma'
+                    and bool(v['corunner']) == corun and v['tflop_per_s']]
+            same = [v for v in rows if v['lane'] == a['lane']]
+            return same or rows
+        alone, coruns = ref(False), ref(True)
+        if alone and coruns:
+            base = st.mean(v['tflop_per_s'] for v in alone)
+            native = {v['corunner']['treatment']: v['tflop_per_s'] / base for v in coruns}
+            dec = a['competitor']['tflop_per_s_during_trials'] / base
+            v11[a['cell']] = {'decoder_ratio': dec, 'native_ratios': native, 'relative': dec / max(native.values())}
+    g['leak_v11'] = v11
+    g['leak_ok_v11'] = bool(v11) and all(v['relative'] >= LEAK_MIN for v in v11.values())
     e2 = [a for a in q if a['experiment'] in ('e1_e2_pilot', 'e2') and good(a)]
     g['clock'] = clock_summary(e2)
     g['clock_ok'] = g['clock']['pooled_ok']
     g['release_e2'] = g['placement_ok'] and g['outputs_ok']
-    g['release_e3_minimal'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok']
+    g['release_e3_minimal'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v11']
     g['release_e3_full'] = g['release_e3_minimal'] and g['clock_ok']
     g['release_e5e8'] = g['outputs_ok']
     return g
@@ -647,11 +689,12 @@ def fmt(r):
 def summary_md(t):
     L = [f"# cubw_v1 {t['plan_kind']} — {t['cohort']}", '', '## Gates', '']
     g = t['gates']
-    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'clock_ok', 'release_e2', 'release_e3_minimal',
-              'release_e3_full', 'release_e5e8'):
+    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'leak_ok_v11', 'clock_ok', 'release_e2',
+              'release_e3_minimal', 'release_e3_full', 'release_e5e8'):
         L.append(f'- {k}: **{g.get(k)}**')
     L.append(f"- outputs: {g.get('outputs_detail')}")
     L.append(f"- leak ratios (probe during decode / probe alone): {g.get('leak_ratios')}")
+    L.append(f"- leak v1.1 (relative to placement-proven native co-runners): {g.get('leak_v11')}")
     L.append(f"- pooled clocks (Qwen32B E2): {g.get('clock')}")
     L += ['', '## Placement', '', '| probe | distinct CUs | expected | per-XCD | balanced | rc |', '|---|---:|---:|---|---|---:|']
     for k, v in t['placement'].items():
