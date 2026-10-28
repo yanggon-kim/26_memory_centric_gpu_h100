@@ -91,3 +91,19 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - 481168 `cubw-mi325x-auto` (mi3258x, 3:45:00, `afterany:481072`, user hold until the MI300X pilot validates
     the tools) — plan `$WORK/cubw_plans/mi325x_auto_20261026_144357_2da9ae35.json`.
 - MI300X production is submitted only after the pilot is reviewed (gates, boundary level, cost).
+
+## 2026-10-28 — MI300X pilot 481167, v1.1 repair, resubmissions; MI325X 481072 complete
+
+- 481167 ran 08:34–09:06 on k002-002 (after ~42 h in the queue). Review:
+  [cubw_pilot_review_20261028.md](cubw_pilot_review_20261028.md). Placement passed on all 8 GPUs; the v1
+  lifecycle and outputs gates failed on tool/reader defects; leak and clock gates failed on measurements;
+  graph-mode rocprofv3 counters crashed/hung. Nothing was released under v1 rules.
+- v1.1 (commit 79d8b597): per-GPU residual check, tag-based orphan sweep, outputs gate excludes profiled runs,
+  native co-runner leak references (`leak_ok_v11`), graph-mode counters dropped. 23/23 CPU fixture checks;
+  MI210 devel smoke (job 483497) of co-runner and sweep.
+- 481168 (v1 release, held) cancelled unrun. Submitted from release 79d8b597:
+  483498 `cubw-mi300x-auto` (mi3008x, 2:45:00, minimal re-pilot → gates → production, boundary 200) and
+  483499 `cubw-mi325x-auto` (mi3258x, 3:15:00, `afterany:481072`). Dry runs: 691 and 759 steps.
+- 481072 (MI325X phases 2–4) ran 07:20–09:17 on k002-001: phase 2 (J6 competitor, TP2, TP4), phase 3 (TP8),
+  phase 4 (152-CU-matched TP). 180/180 run.json `complete` (TP 108, J6 72). With 470176 phase 1, the old
+  MI325X campaign now has all four phases on disk; not yet published.
