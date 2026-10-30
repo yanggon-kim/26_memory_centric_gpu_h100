@@ -221,6 +221,11 @@ def test_v11_gates():
     comp_only['co_read'] = ref(16.0, {'treatment': 'mem100', 'mask': '0-231'})
     g = A.gates_from(plan, acqs, {}, comp_only)
     check('decoder far below a gentle co-runner fails leak_ok_v11', g['leak_ok_v11'] is False and not g['release_e3_minimal'])
+    g = A.gates_from(plan, acqs + [acq('x__n200__absent', 200, disp='not_run')], {}, comp_only)
+    check('v1.2: unattempted (not_run) steps are outside outputs_ok', g['outputs_ok'] is True and g['outputs_detail']['runs'] == 2,
+          str(g['outputs_detail']))
+    g = A.gates_from(plan, acqs + [acq('x__n200__absent', 200, disp='failed')], {}, comp_only)
+    check('v1.2: an attempted failed run still fails outputs_ok', g['outputs_ok'] is False)
     comp_only['co_read']['orphans'] = [{'pid': 1, 'gone': False}]
     g = A.gates_from(plan, acqs, {}, comp_only)
     check('an orphan that survived the sweep fails lifecycle_ok', g['lifecycle_ok'] is False)

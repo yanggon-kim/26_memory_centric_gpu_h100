@@ -30,6 +30,11 @@ v1.1 (after the MI300X pilot, job 481167; the v1 gates are still computed and re
   (highest) native co-runner ratio on the same probe mask and GPU;
 - lifecycle also requires every owned process found by the per-attempt tag sweep to be gone.
 
+v1.2 (after MI300X auto job 483498): outputs_ok ignores steps never attempted (disposition not_run). An
+auto plan's gate runs after its pilot stage, when every production step is still unattempted; v1.1
+counted those 146 steps as incomplete runs, so outputs_ok and every release failed although all 18
+attempted pilot runs completed with one digest. Attempted runs that fail still fail the gate.
+
   analyze.py report --root <root> [--out <dir>]     tables + summary.md
   analyze.py gate   --root <pilot-root> --out gates.json
 """
@@ -502,7 +507,7 @@ def gates_from(plan, acqs, ptab, comp_only):
                    for v in comp_only.values())
     g['lifecycle_ok'] = bool(comp) and all(a.get('lifecycle_ok') for a in comp) and alone_ok
     q = [a for a in acqs if a.get('model') == 'qwen32b' and a['case'] == 'qwen32b_graph_b1_c4096' and a['mode'] == 'timing'
-         and not a.get('generated_tokens') and not a.get('profiled')]
+         and not a.get('generated_tokens') and not a.get('profiled') and a.get('disposition') != 'not_run']
     digests = {a.get('output_sha256') for a in q if a.get('disposition') == 'complete'}
     g['outputs_ok'] = bool(q) and all(a.get('disposition') == 'complete' for a in q) and len(digests) == 1
     g['outputs_detail'] = {'runs': len(q), 'complete': sum(a.get('disposition') == 'complete' for a in q),

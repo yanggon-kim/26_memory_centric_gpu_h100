@@ -270,7 +270,7 @@ def build_pilot(cohort, reduced=False):
 
 
 def production(p, st, models_blocks, boundary, energy_levels, e3_full_requires='release_e3_full',
-               e3_min_requires='release_e3_minimal'):
+               e3_min_requires='release_e3_minimal', e4=True):
     """Randomized complete blocks: lane i holds block i of one model (E2 levels + E3 cells), then E4/E5/E8."""
     lane_ids = [f'L{i}' for i in range(8)]
     if p.kind == 'production':  # the auto kind already proved placement in its pilot stage
@@ -294,7 +294,7 @@ def production(p, st, models_blocks, boundary, energy_levels, e3_full_requires='
             p.vllm(lane, st, exp, model, n, t, acq=b, block=b, requires=req if exp == 'e3' else 'release_e2')
     # after the blocks: E4 (3 acquisitions, one per lane triple), E5 and E8 spread over all lanes
     tail = []
-    for acq in range(3):
+    for acq in range(3 if e4 else 0):  # e4=False: the three E4 acquisitions already exist from an earlier job
         for n in LEVELS + ['competitor']:
             suite = e4_suite(n) if n != 'competitor' else [
                 ('comp_seqread4g', ['--mode', 'read', '--bytes', str(4 << 30), '--reps', '5']),
@@ -340,7 +340,7 @@ def finalize(p, src, args):
     longest = sum(max(v.values()) for v in stages.values())  # stages run one after another
     rates = {'mi300x': 8.0, 'mi325x': 12.8}  # allocation units per node-hour observed on this account
     plan = {
-        'version': 'cubw_v1.1', 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
+        'version': 'cubw_v1.2', 'e4_done_in': args.e4_done_in, 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
         'assignment': 'docs/amd/compute_bandwidth_followup_20261026.md',
         'full_cus': FULL, 'competitor_mask': COMPETITOR_MASK, 'levels': LEVELS, 'e3_levels': E3_LEVELS,
         'e3_treatments': E3_TREATMENTS, 'e3_minimal_subset': E3_MINIMAL, 'boundary_level': args.boundary,
@@ -381,7 +381,8 @@ def main(args):
         p = build_pilot(args.cohort)
     elif args.kind == 'production':
         p = Plan('production', args.cohort)
-        production(p, 'production', [('qwen32b', 5), ('qwen14b', 3)], args.boundary, sorted({304, args.boundary}))
+        production(p, 'production', [('qwen32b', 5), ('qwen14b', 3)], args.boundary, sorted({304, args.boundary}),
+                   e4=not args.e4_done_in)
     elif args.pilot == 'minimal':  # auto after a full pilot of this cohort: v1.1 re-pilot, gate, production
         p = build_minimal_pilot(args.cohort)
         p.kind = 'auto'
@@ -408,5 +409,6 @@ if __name__ == '__main__':
     q.add_argument('--pilot', choices=['reduced', 'minimal'], default='reduced', help='pilot stage of an auto plan')
     q.add_argument('--boundary', type=int, default=152, help='E2 boundary level used by E5/E8 (set after the pilot)')
     q.add_argument('--config-source', default='/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi300x')
+    q.add_argument('--e4-done-in', help='production only: omit E4; its 3 acquisitions are in this earlier job root')
     q.add_argument('--out', type=Path, required=True)
     main(q.parse_args())
