@@ -118,3 +118,21 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Clock gate passes for M1 1/16 and M6 6/56, so the results are observational.
   - Energy has 2/3 acquisitions per case (a0 hit an amdsmi file error at start), and rocprof-compute completed 5/13 sets.
   - All other families are complete at 3 acquisitions.
+
+## 2026-10-30 — MI300X auto 483498 done; v1.2 reader repair; production 487341 submitted
+
+- 483498 ran 06:26–06:39 on k002-003 (after ~45 h in the queue). Review:
+  [cubw_auto_review_20261030.md](cubw_auto_review_20261030.md).
+  - Pilot stage: 18/18 decoder runs complete with one digest. Placement and lifecycle pass.
+  - The v1.1 gate counted the 146 not-yet-attempted production steps as incomplete runs (reader defect), so
+    nothing was released. Only the ungated E4 ×3 ran in production (339/339 rc=0).
+  - leak_ok_v11 fails on measurement: relative 0.77–0.82 < 0.85. E3 stays unreleased on MI300X.
+- v1.2 (commit c7cf8aa9):
+  - outputs gate ignores unattempted steps.
+  - `plan.py --e4-done-in`.
+  - 25/25 fixtures pass.
+  - Re-gate of 483498: release_e2 and release_e5e8 true.
+- Submitted 487341 `cubw-mi300x-production` (mi3008x, 1:45:00, release c7cf8aa9, gates = v1.2 re-gate):
+  - Content: E2 Qwen32B ×5 / Qwen14B ×3 blocks, E5 ktrace, E8, boundary 200. No E4; E3 not released.
+- 483499 (MI325X auto, release 79d8b597) is kept in the queue. After it ends: re-gate with v1.2, then MI325X
+  production.
