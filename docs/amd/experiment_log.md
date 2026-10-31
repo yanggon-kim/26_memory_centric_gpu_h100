@@ -136,3 +136,17 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Content: E2 Qwen32B ×5 / Qwen14B ×3 blocks, E5 ktrace, E8, boundary 200. No E4; E3 not released.
 - 483499 (MI325X auto, release 79d8b597) is kept in the queue. After it ends: re-gate with v1.2, then MI325X
   production.
+
+## 2026-10-31 — MI325X auto 483499 done; production 489594 submitted
+
+- 483499 ran 03:57–04:13 on k002-001. Review: [cubw_mi325x_auto_review_20261031.md](cubw_mi325x_auto_review_20261031.md).
+- The pilot was clean: 21/21 decoder runs complete with one digest.
+- The same v1.1 gate defect blocked production; only E4 ×3 ran.
+- v1.2 re-gate:
+  - release_e2, release_e5e8 and **release_e3_minimal** are true;
+  - leak_ok_v11 passes on MI325X (0.87–0.97);
+  - the clock gate fails.
+- Submitted 489594 `cubw-mi325x-production` (mi3258x, 2:30:00, release 99bcd1ad):
+  - content: E2 Qwen32B ×5 / Qwen14B ×3, E3-minimal, E5 ktrace, E8, boundary 200;
+  - no E4.
+- MI300X production 487341 is still pending.
