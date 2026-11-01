@@ -22,6 +22,16 @@ processes); kernel-trace timelines stay. Leak probes gain placement-proven nativ
 (leak_suite) and E3 release uses leak_ok_v11 (scripts/amd/cubw/analyze.py). A "minimal" pilot stage
 re-proves only placement, lifecycle (fixed residual-process check and orphan sweep), leak references and
 Qwen32B outputs/clocks before the production stage of the same allocation.
+
+v1.3 extension (--kind auto --extension, after the production jobs 487341/489594), one allocation per cohort:
+  pilot stage   placement at the fine levels; leak test v2 (svc_bench_v4 per-CU probe on n..303 alone, beside
+                native read/fma co-runners on 0..n-1, beside a positive-control probe overlapping 8 probe CUs,
+                and beside the decoder at n), on two GPUs (MI300X) or one (MI325X cross-check)
+  gate          analyze.py gate: leak_ok_v2, release_e3_minimal_v2
+  production    E2-fine (Qwen32B, 8 blocks, levels 304/272/248/232/216/200/184/152); E6 decode with wvSplitK sized
+                for the active CUs (CUBW_CU_COUNT_OVERRIDE, 5 blocks); kernel-trace timelines at every fine level
+                (+ the override at 232/200); E6 kernel-shape controls x3 per level; pre-MALL counters on the shape
+                controls and on eager decode; MI300X only: E3-minimal if release_e3_minimal_v2
 """
 import argparse
 import hashlib
@@ -39,6 +49,9 @@ CASE = {'qwen32b': 'qwen32b_graph_b1_c4096', 'qwen14b': 'qwen14b_graph_b1_c4096'
         'qwen7b_b8': 'qwen7b_graph_b8_c4096', 'qwen32b_c16k': 'qwen32b_graph_b1_c16384', 'mistral7b': 'mistral7b_graph_b1_c4096'}
 EST = {'qwen32b': 170, 'qwen14b': 125, 'bridge': 95, 'qwen7b_b8': 120, 'mistral7b': 110, 'qwen32b_c16k': 330}
 SEED = 20261026
+FINE = [304, 272, 248, 232, 216, 200, 184, 152]      # extension: per-XCD 38/34/31/29/27/25/23/19
+OVERRIDE_LEVELS = [272, 248, 232, 216, 200, 184, 152]
+EXT_COUNTERS = ['FETCH_SIZE', 'TCC_EA0_RDREQ', 'TCC_EA0_RDREQ_LEVEL', 'GRBM_GUI_ACTIVE']
 
 
 def derived_configs(src):
@@ -51,8 +64,11 @@ def derived_configs(src):
     en10 = dict(en, trials=10, energy_generated_tokens=2048, energy_cases=[[1, 4096]], stage='cubw_v1_derived',
                 derived_from='configs_energy/qwen32b_graph_b1_c4096.json',
                 purpose='E8 matched long-window energy: 10 trials x 2047 decode ticks at B1/C4096')
+    eager = json.loads((src / 'configs_profile/qwen32b_eager_b1_c4096.json').read_text())
+    eager = dict(eager, stage='cubw_v13_derived', derived_from='configs_profile/qwen32b_eager_b1_c4096.json',
+                 purpose='extension: pre-MALL counters on eager decode (graph-mode --pmc unavailable)')
     out = {}
-    for name, cfg in {'configs/qwen32b_graph_b1_c16384.json': c16, 'configs_energy/qwen32b_graph_b1_c4096_t10.json': en10}.items():
+    for name, cfg in {'configs/qwen32b_eager_b1_c4096_profile.json': eager,'configs/qwen32b_graph_b1_c16384.json': c16, 'configs_energy/qwen32b_graph_b1_c4096_t10.json': en10}.items():
         cfg.pop('config_sha256', None)
         cfg['config_sha256'] = hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()
         out[name] = cfg
@@ -69,7 +85,7 @@ class Plan:
         return k
 
     def vllm(self, lane, stage, exp, model, n, treatment='absent', acq=0, block=None, mode='timing', tokens=None,
-             profile=None, comp_mask=None, requires=None, config_dir='configs', config=None, tag=''):
+             profile=None, comp_mask=None, requires=None, config_dir='configs', config=None, tag='', extra_env=None):
         case = CASE[model]
         cfg = config or f'{config_dir}/{case}.json'
         cell = f'{case}__n{n}__{treatment}{tag}'
@@ -93,6 +109,8 @@ class Plan:
             s['competitor_mask'] = comp_mask
         if requires:
             s['requires'] = requires
+        if extra_env:
+            s['extra_env'] = extra_env
         return s
 
     def native(self, lane, stage, exp, name, args, mask, acq=0, est=8, timeout=120, expect_failure=False, requires=None,
@@ -105,9 +123,12 @@ class Plan:
             s['requires'] = requires
         return s
 
-    def shell(self, lane, stage, exp, name, cmd, est=60, timeout=300):
-        return self.add(lane, stage, exp, kind='shell', id=f'{exp}:{name}', cell=name, cmd=cmd,
-                        out=f'{exp}/{name}', est_s=est, timeout_s=timeout, no_retry=True)
+    def shell(self, lane, stage, exp, name, cmd, est=60, timeout=300, requires=None, **extra):
+        s = self.add(lane, stage, exp, kind='shell', id=f'{exp}:{name}', cell=name, cmd=cmd,
+                     out=f'{exp}/{name}', est_s=est, timeout_s=timeout, no_retry=True, **extra)
+        if requires:
+            s['requires'] = requires
+        return s
 
     def competitor_only(self, lane, stage, exp, name, treatment, seconds, comp_mask=None, acq=0, corunner=None):
         s = self.add(lane, stage, exp, kind='competitor_only', id=f'{exp}:{name}:a{acq}', cell=name, acquisition=acq,
@@ -140,10 +161,10 @@ def e4_suite(n):
     return [(f'n{n}_{name}', args) for name, args in rows]
 
 
-def placement_core(plan, stage, lanes=None):
+def placement_core(plan, stage, lanes=None, levels=None):
     """Per-GPU placement proof for every decoder level and the competitor partition (first steps of each lane)."""
     for lane in lanes or [f'L{i}' for i in range(8)]:
-        for n in LEVELS:
+        for n in levels or LEVELS:
             plan.native(lane, stage, 'e1_placement', f'{lane}_n{n}', ['--mode', 'placement', '--blocks', '2432',
                         '--trials', '5', '--expect-cus', str(n)], mask_for(n), level=n)
         plan.native(lane, stage, 'e1_placement', f'{lane}_competitor_232-303', ['--mode', 'placement', '--blocks', '2432',
@@ -329,6 +350,85 @@ def production(p, st, models_blocks, boundary, energy_levels, e3_full_requires='
                    config='configs_energy/qwen32b_graph_b1_c4096_t10.json', tag='__energy', requires='release_e5e8')
 
 
+def leak_suite_v2(plan, lane, stage, rng):
+    """Per-CU probe (one full-LDS workgroup per CU) on n..303: alone, beside native read/fma co-runners on 0..n-1,
+    beside a positive-control probe on 0..n+7 (8 shared CUs: the test must see them), beside the decoder at n."""
+    for n in (232, 152):
+        probe = f'{n}-303'
+        steps = [lambda: plan.competitor_only(lane, stage, 'e1_leak_v2', f'alone_cuprobe_{probe}_{lane}', 'cuprobe', 30,
+                                              comp_mask=probe)]
+        for co, mask in (('mem100', f'0-{n - 1}'), ('arith100', f'0-{n - 1}'), ('cuprobe', f'0-{n + 7}')):
+            steps.append(lambda co=co, mask=mask: plan.competitor_only(
+                lane, stage, 'e1_leak_v2', f'corun_{co}_{mask}_cuprobe_{probe}_{lane}', 'cuprobe', 30, comp_mask=probe,
+                corunner={'treatment': co, 'mask': mask}))
+        steps.append(lambda: plan.vllm(lane, stage, 'e1_leak_v2', 'qwen32b', n, 'cuprobe', comp_mask=probe, tag=f'_{lane}'))
+        rng.shuffle(steps)
+        for f in steps:
+            f()
+
+
+def e6_cmd(n, out, light=False, counter=None):
+    env = 'HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES,CUBW_STEP_TAG=$CUBW_STEP_TAG'
+    if n < FULL:
+        env += f',HSA_CU_MASK=$HIP_VISIBLE_DEVICES:0-{n - 1}'
+    args = f'scripts/amd/cubw/e6_shapes.py --n-active {n} --out "$CUBW_STEP_DIR/{out}"' + (' --light' if light else '')
+    if counter:
+        return (f'AMD_ENTRY=rocprofv3 AMD_EXTRA_ENV="{env}" scripts/amd/vllm_in_container.sh --pmc {counter} '
+                f'--kernel-trace --output-format csv -d "$CUBW_STEP_DIR/rocprof" -o p -- python3 {args}')
+    return f'AMD_EXTRA_ENV="{env}" scripts/amd/vllm_in_container.sh {args}'
+
+
+def build_extension(cohort):
+    p = Plan('auto', cohort)
+    lanes = [f'L{i}' for i in range(8)]
+    st = 'pilot'
+    placement_core(p, st, levels=FINE)
+    rng = random.Random(f'{SEED}:extension:{cohort}')
+    for lane in (('L0', 'L1') if cohort == 'mi300x' else ('L0',)):
+        leak_suite_v2(p, lane, st, rng)
+    st = 'production'
+    # E2-fine blocks (8) and E6 decode with the kernel sized for the active CUs (5 blocks), paired within a GPU
+    for b, lane in enumerate(lanes):
+        rng = random.Random(f'{SEED}:{cohort}:extension:block{b}')
+        cells = [('e2', n, None) for n in FINE]
+        if b in (3, 4, 5, 6, 7):
+            cells += [('e6_decode', n, n) for n in OVERRIDE_LEVELS]
+        rng.shuffle(cells)
+        for exp, n, cu in cells:
+            p.vllm(lane, st, exp, 'qwen32b', n, acq=b, block=b, requires='release_e2', tag=f'__cu{cu}' if cu else '',
+                   extra_env=[f'CUBW_CU_COUNT_OVERRIDE={cu}'] if cu else None)
+    # MI300X: E3-minimal (Qwen32B 232/152 x absent/mem50/mem100/arith100, 5 blocks) if the v2 leak test passes
+    if cohort == 'mi300x':
+        for b, lane in enumerate(lanes[:5]):
+            rng = random.Random(f'{SEED}:{cohort}:extension:e3:block{b}')
+            cells = [(n, t) for n in E3_MINIMAL['levels'] for t in E3_MINIMAL['treatments']]
+            rng.shuffle(cells)
+            for n, t in cells:
+                p.vllm(lane, st, 'e3', 'qwen32b', n, t, acq=b, block=b, requires='release_e3_minimal_v2')
+    # tail work spread over the lanes with the fewest decoder cells first
+    order = iter((lanes[5:] + lanes[:5]) * 12)
+    for n in FINE:
+        p.vllm(next(order), st, 'e6_timeline', 'qwen32b', n, profile={'kind': 'kernel_trace'}, tag='__ktrace',
+               requires='release_e2')
+    for n in (232, 200):
+        p.vllm(next(order), st, 'e6_timeline', 'qwen32b', n, profile={'kind': 'kernel_trace'}, tag=f'__cu{n}__ktrace',
+               requires='release_e2', extra_env=[f'CUBW_CU_COUNT_OVERRIDE={n}'])
+    for acq in range(3):
+        for n in FINE:
+            p.shell(next(order), st, 'e6_shapes', f'n{n}_a{acq}', e6_cmd(n, 'e6.json'), est=180, timeout=900,
+                    level=n, acquisition=acq)
+    for n in (304, 232, 200, 152):
+        for c in EXT_COUNTERS:
+            p.shell(next(order), st, 'e6_counters', f'n{n}_{c}', e6_cmd(n, 'e6.json', light=True, counter=c), est=150,
+                    timeout=900, level=n, counter=c)
+    for n in (304, 200):
+        for c in ('FETCH_SIZE', 'TCC_EA0_RDREQ_LEVEL'):
+            p.vllm(next(order), st, 'e6_eager_counters', 'qwen32b', n, profile={'kind': 'counters', 'counters': [c]},
+                   config='configs/qwen32b_eager_b1_c4096_profile.json', tag=f'__eager__{c}', requires='release_e2')
+    p.extension = True
+    return p
+
+
 def finalize(p, src, args):
     lanes = {f'L{i}': {'gpu_index': i} for i in range(8)}
     budget, stages = {}, {}
@@ -340,9 +440,11 @@ def finalize(p, src, args):
     longest = sum(max(v.values()) for v in stages.values())  # stages run one after another
     rates = {'mi300x': 8.0, 'mi325x': 12.8}  # allocation units per node-hour observed on this account
     plan = {
-        'version': 'cubw_v1.2', 'e4_done_in': args.e4_done_in, 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
+        'version': 'cubw_v1.3' if getattr(p, 'extension', False) else 'cubw_v1.2', 'e4_done_in': args.e4_done_in,
+        'extension': getattr(p, 'extension', False), 'fine_levels': FINE if getattr(p, 'extension', False) else None, 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
         'assignment': 'docs/amd/compute_bandwidth_followup_20261026.md',
-        'full_cus': FULL, 'competitor_mask': COMPETITOR_MASK, 'levels': LEVELS, 'e3_levels': E3_LEVELS,
+        'full_cus': FULL, 'competitor_mask': COMPETITOR_MASK,
+        'levels': FINE if getattr(p, 'extension', False) else LEVELS, 'e3_levels': E3_LEVELS,
         'e3_treatments': E3_TREATMENTS, 'e3_minimal_subset': E3_MINIMAL, 'boundary_level': args.boundary,
         'lanes': lanes, 'derived_configs': derived_configs(src), 'config_source': str(src),
         'statistics': {'warmups': 3, 'trials_per_acquisition': 10, 'acquisitions': 'one per block/lane; >=3 per cell',
@@ -359,7 +461,14 @@ def finalize(p, src, args):
             'release_e2': 'placement_ok and outputs_ok (observational label if clock_ok fails)',
             'release_e3_full': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v11 and clock_ok',
             'release_e3_minimal': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v11',
-            'release_e5e8': 'outputs_ok'},
+            'release_e5e8': 'outputs_ok',
+            'leak_ok_v2': 'v1.3, predeclared before any per-CU data: per-CU probe rate ratio r_c = rate_c(beside X) / '
+                          'rate_c(probe alone), same GPU and probe mask; q_c = r_c / median_c(r_c). Every run covers all '
+                          '304-n probe CUs. Sensitivity: the positive-control run (probe co-runner sharing 8 CUs) has >= 4 '
+                          'CUs with q_c < 0.85, else the test is insensitive and leak_ok_v2 is false. Pass iff, for every '
+                          'decoder run, min_c q_c >= (lowest min_c q_c of the native read/fma co-runner runs on the same '
+                          'GPU and mask) - 0.05',
+            'release_e3_minimal_v2': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v2'},
         'unavailable': {'e5_graph_counters': 'rocprofv3 --pmc on graph-mode vLLM decode failed in both MI300X pilot '
                                               'attempts (illegal memory access; hang to timeout), job 481167'},
         'retry_policy': 'two attempts maximum, only for execution/tool failures; correctness failures never retried',
@@ -383,6 +492,8 @@ def main(args):
         p = Plan('production', args.cohort)
         production(p, 'production', [('qwen32b', 5), ('qwen14b', 3)], args.boundary, sorted({304, args.boundary}),
                    e4=not args.e4_done_in)
+    elif args.extension:
+        p = build_extension(args.cohort)
     elif args.pilot == 'minimal':  # auto after a full pilot of this cohort: v1.1 re-pilot, gate, production
         p = build_minimal_pilot(args.cohort)
         p.kind = 'auto'
@@ -410,5 +521,6 @@ if __name__ == '__main__':
     q.add_argument('--boundary', type=int, default=152, help='E2 boundary level used by E5/E8 (set after the pilot)')
     q.add_argument('--config-source', default='/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/amd_20261018_mi300x')
     q.add_argument('--e4-done-in', help='production only: omit E4; its 3 acquisitions are in this earlier job root')
+    q.add_argument('--extension', action='store_true', help='auto: v1.3 extension (leak v2, E2-fine, E6, counters)')
     q.add_argument('--out', type=Path, required=True)
     main(q.parse_args())

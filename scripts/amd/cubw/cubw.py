@@ -23,6 +23,11 @@ scripts/gpu_target.py rule (VRAM >= 64 MiB or GFX engine time on the target GPU)
 KFD process on the node; every owned process carries a per-attempt CUBW_STEP_TAG and processes that
 escaped their process group (rocprofv3 left PPID=1 orphans) are found by that tag, killed and recorded.
 
+v1.3 (follow-up extension, after the production jobs): 'cuprobe' treatment (svc_bench_v4 per-CU probe,
+leak test v2) runs from CUBW_BENCH4; a vllm step may carry extra_env (e.g. CUBW_CU_COUNT_OVERRIDE for the E6
+correctly-sized-kernel decoder, read by scripts/sitecustomize.py inside the container); shell steps carry a
+per-attempt CUBW_STEP_TAG and get the same orphan sweep and residual-process record as other steps.
+
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
 import argparse
@@ -38,11 +43,12 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / 'scripts'))
 WORK = Path(os.environ.get('WORK', '/work1/proj_blaisetine/yanggon'))
 BIN = Path(os.environ.get('CUBW_BENCH', WORK / 'bin/svc_bench_gfx942_v3'))
+BIN4 = Path(os.environ.get('CUBW_BENCH4', WORK / 'bin/svc_bench_gfx942_v4'))
 COMPETITOR_BYTES = 1 << 30  # 1 GiB read footprint: far above the 256 MiB MALL
 TREATMENTS = {  # name -> (competitor mode, requested duty); None = competitor absent
     'absent': None, 'inactive': ('idle', 1.0),
     'mem25': ('read', 0.25), 'mem50': ('read', 0.50), 'mem75': ('read', 0.75), 'mem100': ('read', 1.00),
-    'arith100': ('fma', 1.00), 'leakprobe': ('fma', 1.00),
+    'arith100': ('fma', 1.00), 'leakprobe': ('fma', 1.00), 'cuprobe': ('cuprobe', 1.00),
 }
 
 
@@ -139,10 +145,10 @@ def stop_group(proc, grace=15):
 def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
     mode, duty = TREATMENTS[step['treatment']]
     mask = step.get('competitor_mask') or step['plan_competitor_mask']
-    args = [str(BIN), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
+    args = [str(BIN4 if mode == 'cuprobe' else BIN), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
     if mode == 'read':
         args += ['--bytes', str(COMPETITOR_BYTES)]
-    elif mode == 'fma':
+    elif mode in ('fma', 'cuprobe'):
         args += ['--iters', '2000']
     env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
     out = open(adir / f'{name}.jsonl', 'w')
@@ -197,7 +203,7 @@ def run_attempt(step, gpu, root, adir, plan):
             rec['command_completed'] = False
             rec['failure_class'] = 'execution:competitor_start'
             return rec
-    extra = [f'CUBW_STEP_TAG={tag}']
+    extra = [f'CUBW_STEP_TAG={tag}'] + list(step.get('extra_env', []))
     mask = decoder_mask(step['decoder_cus'], plan['full_cus'])
     if mask:
         extra.append(f"HSA_CU_MASK={gpu['index']}:{mask}")
@@ -287,8 +293,10 @@ def run_native(step, gpu, adir):
 
 
 def run_shell(step, gpu, adir):
-    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), CUBW_STEP_DIR=str(adir))
-    rec = {'step': step['id'], 'attempt_dir': str(adir), 'kind': 'shell', 'cmd': step['cmd'], 't_start': now()}
+    tag = f"{os.getpid()}-{adir.parent.name}-{adir.name}-{int(now() * 1e6)}"
+    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), CUBW_STEP_DIR=str(adir), CUBW_STEP_TAG=tag)
+    rec = {'step': step['id'], 'attempt_dir': str(adir), 'kind': 'shell', 'cmd': step['cmd'], 't_start': now(),
+           'step_tag': tag}
     with open(adir / 'out.txt', 'w') as out:
         proc = subprocess.Popen(step['cmd'], shell=True, env=env, cwd=REPO, stdout=out, stderr=subprocess.STDOUT,
                                 start_new_session=True)
@@ -299,6 +307,8 @@ def run_shell(step, gpu, adir):
             rec['timed_out'] = True
             rec['stop'] = stop_group(proc, grace=2)
     rec.update(t_end=now(), returncode=proc.returncode, command_completed=proc.returncode == 0 and not rec['timed_out'])
+    rec['orphans'] = sweep_tag(tag)
+    rec['residual_gpu_pids'] = gpu_processes(gpu['uuid'])
     return rec
 
 

@@ -231,9 +231,40 @@ def test_v11_gates():
     check('an orphan that survived the sweep fails lifecycle_ok', g['lifecycle_ok'] is False)
 
 
+def test_v13_leak_v2():
+    """v1.3: per-CU probe test is predeclared; uniform contention passes, CU-local loss fails, insensitivity fails."""
+    cus = [str(k) for k in range(72)]
+    alone = {c: 100.0 for c in cus}
+    def run(base, low=(), low_val=50.0):
+        return {c: (low_val if c in low else base) for c in cus}
+    natives = [run(80.0), run(90.0)]
+    positives = [run(95.0, low=cus[:8])]
+    r = A.leak_v2_eval(alone, natives, positives, [run(60.0)], 72)
+    check('uniform decoder slowdown passes leak_ok_v2', r['ok'] is True and r['sensitive'], str(r['decoder_min_q']))
+    r = A.leak_v2_eval(alone, natives, positives, [run(60.0, low=cus[:3], low_val=40.0)], 72)
+    check('CU-local decoder loss fails leak_ok_v2', r['ok'] is False and r['decoder_cus_below'] == [3])
+    r = A.leak_v2_eval(alone, natives, [run(95.0)], [run(60.0)], 72)
+    check('insensitive positive control fails leak_ok_v2', r['ok'] is False and not r['sensitive'])
+    r = A.leak_v2_eval(alone, natives, positives, [{c: 60.0 for c in cus[:70]}], 72)
+    check('incomplete probe coverage fails leak_ok_v2', r['ok'] is False)
+    d = Path(tempfile.mkdtemp(prefix='cubw_v13_'))
+    lines = [{'event': 'started'}]
+    for i in range(3):
+        t0, t1 = int((10 + i) * NS), int((11 + i) * NS)
+        lines.append({'t0_unix_ns': t0, 't1_unix_ns': t1, 't0_mono_ns': t0, 't1_mono_ns': t1, 'gb_per_s': 0.0,
+                      'tflop_per_s': 1.0, 'busy_fraction': 1.0})
+        lines.append({'cu_window_t1_unix_ns': t1, 'cu_blocks': {'5': 10 * (i + 1), '7': 20}})
+    lines.append({'event': 'stopped'})
+    (d / 'c.jsonl').write_text(''.join(json.dumps(x) + '\n' for x in lines))
+    wins, ev = A.competitor_windows(d / 'c.jsonl')
+    rates = A.cu_rates(wins)
+    check('per-CU lines join their windows and are not windows', len(wins) == 3 and rates == {'5': 20.0, '7': 20.0},
+          str(rates))
+
+
 if __name__ == '__main__':
     for f in (test_status_separation, test_nesting, test_missing_clocks_and_coverage, test_overlapping_windows, test_gates,
-              test_v11_gates):
+              test_v11_gates, test_v13_leak_v2):
         print(f'-- {f.__name__}')
         f()
     print(f'{check.failed} failures')

@@ -49,7 +49,7 @@ print('missing configs:', missing)
 sys.exit(1 if missing else 0)
 EOF
 [ $? = 0 ] || { status "aborting: missing configs"; exit 3; }
-for b in svc_bench_gfx942 svc_bench_gfx942_v2 svc_bench_gfx942_v3; do
+for b in svc_bench_gfx942 svc_bench_gfx942_v2 svc_bench_gfx942_v3 svc_bench_gfx942_v4; do
   [ -x "$WORK/bin/$b" ] || { status "aborting: missing $WORK/bin/$b"; exit 3; }
 done
 
@@ -65,7 +65,7 @@ if [ "$DRY" = 1 ]; then
 fi
 
 source scripts/amd/env.sh
-export CUBW_BENCH=$WORK/bin/svc_bench_gfx942_v3
+export CUBW_BENCH=$WORK/bin/svc_bench_gfx942_v3 CUBW_BENCH4=$WORK/bin/svc_bench_gfx942_v4
 expect=MI300X; [ "$cohort" = mi325x ] && expect=MI325X
 status "preflight start on $(hostname)"
 if ! $PY scripts/amd/preflight_node.py --root "$root" --expect-name $expect > "$root/preflight.out" 2>&1; then
