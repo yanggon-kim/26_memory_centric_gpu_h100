@@ -160,3 +160,17 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - E8: decode at n=200 is +17% for B8 and +42% for prefill.
 - Energy: 13.8 J/token at 752 W for both n=304 and n=200.
 - MI325X production 489594 is still pending.
+
+## 2026-11-01 — MI325X production 489594 done; follow-up results report
+
+- 489594 ran 10:37–11:28 on k002-001. Review:
+  [cubw_mi325x_production_review_20261101.md](cubw_mi325x_production_review_20261101.md).
+  - 167/167 released steps rc=0 on the first attempt (E2, E3-minimal, E5, E8); outputs 66/66 with one digest.
+  - The clock gate fails (gfx ×1.28), so all results are observational.
+- Versioned results report: [compute_bandwidth_followup_results_20261101.md](compute_bandwidth_followup_results_20261101.md).
+- No cubw jobs are queued.
+- Outstanding:
+  - durable off-cluster raw archive;
+  - E6 and E7 model fit (not run);
+  - fixed-clock qualification (unavailable);
+  - the n=200 vs 232 anomaly.
