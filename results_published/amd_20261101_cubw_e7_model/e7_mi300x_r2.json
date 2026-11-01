@@ -1,0 +1,123 @@
+{
+ "cohort": "mi300x",
+ "revision": "r2 constrained",
+ "scope": "E7 (CPU only): one-parameter service-response model of the CU-restriction penalty, fitted on a training\nsubset and checked on held-out models and CU levels, with blind predictions for levels not yet measured.\n\nModel (conditional, fixed other cost): R(n) = T(n)/T(304) = (1 - s) + s * P_x(n), where P_x(n) is the native\npenalty of one E4 service control x at the same CU allocation (metric(304)/metric(n) for rates,\nmetric(n)/metric(304) for latencies) and s is the fraction of decode time that scales like x. s and x are\nstatistical fit quantities, not a physical partition of decode time.\n\nPredeclared procedure (written before the v1.3 extension jobs measure 272/248/216/184):\n  training     Qwen32B production E2 point ratios at n = 232, 152, 96 (one cohort at a time)\n  fit          s by least squares through the origin on (P_x - 1, R - 1); x chosen among all E4 rows by\n               training RMSE (one parameter per row)\n  held-out     Qwen32B n = 200 (same jobs, not used in the fit); Qwen14B at every level (other model)\n  blind        Qwen32B n = 272, 248, 216, 184 with P_x linearly interpolated in n between measured E4 levels\n  acceptance   a held-out or blind point is predicted when |R_obs - R_pred| <= 0.02 + (CI half-width of R_obs);\n               the model is validated on a cohort only if every held-out and blind point is predicted\n\nRevision r2 (made after seeing the unconstrained r1 fit, so its held-out checks on existing data are not\nblind; only the fine-level predictions are): r1 selected latency rows and rows with s < 0 or s > 1, which\nhave no meaning as a fraction of decode time. r2 (--constrained) admits throughput controls only and requires\n0 <= s <= 1. Both are reported.\n\n  e7_model.py --cohort mi300x --e4 <auto tables.json> --e2 <production tables.json> [--e2-blind <extension tables.json>]\n              --out e7_mi300x.json",
+ "e4_source": "results_published/amd_20261030_mi300x_cubw_v1_auto_job483498/cubw_tables.json",
+ "e2_source": "results_published/amd_20261031_mi300x_cubw_v1_production_job487341/cubw_tables.json",
+ "training": {
+  "232": 1.0239322722536408,
+  "152": 1.0703218241071994,
+  "96": 1.0825708110073595
+ },
+ "fits": {
+  "fma": {
+   "s": 0.08451476602516582,
+   "train_rmse": 0.016136136026019068
+  },
+  "gather1g": {
+   "s": 0.1009998726501544,
+   "train_rmse": 0.025860766741238255
+  },
+  "grid1216": {
+   "s": 0.3308413643689617,
+   "train_rmse": 0.034392099198763765
+  },
+  "ilp1": {
+   "s": 0.12625670252964363,
+   "train_rmse": 0.013595043561024096
+  },
+  "ilp16": {
+   "s": 0.2244362423559185,
+   "train_rmse": 0.031209283229831207
+  },
+  "ilp2": {
+   "s": 0.22962666808065232,
+   "train_rmse": 0.035048466491865486
+  },
+  "ilp4": {
+   "s": 0.19804583495120284,
+   "train_rmse": 0.028416592726103612
+  },
+  "ilp8": {
+   "s": 0.22864065939149836,
+   "train_rmse": 0.03859022661180801
+  },
+  "mfma": {
+   "s": 0.05392727824474443,
+   "train_rmse": 0.016478762864331278
+  },
+  "reuse32m": {
+   "s": 0.08617486981860932,
+   "train_rmse": 0.017677426569693927
+  },
+  "reuse8m": {
+   "s": 0.05910698866371097,
+   "train_rmse": 0.016627253908694576
+  },
+  "seqread4g": {
+   "s": 0.5014271207587452,
+   "train_rmse": 0.003626232920432818
+  },
+  "stride16": {
+   "s": 0.2138255338197734,
+   "train_rmse": 0.02289454821892897
+  }
+ },
+ "selected_control": "seqread4g",
+ "s": 0.5014271207587452,
+ "held_out": [
+  {
+   "set": "held-out level (Qwen32B)",
+   "n": 200,
+   "observed": 1.0118477745640415,
+   "ci_half_width": 0.0016515636354414998,
+   "predicted": 1.0225667518914874,
+   "residual": -0.010718977327445867,
+   "predicted_within_tolerance": true
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 96,
+   "observed": 1.1015984800489236,
+   "ci_half_width": 0.004699549110853352,
+   "predicted": 1.0791980225012998,
+   "residual": 0.022400457547623764,
+   "predicted_within_tolerance": true
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 152,
+   "observed": 1.1065075672879332,
+   "ci_half_width": 0.0028792892743212395,
+   "predicted": 1.0720121772466467,
+   "residual": 0.034495390041286544,
+   "predicted_within_tolerance": false
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 200,
+   "observed": 1.026472005036058,
+   "ci_half_width": 0.0028093275595014733,
+   "predicted": 1.0225667518914874,
+   "residual": 0.003905253144570686,
+   "predicted_within_tolerance": true
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 232,
+   "observed": 1.0510433277685185,
+   "ci_half_width": 0.003548587176886775,
+   "predicted": 1.0289537958806931,
+   "residual": 0.022089531887825364,
+   "predicted_within_tolerance": true
+  }
+ ],
+ "blind_predictions": {
+  "272": 1.0128683537247525,
+  "248": 1.0225196190183168,
+  "216": 1.0257602738860903,
+  "184": 1.0390485603432071
+ },
+ "blind_check": null,
+ "validated": false
+}

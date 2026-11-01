@@ -1,0 +1,159 @@
+{
+ "cohort": "mi325x",
+ "revision": "r1 unconstrained",
+ "scope": "E7 (CPU only): one-parameter service-response model of the CU-restriction penalty, fitted on a training\nsubset and checked on held-out models and CU levels, with blind predictions for levels not yet measured.\n\nModel (conditional, fixed other cost): R(n) = T(n)/T(304) = (1 - s) + s * P_x(n), where P_x(n) is the native\npenalty of one E4 service control x at the same CU allocation (metric(304)/metric(n) for rates,\nmetric(n)/metric(304) for latencies) and s is the fraction of decode time that scales like x. s and x are\nstatistical fit quantities, not a physical partition of decode time.\n\nPredeclared procedure (written before the v1.3 extension jobs measure 272/248/216/184):\n  training     Qwen32B production E2 point ratios at n = 232, 152, 96 (one cohort at a time)\n  fit          s by least squares through the origin on (P_x - 1, R - 1); x chosen among all E4 rows by\n               training RMSE (one parameter per row)\n  held-out     Qwen32B n = 200 (same jobs, not used in the fit); Qwen14B at every level (other model)\n  blind        Qwen32B n = 272, 248, 216, 184 with P_x linearly interpolated in n between measured E4 levels\n  acceptance   a held-out or blind point is predicted when |R_obs - R_pred| <= 0.02 + (CI half-width of R_obs);\n               the model is validated on a cohort only if every held-out and blind point is predicted\n\nRevision r2 (made after seeing the unconstrained r1 fit, so its held-out checks on existing data are not\nblind; only the fine-level predictions are): r1 selected latency rows and rows with s < 0 or s > 1, which\nhave no meaning as a fraction of decode time. r2 (--constrained) admits throughput controls only and requires\n0 <= s <= 1. Both are reported.\n\n  e7_model.py --cohort mi300x --e4 <auto tables.json> --e2 <production tables.json> [--e2-blind <extension tables.json>]\n              --out e7_mi300x.json",
+ "e4_source": "results_published/amd_20261031_mi325x_cubw_v1_auto_job483499/cubw_tables.json",
+ "e2_source": "results_published/amd_20261101_mi325x_cubw_v1_production_job489594/cubw_tables.json",
+ "training": {
+  "232": 1.0739199106831991,
+  "152": 1.1868390124123893,
+  "96": 1.1855443444371194
+ },
+ "fits": {
+  "chase_c1": {
+   "s": -3.6423078781428018,
+   "train_rmse": 0.018763863534217173
+  },
+  "chase_c19456": {
+   "s": 3.3821615572435735,
+   "train_rmse": 0.1304229200935994
+  },
+  "chase_c304": {
+   "s": -4.594822993759666,
+   "train_rmse": 0.050305537335262815
+  },
+  "chase_c4864": {
+   "s": -3.3779681682543616,
+   "train_rmse": 0.012317751741467986
+  },
+  "fma": {
+   "s": 0.15040726819210903,
+   "train_rmse": 0.04798717732171039
+  },
+  "gather1g": {
+   "s": 0.2107216827873544,
+   "train_rmse": 0.061932489851581
+  },
+  "grid1216": {
+   "s": 0.5929060280896191,
+   "train_rmse": 0.06655011143625195
+  },
+  "grid304": {
+   "s": 1.5043886965419973,
+   "train_rmse": 0.02911457527690418
+  },
+  "grid9728": {
+   "s": 2.6809111014416276,
+   "train_rmse": 0.1307209522174356
+  },
+  "ilp1": {
+   "s": 0.27196303011045314,
+   "train_rmse": 0.046945828637441754
+  },
+  "ilp16": {
+   "s": 0.3963684557875719,
+   "train_rmse": 0.08784182984941259
+  },
+  "ilp2": {
+   "s": 0.3684732138203599,
+   "train_rmse": 0.08136269748207359
+  },
+  "ilp4": {
+   "s": 0.36486114830638416,
+   "train_rmse": 0.08046827538638772
+  },
+  "ilp8": {
+   "s": 0.4012801293063102,
+   "train_rmse": 0.093758743828787
+  },
+  "mfma": {
+   "s": 0.09612719315909055,
+   "train_rmse": 0.04058980876752092
+  },
+  "reuse128m": {
+   "s": -1.2255113411948013,
+   "train_rmse": 0.11246419487362534
+  },
+  "reuse32m": {
+   "s": 0.19219480953762094,
+   "train_rmse": 0.05598661876866538
+  },
+  "reuse512m": {
+   "s": -10.405371815321143,
+   "train_rmse": 0.11363884270243928
+  },
+  "reuse8m": {
+   "s": 0.12437262011470654,
+   "train_rmse": 0.04404463439251375
+  },
+  "seqread4g": {
+   "s": 0.9160476319579723,
+   "train_rmse": 0.01802772170138924
+  },
+  "stride16": {
+   "s": 0.2563898444206663,
+   "train_rmse": 0.0593958793267695
+  },
+  "stride4": {
+   "s": 2.911951161488531,
+   "train_rmse": 0.011289735466837177
+  }
+ },
+ "selected_control": "stride4",
+ "s": 2.911951161488531,
+ "held_out": [
+  {
+   "set": "held-out level (Qwen32B)",
+   "n": 200,
+   "observed": 1.0559418774447005,
+   "ci_half_width": 0.022311254973088168,
+   "predicted": 1.1737673284875865,
+   "residual": -0.117825451042886,
+   "predicted_within_tolerance": false
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 96,
+   "observed": 1.1696210851782018,
+   "ci_half_width": 0.0013123067966793744,
+   "predicted": 1.1960140908998127,
+   "residual": -0.02639300572161085,
+   "predicted_within_tolerance": false
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 152,
+   "observed": 1.2218483844914254,
+   "ci_half_width": 0.04359759694135268,
+   "predicted": 1.1717441284501686,
+   "residual": 0.05010425604125679,
+   "predicted_within_tolerance": true
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 200,
+   "observed": 1.0465219498220555,
+   "ci_half_width": 0.0028258590993874844,
+   "predicted": 1.1737673284875865,
+   "residual": -0.12724537866553098,
+   "predicted_within_tolerance": false
+  },
+  {
+   "set": "held-out model (Qwen14B)",
+   "n": 232,
+   "observed": 1.1331914207607277,
+   "ci_half_width": 0.05831070632629609,
+   "predicted": 1.0806209007523977,
+   "residual": 0.05257052000832996,
+   "predicted_within_tolerance": true
+  }
+ ],
+ "blind_predictions": {
+  "272": 1.0358315114455103,
+  "248": 1.0627051450296425,
+  "216": 1.1271941146199922,
+  "184": 1.1730929284751137
+ },
+ "blind_check": null,
+ "validated": false
+}

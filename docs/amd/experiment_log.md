@@ -174,3 +174,17 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - E6 and E7 model fit (not run);
   - fixed-clock qualification (unavailable);
   - the n=200 vs 232 anomaly.
+
+## 2026-11-01 — v1.3 extension: CPU work and two GPU jobs
+
+- Plan, pre-registration and CPU results: [cubw_extension_plan_20261101.md](cubw_extension_plan_20261101.md).
+- E6 kernel identification (CPU): wvSplitK takes ~84% of decode kernel time on both SKUs; it uses full LDS
+  (one workgroup per CU) and is sized for 304 CUs under any mask.
+- Leak test v2 (per-CU probe) passed the MI210 smoke test (devel job 492951); its rule is pre-registered in the
+  plan.
+- E7: the r1 unconstrained fit was rejected. The r2 constrained fit selects the 4 GiB streaming-read control
+  (s = 0.50 on MI300X, 0.92 on MI325X); the blind fine-level predictions were committed before the jobs ran.
+- Submitted from release de2baecb:
+  - 492956 `cubw-mi300x-auto` (mi3008x, 2:45:00);
+  - 492957 `cubw-mi325x-auto` (mi3258x, 2:30:00; node k002-001 down since 11:48).
+- Checksum readback: all data files match; only logs appended after hashing differ.

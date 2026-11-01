@@ -558,7 +558,15 @@ def gates_from(plan, acqs, ptab, comp_only):
     g['lifecycle_ok'] = bool(comp) and all(a.get('lifecycle_ok') for a in comp) and alone_ok
     q = [a for a in acqs if a.get('model') == 'qwen32b' and a['case'] == 'qwen32b_graph_b1_c4096' and a['mode'] == 'timing'
          and not a.get('generated_tokens') and not a.get('profiled') and a.get('disposition') != 'not_run']
+    # v1.3: the sized-for-mask kernel (e6_decode) is a different kernel configuration; its own output gate below
+    e6d = [a for a in q if a['experiment'] == 'e6_decode']
+    q = [a for a in q if a['experiment'] != 'e6_decode']
+    g['outputs_e6_decode'] = {'runs': len(e6d), 'complete': sum(a.get('disposition') == 'complete' for a in e6d),
+                              'digests': sorted({str(a.get('output_sha256')) for a in e6d if a.get('disposition') == 'complete'}),
+                              'matches_ordinary': None}
     digests = {a.get('output_sha256') for a in q if a.get('disposition') == 'complete'}
+    if e6d:
+        g['outputs_e6_decode']['matches_ordinary'] = set(g['outputs_e6_decode']['digests']) <= {str(d) for d in digests}
     g['outputs_ok'] = bool(q) and all(a.get('disposition') == 'complete' for a in q) and len(digests) == 1
     g['outputs_detail'] = {'runs': len(q), 'complete': sum(a.get('disposition') == 'complete' for a in q),
                            'distinct_digests': len(digests)}
