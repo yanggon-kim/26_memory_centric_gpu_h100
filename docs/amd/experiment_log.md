@@ -150,3 +150,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - content: E2 Qwen32B ×5 / Qwen14B ×3, E3-minimal, E5 ktrace, E8, boundary 200;
   - no E4.
 - MI300X production 487341 is still pending.
+
+## 2026-10-31 — MI300X production 487341 done
+
+- Ran 18:24–18:56 on k002-003. Review: [cubw_mi300x_production_review_20261031.md](cubw_mi300x_production_review_20261031.md).
+- 126/126 released steps rc=0 on the first attempt; E3 not run (not released); outputs 25/25 with one digest.
+- Clock gate fails (gfx ×1.56), so every result is observational.
+- Qwen32B R(200) = 1.012 [1.010, 1.014] and Qwen14B R(200) = 1.027 [1.024, 1.030].
+- E8: decode at n=200 is +17% for B8 and +42% for prefill.
+- Energy: 13.8 J/token at 752 W for both n=304 and n=200.
+- MI325X production 489594 is still pending.
