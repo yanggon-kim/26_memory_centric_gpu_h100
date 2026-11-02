@@ -188,3 +188,17 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - 492956 `cubw-mi300x-auto` (mi3008x, 2:45:00);
   - 492957 `cubw-mi325x-auto` (mi3258x, 2:30:00; node k002-001 down since 11:48).
 - Checksum readback: all data files match; only logs appended after hashing differ.
+
+## 2026-11-02 — MI325X extension 492957 done
+
+- Review: [cubw_mi325x_extension_review_20261102.md](cubw_mi325x_extension_review_20261102.md).
+- 235 steps ran. All E2-fine, e6_decode, timeline and shape steps completed.
+- 8 counter acquisitions failed and were preserved: 4/4 eager pmc and 4/16 shape pmc. The CP firmware (177) is
+  below the rocprofv3 minimum (186).
+- leak_ok_v2 passed at 232 and 152.
+- **E2-fine:** R(n) is non-monotone (272 1.116 … 184 1.008, 152 1.141). wvSplitK traces reproduce the curve.
+- **e6_decode:** the kernel sized for n is slower at every level, with bit-identical outputs. Counters show
+  fewer HBM reads in flight for the same bytes.
+- **E7 r2:** 2/4 blind points missed, so the model is not validated on MI325X.
+- **Reader v1.4:** the e6_decode disposition label is fixed.
+- 492956 (MI300X) is still pending.

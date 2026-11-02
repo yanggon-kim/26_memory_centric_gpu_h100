@@ -662,8 +662,8 @@ def report(args):
                         entry['R'] = r
                         clk = clock_summary(okc + base)
                         entry['pooled_clock_vs_304'] = clk
-                        disp, why = disposition(cell, struct_ok, clk['pooled_ok'], 1 if exp != 'e2' else 3)
-                        if exp != 'e2':
+                        disp, why = disposition(cell, struct_ok, clk['pooled_ok'], 1 if exp == 'e1_e2_pilot' else 3)
+                        if exp == 'e1_e2_pilot':  # v1.4: e6_decode is a blocked production comparison, not a pilot
                             disp, why = 'pilot', 'one pilot acquisition; never promoted to a production comparison'
                         entry['disposition'], entry['reason'] = disp, why
                         entry['noninferior_5pct'] = bool(disp == 'qualified' and r and r['ci95'][1] <= NONINF)
