@@ -71,7 +71,8 @@ def verify_cuda(torch,uuid,require_h100=True):
         assert actual==uuid.removeprefix('GPU-'), 'CUDA/NVML target UUID mismatch; stop rather than use another GPU'
     if require_h100 and is_rocm():
         arch=props.gcnArchName.split(':')[0]
-        assert arch=='gfx942' and 'MI3' in props.name, 'AMD port requires a verified MI300X/MI325X gfx942 allocation'
+        assert (arch=='gfx942' and 'MI3' in props.name) or (arch=='gfx950' and 'MI35' in props.name), \
+            'AMD port requires a verified MI300X/MI325X gfx942 or MI350X gfx950 allocation'
     elif require_h100:
         assert 'H100' in props.name and torch.cuda.get_device_capability(0)==(9,0), 'this package requires a verified H100 sm_90 allocation'
     return props
