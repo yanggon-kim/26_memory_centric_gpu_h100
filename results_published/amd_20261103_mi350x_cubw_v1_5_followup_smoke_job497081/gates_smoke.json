@@ -1,0 +1,116 @@
+{
+ "placement_ok": true,
+ "lifecycle_ok": true,
+ "outputs_e6_decode": {
+  "runs": 2,
+  "complete": 2,
+  "digests": [
+   "8fb99b67a5ce50d4f1be7c5be4b1297e86dcd05977b03a8852ef796e75b2c07f"
+  ],
+  "matches_ordinary": true
+ },
+ "outputs_ok": true,
+ "outputs_detail": {
+  "runs": 4,
+  "complete": 4,
+  "distinct_digests": 1
+ },
+ "leak_ratios": {},
+ "leak_ok": false,
+ "leak_v11": {},
+ "leak_ok_v11": false,
+ "leak_v2": {},
+ "leak_ok_v2": false,
+ "leak_v3": {
+  "qwen32b_graph_b1_c4096__n192__cuprobe_t_L0": {
+   "expected_cus": 64,
+   "alone_cus": 64,
+   "covered_cus": [
+    64,
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "native_min_q": [
+    0.9683597837513023,
+    0.9807145054943321
+   ],
+   "positive_cus_below": [
+    0,
+    0,
+    0
+   ],
+   "decoder_min_q": [
+    0.9917476366450032
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9183597837513022,
+   "ok": false,
+   "positive_treatments": [
+    "arith100",
+    "cuprobe",
+    "mem100"
+   ]
+  },
+  "qwen32b_graph_b1_c4096__n128__cuprobe_t_L0": {
+   "expected_cus": 128,
+   "alone_cus": 128,
+   "covered_cus": [
+    128,
+    128,
+    128,
+    128,
+    128,
+    128,
+    128
+   ],
+   "native_min_q": [
+    0.9869620419590767,
+    0.9656235476342716
+   ],
+   "positive_cus_below": [
+    0,
+    0,
+    0
+   ],
+   "decoder_min_q": [
+    0.9699096274547889
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9156235476342716,
+   "ok": false,
+   "positive_treatments": [
+    "arith100",
+    "cuprobe",
+    "mem100"
+   ]
+  }
+ },
+ "leak_ok_v3": false,
+ "clock": {
+  "pooled_ok": false,
+  "gfx_min": 1659,
+  "gfx_max": 2189,
+  "gfx_ratio": 1.319469559975889,
+  "mem_min": 2000,
+  "mem_max": 2000,
+  "samples": 328,
+  "coverage_min": 0.9419938891484908
+ },
+ "clock_ok": false,
+ "release_e2": true,
+ "release_e3_minimal": false,
+ "release_e3_full": false,
+ "release_e5e8": true,
+ "release_e3_minimal_v2": false,
+ "release_e3_minimal_v3": false
+}

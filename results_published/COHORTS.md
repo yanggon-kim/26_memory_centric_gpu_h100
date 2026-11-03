@@ -44,6 +44,7 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 |---|---|---|---|---|
 | `amd_20261102_mi350x_cubw_v1_4_smoke_job496073` | 496073 | 20261102 | pilot cubw_v1.2 | [mi350x_smoke_review_20261102](../docs/amd/mi350x_smoke_review_20261102.md) |
 | `amd_20261103_mi350x_cubw_v1_4_auto_job496074` | 496074 | 20261103 | auto cubw_v1.4 | [mi350x_campaign_review_20261103](../docs/amd/mi350x_campaign_review_20261103.md) |
+| `amd_20261103_mi350x_cubw_v1_5_followup_smoke_job497081` | 497081 | 20261103 | pilot cubw_v1.5 | [mi350x_followup_smoke_review_20261103](../docs/amd/mi350x_followup_smoke_review_20261103.md) |
 
 ## Cross-cohort analyses
 

@@ -257,3 +257,15 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   `cohort.json` in every published folder.
 - Reader v1.5 reproduces every 496074 table (only additive keys); 0 test failures.
 - Binary: `$WORK/bin/svc_bench_gfx950_v5` (sha256 1d2a5b7d…).
+
+## 2026-11-03 — MI350X follow-up smoke 497081; 8-GPU job 497082 released
+
+- Review: [mi350x_followup_smoke_review_20261103.md](mi350x_followup_smoke_review_20261103.md). 58/58 steps
+  completed in 21.5 min.
+- **Leak v3:** insensitive (0 of 8 shared CUs flagged by every positive control), so E3 stays blocked. Against a
+  full-LDS intruder the probe wins the CU and the intruder starves.
+- **Dispatch (P1 holds on one GPU):** at unbalanced levels, 8 CUs get 2 serialized workgroups and the kernel
+  takes 1.5–2× as long. A balanced grid gives one workgroup per CU.
+- **Pilot decode:** 208 CUs with the kernel sized for 192 gives 12.60 ms vs 12.48 ms at 256 (default kernel at
+  208: 15.15 ms).
+- 497082 was released unchanged.
