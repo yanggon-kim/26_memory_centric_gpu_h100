@@ -262,9 +262,34 @@ def test_v13_leak_v2():
           str(rates))
 
 
+def test_v15_duration_probe():
+    """v1.5: per-CU speed from the duration probe's mean residency; uniform counts no longer hide a slow CU."""
+    d = Path(tempfile.mkdtemp(prefix='cubw_v15_'))
+    lines = [{'event': 'started'}]
+    for i in range(2):
+        t0, t1 = int((10 + i) * NS), int((11 + i) * NS)
+        lines.append({'t0_unix_ns': t0, 't1_unix_ns': t1, 't0_mono_ns': t0, 't1_mono_ns': t1, 'gb_per_s': 0.0,
+                      'tflop_per_s': 1.0, 'busy_fraction': 1.0})
+        lines.append({'cu_window_t1_unix_ns': t1, 'cu_blocks': {'5': 32, '7': 32},
+                      'cu_mean_ns': {'5': 1000.0, '7': 2000.0 if i else 1000.0}})
+    lines.append({'event': 'stopped'})
+    (d / 'c.jsonl').write_text(''.join(json.dumps(x) + '\n' for x in lines))
+    wins, ev = A.competitor_windows(d / 'c.jsonl')
+    sp = A.cu_speed(wins)
+    check('duration probe: equal counts, slower CU has lower speed', A.cu_rates(wins) == {'5': 32.0, '7': 32.0}
+          and abs(sp['5'] - 1e6) < 1e-6 and abs(sp['7'] - 1e9 / 1500) < 1e-6, str(sp))
+    check('v4 lines without durations give no speed', A.cu_speed([{'cu_blocks': {'5': 1}}]) is None)
+    # dispatch probe: CU 0x20 runs two workgroups back to back, CU 0x40 one; CU 0x00 one
+    res = {'mode': 'dispatch', 'blocks': 4, 'lds_bytes': 163840, 'trials': [
+        {'kernel_ms': 0.2, 'wg': [[0, 0.0, 1000.0], [32, 0.0, 1000.0], [32, 1050.0, 2000.0], [64, 0.0, 900.0]]}]}
+    d = A.dispatch_summary(res)
+    check('dispatch: second workgroup on a CU counts as serialized', d['cus_used'] == 3 and d['max_wg_per_cu'] == 2
+          and d['cus_with_2plus'] == 1 and d['serialized_wgs_mean'] == 1 and d['wg_per_se_xcd0'] == [1, 2, 1, 0], str(d))
+
+
 if __name__ == '__main__':
     for f in (test_status_separation, test_nesting, test_missing_clocks_and_coverage, test_overlapping_windows, test_gates,
-              test_v11_gates, test_v13_leak_v2):
+              test_v11_gates, test_v13_leak_v2, test_v15_duration_probe):
         print(f'-- {f.__name__}')
         f()
     print(f'{check.failed} failures')

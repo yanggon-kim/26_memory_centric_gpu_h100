@@ -177,7 +177,9 @@ in absolute terms on gfx950):
    needs all 256 CUs: any reduction costs 16–25%. With the GEMM cut to fit, 192 CUs (75%) give full-device
    decode speed. So the real CU requirement for memory-bound decode is set by achievable reads in flight per CU,
    not by the CU count itself.
-2. **More bandwidth per CU raises the cost of a naive CU cut.** The cohorts rank MI300X < MI325X < MI350X at
+2. **★ More bandwidth per CU (B_CU = HBM bandwidth / CUs in use) raises the cost of a naive CU cut.** The
+   concept is defined in the key-concept box of
+   [compute_bandwidth_followup_results_20261103.md](compute_bandwidth_followup_results_20261103.md). The cohorts rank MI300X < MI325X < MI350X at
    every matched fraction. The MLP explanation from MI325X now has a third, consistent point and a positive
    control: the sized-192 kernel raised in-flight reads and recovered the time.
 3. **Limits:**

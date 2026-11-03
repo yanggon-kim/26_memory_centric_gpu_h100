@@ -20,6 +20,12 @@ Labels: **measured** = real MI300X/MI325X; **analytical** = model computed from 
 
 **Implication for plan 2.0:** on this hardware the evidence favours **compute → delivered-bandwidth** (plus request-generation capacity) over **compute → SRAM capacity** for dense small-batch decode. The case is strongest for large models at small batch. Two caveats: (a) roughly 20–70% of step time is neither bandwidth nor arithmetic, so better kernels and lower per-step overhead may beat either hardware change; (b) compute cannot be cut freely, because compute units issue the memory requests, prefill needs them, and larger batches need them. The c/r/f analysis below quantifies this conditionally.
 
+> **★ Added 2026-11-03: HBM bandwidth per CU (B_CU).** The follow-up campaigns on MI300X, MI325X and MI350X sharpen
+> caveat (b) into one quantity: **B_CU = HBM bandwidth / CUs in use** (per SM, in NVIDIA terms). The cost of
+> a CU cut in decode ranks with B_CU (MI300X 15.0 < MI325X 16.3 < MI350X 25.1 GB/s measured per CU). Restricted
+> CUs move the same bytes but keep fewer reads in flight. See
+> [compute_bandwidth_followup_results_20261103.md](compute_bandwidth_followup_results_20261103.md) (key-concept box).
+
 ## 1. What was run
 
 | Family | Cases | Status |

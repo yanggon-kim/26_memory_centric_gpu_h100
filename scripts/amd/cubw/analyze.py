@@ -40,6 +40,11 @@ to their competitor windows; leak_ok_v2 / release_e3_minimal_v2 follow the prede
 E2 tables include 'e6_decode' (wvSplitK sized for the active CUs) against the same-block e2 304 cell; E6
 kernel-shape and counter tables come from shell steps (e6_shapes, e6_counters).
 
+v1.5 (MI350X follow-up): leak test v3 on the svc_bench_v5 duration probe (cuprobe_t): per-CU speed = completed
+workgroups / summed workgroup residency, evaluated with the v1.3 rule (leak_v2_eval) where natives are co-runners
+that do not overlap the probe mask and positives are co-runners that overlap it; leak_ok_v3 / release_e3_minimal_v3.
+'e6_balanced' (wvSplitK sized for a shader-engine-balanced count <= the active CUs) is tabled like e6_decode.
+
   analyze.py report --root <root> [--out <dir>]     tables + summary.md
   analyze.py gate   --root <pilot-root> --out gates.json
 """
@@ -56,6 +61,7 @@ import statistics as st
 DRAWS, BOOT_SEED = 10000, 20261018
 CLOCK_ENVELOPE, MIN_COVERAGE, NONINF = 1.05, 0.5, 1.05
 LEAK_MIN = 0.85
+SIZED = ('e6_decode', 'e6_balanced')  # decoders whose wvSplitK is sized by CUBW_CU_COUNT_OVERRIDE
 
 
 # ---------------------------------------------------------------- loading
@@ -124,13 +130,15 @@ def competitor_windows(path):
             d = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if 'cu_blocks' in d:  # v4 per-CU line: belongs to the window ending at the same realtime stamp
-            cus[d['cu_window_t1_unix_ns']] = d['cu_blocks']
+        if 'cu_blocks' in d:  # v4/v5 per-CU line: belongs to the window ending at the same realtime stamp
+            cus[d['cu_window_t1_unix_ns']] = d
             continue
         (events if 'event' in d else wins).append(d)
     for w in wins:
         if w['t1_unix_ns'] in cus:
-            w['cu_blocks'] = cus[w['t1_unix_ns']]
+            w['cu_blocks'] = cus[w['t1_unix_ns']]['cu_blocks']
+            if 'cu_mean_ns' in cus[w['t1_unix_ns']]:
+                w['cu_mean_ns'] = cus[w['t1_unix_ns']]['cu_mean_ns']
     for w in wins:  # offset measured before clipping
         if 't0_mono_ns' in w:
             w['rt_offset_ns'] = w['t0_unix_ns'] - w['t0_mono_ns']
@@ -165,6 +173,18 @@ def cu_rates(wins):
         dur += (w['t1_unix_ns'] - w['t0_unix_ns']) / 1e9
         tot.update({k: int(v) for k, v in w['cu_blocks'].items()})
     return {k: v / dur for k, v in tot.items()} if dur else None
+
+
+def cu_speed(wins):
+    """v1.5 duration probe: per-CU completed workgroups per second of summed workgroup residency (None without data)."""
+    n, ns = collections.Counter(), collections.Counter()
+    for w in wins:
+        if 'cu_mean_ns' not in w:
+            continue
+        for k, c in w['cu_blocks'].items():
+            n[k] += int(c)
+            ns[k] += int(c) * float(w['cu_mean_ns'][k])
+    return {k: n[k] / (ns[k] / 1e9) for k in n if ns[k]} or None
 
 
 def leak_v2_eval(alone, natives, positives, decoders, expected_cus, margin=0.05, pos_q=0.85, pos_min=4):
@@ -277,9 +297,10 @@ def acquisition(step, atts, samples, plan):
                            'gone': comp.get('stop', {}).get('gone'), 'stopped_by': comp.get('stop', {}).get('stopped_by'),
                            'realtime_step_ns': realtime_step_ns(wins),
                            'attribution': 'uniform throughput within each ~0.25 s window (estimate)'}
-        if comp['mode'] == 'cuprobe':
+        if comp['mode'] in ('cuprobe', 'cuprobe_t'):
             inside = [w for w in wins if any(lo <= w['t0_unix_ns'] and w['t1_unix_ns'] <= hi for lo, hi in a['windows'])]
             a['competitor']['cu_rates'] = cu_rates(inside)
+            a['competitor']['cu_speed'] = cu_speed(inside)
         a['lifecycle_ok'] = bool(a['competitor']['started'] and a['competitor']['stopped_event'] and a['competitor']['gone']
                                  and a['isolation_ok'] and a['competitor']['trial_coverage'] >= 0.95
                                  and all(o.get('gone') for o in rec.get('orphans') or []))
@@ -368,6 +389,35 @@ def disposition(acqs, gates_ok, clock_pass, min_units=3):
 
 # ---------------------------------------------------------------- native / placement / E4
 
+def dispatch_summary(res):
+    """v1.5 dispatch probe: how a launch's workgroups landed (per trial), without the per-workgroup arrays."""
+    trials = []
+    for t in res.get('trials', []):
+        wg = t['wg']
+        per_cu = collections.Counter(k for k, _, _ in wg)
+        se_wg = collections.Counter((k >> 8, k >> 5 & 7) for k, _, _ in wg)
+        by_cu = collections.defaultdict(list)
+        for k, a, b in wg:
+            by_cu[k].append((a, b))
+        serial = 0
+        for runs in by_cu.values():
+            runs.sort()
+            serial += sum(1 for (a0, b0), (a1, _) in zip(runs, runs[1:]) if a1 >= b0 - 100)
+        trials.append({'kernel_ms': t['kernel_ms'], 'cus_used': len(per_cu), 'max_wg_per_cu': max(per_cu.values()),
+                       'cus_with_2plus': sum(v >= 2 for v in per_cu.values()), 'serialized_wgs': serial,
+                       'mean_wg_us': st.mean((b - a) / 1e3 for _, a, b in wg),
+                       'wg_per_se_xcd0': [se_wg.get((0, e), 0) for e in range(4)]})
+    if not trials:
+        return None
+    return {'blocks': res.get('blocks'), 'lds_bytes': res.get('lds_bytes'), 'hsa_cu_mask': res.get('hsa_cu_mask'),
+            'kernel_ms_median': st.median(x['kernel_ms'] for x in trials),
+            'cus_used': max(x['cus_used'] for x in trials), 'max_wg_per_cu': max(x['max_wg_per_cu'] for x in trials),
+            'cus_with_2plus': max(x['cus_with_2plus'] for x in trials),
+            'serialized_wgs_mean': st.mean(x['serialized_wgs'] for x in trials),
+            'mean_wg_us': st.mean(x['mean_wg_us'] for x in trials), 'wg_per_se_xcd0': trials[0]['wg_per_se_xcd0'],
+            'trials': len(trials)}
+
+
 def native_rows(plan, attempts, samples, gpus):
     rows = []
     for s in plan['steps']:
@@ -386,6 +436,9 @@ def native_rows(plan, attempts, samples, gpus):
             res = json.loads(lines[-1]) if lines else None
         except json.JSONDecodeError:
             res = None
+        if res and res.get('mode') == 'dispatch':  # v1.5: summary only (per-workgroup arrays stay in out.json)
+            r['dispatch'] = dispatch_summary(res)
+            res = {k: v for k, v in res.items() if k != 'trials'}
         r['result'] = res
         uuid = gpus.get(s['lane'])
         if uuid and rec.get('t_start'):
@@ -551,7 +604,7 @@ def build(root):
                                         'probe_mode': rec['competitor']['mode'],
                                         'corunner': s.get('corunner'),
                                         'corunner_gone': (co or {}).get('stop', {}).get('gone'),
-                                        'cu_rates': cu_rates(steady)}
+                                        'cu_rates': cu_rates(steady), 'cu_speed': cu_speed(steady)}
     return plan, acqs, nat, ptab, comp_only, attempts, samples
 
 
@@ -565,8 +618,8 @@ def gates_from(plan, acqs, ptab, comp_only):
     q = [a for a in acqs if a.get('model') == 'qwen32b' and a['case'] == 'qwen32b_graph_b1_c4096' and a['mode'] == 'timing'
          and not a.get('generated_tokens') and not a.get('profiled') and a.get('disposition') != 'not_run']
     # v1.3: the sized-for-mask kernel (e6_decode) is a different kernel configuration; its own output gate below
-    e6d = [a for a in q if a['experiment'] == 'e6_decode']
-    q = [a for a in q if a['experiment'] != 'e6_decode']
+    e6d = [a for a in q if a['experiment'] in SIZED]
+    q = [a for a in q if a['experiment'] not in SIZED]
     g['outputs_e6_decode'] = {'runs': len(e6d), 'complete': sum(a.get('disposition') == 'complete' for a in e6d),
                               'digests': sorted({str(a.get('output_sha256')) for a in e6d if a.get('disposition') == 'complete'}),
                               'matches_ordinary': None}
@@ -622,6 +675,26 @@ def gates_from(plan, acqs, ptab, comp_only):
             [a['competitor']['cu_rates']] if a['competitor'].get('cu_rates') else [], hi - lo + 1)
     g['leak_v2'] = v2
     g['leak_ok_v2'] = bool(v2) and all(v['ok'] for v in v2.values())
+    # v1.5: leak test v3 (duration probe); natives do not overlap the probe mask, positives overlap it
+    v3 = {}
+    for a in comp:
+        if a['competitor']['mode'] != 'cuprobe_t':
+            continue
+        mask = a['competitor']['mask'].split(':', 1)[1]
+        lo, hi = (int(x) for x in mask.split('-'))
+        rows = [v for v in comp_only.values() if v['probe_mask'] == mask and v['probe_mode'] == 'cuprobe_t'
+                and v['lane'] == a['lane'] and v.get('cu_speed')]
+        def overlaps(v):
+            return int(v['corunner']['mask'].split('-')[1]) >= lo
+        alone = [v['cu_speed'] for v in rows if not v['corunner']]
+        v3[a['cell']] = leak_v2_eval(
+            alone[0] if alone else None,
+            [v['cu_speed'] for v in rows if v['corunner'] and not overlaps(v)],
+            [v['cu_speed'] for v in rows if v['corunner'] and overlaps(v)],
+            [a['competitor']['cu_speed']] if a['competitor'].get('cu_speed') else [], hi - lo + 1)
+        v3[a['cell']]['positive_treatments'] = sorted(v['corunner']['treatment'] for v in rows if v['corunner'] and overlaps(v))
+    g['leak_v3'] = v3
+    g['leak_ok_v3'] = bool(v3) and all(v['ok'] for v in v3.values())
     e2 = [a for a in q if a['experiment'] in ('e1_e2_pilot', 'e2') and good(a)]
     g['clock'] = clock_summary(e2)
     g['clock_ok'] = g['clock']['pooled_ok']
@@ -630,6 +703,7 @@ def gates_from(plan, acqs, ptab, comp_only):
     g['release_e3_full'] = g['release_e3_minimal'] and g['clock_ok']
     g['release_e5e8'] = g['outputs_ok']
     g['release_e3_minimal_v2'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v2']
+    g['release_e3_minimal_v3'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v3']
     return g
 
 
@@ -644,12 +718,12 @@ def report(args):
               'plan_sha256': plan.get('plan_sha256'), 'gates': gates, 'placement': ptab, 'competitor_alone': comp_only}
     # E2 per model (production 'e2'; pilot rows are labelled pilot and never promoted)
     e2 = {}
-    for exp in ('e2', 'e1_e2_pilot', 'e6_decode'):
+    for exp in ('e2', 'e1_e2_pilot') + SIZED:
         for model in sorted({a['model'] for a in acqs if a['experiment'] == exp}):
             for gpu_tag in sorted({a['cell'].endswith('__gpu7') for a in acqs if a['experiment'] == exp and a['model'] == model}):
                 sel = [a for a in acqs if a['experiment'] == exp and a['model'] == model and a['cell'].endswith('__gpu7') == gpu_tag]
                 base = [a for a in sel if a['n'] == FULL and good(a)]
-                if exp == 'e6_decode':  # sized-for-mask kernel vs the same block's ordinary 304 cell
+                if exp in SIZED:  # sized-for-mask kernel vs the same block's ordinary 304 cell
                     blocks = {a['block'] for a in sel}
                     base = [a for a in acqs if a['experiment'] == 'e2' and a['model'] == model and a['n'] == FULL
                             and a['block'] in blocks and good(a)]
@@ -657,7 +731,7 @@ def report(args):
                 levels = {}
                 for n in plan['levels']:
                     cell = [a for a in sel if a['n'] == n]
-                    if not cell and exp == 'e6_decode':
+                    if not cell and exp in SIZED:
                         continue
                     okc = [a for a in cell if good(a)]
                     entry = {'acquisitions': len(cell), 'complete': len(okc),
@@ -816,8 +890,8 @@ def fmt(r):
 def summary_md(t):
     L = [f"# cubw_v1 {t['plan_kind']} — {t['cohort']}", '', '## Gates', '']
     g = t['gates']
-    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'leak_ok_v11', 'leak_ok_v2', 'clock_ok', 'release_e2',
-              'release_e3_minimal', 'release_e3_minimal_v2', 'release_e3_full', 'release_e5e8'):
+    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'leak_ok_v11', 'leak_ok_v2', 'leak_ok_v3', 'clock_ok', 'release_e2',
+              'release_e3_minimal', 'release_e3_minimal_v2', 'release_e3_minimal_v3', 'release_e3_full', 'release_e5e8'):
         L.append(f'- {k}: **{g.get(k)}**')
     L.append(f"- outputs: {g.get('outputs_detail')}")
     L.append(f"- leak ratios (probe during decode / probe alone): {g.get('leak_ratios')}")
@@ -859,6 +933,15 @@ def summary_md(t):
             cells = ', '.join(f"{lvl}: {e['mean']:.1f}" + (f" ({e['ratio_to_304']:.3f})" if 'ratio_to_304' in e else '')
                               for lvl, e in lv.items())
             L.append(f"- {name} [{next(iter(lv.values()))['metric']}]: {cells}")
+    disp = [r for r in t.get('native', []) if r.get('dispatch')]
+    if disp:
+        L += ['', '## E6 dispatch probe (wvSplitK-shaped launches; per-workgroup CU and timing)', '',
+              '| step | blocks | LDS | kernel ms | CUs used | max WG/CU | CUs with >=2 | serialized WGs | WG per SE (XCD0) |',
+              '|---|---:|---:|---:|---:|---:|---:|---:|---|']
+        for r in disp:
+            d = r['dispatch']
+            L.append(f"| {r['name']} | {d['blocks']} | {d['lds_bytes']} | {d['kernel_ms_median']:.3f} | {d['cus_used']} | "
+                     f"{d['max_wg_per_cu']} | {d['cus_with_2plus']} | {d['serialized_wgs_mean']:.1f} | {d['wg_per_se_xcd0']} |")
     L += ['', '## E5 / timeline', '']
     for p in t['e5_profiles']:
         L.append(f"- {p['step']}: completed={p.get('command_completed')} slowdown={p.get('instrumentation_slowdown')} "
@@ -873,6 +956,10 @@ def summary_md(t):
     if t['gates'].get('leak_v2'):
         L += ['', '## Leak test v2 (per-CU probe)', '']
         for k, v in t['gates']['leak_v2'].items():
+            L.append(f'- {k}: {v}')
+    if t['gates'].get('leak_v3'):
+        L += ['', '## Leak test v3 (per-CU duration probe)', '']
+        for k, v in t['gates']['leak_v3'].items():
             L.append(f'- {k}: {v}')
     L += ['', '## E8 guardrails', '']
     for k, e in t['e8'].items():

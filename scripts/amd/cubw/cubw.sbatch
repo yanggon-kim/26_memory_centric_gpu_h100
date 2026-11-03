@@ -68,7 +68,7 @@ if [ "$DRY" = 1 ]; then
 fi
 
 source scripts/amd/env.sh
-export CUBW_BENCH=$WORK/bin/svc_bench_${arch}_v3 CUBW_BENCH4=$WORK/bin/svc_bench_${arch}_v4
+export CUBW_BENCH=$WORK/bin/svc_bench_${arch}_v3 CUBW_BENCH4=$WORK/bin/svc_bench_${arch}_v4 CUBW_BENCH5=$WORK/bin/svc_bench_${arch}_v5
 expect=$(python3 -c "import json;d=json.load(open('$PLAN'));print(d.get('gpu_name') or {'mi325x': 'MI325X'}.get(d['cohort'], 'MI300X'))")
 status "preflight start on $(hostname)"
 if ! $PY scripts/amd/preflight_node.py --root "$root" --expect-gpus $nl --expect-name $expect --expect-arch $arch --expect-cus $full > "$root/preflight.out" 2>&1; then

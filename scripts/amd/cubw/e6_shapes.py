@@ -10,13 +10,15 @@ weight shapes at batch 1 with supported kernels:
   wvsplitk_n      ops.wvSplitK(weight, x, active CU count)   the same kernel sized for the mask
   linear          torch.nn.functional.linear (hipBLASLt/rocBLAS)
   llmm1           ops.LLMM1(weight, x, 4) where vLLM allows it (k <= 8192)
+  wvsplitk_c<C>   ops.wvSplitK(weight, x, C) for each C of --cu-counts (v1.5: e.g. the largest count <= the
+                  active CUs that leaves every shader engine the same number of workgroups)
 
 Weights are rotated over copies totalling >= 1 GiB so every call streams from HBM (MALL is 256 MiB).
 Time is HIP-event time per call; GB/s is weight bytes per call / time (useful bytes, not physical traffic).
 Outputs are compared with linear (max |diff| / max |ref|); a kernel-shape benchmark is a control, not a
 substitute for full-model latency.
 
-  e6_shapes.py --n-active 200 --out e6.json [--trials 5 --reps 50] [--light]
+  e6_shapes.py --n-active 200 --out e6.json [--trials 5 --reps 50] [--light] [--cu-counts 192,160]
 """
 import argparse
 import json
@@ -46,7 +48,7 @@ def main(a):
     res = {'classification': 'measured-real-GPU (kernel-shape control)', 'scope': __doc__.strip(),
            'device': props.name, 'device_cus': props.multi_processor_count, 'n_active': a.n_active,
            'hsa_cu_mask': os.environ.get('HSA_CU_MASK', ''), 'hip_visible_devices': os.environ.get('HIP_VISIBLE_DEVICES', ''),
-           'torch': torch.__version__, 'trials': a.trials, 'reps': a.reps, 'shapes': {}}
+           'torch': torch.__version__, 'trials': a.trials, 'reps': a.reps, 'cu_counts': a.cu_counts, 'shapes': {}}
     for name, (m, k) in shapes().items():
         wbytes = m * k * 2
         copies = max(2, math.ceil((1 << 30) / wbytes))
@@ -55,6 +57,8 @@ def main(a):
         variants = {'wvsplitk_dev': lambda w: ops.wvSplitK(w, x, props.multi_processor_count),
                     'wvsplitk_n': lambda w: ops.wvSplitK(w, x, a.n_active),
                     'linear': lambda w: torch.nn.functional.linear(x, w)}
+        for c in a.cu_counts:
+            variants[f'wvsplitk_c{c}'] = lambda w, c=c: ops.wvSplitK(w, x, c)
         if k <= 8192 and m % 4 == 0:
             variants['llmm1'] = lambda w: ops.LLMM1(w, x, 4)
         ref = torch.nn.functional.linear(x.float(), ws[0].float())
@@ -99,4 +103,6 @@ if __name__ == '__main__':
     p.add_argument('--trials', type=int, default=5)
     p.add_argument('--reps', type=int, default=50)
     p.add_argument('--light', action='store_true', help='few calls (under rocprofv3 counter collection)')
+    p.add_argument('--cu-counts', type=lambda v: [int(x) for x in v.split(',') if x], default=[],
+                   help='extra wvSplitK sizes to time under the same mask (comma list)')
     main(p.parse_args())

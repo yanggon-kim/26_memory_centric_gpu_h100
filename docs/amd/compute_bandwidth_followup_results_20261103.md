@@ -29,6 +29,37 @@ Plan 2.0 asks how much compute memory-bound LLM decode needs relative to HBM ban
 - **Mechanism:** every level moves the same bytes. Decode time tracks how many HBM reads are in flight. A CU cut
   costs more the more HBM bandwidth each CU must sustain: MI300X 17, MI325X 20, MI350X 31 GB/s per CU.
 
+> ## ★ Key concept: HBM bandwidth per CU (B_CU)
+>
+> An AMD compute unit (CU) is the counterpart of an NVIDIA streaming multiprocessor (SM), so this is
+> "bandwidth per SM" in NVIDIA terms.
+>
+> **Definition.** **B_CU = HBM bandwidth / CUs in use.** Each CU of a memory-bound kernel must carry B_CU of
+> HBM traffic. By Little's law, it must keep **B_CU × memory latency** bytes of reads in flight to do so.
+> Removing CUs raises the share each remaining CU must carry by FULL/n.
+>
+> | cohort | CUs | HBM peak | peak B_CU | measured B_CU (E4 seqread at full) | decode R at ~75% of CUs, stock kernel |
+> |---|---:|---:|---:|---:|---:|
+> | MI300X | 304 | 5.3 TB/s | 17.4 GB/s | 15.0 GB/s | 1.02–1.03 |
+> | MI325X | 304 | 6.0 TB/s | 19.7 GB/s | 16.3 GB/s | 1.05–1.07 |
+> | MI350X | 256 | 8.0 TB/s | 31.2 GB/s | 25.1 GB/s | 1.18 |
+>
+> **Why it explains the results:**
+> 1. **The penalty for a CU cut ranks with B_CU** at every matched per-XCD fraction (§3).
+> 2. **A CU cut moves the same bytes; it lowers the reads in flight** (FETCH_SIZE/RDREQ equal,
+>    RDREQ_LEVEL/GRBM lower), and time rises in step.
+> 3. **Positive control (MI350X):** a kernel sized for 192 CUs raised in-flight reads per CU and recovered
+>    full-device speed.
+> 4. **E4:** one load in flight per thread (ilp1) loses about a third of the bandwidth at reduced CU counts;
+>    eight in flight (ilp8) keeps 90–100%.
+>
+> **What it means for the shoreline question:** the compute that memory-bound decode needs near HBM is set by
+> how many reads each CU can keep in flight against B_CU, not by FLOP/s. A design that moves compute toward
+> memory should be sized by **in-flight capacity per unit of bandwidth**. Raising bandwidth without raising
+> per-CU in-flight capacity makes every CU more critical, as MI350X shows.
+>
+> The per-cohort values are in [results_published/COHORTS.md](../../results_published/COHORTS.md).
+
 ## 2. MI300X extension 492956 (new in this version)
 
 **Execution:**

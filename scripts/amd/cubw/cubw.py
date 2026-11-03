@@ -28,6 +28,9 @@ leak test v2) runs from CUBW_BENCH4; a vllm step may carry extra_env (e.g. CUBW_
 correctly-sized-kernel decoder, read by scripts/sitecustomize.py inside the container); shell steps carry a
 per-attempt CUBW_STEP_TAG and get the same orphan sweep and residual-process record as other steps.
 
+v1.5 (MI350X follow-up): 'cuprobe_t' treatment (svc_bench_v5 duration probe, leak test v3) runs from CUBW_BENCH5;
+a native step with bench='v5' (dispatch probe) runs CUBW_BENCH5 instead of CUBW_BENCH.
+
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
 import argparse
@@ -44,12 +47,15 @@ sys.path.insert(0, str(REPO / 'scripts'))
 WORK = Path(os.environ.get('WORK', '/work1/proj_blaisetine/yanggon'))
 BIN = Path(os.environ.get('CUBW_BENCH', WORK / 'bin/svc_bench_gfx942_v3'))
 BIN4 = Path(os.environ.get('CUBW_BENCH4', WORK / 'bin/svc_bench_gfx942_v4'))
+BIN5 = Path(os.environ.get('CUBW_BENCH5', WORK / 'bin/svc_bench_gfx950_v5'))
 COMPETITOR_BYTES = 1 << 30  # 1 GiB read footprint: far above the 256 MiB MALL
 TREATMENTS = {  # name -> (competitor mode, requested duty); None = competitor absent
     'absent': None, 'inactive': ('idle', 1.0),
     'mem25': ('read', 0.25), 'mem50': ('read', 0.50), 'mem75': ('read', 0.75), 'mem100': ('read', 1.00),
     'arith100': ('fma', 1.00), 'leakprobe': ('fma', 1.00), 'cuprobe': ('cuprobe', 1.00),
+    'cuprobe_t': ('cuprobe_t', 1.00),
 }
+BENCH_FOR_MODE = {'cuprobe': BIN4, 'cuprobe_t': BIN5}
 
 
 def mask_range(lo, hi):
@@ -145,11 +151,13 @@ def stop_group(proc, grace=15):
 def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
     mode, duty = TREATMENTS[step['treatment']]
     mask = step.get('competitor_mask') or step['plan_competitor_mask']
-    args = [str(BIN4 if mode == 'cuprobe' else BIN), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
+    args = [str(BENCH_FOR_MODE.get(mode, BIN)), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
     if mode == 'read':
         args += ['--bytes', str(COMPETITOR_BYTES)]
     elif mode in ('fma', 'cuprobe'):
         args += ['--iters', '2000']
+    elif mode == 'cuprobe_t':
+        args += ['--iters', '500']
     env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
     out = open(adir / f'{name}.jsonl', 'w')
     err = open(adir / f'{name}.err', 'w')
@@ -267,7 +275,7 @@ def run_native(step, gpu, adir):
         env['HSA_CU_MASK'] = f"{(gpu['index'] + 1) % 8}:{step['mask_other_index']}"
     else:
         env.pop('HSA_CU_MASK', None)
-    argv = [str(BIN)] + [str(a) for a in step['args']]
+    argv = [str(BIN5 if step.get('bench') == 'v5' else BIN)] + [str(a) for a in step['args']]
     rec = {'step': step['id'], 'attempt_dir': str(adir), 'kind': 'native', 'argv': argv,
            'hsa_cu_mask': env.get('HSA_CU_MASK', ''), 't_start': now()}
     with open(adir / 'out.json', 'w') as out, open(adir / 'err.txt', 'w') as err:
@@ -316,7 +324,7 @@ def describe(step, gpu, plan):
     """Dry-run rendering of the commands a step would execute."""
     if step['kind'] == 'native':
         m = f"HSA_CU_MASK={gpu['index']}:{step['mask']} " if step.get('mask') else ''
-        return f"HIP_VISIBLE_DEVICES={gpu['index']} {m}{BIN.name} {' '.join(map(str, step['args']))}"
+        return f"HIP_VISIBLE_DEVICES={gpu['index']} {m}{(BIN5 if step.get('bench') == 'v5' else BIN).name} {' '.join(map(str, step['args']))}"
     if step['kind'] == 'shell':
         return step['cmd']
     parts = []

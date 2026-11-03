@@ -240,3 +240,20 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - **E3:** memory-100% vs arithmetic-100% competitor is 1.18× at 232 and 1.21× at 152. The 152-CU decoder alone
   is 15% faster than the 232-CU decoder next to a memory-100% competitor.
 - **E7 r2 blind check:** 1/4 points within tolerance, so the model is not validated on MI300X.
+
+## 2026-11-03 — MI350X follow-up prepared (cubw v1.5); bandwidth per CU; cohort index
+
+- Owner: "yes, submit them" (gfx950 leak probe; wvSplitK sizing study).
+- Pre-registration: [mi350x_followup_plan_20261103.md](mi350x_followup_plan_20261103.md), committed before any data.
+- **Leak v2 on gfx950:** probe completion counts are fixed per launch (506,264–506,282 per CU alone). In the
+  positive control, the co-runner, not the probe, lost the shared CUs. v3 instead measures per-CU workgroup
+  residency (`svc_bench_v5 cuprobe_t`).
+- **wvSplitK sizing:** host-side rounds/waves do not explain it. The levels where the sized kernel is fast
+  (256/192/128) are the only ones where every shader engine has the same CU count (hypothesis H_SE). The test is
+  a dispatch probe (`svc_bench_v5 dispatch`) plus decode with the balanced size (`e6_balanced`).
+- The **B_CU (HBM bandwidth per CU) concept** is marked in the v2 results report (key-concept box), the MI350X
+  review and the shoreline report.
+- **Cohort index:** `scripts/amd/cohort_index.py` writes `results_published/COHORTS.md`, `cohorts.json` and a
+  `cohort.json` in every published folder.
+- Reader v1.5 reproduces every 496074 table (only additive keys); 0 test failures.
+- Binary: `$WORK/bin/svc_bench_gfx950_v5` (sha256 1d2a5b7d…).
