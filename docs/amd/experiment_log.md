@@ -269,3 +269,14 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - **Pilot decode:** 208 CUs with the kernel sized for 192 gives 12.60 ms vs 12.48 ms at 256 (default kernel at
   208: 15.15 ms).
 - 497082 was released unchanged.
+
+## 2026-11-03 — MI350X follow-up 497082 (8 GPUs): H_SE supported, leak v3 insensitive
+
+- Review: [mi350x_followup_review_20261103.md](mi350x_followup_review_20261103.md). 48 min; 269/269 steps with
+  a return code had rc = 0. Tables: `results_published/amd_20261103_mi350x_cubw_v1_5_followup_job497082/`.
+- **Leak v3:** insensitive on L0 and L1 (0 of 8 shared CUs flagged by each positive control). E3 did not run.
+- **H_SE (pre-registered P1–P3): all pass.**
+  - Unbalanced masks serialize 2 workgroups on some CUs.
+  - Sizing `wvSplitK` to balanced(n) gives decode R 1.004 (232→224), 1.009 (208→192), 1.07 (184/168→160) and
+    1.17 (152→128). The stock kernel gives 1.18–1.23.
+  - Observational and clock-confounded.

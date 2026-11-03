@@ -157,8 +157,10 @@ E8 was run on MI350X and in v1 on the other cohorts.
 
 - **gfx950 leak probe:** needed before E3 can run on MI350X. Leak v2 is insensitive there. The new probe must be
   pre-registered and smoke-tested on `mi3501x` first.
-- **The MI350X sizing pattern:** why the sized `wvSplitK` works at 24 and 16 CUs per XCD but fails at 26/23/21/19.
-  This needs a CPU-side reading of the vLLM sizing code, then one short trace job.
+- **The MI350X sizing pattern: resolved after this version** by job 497082
+  ([mi350x_followup_review_20261103.md](mi350x_followup_review_20261103.md)). Unequal active CUs per shader
+  engine make the dispatcher serialize two `wvSplitK` workgroups on some CUs. Sizing to the largest multiple of
+  32 restores R 1.004 at 232 CUs and 1.009 at 208 CUs (pre-registered H_SE; observational).
 - **Clock qualification:** any non-inferiority claim needs a run that passes the pooled clock gate. Clock and
   power changes remain unauthorized.
 - **Off-cluster raw archive:** the destination is still to be named by the owner.
