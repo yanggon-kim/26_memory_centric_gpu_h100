@@ -1,0 +1,105 @@
+{
+ "base": "n256",
+ "runs": {
+  "n256": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 10043571677,
+   "attempt_dir": "/work1/proj_blaisetine/yanggon/results_amd/amd_20261102_mi350x_cubw_v1_pilot_job496073/e6_timeline/qwen32b_graph_b1_c4096__n256__absent__ktrace/a0/attempt1"
+  }
+ },
+ "top_kernels": [
+  {
+   "kernel": "void wvSplitK_hf_sml_<__hip_bfloat16, 64, 2, 16, 8, 2, 1>",
+   "share": 0.8151749881716904,
+   "mean_us": 38.89752817567214,
+   "per_tick": 3341.0,
+   "grid": [
+    16384,
+    16,
+    1
+   ],
+   "wg": 64,
+   "vgpr": 56,
+   "agpr": 48,
+   "lds": 163840
+  },
+  {
+   "kernel": "void paged_attention_ll4mi_QKV_mfma16_kernel<__hip_bfloat16, __hip_bfloat16, ",
+   "share": 0.04634637935287172,
+   "mean_us": 8.880555231227106,
+   "per_tick": 832.0,
+   "grid": [
+    256,
+    32,
+    8
+   ],
+   "wg": 256,
+   "vgpr": 96,
+   "agpr": 0,
+   "lds": 8192
+  },
+  {
+   "kernel": "void vllm::reshape_and_cache_kernel<__hip_bfloat16, __hip_bfloat16, ",
+   "share": 0.02358453950624402,
+   "mean_us": 4.519097470238095,
+   "per_tick": 832.0,
+   "grid": [
+    128,
+    1,
+    1
+   ],
+   "wg": 128,
+   "vgpr": 32,
+   "agpr": 0,
+   "lds": 0
+  },
+  {
+   "kernel": "triton_poi_fused_3",
+   "share": 0.021948520913612435,
+   "mean_us": 4.272371320037987,
+   "per_tick": 819.0,
+   "grid": [
+    1536,
+    1,
+    1
+   ],
+   "wg": 256,
+   "vgpr": 36,
+   "agpr": 4,
+   "lds": 0
+  },
+  {
+   "kernel": "void paged_attention_ll4mi_reduce_kernel<__hip_bfloat16, __hip_bfloat16, 128, 128, 256, 1>",
+   "share": 0.02160812636972432,
+   "mean_us": 4.1403915979853485,
+   "per_tick": 832.0,
+   "grid": [
+    5120,
+    1,
+    1
+   ],
+   "wg": 128,
+   "vgpr": 120,
+   "agpr": 0,
+   "lds": 512
+  },
+  {
+   "kernel": "triton_poi_fused_mul_silu_slice_1",
+   "share": 0.021542499516927577,
+   "mean_us": 4.1278166590354095,
+   "per_tick": 832.0,
+   "grid": [
+    6912,
+    1,
+    1
+   ],
+   "wg": 256,
+   "vgpr": 28,
+   "agpr": 4,
+   "lds": 0
+  }
+ ],
+ "note": "kernel-trace timing (trace distortion 1.05-1.09 measured in E5); dispatches inside decode ranges only"
+}

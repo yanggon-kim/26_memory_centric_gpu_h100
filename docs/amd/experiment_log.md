@@ -210,3 +210,12 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - cubw v1.4: per-cohort hardware table, MI350X levels at MI300X per-XCD fractions, bench v4.1 (`--lds`), and
   gfx950 binaries. Plans for the earlier cohorts are unchanged and their re-analysis is identical.
 - Plan and rationale: [mi350x_campaign_plan_20261102.md](mi350x_campaign_plan_20261102.md).
+
+## 2026-11-02 — MI350X smokes; campaign released
+
+- Review: [mi350x_smoke_review_20261102.md](mi350x_smoke_review_20261102.md).
+- Two port bugs were found by the smokes and fixed: the preflight FETCH_SIZE check and the gfx942-only guard.
+- Smoke 496073 completed all 29 steps. Placement is exact, decode works, and its output digest matches MI325X.
+- wvSplitK on gfx950 runs 256 workgroups × 160 KiB LDS (one per CU).
+- Leak test v2 is insensitive on MI350X (positive control: 0 of 8 CUs), so E3 will not be released there.
+- 496074 (MI350X campaign, release e7116c1f) was held while the smoke ran, then released.
