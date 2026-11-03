@@ -230,3 +230,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   192 CUs, but is worse at 208/184/168/152. Counters: same bytes; time tracks HBM reads in flight.
 - **E8:** at 168 CUs, the guardrail workloads are 14–21% slower and use about 9% more J/token.
 - `e6_counters.py` now takes its levels from the data (it had the MI325X levels hard-coded).
+
+## 2026-11-03 — MI300X extension 492956 complete; results v2
+
+- Report: [compute_bandwidth_followup_results_20261103.md](compute_bandwidth_followup_results_20261103.md).
+- Ran 1 h 13 min on k002-002. leak_ok_v2 passed, so E3-minimal ran. Two eager FETCH_SIZE steps timed out.
+- **E2-fine:** R(n) is non-monotone, as on MI325X (272 1.068 … 184 1.010, 152 1.085). The resized kernel is
+  slower at every level.
+- **E3:** memory-100% vs arithmetic-100% competitor is 1.18× at 232 and 1.21× at 152. The 152-CU decoder alone
+  is 15% faster than the 232-CU decoder next to a memory-100% competitor.
+- **E7 r2 blind check:** 1/4 points within tolerance, so the model is not validated on MI300X.
