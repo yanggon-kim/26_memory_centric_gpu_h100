@@ -85,7 +85,13 @@ def main(args):
         pass
     checks['counter'] = {'returncode': rc, 'fetch_kb_k_copy': fetched, 'expected_kb': 65536}
     if not fetched or not 0.9 * 65536 <= fetched <= 1.2 * 65536:
-        fatal.append(f'counter check failed (FETCH_SIZE {fetched} KB for a 64 MiB copy)')
+        # FETCH_SIZE is validated on gfx942 only; on another arch (gfx950 reads ~0.5x) the result is recorded and every
+        # counter claim must rest on that cohort's E0 native counter validation instead
+        msg = f'counter check failed (FETCH_SIZE {fetched} KB for a 64 MiB copy)'
+        if args.expect_arch == 'gfx942':
+            fatal.append(msg)
+        else:
+            checks['counter']['unvalidated_on_arch'] = msg
 
     def fma(mask):
         e = dict(env)
