@@ -47,7 +47,7 @@ def main(args):
            'rocprofv3_host': cmd('rocprofv3 --version'),
            'container': {'image': os.environ.get('AMD_VLLM_SIF', 'default (scripts/amd/vllm_in_container.sh)'),
                          'sha256_record': cmd(f"cat {os.environ.get('WORK', '')}/containers/sha256.txt")},
-           'bench_sha256': {p.name: sha(p) for p in Path(os.environ.get('WORK', '.'), 'bin').glob('svc_bench_gfx942*')
+           'bench_sha256': {p.name: sha(p) for p in Path(os.environ.get('WORK', '.'), 'bin').glob('svc_bench_gfx9*')
                             if p.is_file()},
            'settings_scope': 'observed only; no clock, power, driver, firmware or partition changes'}
     (root / 'environment.json').write_text(json.dumps(env, indent=1) + '\n')

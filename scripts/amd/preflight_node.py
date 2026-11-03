@@ -36,8 +36,7 @@ def main(args):
     checks['gpus'] = gpus
     if len(gpus) != args.expect_gpus:
         fatal.append(f'expected {args.expect_gpus} GPUs, found {len(gpus)}')
-    if any(args.expect_name not in g['name'] for g in gpus):
-        fatal.append(f'GPU name mismatch: {sorted({g["name"] for g in gpus})}')
+    smi_name_ok = all(args.expect_name in g['name'] for g in gpus)  # checked against the HIP name below if not
     if any(g['processes'] for g in gpus):
         fatal.append('foreign GPU activity present at start')
     (args.root / 'gpus.tsv').write_text(''.join(f"{g['index']}\t{g['uuid']}\t{g['bdf']}\n" for g in sorted(gpus, key=lambda g: g['index'])))
@@ -46,9 +45,12 @@ def main(args):
     props = [torch.cuda.get_device_properties(i) for i in range(torch.cuda.device_count())]
     checks['torch'] = {'devices': len(props), 'arch': sorted({p.gcnArchName for p in props}),
                        'cus': sorted({p.multi_processor_count for p in props})}
-    if len(props) != args.expect_gpus or any(not p.gcnArchName.startswith('gfx942') for p in props) \
-            or any(p.multi_processor_count != 304 for p in props):
+    checks['torch']['names'] = sorted({p.name for p in props})
+    if len(props) != args.expect_gpus or any(not p.gcnArchName.startswith(args.expect_arch) for p in props) \
+            or any(p.multi_processor_count != args.expect_cus for p in props):
         fatal.append(f"torch view unexpected: {checks['torch']}")
+    if not smi_name_ok and not all(args.expect_name in p.name for p in props):
+        fatal.append(f'GPU name mismatch: {sorted({g["name"] for g in gpus})} / {checks["torch"]["names"]}')
 
     rc, out, err = sh(f"{repo}/scripts/amd/vllm_in_container.sh -c 'import torch, vllm; "
                       f"print(vllm.__version__, torch.cuda.device_count())'", timeout=600)
@@ -65,14 +67,15 @@ def main(args):
     if missing:
         fatal.append(f'model snapshots missing: {missing}')
 
-    for b in ('svc_bench_gfx942', 'svc_bench_gfx942_v2'):
+    bench = f'svc_bench_{args.expect_arch}'
+    for b in (bench, f'{bench}_v2'):
         if not os.access(f'{work}/bin/{b}', os.X_OK):
             fatal.append(f'missing binary {b}')
 
     env = dict(os.environ, HIP_VISIBLE_DEVICES='0')
     d = args.root / 'preflight_pmc'
     rc, out, err = sh(f"timeout -s KILL 120 rocprofv3 --pmc FETCH_SIZE -d {d} -o p --output-format csv -- "
-                      f"{work}/bin/svc_bench_gfx942 --mode copy --bytes 67108864 --reps 1 --trials 1 --warmups 0", env=env)
+                      f"{work}/bin/{bench} --mode copy --bytes 67108864 --reps 1 --trials 1 --warmups 0", env=env)
     fetched = None
     try:
         import csv
@@ -88,10 +91,10 @@ def main(args):
         e = dict(env)
         if mask:
             e['HSA_CU_MASK'] = mask
-        rc, out, _ = sh(f"timeout -s KILL 60 {work}/bin/svc_bench_gfx942 --mode fma --iters 20000 --trials 3 --reps 1", env=e)
+        rc, out, _ = sh(f"timeout -s KILL 60 {work}/bin/{bench} --mode fma --iters 20000 --trials 3 --reps 1", env=e)
         return json.loads(out.strip().splitlines()[-1])['useful_tflop_per_s'] if rc == 0 else None
-    full, half = fma(''), fma('0:0-151')
-    checks['cu_mask'] = {'fma_full_tflops': full, 'fma_152cu_tflops': half}
+    full, half = fma(''), fma(f'0:0-{args.expect_cus // 2 - 1}')
+    checks['cu_mask'] = {'fma_full_tflops': full, f'fma_{args.expect_cus // 2}cu_tflops': half}
     if not full or not half or half / full > 0.8:
         fatal.append(f'CU mask check failed ({full} vs {half} TFLOP/s)')
 
@@ -107,4 +110,6 @@ if __name__ == '__main__':
     p.add_argument('--root', type=Path, required=True)
     p.add_argument('--expect-gpus', type=int, default=8)
     p.add_argument('--expect-name', default='MI325X')
+    p.add_argument('--expect-arch', default='gfx942')
+    p.add_argument('--expect-cus', type=int, default=304)
     main(p.parse_args())

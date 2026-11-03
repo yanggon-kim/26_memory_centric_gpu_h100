@@ -11,6 +11,8 @@
 //              workgroup per CU, like vLLM's wvSplitK) and count completed workgroups per physical CU (key as
 //              in placement). Windows carry the per-CU counts; a foreign workgroup resident on a probe CU makes
 //              that CU, not the whole partition, complete fewer probe workgroups.
+// v4.1 (MI350X port): cuprobe reserves --lds bytes (default: the device's LDS per CU, 64 KiB on gfx942 as in v4,
+//              160 KiB on gfx950) so one probe workgroup still fills a CU; the started event records the size.
 // Measured-real-GPU when run on the declared GPU; physical HBM bytes need rocprofv3 counters separately.
 #include <hip/hip_runtime.h>
 #include <hip/hip_ext.h>
@@ -55,6 +57,7 @@ struct Args {
   int ilp = 4;                    // independent loads per thread per iteration (read_ilp)
   int expect_cus = 0;             // placement: CUs the active mask should expose (0 = all)
   long spin = 200000;             // placement: cycles each workgroup stays resident
+  int lds = 0;                    // cuprobe: dynamic LDS bytes per workgroup (0 = device LDS per CU)
 };
 
 static volatile sig_atomic_t g_stop = 0;
@@ -222,6 +225,7 @@ static Args parse(int argc, char** argv) {
     else if (k == "--ilp") a.ilp = std::stoi(v);
     else if (k == "--expect-cus") a.expect_cus = std::stoi(v);
     else if (k == "--spin") a.spin = std::stol(v);
+    else if (k == "--lds") a.lds = std::stoi(v);
     else { fprintf(stderr, "unknown option %s\n", k.c_str()); exit(1); }
   }
   return a;
@@ -244,6 +248,9 @@ int main(int argc, char** argv) {
   CHECK(hipGetDeviceProperties(&p, 0));
   int cus = p.multiProcessorCount;
   if (a.blocks == 0) a.blocks = 8 * cus;
+  if (a.lds == 0) a.lds = (int)p.maxSharedMemoryPerMultiProcessor;
+  if (a.mode == "cuprobe" && a.lds > 65536)
+    CHECK(hipFuncSetAttribute((const void*)k_cuprobe, hipFuncAttributeMaxDynamicSharedMemorySize, a.lds));
   hipStream_t s = nullptr;
   int mask_cus = cus;
   if (!a.cu_mask.empty()) {
@@ -282,7 +289,7 @@ int main(int argc, char** argv) {
       }
     }
     else if (a.mode == "placement") hipLaunchKernelGGL(k_placement, a.blocks, a.threads, 0, s, (uint32_t*)buf, a.spin);
-    else if (a.mode == "cuprobe") hipLaunchKernelGGL(k_cuprobe, a.blocks, a.threads, 65536, s, (uint32_t*)buf, a.iters);
+    else if (a.mode == "cuprobe") hipLaunchKernelGGL(k_cuprobe, a.blocks, a.threads, a.lds, s, (uint32_t*)buf, a.iters);
     else if (a.mode == "idle") {}
     else { fprintf(stderr, "unknown mode %s\n", a.mode.c_str()); exit(1); }
   };
@@ -416,8 +423,8 @@ int main(int argc, char** argv) {
       if (!started) {
         started = true;
         printf("{\"event\":\"started\",\"pid\":%d,\"unix_ns\":%lld,\"mono_ns\":%lld,\"mode\":\"%s\",\"duty_requested\":%.3f,"
-               "\"hsa_cu_mask\":\"%s\",\"footprint_bytes\":%zu}\n", (int)getpid(), rt_ns(), mono_ns(), a.mode.c_str(), a.duty,
-               mask_env, idle ? (size_t)0 : a.bytes);
+               "\"hsa_cu_mask\":\"%s\",\"footprint_bytes\":%zu,\"lds_bytes\":%d}\n", (int)getpid(), rt_ns(), mono_ns(), a.mode.c_str(), a.duty,
+               mask_env, idle ? (size_t)0 : a.bytes, a.mode == "cuprobe" ? a.lds : 0);
         fflush(stdout);
       }
       if (std::chrono::duration<double>(clk::now() - win).count() >= 0.25) emit(false);

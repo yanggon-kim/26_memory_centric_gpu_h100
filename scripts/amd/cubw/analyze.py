@@ -60,8 +60,14 @@ LEAK_MIN = 0.85
 
 # ---------------------------------------------------------------- loading
 
+FULL = 304  # device CUs; set from the plan's full_cus (v1.4: 256 on MI350X). Table keys keep the *_304 names.
+
+
 def load_plan(root):
-    return json.loads((root / 'launch_plan.json').read_text())
+    global FULL
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    FULL = plan.get('full_cus', 304)
+    return plan
 
 
 def load_journal(root):
@@ -407,13 +413,13 @@ def placement_table(rows):
     return out
 
 
-def placement_ok(table, levels=(304, 232, 200, 152, 96)):
+def placement_ok(table, levels=(304, 232, 200, 152, 96), competitor='232-303'):
     """Every lane that ran probes proved every decoder level and the competitor partition."""
     lanes = sorted({k.split('_', 1)[0] for k in table if k.startswith('L') and '_' in k})
     if not lanes:
         return False
     for lane in lanes:
-        need = [f'{lane}_n{n}' for n in levels] + [f'{lane}_competitor_232-303']
+        need = [f'{lane}_n{n}' for n in levels] + [f'{lane}_competitor_{competitor}']
         if not all(k in table and table[k]['check_passed'] and table[k]['xcc_balanced'] for k in need):
             return False
     return True
@@ -437,8 +443,8 @@ def e4_table(rows):
     out = {}
     for (exp, level, name, k), vals in sorted(cells.items()):
         e = {'metric': k, 'acquisitions': len(vals), 'mean': st.mean(vals), 'min': min(vals), 'max': max(vals)}
-        ref = cells.get((exp, '304', name, k))
-        if ref and level != '304':
+        ref = cells.get((exp, str(FULL), name, k))
+        if ref and level != str(FULL):
             e['ratio_to_304'] = st.mean(vals) / st.mean(ref)
         out.setdefault(exp, {}).setdefault(name, {})[level] = e
     return out
@@ -550,7 +556,7 @@ def build(root):
 
 
 def gates_from(plan, acqs, ptab, comp_only):
-    g = {'placement_ok': placement_ok(ptab, plan.get('levels', (304, 232, 200, 152, 96)))}
+    g = {'placement_ok': placement_ok(ptab, plan.get('levels', (304, 232, 200, 152, 96)), plan.get('competitor_mask', '232-303'))}
     comp = [a for a in acqs if a.get('competitor')]
     alone_ok = all(v['gone'] and v['residual_gpu_pids'] == [] and 'stopped' in v['events']
                    and all(o.get('gone') for o in v.get('orphans') or []) and v.get('corunner_gone', True) is not False
@@ -642,10 +648,10 @@ def report(args):
         for model in sorted({a['model'] for a in acqs if a['experiment'] == exp}):
             for gpu_tag in sorted({a['cell'].endswith('__gpu7') for a in acqs if a['experiment'] == exp and a['model'] == model}):
                 sel = [a for a in acqs if a['experiment'] == exp and a['model'] == model and a['cell'].endswith('__gpu7') == gpu_tag]
-                base = [a for a in sel if a['n'] == 304 and good(a)]
+                base = [a for a in sel if a['n'] == FULL and good(a)]
                 if exp == 'e6_decode':  # sized-for-mask kernel vs the same block's ordinary 304 cell
                     blocks = {a['block'] for a in sel}
-                    base = [a for a in acqs if a['experiment'] == 'e2' and a['model'] == model and a['n'] == 304
+                    base = [a for a in acqs if a['experiment'] == 'e2' and a['model'] == model and a['n'] == FULL
                             and a['block'] in blocks and good(a)]
                 key = f"{exp}:{model}{':gpu7' if gpu_tag else ''}"
                 levels = {}
@@ -657,7 +663,7 @@ def report(args):
                     entry = {'acquisitions': len(cell), 'complete': len(okc),
                              'mean_ms_per_step': st.mean(a['mean_ms_per_step'] for a in okc) if okc else None,
                              'clock_cells': [a.get('clock_cell_ok') for a in okc], 'mask_recorded': sorted({a.get('mask_recorded') for a in cell if a.get('mask_recorded')})}
-                    if okc and base and n != 304:
+                    if okc and base and n != FULL:
                         r = ratio_ci(by_block(okc), by_block(base), blocked=True)
                         entry['R'] = r
                         clk = clock_summary(okc + base)
@@ -668,7 +674,7 @@ def report(args):
                         entry['disposition'], entry['reason'] = disp, why
                         entry['noninferior_5pct'] = bool(disp == 'qualified' and r and r['ci95'][1] <= NONINF)
                     levels[n] = entry
-                q = [n for n in levels if n != 304 and levels[n].get('noninferior_5pct')]
+                q = [n for n in levels if n != FULL and levels[n].get('noninferior_5pct')]
                 e2[key] = {'levels': levels, 'smallest_noninferior_qualified': min(q) if q else None,
                            'criterion': 'upper 95% CI of R(n) <= 1.05 latency regression (not throughput, not equality)'}
     tables['e2'] = e2
@@ -712,9 +718,10 @@ def report(args):
             for n in plan['e3_levels']:
                 cc((n, 'mem100'), (n, 'arith100'), f'n{n}: memory100 / arithmetic100')
                 cc((n, 'mem50'), (n, 'arith100'), f'n{n}: memory50 / arithmetic100')
-            for lo in (200, 152, 96):
+            top = plan['e3_levels'][0]
+            for lo in plan['e3_levels'][1:]:
                 for t in ('mem50', 'mem100', 'mem75'):
-                    cc((lo, 'absent'), (232, t), f'n{lo} absent / n232 {t} (shared-service balance, not stock-GPU win)')
+                    cc((lo, 'absent'), (top, t), f'n{lo} absent / n{top} {t} (shared-service balance, not stock-GPU win)')
             e3[f'{exp}:{model}'] = {'cells': rows, 'contrasts': contrasts,
                                     'product': 'T(n, z): z is the declared treatment; not T(n, B_available)'}
     tables['e3'] = e3
@@ -794,7 +801,7 @@ def e6_tables(plan, attempts):
                                    'per_kernel': {k: {'sum': v[0], 'rows': v[1]} for k, v in per.items()}}
     tab = {}
     for (name, vn), lv in shapes.items():
-        base = st.mean(lv[304]) if lv.get(304) else None
+        base = st.mean(lv[FULL]) if lv.get(FULL) else None
         tab[f'{name}:{vn}'] = {str(n): {'mean_us': st.mean(v), 'acquisitions': len(v),
                                         'ratio_to_304': st.mean(v) / base if base else None} for n, v in sorted(lv.items())}
     return {'shapes': tab, 'counters': counters}

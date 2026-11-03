@@ -23,6 +23,9 @@ PLAN=${CUBW_PLAN:?launch plan}
 cd "$REL"
 kind=$(python3 -c "import json;print(json.load(open('$PLAN'))['kind'])")
 cohort=$(python3 -c "import json;print(json.load(open('$PLAN'))['cohort'])")
+arch=$(python3 -c "import json;print(json.load(open('$PLAN')).get('arch', 'gfx942'))")
+full=$(python3 -c "import json;print(json.load(open('$PLAN')).get('full_cus', 304))")
+nl=$(python3 -c "import json;print(len(json.load(open('$PLAN'))['lanes']))")  # GPUs = lanes (1 for the MI350X smoke)
 if [ "$DRY" = 1 ]; then name=dryrun_cubw_${cohort}_${kind}_$(date +%Y%m%d_%H%M%S); else name=amd_$(date +%Y%m%d)_${cohort}_cubw_v1_${kind}_job${SLURM_JOB_ID}; fi
 root=$WORK/results_amd/$name
 mkdir -p "$root"
@@ -49,14 +52,14 @@ print('missing configs:', missing)
 sys.exit(1 if missing else 0)
 EOF
 [ $? = 0 ] || { status "aborting: missing configs"; exit 3; }
-for b in svc_bench_gfx942 svc_bench_gfx942_v2 svc_bench_gfx942_v3 svc_bench_gfx942_v4; do
+for b in svc_bench_$arch svc_bench_${arch}_v2 svc_bench_${arch}_v3 svc_bench_${arch}_v4; do
   [ -x "$WORK/bin/$b" ] || { status "aborting: missing $WORK/bin/$b"; exit 3; }
 done
 
 if [ "$DRY" = 1 ]; then
-  for i in 0 1 2 3 4 5 6 7; do printf '%s\tGPU-DRYRUN%02d\t-\n' $i $i; done > "$root/gpus.tsv"
+  for i in $(seq 0 $((nl - 1))); do printf '%s\tGPU-DRYRUN%02d\t-\n' $i $i; done > "$root/gpus.tsv"
   for stage in $(python3 -c "import json;print(' '.join(json.load(open('$PLAN'))['stages']))"); do
-    for i in 0 1 2 3 4 5 6 7; do
+    for i in $(seq 0 $((nl - 1))); do
       python3 scripts/amd/cubw/cubw.py lane --plan "$root/launch_plan.json" --root "$root" --lane L$i --stage $stage --dry-run
     done
   done > "$root/DRYRUN_COMMANDS.txt"
@@ -65,10 +68,10 @@ if [ "$DRY" = 1 ]; then
 fi
 
 source scripts/amd/env.sh
-export CUBW_BENCH=$WORK/bin/svc_bench_gfx942_v3 CUBW_BENCH4=$WORK/bin/svc_bench_gfx942_v4
-expect=MI300X; [ "$cohort" = mi325x ] && expect=MI325X
+export CUBW_BENCH=$WORK/bin/svc_bench_${arch}_v3 CUBW_BENCH4=$WORK/bin/svc_bench_${arch}_v4
+expect=$(python3 -c "import json;d=json.load(open('$PLAN'));print(d.get('gpu_name') or {'mi325x': 'MI325X'}.get(d['cohort'], 'MI300X'))")
 status "preflight start on $(hostname)"
-if ! $PY scripts/amd/preflight_node.py --root "$root" --expect-name $expect > "$root/preflight.out" 2>&1; then
+if ! $PY scripts/amd/preflight_node.py --root "$root" --expect-gpus $nl --expect-name $expect --expect-arch $arch --expect-cus $full > "$root/preflight.out" 2>&1; then
   status "preflight FAILED: $(tail -n 1 "$root/preflight.out")"; exit 2
 fi
 status "preflight ok: $(tail -n 1 "$root/preflight.out")"
@@ -93,7 +96,7 @@ for stage in $(python3 -c "import json;print(' '.join(json.load(open('$PLAN'))['
     status "gates: $(python3 -c "import json;d=json.load(open('$root/gates.json'));print({k:v for k,v in d.items() if k.endswith('_ok') or k.startswith('release')})")"
   fi
   status "stage $stage start"
-  for i in 0 1 2 3 4 5 6 7; do
+  for i in $(seq 0 $((nl - 1))); do
     $PY scripts/amd/cubw/cubw.py lane --plan "$root/launch_plan.json" --root "$root" --lane L$i --stage $stage \
       > "$root/lane_L${i}_$stage.log" 2>&1 &
   done

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Freeze a release snapshot of the committed scripts, generate the launch plan inside it, dry-run every
 # lane (no GPU), then submit cubw.sbatch. Refuses to run with uncommitted changes under scripts/.
-# Usage: scripts/amd/cubw/submit.sh <pilot|production|auto> <mi300x|mi325x> <time HH:MM:SS> [plan.py args] [-- sbatch args]
+# Usage: scripts/amd/cubw/submit.sh <pilot|production|auto> <mi300x|mi325x|mi350x> <time HH:MM:SS> [plan.py args] [-- sbatch args]
 #   e.g. submit.sh pilot mi300x 01:45:00
 #        CUBW_GATES=/path/gates.json submit.sh production mi300x 03:30:00 --boundary 152
 #        submit.sh auto mi325x 03:45:00 -- --dependency=afterany:481072
@@ -23,7 +23,7 @@ plan=$WORK/cubw_plans/${cohort}_${kind}_$(date +%Y%m%d_%H%M%S)_${sha:0:8}.json
 python3 "$rel/scripts/amd/cubw/plan.py" --kind "$kind" --cohort "$cohort" --out "$plan" "${plan_args[@]}"
 chmod a-w "$plan"
 DRY_RUN=1 CUBW_PLAN=$plan CUBW_RELEASE=$rel bash "$rel/scripts/amd/cubw/cubw.sbatch" | tail -3
-part=mi3008x; [ "$cohort" = mi325x ] && part=mi3258x
+part=$(python3 -c "import json;print(json.load(open('$plan'))['partition'])")
 sbatch -p $part -t "$tlimit" -J "cubw-$cohort-$kind" --export=ALL,CUBW_PLAN=$plan,CUBW_RELEASE=$rel${CUBW_GATES:+,CUBW_GATES=$CUBW_GATES} "${sb_args[@]}" \
   "$rel/scripts/amd/cubw/cubw.sbatch"
 echo "plan=$plan release=$rel"

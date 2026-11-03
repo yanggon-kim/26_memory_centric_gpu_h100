@@ -202,3 +202,11 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - **E7 r2:** 2/4 blind points missed, so the model is not validated on MI325X.
 - **Reader v1.4:** the e6_decode disposition label is fixed.
 - 492956 (MI300X) is still pending.
+
+## 2026-11-02 — MI350X access; cubw v1.4 port; smoke and campaign submitted
+
+- Access to `mi3501x`/`mi3508x` was granted. Toy job 496003 confirmed MI350X (gfx950, 256 CUs, 288 GiB): vector
+  add correct at about 6.45 TB/s.
+- cubw v1.4: per-cohort hardware table, MI350X levels at MI300X per-XCD fractions, bench v4.1 (`--lds`), and
+  gfx950 binaries. Plans for the earlier cohorts are unchanged and their re-analysis is identical.
+- Plan and rationale: [mi350x_campaign_plan_20261102.md](mi350x_campaign_plan_20261102.md).
