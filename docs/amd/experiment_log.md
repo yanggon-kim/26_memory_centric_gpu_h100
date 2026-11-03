@@ -219,3 +219,14 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - wvSplitK on gfx950 runs 256 workgroups × 160 KiB LDS (one per CU).
 - Leak test v2 is insensitive on MI350X (positive control: 0 of 8 CUs), so E3 will not be released there.
 - 496074 (MI350X campaign, release e7116c1f) was held while the smoke ran, then released.
+
+## 2026-11-03 — MI350X campaign 496074 complete
+
+- Review: [mi350x_campaign_review_20261103.md](mi350x_campaign_review_20261103.md). Run time 1 h 09 min (about
+  12.9 units). 686/686 steps that ran had rc = 0. E3-minimal was not released (leak v2 insensitive on gfx950).
+- **E2:** R(n) is a step, 1.16–1.25 from 232 down to 128 and 1.86 at 80. It is larger than MI300X and MI325X at
+  every matched per-XCD fraction (clock-confounded).
+- **E6:** the default `wvSplitK` plateau (about 1.2×) matches R(n). The kernel sized for n gives R = 0.989 at
+  192 CUs, but is worse at 208/184/168/152. Counters: same bytes; time tracks HBM reads in flight.
+- **E8:** at 168 CUs, the guardrail workloads are 14–21% slower and use about 9% more J/token.
+- `e6_counters.py` now takes its levels from the data (it had the MI325X levels hard-coded).

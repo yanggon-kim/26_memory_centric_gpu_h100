@@ -2,7 +2,7 @@
 """E6 (CPU only): per-variant wvSplitK counters from e6_counters rocprofv3 runs of e6_shapes.py --light.
 
 Each shape runs wvsplitk_dev then wvsplitk_n, 5 dispatches each (correctness, warmup, 3 timed); the 3 timed
-dispatches are averaged. Prints counter means per shape/variant at 304/232/200/152.
+dispatches are averaged. Prints counter means per shape/variant at every level present (largest first).
 
   e6_counters.py <job root> <out.json>
 """
@@ -29,11 +29,12 @@ for d in sorted(glob.glob(root+'/e6_counters/*')):
             res[f'{s}:{var}']={'v':st.mean(e['v'] for e in seg),'dur_us':st.mean(e['dur'] for e in seg)/1e3,'grid':seg[0]['grid']}
     out[tag]=res
 json.dump(out,open(sys.argv[2],'w'),indent=1)
+levels=sorted({int(t.split('_',1)[0][1:]) for t in out},reverse=True)
 cnts=['FETCH_SIZE','TCC_EA0_RDREQ','TCC_EA0_RDREQ_LEVEL','GRBM_GUI_ACTIVE']
 for s in ['qkv','o_proj','gate_up','down','lm_head']:
   for var in ['dev','n']:
     line=f'{s:8s}{var:4s}'
-    for n in (304,232,200,152):
+    for n in levels:
         cells=[]
         for c in cnts:
             x=out.get(f'n{n}_{c}',{}).get(f'{s}:{var}')

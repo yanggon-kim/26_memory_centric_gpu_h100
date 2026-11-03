@@ -1,0 +1,176 @@
+{
+ "placement_ok": true,
+ "lifecycle_ok": true,
+ "outputs_e6_decode": {
+  "runs": 0,
+  "complete": 0,
+  "digests": [],
+  "matches_ordinary": null
+ },
+ "outputs_ok": true,
+ "outputs_detail": {
+  "runs": 22,
+  "complete": 22,
+  "distinct_digests": 1
+ },
+ "leak_ratios": {
+  "qwen32b_graph_b1_c4096__n192__arith100_L1": 0.8749665789480344,
+  "qwen32b_graph_b1_c4096__n192__arith100": 0.8504520478742643
+ },
+ "leak_ok": true,
+ "leak_v11": {
+  "qwen32b_graph_b1_c4096__n192__arith100_L1": {
+   "decoder_ratio": 0.9125493851398452,
+   "native_ratios": {
+    "mem100": 1.0180677728677976,
+    "arith100": 0.9135025970039967
+   },
+   "relative": 0.8963542599617731
+  },
+  "qwen32b_graph_b1_c4096__n128__leakprobe_L1": {
+   "decoder_ratio": 0.8021266712219027,
+   "native_ratios": {
+    "mem100": 0.8215764947817066,
+    "arith100": 0.8788929850209436
+   },
+   "relative": 0.9126556758247291
+  },
+  "qwen32b_graph_b1_c4096__n192__arith100": {
+   "decoder_ratio": 0.8504520478742643,
+   "native_ratios": {
+    "mem100": 0.9761392543449833,
+    "arith100": 0.8758805333458685
+   },
+   "relative": 0.8712404957476496
+  }
+ },
+ "leak_ok_v11": true,
+ "leak_v2": {
+  "qwen32b_graph_b1_c4096__n192__cuprobe_L2": {
+   "expected_cus": 64,
+   "alone_cus": 64,
+   "covered_cus": [
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "native_min_q": [
+    0.9999799580722872,
+    0.9999799580722871
+   ],
+   "positive_cus_below": [
+    0
+   ],
+   "decoder_min_q": [
+    0.999979958072287
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9499799580722871,
+   "ok": false
+  },
+  "qwen32b_graph_b1_c4096__n128__cuprobe_L2": {
+   "expected_cus": 128,
+   "alone_cus": 128,
+   "covered_cus": [
+    128,
+    128,
+    128,
+    128,
+    128
+   ],
+   "native_min_q": [
+    0.9999872981870261,
+    0.9999922320267576
+   ],
+   "positive_cus_below": [
+    0
+   ],
+   "decoder_min_q": [
+    0.9999839422941473
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9499872981870261,
+   "ok": false
+  },
+  "qwen32b_graph_b1_c4096__n192__cuprobe_L3": {
+   "expected_cus": 64,
+   "alone_cus": 64,
+   "covered_cus": [
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "native_min_q": [
+    0.9999802706083362,
+    0.9999822347430601
+   ],
+   "positive_cus_below": [
+    0
+   ],
+   "decoder_min_q": [
+    0.999980270608336
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9499802706083361,
+   "ok": false
+  },
+  "qwen32b_graph_b1_c4096__n128__cuprobe_L3": {
+   "expected_cus": 128,
+   "alone_cus": 128,
+   "covered_cus": [
+    128,
+    128,
+    128,
+    128,
+    128
+   ],
+   "native_min_q": [
+    0.9999833566340457,
+    0.9999922474411305
+   ],
+   "positive_cus_below": [
+    0
+   ],
+   "decoder_min_q": [
+    0.9999714276556956
+   ],
+   "decoder_cus_below": [
+    0
+   ],
+   "sensitive": false,
+   "threshold": 0.9499833566340457,
+   "ok": false
+  }
+ },
+ "leak_ok_v2": false,
+ "clock": {
+  "pooled_ok": false,
+  "gfx_min": 1649,
+  "gfx_max": 2204,
+  "gfx_ratio": 1.3365676167374165,
+  "mem_min": 2000,
+  "mem_max": 2000,
+  "samples": 749,
+  "coverage_min": 0.6983580877258115
+ },
+ "clock_ok": false,
+ "release_e2": true,
+ "release_e3_minimal": true,
+ "release_e3_full": false,
+ "release_e5e8": true,
+ "release_e3_minimal_v2": false,
+ "source_root": "/work1/proj_blaisetine/yanggon/results_amd/amd_20261103_mi350x_cubw_v1_auto_job496074"
+}
