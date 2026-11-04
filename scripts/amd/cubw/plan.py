@@ -38,6 +38,16 @@ pre-registered in docs/amd/mi350x_followup_plan_20261103.md:
                 count <= n) on 8 blocks; e6_decode at the balanced levels; E3-minimal on 5 blocks if
                 release_e3_minimal_v3; kernel traces with the balanced size; E6 shapes with --cu-counts x3
 
+v1.6 follow-ups, pre-registered in docs/amd/followups_v16_plan_20261104.md:
+  --leak4 (MI350X)   leak test v4 (svc_bench_v6 start-delay probe on n..255 alone; beside native read/fma on 0..n-1;
+                     beside positive controls on 0..n+7: the v4 full-LDS probe and the decoder itself (required), fma and
+                     read (recorded); beside the decoder at n) on every GPU, gate leak_ok_v4, then E3-minimal on 8 blocks
+                     (release_e3_minimal_v4) with E2 at 256 in each block
+  --se-study (MI300X) shader-engine balance of wvSplitK on gfx942: placement and the dispatch probe at SE_LEVELS, E2 pilot,
+                     then on 8 blocks E2 at every level, 'e6_balanced' (size balanced(n)) at the unbalanced levels including
+                     the full device (304 -> 288) and 'e6_decode' at the balanced masks; kernel traces; shapes x3
+  --smoke with either: the one-GPU version (mi3501x / mi3001x), pilot-labelled, releases nothing
+
 v1.3 extension (--kind auto --extension, after the production jobs 487341/489594), one allocation per cohort:
   pilot stage   placement at the fine levels; leak test v2 (svc_bench_v4 per-CU probe on n..303 alone, beside
                 native read/fma co-runners on 0..n-1, beside a positive-control probe overlapping 8 probe CUs,
@@ -72,13 +82,17 @@ BOUNDARY = 200
 # v1.4 (MI350X port): per-cohort hardware. MI350X levels keep MI300X's per-XCD fractions on 8 XCDs x 32 CUs
 # (24/32 ~ 29/38, 21/32 ~ 25/38, 16/32 = 19/38, 10/32 ~ 12/38); the competitor holds the top 8 CUs per XCD.
 HW = {
-    'mi300x': {'full': 304, 'arch': 'gfx942', 'gpu_name': 'MI300X', 'partition': 'mi3008x', 'rate': 8.0},
-    'mi325x': {'full': 304, 'arch': 'gfx942', 'gpu_name': 'MI325X', 'partition': 'mi3258x', 'rate': 12.8},
+    'mi300x': {'full': 304, 'arch': 'gfx942', 'gpu_name': 'MI300X', 'partition': 'mi3008x', 'rate': 8.0, 'se_per_xcd': 4},
+    'mi325x': {'full': 304, 'arch': 'gfx942', 'gpu_name': 'MI325X', 'partition': 'mi3258x', 'rate': 12.8, 'se_per_xcd': 4},
     'mi350x': {'full': 256, 'arch': 'gfx950', 'gpu_name': 'MI350X', 'partition': 'mi3508x', 'rate': 11.2,
                'levels': [256, 192, 168, 128, 80], 'fine': [256, 232, 208, 192, 184, 168, 152, 128],
                'counter_levels': (256, 192, 168, 128), 'boundary': 168, 'se_per_xcd': 4},
 }
 XCDS = 8
+# v1.6: MI300X shader-engine study levels. Contiguous masks give 4 SEs per XCD (job 492956 placement keys): 304 is
+# 9,10,10,9 per SE; 288/256/224/192/128 are balanced; 272/232/200/152 are not.
+SE_LEVELS = [304, 288, 272, 256, 232, 224, 200, 192, 152, 128]
+SINGLE_GPU = {'mi300x': 'mi3001x', 'mi350x': 'mi3501x'}
 
 
 def configure(cohort):
@@ -466,6 +480,104 @@ def dispatch_suite(plan, lane, stage, levels):
                     level=n)['bench'] = 'v5'
 
 
+def leak_suite_v4(plan, lane, stage, rng):
+    """v1.6 start-delay probe (gapprobe) on n..FULL-1: alone; beside native read/fma on 0..n-1; beside positive controls
+    on 0..n+7 (the v4 full-LDS probe, fma, read) and beside the decoder on 0..n+7; beside the decoder at n."""
+    for n in LEAK_LEVELS:
+        probe = f'{n}-{FULL - 1}'
+        steps = [lambda: plan.competitor_only(lane, stage, 'e1_leak_v4', f'alone_gapprobe_{probe}_{lane}', 'gapprobe', 30,
+                                              comp_mask=probe)]
+        for co, mask in (('mem100', f'0-{n - 1}'), ('arith100', f'0-{n - 1}'), ('cuprobe', f'0-{n + 7}'),
+                         ('arith100', f'0-{n + 7}'), ('mem100', f'0-{n + 7}')):
+            steps.append(lambda co=co, mask=mask: plan.competitor_only(
+                lane, stage, 'e1_leak_v4', f'corun_{co}_{mask}_gapprobe_{probe}_{lane}', 'gapprobe', 30, comp_mask=probe,
+                corunner={'treatment': co, 'mask': mask}))
+        steps.append(lambda: plan.vllm(lane, stage, 'e1_leak_v4', 'qwen32b', n, 'gapprobe', comp_mask=probe, tag=f'_{lane}'))
+        steps.append(lambda: plan.vllm(lane, stage, 'e1_leak_v4', 'qwen32b', n + 8, 'gapprobe', comp_mask=probe,
+                                       tag=f'_positive_{lane}'))
+        rng.shuffle(steps)
+        for f in steps:
+            f()
+
+
+def build_leak4(cohort, smoke=False):
+    """v1.6 MI350X: leak test v4 on every GPU, gate, E3-minimal on 8 blocks. smoke: one GPU, releases nothing."""
+    levels = sorted({FULL} | {n for n in LEAK_LEVELS} | {n + 8 for n in LEAK_LEVELS}, reverse=True)
+    lanes = ['L0'] if smoke else [f'L{i}' for i in range(8)]
+    p = Plan('pilot' if smoke else 'auto', cohort)
+    placement_core(p, 'pilot', lanes=lanes, levels=levels)
+    for lane in lanes:
+        leak_suite_v4(p, lane, 'pilot', random.Random(f'{SEED}:leak4:{cohort}:{lane}'))
+    p.levels, p.v16 = levels, True
+    if smoke:
+        p.n_lanes, p.partition = 1, SINGLE_GPU[cohort]
+        return p
+    for b, lane in enumerate(lanes):
+        rng = random.Random(f'{SEED}:{cohort}:leak4:block{b}')
+        cells = [('e2', FULL, 'absent', 'release_e2')]
+        cells += [('e3', n, t, 'release_e3_minimal_v4') for n in E3_MINIMAL['levels'] for t in E3_MINIMAL['treatments']]
+        if b == 0:
+            cells.append(('e3', E3_MINIMAL['levels'][0], 'inactive', 'release_e3_minimal_v4'))
+        rng.shuffle(cells)
+        for exp, n, t, req in cells:
+            p.vllm(lane, 'production', exp, 'qwen32b', n, t, acq=b, block=b, requires=req)
+    return p
+
+
+def build_se_study(cohort, smoke=False):
+    """v1.6 MI300X shader-engine balance study (H_SE on gfx942). smoke: one GPU, releases nothing."""
+    levels = SE_LEVELS
+    unbalanced = [n for n in levels if balanced(n, cohort) != n]
+    bal_masks = [n for n in levels if balanced(n, cohort) == n]
+    sized = lambda n: [f'CUBW_CU_COUNT_OVERRIDE={balanced(n, cohort)}']
+    if smoke:
+        p = Plan('pilot', cohort)
+        placement_core(p, 'pilot', lanes=['L0'], levels=levels)
+        dispatch_suite(p, 'L0', 'pilot', levels)
+        for n in (FULL, 272):
+            p.vllm('L0', 'pilot', 'e1_e2_pilot', 'qwen32b', n)
+            p.vllm('L0', 'pilot', 'e6_balanced', 'qwen32b', n, tag=f'__cu{balanced(n, cohort)}', extra_env=sized(n))
+        p.vllm('L0', 'pilot', 'e6_decode', 'qwen32b', 256, tag='__cu256', extra_env=['CUBW_CU_COUNT_OVERRIDE=256'])
+        for n in (FULL, 272):
+            p.shell('L0', 'pilot', 'e6_shapes', f'n{n}_a0', e6_cmd(n, 'e6.json', cu_counts=[balanced(n, cohort)]),
+                    est=180, timeout=900, level=n, acquisition=0)
+        p.n_lanes, p.partition, p.levels, p.v16 = 1, SINGLE_GPU[cohort], levels, True
+        return p
+    p = Plan('auto', cohort)
+    lanes = [f'L{i}' for i in range(8)]
+    placement_core(p, 'pilot', levels=levels)
+    dispatch_suite(p, 'L0', 'pilot', levels)
+    dispatch_suite(p, 'L1', 'pilot', levels)
+    rng = random.Random(f'{SEED}:se_study:{cohort}')
+    for lane in lanes[2:]:
+        order = [FULL, 288, 272]; rng.shuffle(order)
+        for n in order:
+            p.vllm(lane, 'pilot', 'e1_e2_pilot', 'qwen32b', n, tag=f'__{lane}')
+    for b, lane in enumerate(lanes):
+        rng = random.Random(f'{SEED}:{cohort}:se_study:block{b}')
+        cells = [('e2', n, None) for n in levels]
+        cells += [('e6_balanced', n, balanced(n, cohort)) for n in unbalanced]
+        cells += [('e6_decode', n, n) for n in bal_masks]
+        rng.shuffle(cells)
+        for exp, n, cu in cells:
+            p.vllm(lane, 'production', exp, 'qwen32b', n, acq=b, block=b, requires='release_e2', tag=f'__cu{cu}' if cu else '',
+                   extra_env=[f'CUBW_CU_COUNT_OVERRIDE={cu}'] if cu else None)
+    order = iter((lanes[4:] + lanes[:4]) * 20)
+    for n in (FULL, 272):
+        p.vllm(next(order), 'production', 'e6_timeline', 'qwen32b', n, profile={'kind': 'kernel_trace'}, tag='__ktrace',
+               requires='release_e2')
+    for n in unbalanced:
+        p.vllm(next(order), 'production', 'e6_timeline', 'qwen32b', n, profile={'kind': 'kernel_trace'},
+               tag=f'__cu{balanced(n, cohort)}__ktrace', requires='release_e2', extra_env=sized(n))
+    for acq in range(3):
+        for n in levels:
+            p.shell(next(order), 'production', 'e6_shapes', f'n{n}_a{acq}',
+                    e6_cmd(n, 'e6.json', cu_counts=[balanced(n, cohort)] if balanced(n, cohort) != n else None),
+                    est=180, timeout=900, level=n, acquisition=acq)
+    p.levels, p.v16 = levels, True
+    return p
+
+
 def build_followup(cohort, smoke=False):
     """v1.5 MI350X follow-up (leak test v3 -> E3-minimal; shader-engine balance of wvSplitK). smoke: one GPU,
     pilot-labelled, releases nothing."""
@@ -717,9 +829,9 @@ def finalize(p, src, args):
         stages[s['stage']][s['lane']] += s['est_s']
     longest = sum(max(v.values()) for v in stages.values())  # stages run one after another
     rates = {k: v['rate'] for k, v in HW.items()}  # allocation units per node-hour (MI350X: 8 x 1.4, not yet observed)
-    rate = 1.4 if getattr(p, 'partition', None) == 'mi3501x' else rates[args.cohort]  # 1-GPU MI350X slice: 8 x 0.175
+    rate = {'mi3501x': 1.4, 'mi3001x': 1.0}.get(getattr(p, 'partition', None), rates[args.cohort])  # 1-GPU slices: 8 x 0.175 / 0.125
     plan = {
-        'version': 'cubw_v1.5' if getattr(p, 'followup', False) else 'cubw_v1.4' if getattr(p, 'campaign', False) else 'cubw_v1.3' if getattr(p, 'extension', False) else 'cubw_v1.2',
+        'version': 'cubw_v1.6' if getattr(p, 'v16', False) else 'cubw_v1.5' if getattr(p, 'followup', False) else 'cubw_v1.4' if getattr(p, 'campaign', False) else 'cubw_v1.3' if getattr(p, 'extension', False) else 'cubw_v1.2',
         'e4_done_in': args.e4_done_in, 'campaign': getattr(p, 'campaign', False), 'followup': getattr(p, 'followup', False),
         'extension': getattr(p, 'extension', False), 'fine_levels': FINE if getattr(p, 'extension', False) else None, 'kind': p.kind, 'cohort': args.cohort, 'seed': SEED,
         'assignment': 'docs/amd/compute_bandwidth_followup_20261026.md',
@@ -756,7 +868,17 @@ def finalize(p, src, args):
                           'residency (svc_bench_v5 cuprobe_t) instead of completion rate. Natives: co-runners on 0..n-1; '
                           'positive controls: fma, read and the v4 full-LDS probe on 0..n+7 (8 shared CUs), each of which '
                           'must flag >= 4 CUs with q_c < 0.85, else the test is insensitive and leak_ok_v3 is false',
-            'release_e3_minimal_v3': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v3'},
+            'release_e3_minimal_v3': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v3',
+            'leak_ok_v4': 'v1.6, predeclared before any start-delay-probe data (docs/amd/followups_v16_plan_20261104.md): '
+                          'svc_bench_v6 gapprobe on n..FULL-1, one full-LDS 16-wave workgroup per probe CU per launch, 200 us '
+                          'host gap. Per CU c: f_c = (launches whose first workgroup on c started > 5 us after the launch\'s '
+                          'first start + launches with no workgroup on c) / launches; e_c = f_c(beside X) - f_c(alone), same '
+                          'GPU and mask; c is flagged if e_c >= 0.10. The alone run must cover all FULL-n probe CUs. '
+                          'Sensitivity: the v4 full-LDS probe on 0..n+7 and the decoder on 0..n+7 must each flag >= 4 CUs '
+                          '(fma and read on 0..n+7 are recorded, not required), else the test is insensitive and leak_ok_v4 '
+                          'is false. Pass iff every decoder run at n flags no more CUs than the most flagged by a native '
+                          'read/fma co-runner on 0..n-1, on every GPU and level',
+            'release_e3_minimal_v4': 'placement_ok and lifecycle_ok and outputs_ok and leak_ok_v4'},
         'unavailable': {'e5_graph_counters': 'rocprofv3 --pmc on graph-mode vLLM decode failed in both MI300X pilot '
                                               'attempts (illegal memory access; hang to timeout), job 481167'},
         'retry_policy': 'two attempts maximum, only for execution/tool failures; correctness failures never retried',
@@ -775,7 +897,11 @@ def finalize(p, src, args):
 def main(args):
     src = Path(args.config_source)
     configure(args.cohort)
-    if args.followup:
+    if args.leak4:
+        p = build_leak4(args.cohort, smoke=args.smoke)
+    elif args.se_study:
+        p = build_se_study(args.cohort, smoke=args.smoke)
+    elif args.followup:
         p = build_followup(args.cohort, smoke=args.smoke)
     elif args.smoke:
         p = build_smoke(args.cohort)
@@ -820,5 +946,7 @@ if __name__ == '__main__':
     q.add_argument('--smoke', action='store_true', help='pilot: v1.4 one-GPU smoke (MI350X on mi3501x)')
     q.add_argument('--campaign', action='store_true', help='auto: v1.4 new-cohort campaign (MI350X)')
     q.add_argument('--followup', action='store_true', help='v1.5 MI350X follow-up (with --smoke: the one-GPU smoke)')
+    q.add_argument('--leak4', action='store_true', help='v1.6 MI350X leak test v4 + E3-minimal (with --smoke: one GPU)')
+    q.add_argument('--se-study', action='store_true', help='v1.6 MI300X shader-engine study (with --smoke: one GPU)')
     q.add_argument('--out', type=Path, required=True)
     main(q.parse_args())

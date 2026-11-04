@@ -31,6 +31,9 @@ per-attempt CUBW_STEP_TAG and get the same orphan sweep and residual-process rec
 v1.5 (MI350X follow-up): 'cuprobe_t' treatment (svc_bench_v5 duration probe, leak test v3) runs from CUBW_BENCH5;
 a native step with bench='v5' (dispatch probe) runs CUBW_BENCH5 instead of CUBW_BENCH.
 
+v1.6 (leak test v4, E3 on MI350X): 'gapprobe' treatment (svc_bench_v6 start-delay probe) runs from CUBW_BENCH6 with one
+16-wave full-LDS workgroup per CU of its mask per launch and a 200 us host gap between launches.
+
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
 import argparse
@@ -48,14 +51,16 @@ WORK = Path(os.environ.get('WORK', '/work1/proj_blaisetine/yanggon'))
 BIN = Path(os.environ.get('CUBW_BENCH', WORK / 'bin/svc_bench_gfx942_v3'))
 BIN4 = Path(os.environ.get('CUBW_BENCH4', WORK / 'bin/svc_bench_gfx942_v4'))
 BIN5 = Path(os.environ.get('CUBW_BENCH5', WORK / 'bin/svc_bench_gfx950_v5'))
+BIN6 = Path(os.environ.get('CUBW_BENCH6', WORK / 'bin/svc_bench_gfx950_v6'))
 COMPETITOR_BYTES = 1 << 30  # 1 GiB read footprint: far above the 256 MiB MALL
 TREATMENTS = {  # name -> (competitor mode, requested duty); None = competitor absent
     'absent': None, 'inactive': ('idle', 1.0),
     'mem25': ('read', 0.25), 'mem50': ('read', 0.50), 'mem75': ('read', 0.75), 'mem100': ('read', 1.00),
     'arith100': ('fma', 1.00), 'leakprobe': ('fma', 1.00), 'cuprobe': ('cuprobe', 1.00),
-    'cuprobe_t': ('cuprobe_t', 1.00),
+    'cuprobe_t': ('cuprobe_t', 1.00), 'gapprobe': ('gapprobe', 1.00),
 }
-BENCH_FOR_MODE = {'cuprobe': BIN4, 'cuprobe_t': BIN5}
+BENCH_FOR_MODE = {'cuprobe': BIN4, 'cuprobe_t': BIN5, 'gapprobe': BIN6}
+GAPPROBE = ['--iters', '600', '--threads', '1024', '--gap-us', '200', '--late-ns', '5000']
 
 
 def mask_range(lo, hi):
@@ -158,6 +163,9 @@ def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
         args += ['--iters', '2000']
     elif mode == 'cuprobe_t':
         args += ['--iters', '500']
+    elif mode == 'gapprobe':  # one workgroup per CU of the (contiguous lo-hi) probe mask
+        lo, hi = (int(x) for x in mask.split('-'))
+        args += GAPPROBE + ['--blocks', str(hi - lo + 1)]
     env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
     out = open(adir / f'{name}.jsonl', 'w')
     err = open(adir / f'{name}.err', 'w')

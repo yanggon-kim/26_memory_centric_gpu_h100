@@ -45,6 +45,10 @@ workgroups / summed workgroup residency, evaluated with the v1.3 rule (leak_v2_e
 that do not overlap the probe mask and positives are co-runners that overlap it; leak_ok_v3 / release_e3_minimal_v3.
 'e6_balanced' (wvSplitK sized for a shader-engine-balanced count <= the active CUs) is tabled like e6_decode.
 
+v1.6 (leak test v4, docs/amd/followups_v16_plan_20261104.md): svc_bench_v6 start-delay probe (gapprobe). Per CU c,
+late fraction f_c = (late launches + launches without a probe workgroup on c) / launches; excess e_c = f_c(beside X) -
+f_c(alone), same GPU and probe mask; a CU is flagged when e_c >= 0.10 (leak_v4_eval). leak_ok_v4 / release_e3_minimal_v4.
+
   analyze.py report --root <root> [--out <dir>]     tables + summary.md
   analyze.py gate   --root <pilot-root> --out gates.json
 """
@@ -137,8 +141,9 @@ def competitor_windows(path):
     for w in wins:
         if w['t1_unix_ns'] in cus:
             w['cu_blocks'] = cus[w['t1_unix_ns']]['cu_blocks']
-            if 'cu_mean_ns' in cus[w['t1_unix_ns']]:
-                w['cu_mean_ns'] = cus[w['t1_unix_ns']]['cu_mean_ns']
+            for k in ('cu_mean_ns', 'cu_late', 'cu_multi', 'gap_launches'):
+                if k in cus[w['t1_unix_ns']]:
+                    w[k] = cus[w['t1_unix_ns']][k]
     for w in wins:  # offset measured before clipping
         if 't0_mono_ns' in w:
             w['rt_offset_ns'] = w['t0_unix_ns'] - w['t0_mono_ns']
@@ -185,6 +190,55 @@ def cu_speed(wins):
             n[k] += int(c)
             ns[k] += int(c) * float(w['cu_mean_ns'][k])
     return {k: n[k] / (ns[k] / 1e9) for k in n if ns[k]} or None
+
+
+def gap_counts(wins):
+    """v1.6 start-delay probe: launches and per-CU launches seen / late / with >= 2 workgroups (None without data)."""
+    out = {'launches': 0, 'seen': collections.Counter(), 'late': collections.Counter(), 'multi': collections.Counter()}
+    for w in wins:
+        if 'cu_late' not in w:
+            continue
+        out['launches'] += int(w['gap_launches'])
+        for k in ('seen', 'late', 'multi'):
+            out[k].update({c: int(v) for c, v in w['cu_blocks' if k == 'seen' else 'cu_' + k].items()})
+    return out if out['launches'] else None
+
+
+def late_fraction(g, cus):
+    """f_c = (late launches + launches in which c ran no probe workgroup) / launches, for each CU key in cus."""
+    L = g['launches']
+    return {c: (g['late'].get(c, 0) + L - g['seen'].get(c, 0)) / L for c in cus}
+
+
+def leak_v4_eval(alone, natives, positives, decoders, expected_cus, flag=0.10, pos_min=4, info=None):
+    """Predeclared v1.6 leak test (gap_counts dicts), one GPU and probe mask. Flagged CU: e_c = f_c - f_c(alone) >= flag.
+    Sensitive iff every required positive flags >= pos_min CUs; ok iff every run covers the expected CUs, the test is
+    sensitive, and every decoder run flags no more CUs than the most of any native run."""
+    out = {'expected_cus': expected_cus, 'alone_cus': len(alone['seen']) if alone else 0, 'flag_excess': flag}
+    if not alone or not natives or not positives or not decoders:
+        out.update(ok=False, reason='missing runs')
+        return out
+    cus = sorted(alone['seen'])
+    f0 = late_fraction(alone, cus)
+    def ex(g):
+        f = late_fraction(g, cus)
+        return {c: f[c] - f0[c] for c in cus}
+    def flags(g):
+        return sum(v >= flag for v in ex(g).values())
+    out['alone_late_max'] = max(f0.values())
+    out['launches'] = [g['launches'] for g in [alone] + natives + positives + decoders]
+    out['native_flags'] = [flags(g) for g in natives]
+    out['native_max_excess'] = [max(ex(g).values()) for g in natives]
+    out['positive_flags'] = [flags(g) for g in positives]
+    out['positive_top8_excess'] = [sorted(ex(g).values())[-8:] for g in positives]
+    out['decoder_flags'] = [flags(g) for g in decoders]
+    out['decoder_max_excess'] = [max(ex(g).values()) for g in decoders]
+    if info:
+        out['info_positive_flags'] = {k: flags(g) for k, g in info.items()}
+    out['sensitive'] = all(p >= pos_min for p in out['positive_flags'])
+    out['ok'] = (out['alone_cus'] == expected_cus and out['sensitive']
+                 and all(d <= max(out['native_flags']) for d in out['decoder_flags']))
+    return out
 
 
 def leak_v2_eval(alone, natives, positives, decoders, expected_cus, margin=0.05, pos_q=0.85, pos_min=4):
@@ -301,6 +355,9 @@ def acquisition(step, atts, samples, plan):
             inside = [w for w in wins if any(lo <= w['t0_unix_ns'] and w['t1_unix_ns'] <= hi for lo, hi in a['windows'])]
             a['competitor']['cu_rates'] = cu_rates(inside)
             a['competitor']['cu_speed'] = cu_speed(inside)
+        if comp['mode'] == 'gapprobe':
+            inside = [w for w in wins if any(lo <= w['t0_unix_ns'] and w['t1_unix_ns'] <= hi for lo, hi in a['windows'])]
+            a['competitor']['gap'] = gap_counts(inside)
         a['lifecycle_ok'] = bool(a['competitor']['started'] and a['competitor']['stopped_event'] and a['competitor']['gone']
                                  and a['isolation_ok'] and a['competitor']['trial_coverage'] >= 0.95
                                  and all(o.get('gone') for o in rec.get('orphans') or []))
@@ -604,7 +661,8 @@ def build(root):
                                         'probe_mode': rec['competitor']['mode'],
                                         'corunner': s.get('corunner'),
                                         'corunner_gone': (co or {}).get('stop', {}).get('gone'),
-                                        'cu_rates': cu_rates(steady), 'cu_speed': cu_speed(steady)}
+                                        'cu_rates': cu_rates(steady), 'cu_speed': cu_speed(steady),
+                                        'gap': gap_counts(steady)}
     return plan, acqs, nat, ptab, comp_only, attempts, samples
 
 
@@ -695,6 +753,30 @@ def gates_from(plan, acqs, ptab, comp_only):
         v3[a['cell']]['positive_treatments'] = sorted(v['corunner']['treatment'] for v in rows if v['corunner'] and overlaps(v))
     g['leak_v3'] = v3
     g['leak_ok_v3'] = bool(v3) and all(v['ok'] for v in v3.values())
+    # v1.6: leak test v4 (start-delay probe). Decoder test: decoder on 0..n-1 beside the probe on n..FULL-1. Required
+    # positives: the v4 full-LDS probe on 0..n+7 and the decoder itself on 0..n+7; fma/read on 0..n+7 are recorded only.
+    v4 = {}
+    gap_dec = [a for a in comp if a['competitor']['mode'] == 'gapprobe' and a['competitor'].get('gap')]
+    for a in gap_dec:
+        mask = a['competitor']['mask'].split(':', 1)[1]
+        lo, hi = (int(x) for x in mask.split('-'))
+        if a['n'] != lo:
+            continue
+        rows = [v for v in comp_only.values() if v['probe_mask'] == mask and v['probe_mode'] == 'gapprobe'
+                and v['lane'] == a['lane'] and v.get('gap')]
+        def overlaps(v):
+            return int(v['corunner']['mask'].split('-')[1]) >= lo
+        alone = [v['gap'] for v in rows if not v['corunner']]
+        pos = [v['gap'] for v in rows if v['corunner'] and overlaps(v) and v['corunner']['treatment'] == 'cuprobe']
+        pos += [d['competitor']['gap'] for d in gap_dec if d['lane'] == a['lane'] and d['n'] > lo
+                and d['competitor']['mask'] == a['competitor']['mask']]
+        info = {v['corunner']['treatment']: v['gap'] for v in rows
+                if v['corunner'] and overlaps(v) and v['corunner']['treatment'] != 'cuprobe'}
+        v4[a['cell']] = leak_v4_eval(alone[0] if alone else None,
+                                     [v['gap'] for v in rows if v['corunner'] and not overlaps(v)], pos,
+                                     [a['competitor']['gap']], hi - lo + 1, info=info)
+    g['leak_v4'] = v4
+    g['leak_ok_v4'] = bool(v4) and all(v['ok'] for v in v4.values())
     e2 = [a for a in q if a['experiment'] in ('e1_e2_pilot', 'e2') and good(a)]
     g['clock'] = clock_summary(e2)
     g['clock_ok'] = g['clock']['pooled_ok']
@@ -704,6 +786,7 @@ def gates_from(plan, acqs, ptab, comp_only):
     g['release_e5e8'] = g['outputs_ok']
     g['release_e3_minimal_v2'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v2']
     g['release_e3_minimal_v3'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v3']
+    g['release_e3_minimal_v4'] = g['placement_ok'] and g['lifecycle_ok'] and g['outputs_ok'] and g['leak_ok_v4']
     return g
 
 
@@ -890,8 +973,8 @@ def fmt(r):
 def summary_md(t):
     L = [f"# cubw_v1 {t['plan_kind']} — {t['cohort']}", '', '## Gates', '']
     g = t['gates']
-    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'leak_ok_v11', 'leak_ok_v2', 'leak_ok_v3', 'clock_ok', 'release_e2',
-              'release_e3_minimal', 'release_e3_minimal_v2', 'release_e3_minimal_v3', 'release_e3_full', 'release_e5e8'):
+    for k in ('placement_ok', 'lifecycle_ok', 'outputs_ok', 'leak_ok', 'leak_ok_v11', 'leak_ok_v2', 'leak_ok_v3', 'leak_ok_v4', 'clock_ok', 'release_e2',
+              'release_e3_minimal', 'release_e3_minimal_v2', 'release_e3_minimal_v3', 'release_e3_minimal_v4', 'release_e3_full', 'release_e5e8'):
         L.append(f'- {k}: **{g.get(k)}**')
     L.append(f"- outputs: {g.get('outputs_detail')}")
     L.append(f"- leak ratios (probe during decode / probe alone): {g.get('leak_ratios')}")
@@ -960,6 +1043,10 @@ def summary_md(t):
     if t['gates'].get('leak_v3'):
         L += ['', '## Leak test v3 (per-CU duration probe)', '']
         for k, v in t['gates']['leak_v3'].items():
+            L.append(f'- {k}: {v}')
+    if t['gates'].get('leak_v4'):
+        L += ['', '## Leak test v4 (per-CU start-delay probe)', '']
+        for k, v in t['gates']['leak_v4'].items():
             L.append(f'- {k}: {v}')
     L += ['', '## E8 guardrails', '']
     for k, e in t['e8'].items():

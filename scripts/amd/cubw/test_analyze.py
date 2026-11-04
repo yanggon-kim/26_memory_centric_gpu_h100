@@ -287,9 +287,40 @@ def test_v15_duration_probe():
           and d['cus_with_2plus'] == 1 and d['serialized_wgs_mean'] == 1 and d['wg_per_se_xcd0'] == [1, 2, 1, 0], str(d))
 
 
+def test_v16_start_delay_probe():
+    """v1.6: late fraction counts late and missing launches; leak_v4_eval flags shared CUs and passes a clean decoder."""
+    d = Path(tempfile.mkdtemp(prefix='cubw_v16_'))
+    t0, t1 = int(10 * NS), int(11 * NS)
+    lines = [{'event': 'started'}, {'t0_unix_ns': t0, 't1_unix_ns': t1, 't0_mono_ns': t0, 't1_mono_ns': t1, 'gb_per_s': 0.0,
+             'tflop_per_s': 0.0, 'busy_fraction': 0.1},
+             {'cu_window_t1_unix_ns': t1, 'gap_launches': 100, 'late_ns': 5000, 'cu_blocks': {'1': 100, '2': 60},
+              'cu_late': {'1': 0, '2': 10}, 'cu_multi': {'1': 40, '2': 0}}, {'event': 'stopped'}]
+    (d / 'c.jsonl').write_text(''.join(json.dumps(x) + '\n' for x in lines))
+    wins, ev = A.competitor_windows(d / 'c.jsonl')
+    g = A.gap_counts(wins)
+    f = A.late_fraction(g, ['1', '2', '3'])
+    check('late fraction = (late + missing) / launches', g['launches'] == 100 and f == {'1': 0.0, '2': 0.5, '3': 1.0}, str(f))
+    check('no gap data gives None', A.gap_counts([{'cu_blocks': {'1': 1}}]) is None)
+    cus = [str(k) for k in range(16)]
+    def run(late):
+        return {'launches': 1000, 'seen': {c: 1000 for c in cus}, 'late': {c: late.get(c, 5) for c in cus}, 'multi': {}}
+    alone, native = run({}), run({'0': 30})
+    shared = run({c: 600 for c in cus[:8]})
+    ok = A.leak_v4_eval(alone, [native], [shared, shared], [run({})], 16)
+    check('v4: positives flag 8, clean decoder passes', ok['ok'] and ok['positive_flags'] == [8, 8]
+          and ok['decoder_flags'] == [0] and ok['native_flags'] == [0], str(ok))
+    leak = A.leak_v4_eval(alone, [native], [shared, shared], [run({'3': 400})], 16)
+    check('v4: a decoder flagging a CU fails', not leak['ok'] and leak['decoder_flags'] == [1], str(leak))
+    weak = A.leak_v4_eval(alone, [native], [shared, run({'0': 500})], [run({})], 16)
+    check('v4: one weak required positive makes it insensitive', not weak['sensitive'] and not weak['ok'], str(weak))
+    short = A.leak_v4_eval(alone, [native], [shared, shared], [run({})], 17)
+    check('v4: alone must cover every probe CU', not short['ok'])
+
+
 if __name__ == '__main__':
     for f in (test_status_separation, test_nesting, test_missing_clocks_and_coverage, test_overlapping_windows, test_gates,
-              test_v11_gates, test_v13_leak_v2, test_v15_duration_probe):
+              test_v11_gates, test_v13_leak_v2, test_v15_duration_probe,
+              test_v16_start_delay_probe):
         print(f'-- {f.__name__}')
         f()
     print(f'{check.failed} failures')

@@ -280,3 +280,15 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Sizing `wvSplitK` to balanced(n) gives decode R 1.004 (232→224), 1.009 (208→192), 1.07 (184/168→160) and
     1.17 (152→128). The stock kernel gives 1.18–1.23.
   - Observational and clock-confounded.
+
+## 2026-11-04 — v1.6 follow-ups pre-registered and submitted (leak v4 on MI350X; H_SE on MI300X)
+
+- Pre-registration: [followups_v16_plan_20261104.md](followups_v16_plan_20261104.md), committed before any data.
+- **A, MI350X:** leak test v4 with the `svc_bench_v6` start-delay probe (full-LDS, 200 µs gaps).
+  - The decoder itself on 0..n+7 is a required positive control.
+  - If it passes on all 8 GPUs, E3-minimal runs.
+- **B, MI300X:** H_SE on gfx942.
+  - Dispatch probe, balanced-size decode and shapes at 10 levels.
+  - Key prediction: the stock full-device kernel itself serializes (SEs 9,10,10,9), so sizing for 288 is faster at
+    304.
+- Two one-GPU smokes run first. Each 8-GPU job is held until its smoke is reviewed.
