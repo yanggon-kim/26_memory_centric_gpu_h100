@@ -299,3 +299,11 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Required positives (full-LDS probe and the decoder on 0..n+7) flag 8/8 shared CUs at 192 and 128.
 - Natives and the decoder at n flag 0 (largest excess ≤ 0.0025).
 - The 8-GPU job 499332 was released.
+
+## 2026-11-04 — MI300X shader-engine smoke 499333; 499334 released
+
+- Review: [mi300x_se_smoke_review_20261104.md](mi300x_se_smoke_review_20261104.md). 52/52 steps had rc = 0.
+- **Full device:** the dispatcher matches 9,10,10,9, with one workgroup per CU. The full-device part of the
+  prediction looks likely to fail.
+- **Reduced unbalanced masks:** these serialize, as on MI350X. At 272, decode with the kernel sized for 256 runs
+  at 1.003 of 304 (stock 272: 1.060).
