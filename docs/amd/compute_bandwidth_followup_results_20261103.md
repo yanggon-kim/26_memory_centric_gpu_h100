@@ -136,7 +136,8 @@ cell. Values are decode time relative to no competitor at the same n:
    - MI350X provides the positive control: the sized-192 kernel raises in-flight reads to 0.73–0.89 of the
      full-device value and recovers full speed.
 3. **The penalty rises with bandwidth per CU:** MI300X < MI325X < MI350X at almost every matched fraction.
-4. **Memory contention, not CU count, is what hurts a co-located decoder** (E3, MI300X and MI325X).
+4. **Memory contention, not CU count, is what hurts a co-located decoder** (E3, MI300X and MI325X; MI350X
+   added by 499332 after this version, memory/arithmetic 1.23–1.25).
 5. **E7's smooth service model fails** on both cohorts where it had a blind test.
 
 **What differs:**
@@ -155,8 +156,10 @@ E8 was run on MI350X and in v1 on the other cohorts.
 
 ## 5. Open items
 
-- **gfx950 leak probe:** needed before E3 can run on MI350X. Leak v2 is insensitive there. The new probe must be
-  pre-registered and smoke-tested on `mi3501x` first.
+- **gfx950 leak probe: resolved after this version** by job 499332
+  ([mi350x_leak4_review_20261104.md](mi350x_leak4_review_20261104.md)). The pre-registered start-delay probe (leak
+  v4) is sensitive on all 8 GPUs and the decoder flags 0 CUs in 16/16 tests. E3-minimal then ran on MI350X:
+  memory 100% / arithmetic 100% = 1.25 at 192 and 1.23 at 128, the same direction as MI300X and MI325X and larger.
 - **The MI350X sizing pattern: resolved after this version** by job 497082
   ([mi350x_followup_review_20261103.md](mi350x_followup_review_20261103.md)). Unequal active CUs per shader
   engine make the dispatcher serialize two `wvSplitK` workgroups on some CUs. Sizing to the largest multiple of

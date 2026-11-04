@@ -307,3 +307,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   prediction looks likely to fail.
 - **Reduced unbalanced masks:** these serialize, as on MI350X. At 272, decode with the kernel sized for 256 runs
   at 1.003 of 304 (stock 272: 1.060).
+
+## 2026-11-04 — MI350X leak v4 + E3-minimal 499332: leak_ok_v4 passes 16/16; E3 runs on MI350X
+
+- Review: [mi350x_leak4_review_20261104.md](mi350x_leak4_review_20261104.md). 153/153 steps with a return code
+  had rc = 0; outputs 105/105, 1 digest.
+- Leak v4: positives sensitive on all 8 GPUs at 192 and 128; natives and the decoder at n flag 0 (largest decoder
+  excess 0.002). Not pre-registered: positives also delay ~17 unshared probe CUs on this node (25–36 flagged vs 8
+  in the smoke); no flag or verdict changes.
+- E3-minimal (8 blocks): memory 100% / arithmetic 100% = 1.25 (192), 1.23 (128). Expected direction met.
+  Arithmetic 100% costs ~2%, memory 100% ~25–27%. Observational, clock-confounded.

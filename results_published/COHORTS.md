@@ -47,6 +47,7 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261103_mi350x_cubw_v1_4_auto_job496074` | 496074 | 20261103 | auto cubw_v1.4 | [mi350x_campaign_review_20261103](../docs/amd/mi350x_campaign_review_20261103.md) |
 | `amd_20261103_mi350x_cubw_v1_5_followup_job497082` | 497082 | 20261103 | auto cubw_v1.5 | [experiment_log](../docs/amd/experiment_log.md), [mi350x_followup_review_20261103](../docs/amd/mi350x_followup_review_20261103.md) |
 | `amd_20261103_mi350x_cubw_v1_5_followup_smoke_job497081` | 497081 | 20261103 | pilot cubw_v1.5 | [mi350x_followup_smoke_review_20261103](../docs/amd/mi350x_followup_smoke_review_20261103.md) |
+| `amd_20261104_mi350x_cubw_v1_6_leak4_job499332` | 499332 | 20261104 | auto cubw_v1.6 | [mi350x_leak4_review_20261104](../docs/amd/mi350x_leak4_review_20261104.md) |
 | `amd_20261104_mi350x_cubw_v1_6_leak4_smoke_job499331` | 499331 | 20261104 | pilot cubw_v1.6 | [mi350x_leak4_smoke_review_20261104](../docs/amd/mi350x_leak4_smoke_review_20261104.md) |
 
 ## Cross-cohort analyses
