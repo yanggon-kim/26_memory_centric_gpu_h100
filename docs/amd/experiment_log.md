@@ -292,3 +292,10 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Key prediction: the stock full-device kernel itself serializes (SEs 9,10,10,9), so sizing for 288 is faster at
     304.
 - Two one-GPU smokes run first. Each 8-GPU job is held until its smoke is reviewed.
+
+## 2026-11-04 — MI350X leak v4 smoke 499331: sensitive and passing; 499332 released
+
+- Review: [mi350x_leak4_smoke_review_20261104.md](mi350x_leak4_smoke_review_20261104.md).
+- Required positives (full-LDS probe and the decoder on 0..n+7) flag 8/8 shared CUs at 192 and 128.
+- Natives and the decoder at n flag 0 (largest excess ≤ 0.0025).
+- The 8-GPU job 499332 was released.
