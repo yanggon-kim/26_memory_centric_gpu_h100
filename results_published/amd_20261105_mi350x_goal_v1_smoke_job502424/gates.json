@@ -1,0 +1,112 @@
+{
+ "placement_ok": false,
+ "lifecycle_ok": true,
+ "outputs_e6_decode": {
+  "runs": 0,
+  "complete": 0,
+  "digests": [],
+  "matches_ordinary": null
+ },
+ "outputs_ok": true,
+ "outputs_detail": {
+  "runs": 5,
+  "complete": 5,
+  "distinct_digests": 1
+ },
+ "leak_ratios": {},
+ "leak_ok": false,
+ "leak_v11": {},
+ "leak_ok_v11": false,
+ "leak_v2": {},
+ "leak_ok_v2": false,
+ "leak_v3": {},
+ "leak_ok_v3": false,
+ "leak_v4": {
+  "qwen32b_graph_b1_c4096__n224__gapprobe_L0": {
+   "expected_cus": 32,
+   "alone_cus": 32,
+   "flag_excess": 0.1,
+   "alone_late_max": 3.114326942042376e-05,
+   "launches": [
+    96329,
+    97411,
+    98519,
+    86038,
+    23787,
+    16510
+   ],
+   "native_flags": [
+    0,
+    0
+   ],
+   "native_max_excess": [
+    0.00019470391416253913,
+    0.00036471945756624884
+   ],
+   "positive_flags": [
+    8,
+    8
+   ],
+   "positive_top8_excess": [
+    [
+     0.8663534774795509,
+     0.8698519316509635,
+     0.8724205641156885,
+     0.8747646388804947,
+     0.880219443680532,
+     0.8818466316672354,
+     0.884194431476622,
+     0.8888667855527279
+    ],
+    [
+     0.1797309116345187,
+     0.18506996237652065,
+     0.1857846384600957,
+     0.1914491108588725,
+     0.2067624835015049,
+     0.20798163682054469,
+     0.22202291987431355,
+     0.22933783978855243
+    ]
+   ],
+   "decoder_flags": [
+    0
+   ],
+   "decoder_max_excess": [
+    0.001907075991633483
+   ],
+   "info_positive_flags": {
+    "arith100": 8,
+    "mem100": 8
+   },
+   "sensitive": true,
+   "ok": true
+  }
+ },
+ "leak_ok_v4": true,
+ "clock": {
+  "pooled_ok": false,
+  "gfx_min": null,
+  "gfx_max": null,
+  "gfx_ratio": null,
+  "mem_min": null,
+  "mem_max": null,
+  "samples": 0,
+  "coverage_min": null
+ },
+ "clock_ok": false,
+ "release_e2": false,
+ "release_e3_minimal": false,
+ "release_e3_full": false,
+ "release_e5e8": true,
+ "release_e3_minimal_v2": false,
+ "release_e3_minimal_v3": false,
+ "release_e3_minimal_v4": false,
+ "goal_isolation": {
+  "route": "leak_v4",
+  "ok": true
+ },
+ "release_g1": false,
+ "release_g5": false,
+ "source_root": "/work1/proj_blaisetine/yanggon/scratch_goal/smoke950"
+}

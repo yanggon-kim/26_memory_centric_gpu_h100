@@ -1,0 +1,112 @@
+{
+ "placement_ok": false,
+ "lifecycle_ok": true,
+ "outputs_e6_decode": {
+  "runs": 0,
+  "complete": 0,
+  "digests": [],
+  "matches_ordinary": null
+ },
+ "outputs_ok": true,
+ "outputs_detail": {
+  "runs": 5,
+  "complete": 5,
+  "distinct_digests": 1
+ },
+ "leak_ratios": {},
+ "leak_ok": false,
+ "leak_v11": {},
+ "leak_ok_v11": false,
+ "leak_v2": {},
+ "leak_ok_v2": false,
+ "leak_v3": {},
+ "leak_ok_v3": false,
+ "leak_v4": {
+  "qwen32b_graph_b1_c4096__n256__gapprobe_L0": {
+   "expected_cus": 48,
+   "alone_cus": 48,
+   "flag_excess": 0.1,
+   "alone_late_max": 0.25001373822634004,
+   "launches": [
+    90987,
+    87930,
+    89018,
+    85455,
+    26669,
+    25353
+   ],
+   "native_flags": [
+    0,
+    0
+   ],
+   "native_max_excess": [
+    0.00012765610537071592,
+    0.00012357051382866387
+   ],
+   "positive_flags": [
+    48,
+    48
+   ],
+   "positive_top8_excess": [
+    [
+     0.6814463752852379,
+     0.6841963606576561,
+     0.6853782692645252,
+     0.6886789631957696,
+     0.6933122696155871,
+     0.7015739277982564,
+     0.7083384330922063,
+     0.7309936317347667
+    ],
+    [
+     0.6443061232142188,
+     0.6507445683075253,
+     0.6541192730208628,
+     0.663991900708688,
+     0.6664666841651355,
+     0.669766395440399,
+     0.6864524354119015,
+     0.692890880505208
+    ]
+   ],
+   "decoder_flags": [
+    0
+   ],
+   "decoder_max_excess": [
+    0.0020115962607975386
+   ],
+   "info_positive_flags": {
+    "arith100": 32,
+    "mem100": 48
+   },
+   "sensitive": true,
+   "ok": true
+  }
+ },
+ "leak_ok_v4": true,
+ "clock": {
+  "pooled_ok": false,
+  "gfx_min": null,
+  "gfx_max": null,
+  "gfx_ratio": null,
+  "mem_min": null,
+  "mem_max": null,
+  "samples": 0,
+  "coverage_min": null
+ },
+ "clock_ok": false,
+ "release_e2": false,
+ "release_e3_minimal": false,
+ "release_e3_full": false,
+ "release_e5e8": true,
+ "release_e3_minimal_v2": false,
+ "release_e3_minimal_v3": false,
+ "release_e3_minimal_v4": false,
+ "goal_isolation": {
+  "route": "leak_v4",
+  "ok": true
+ },
+ "release_g1": false,
+ "release_g5": false,
+ "source_root": "/work1/proj_blaisetine/yanggon/scratch_goal/smoke942"
+}

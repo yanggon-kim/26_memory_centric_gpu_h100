@@ -351,3 +351,16 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Cost-rate correction: plan.py rates were about 8× the real charge multipliers; goal_v1 uses 1.0, 1.2 and 1.4.
 - Submitted from release fab0ea00: smokes 502423 (mi3001x) and 502424 (mi3501x). The 8-GPU jobs 502425 (MI300X),
   502426 (MI325X) and 502427 (MI350X) are **held** until the smoke review.
+
+## 2026-11-05 — goal_v1 smokes reviewed; productions released
+
+- Smokes 502423 (MI300X, 56 min) and 502424 (MI350X, 42 min): 54/54 steps rc 0, no failed acquisitions. Review:
+  [goal_smoke_review_20261105.md](goal_smoke_review_20261105.md); published under
+  `results_published/amd_20261105_{mi300x,mi350x}_goal_v1_smoke_job50242{3,4}/`.
+- Bugs: analyzer crash (natives), G7 per-tick 6× overstatement, ISA unbundle (fatbin section), counter ordering.
+  Fixed in `2d81405a`; ISA re-run on devel CPU for gfx942/gfx950 (392 kernels each).
+- Tuned-decoder leak v4 is sensitive and clean on both architectures (smoke).
+- Owner's additive OC0–OC7 assignment (`11a639d2`) says to preserve the queued releases, so the held productions
+  were released **unchanged on fab0ea00** (502427 at 14:54, 502425/502426 at 14:55). Counter coverage gaps go to OC.
+- Pilot observation: FETCH_SIZE = 1.00× useful read bytes on gfx942 (pre-MALL), 0.50× on gfx950 streaming loads;
+  decoder FETCH_SIZE per tick ≈ compulsory bytes on both.
