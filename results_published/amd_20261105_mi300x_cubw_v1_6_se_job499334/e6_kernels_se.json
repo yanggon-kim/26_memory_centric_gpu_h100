@@ -1,0 +1,219 @@
+{
+ "base": "n304",
+ "runs": {
+  "n304": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 14076394555,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n304__absent__ktrace/a0/attempt1"
+  },
+  "n304__cu288": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 13793608271,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n304__absent__cu288__ktrace/a0/attempt1"
+  },
+  "n272": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 14936882821,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n272__absent__ktrace/a0/attempt1"
+  },
+  "n272__cu256": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 13738534330,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n272__absent__cu256__ktrace/a0/attempt1"
+  },
+  "n232__cu224": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 13805908088,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n232__absent__cu224__ktrace/a0/attempt1"
+  },
+  "n200__cu192": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 13843982225,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n200__absent__cu192__ktrace/a0/attempt1"
+  },
+  "n152__cu128": {
+   "decode_ranges": 13,
+   "decode_step_markers": 63,
+   "dispatches": 598689,
+   "kernel_ns": 13802725235,
+   "attempt_dir": "$WORK/results_amd/amd_20261105_mi300x_cubw_v1_auto_job499334/e6_timeline/qwen32b_graph_b1_c4096__n152__absent__cu128__ktrace/a0/attempt1"
+  }
+ },
+ "top_kernels": [
+  {
+   "kernel": "void wvSplitK_hf_sml_<__hip_bfloat16, 64, 2, 16, 8, 2, 1>",
+   "share": 0.8318680341935044,
+   "mean_us": 55.63253406213329,
+   "per_tick": 3341.0,
+   "grid": [
+    19456,
+    16,
+    1
+   ],
+   "wg": 64,
+   "vgpr": 56,
+   "agpr": 48,
+   "lds": 65536,
+   "mean_us_n304__cu288": 54.66225606343505,
+   "ratio_n304__cu288_vs_n304": 0.9825591622769766,
+   "mean_us_n272": 60.65297200248951,
+   "ratio_n272_vs_n304": 1.0902428412617182,
+   "mean_us_n272__cu256": 54.59250044896737,
+   "ratio_n272__cu256_vs_n304": 0.9813052985865366,
+   "mean_us_n232__cu224": 54.768722946746294,
+   "ratio_n232__cu224_vs_n304": 0.9844729144564538,
+   "mean_us_n200__cu192": 54.86256210240257,
+   "ratio_n200__cu192_vs_n304": 0.98615968205096,
+   "mean_us_n152__cu128": 55.06363074452568,
+   "ratio_n152__cu128_vs_n304": 0.9897739096879494
+  },
+  {
+   "kernel": "void paged_attention_ll4mi_QKV_mfma16_kernel<__hip_bfloat16, __hip_bfloat16, ",
+   "share": 0.043720974401175415,
+   "mean_us": 11.741332532051281,
+   "per_tick": 832.0,
+   "grid": [
+    256,
+    32,
+    8
+   ],
+   "wg": 256,
+   "vgpr": 96,
+   "agpr": 0,
+   "lds": 8192,
+   "mean_us_n304__cu288": 11.369711061507937,
+   "ratio_n304__cu288_vs_n304": 0.9683492934444282,
+   "mean_us_n272": 10.823215811965813,
+   "ratio_n272_vs_n304": 0.9218047255216383,
+   "mean_us_n272__cu256": 11.193971401862028,
+   "ratio_n272__cu256_vs_n304": 0.9533816857077272,
+   "mean_us_n232__cu224": 12.773578430250305,
+   "ratio_n232__cu224_vs_n304": 1.0879155662597255,
+   "mean_us_n200__cu192": 12.477027911324788,
+   "ratio_n200__cu192_vs_n304": 1.0626585932444395,
+   "mean_us_n152__cu128": 11.9712118246337,
+   "ratio_n152__cu128_vs_n304": 1.019578637429346
+  },
+  {
+   "kernel": "void vllm::reshape_and_cache_kernel<__hip_bfloat16, __hip_bfloat16, ",
+   "share": 0.020855503364369855,
+   "mean_us": 5.600776365995116,
+   "per_tick": 832.0,
+   "grid": [
+    128,
+    1,
+    1
+   ],
+   "wg": 128,
+   "vgpr": 32,
+   "agpr": 0,
+   "lds": 0,
+   "mean_us_n304__cu288": 5.47170302960928,
+   "ratio_n304__cu288_vs_n304": 0.9769543849010828,
+   "mean_us_n272": 5.117104624542125,
+   "ratio_n272_vs_n304": 0.9136420185620008,
+   "mean_us_n272__cu256": 5.360028788919414,
+   "ratio_n272__cu256_vs_n304": 0.957015320494246,
+   "mean_us_n232__cu224": 5.116410065628815,
+   "ratio_n232__cu224_vs_n304": 0.9135180073771361,
+   "mean_us_n200__cu192": 5.246410905067155,
+   "ratio_n200__cu192_vs_n304": 0.936729225062533,
+   "mean_us_n152__cu128": 5.0565584172771665,
+   "ratio_n152__cu128_vs_n304": 0.9028316945446803
+  },
+  {
+   "kernel": "triton_poi_fused_3",
+   "share": 0.019402750323092233,
+   "mean_us": 5.293345911584007,
+   "per_tick": 819.0,
+   "grid": [
+    1536,
+    1,
+    1
+   ],
+   "wg": 256,
+   "vgpr": 36,
+   "agpr": 4,
+   "lds": 0,
+   "mean_us_n304__cu288": 5.0658645851503,
+   "ratio_n304__cu288_vs_n304": 0.9570250404501461,
+   "mean_us_n272": 4.863510223462605,
+   "ratio_n272_vs_n304": 0.9187969773181183,
+   "mean_us_n272__cu256": 4.927500416690893,
+   "ratio_n272__cu256_vs_n304": 0.9308857760282594,
+   "mean_us_n232__cu224": 4.800282070663023,
+   "ratio_n232__cu224_vs_n304": 0.9068521405635029,
+   "mean_us_n200__cu192": 4.996850281993139,
+   "ratio_n200__cu192_vs_n304": 0.9439871048400571,
+   "mean_us_n152__cu128": 4.755051727813632,
+   "ratio_n152__cu128_vs_n304": 0.8983073857704318
+  },
+  {
+   "kernel": "void paged_attention_ll4mi_reduce_kernel<__hip_bfloat16, __hip_bfloat16, 128, 128, 256, 1>",
+   "share": 0.019306844017345746,
+   "mean_us": 5.184881601037851,
+   "per_tick": 832.0,
+   "grid": [
+    5120,
+    1,
+    1
+   ],
+   "wg": 128,
+   "vgpr": 120,
+   "agpr": 0,
+   "lds": 512,
+   "mean_us_n304__cu288": 4.928220047313797,
+   "ratio_n304__cu288_vs_n304": 0.9504980878111703,
+   "mean_us_n272": 4.778326312576312,
+   "ratio_n272_vs_n304": 0.9215883177775632,
+   "mean_us_n272__cu256": 4.875480940934066,
+   "ratio_n272__cu256_vs_n304": 0.9403263789009468,
+   "mean_us_n232__cu224": 4.775910256410257,
+   "ratio_n232__cu224_vs_n304": 0.9211223368059686,
+   "mean_us_n200__cu192": 4.849031192765567,
+   "ratio_n200__cu192_vs_n304": 0.9352250573658119,
+   "mean_us_n152__cu128": 4.699827648046398,
+   "ratio_n152__cu128_vs_n304": 0.9064484032008829
+  },
+  {
+   "kernel": "triton_poi_fused_mul_silu_slice_1",
+   "share": 0.019197188523251082,
+   "mean_us": 5.155433455433456,
+   "per_tick": 832.0,
+   "grid": [
+    6912,
+    1,
+    1
+   ],
+   "wg": 256,
+   "vgpr": 28,
+   "agpr": 4,
+   "lds": 0,
+   "mean_us_n304__cu288": 5.097841422466422,
+   "ratio_n304__cu288_vs_n304": 0.9888288669682398,
+   "mean_us_n272": 4.743178685897435,
+   "ratio_n272_vs_n304": 0.9200348965611158,
+   "mean_us_n272__cu256": 4.965579422313797,
+   "ratio_n272__cu256_vs_n304": 0.9631739921073822,
+   "mean_us_n232__cu224": 4.833299736721612,
+   "ratio_n232__cu224_vs_n304": 0.9375156867998484,
+   "mean_us_n200__cu192": 4.90085666590354,
+   "ratio_n200__cu192_vs_n304": 0.9506197118572814,
+   "mean_us_n152__cu128": 4.795972241300366,
+   "ratio_n152__cu128_vs_n304": 0.9302752683667669
+  }
+ ],
+ "note": "kernel-trace timing (trace distortion 1.05-1.09 measured in E5); dispatches inside decode ranges only"
+}

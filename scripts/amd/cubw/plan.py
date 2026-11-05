@@ -467,15 +467,16 @@ def leak_suite_v3(plan, lane, stage, rng):
             f()
 
 
-def dispatch_suite(plan, lane, stage, levels):
+def dispatch_suite(plan, lane, stage, levels, tag=''):
     """v1.5 dispatch probe (svc_bench_v5) under each mask: wvSplitK-shaped launches (16 waves, full LDS) with the
-    grid sized for the device, for the mask and for the balanced count, plus a no-LDS control at the mask size."""
+    grid sized for the device, for the mask and for the balanced count, plus a no-LDS control at the mask size.
+    tag suffixes the cell names; it is required when the suite runs on more than one lane (attempt dirs are per cell)."""
     for n in levels:
         grids = sorted({FULL, n, balanced(n)}, reverse=True)
         for g in grids:
-            plan.native(lane, stage, 'e6_dispatch', f'n{n}_g{g}', ['--mode', 'dispatch', '--blocks', str(g), '--threads', '1024',
+            plan.native(lane, stage, 'e6_dispatch', f'n{n}_g{g}{tag}', ['--mode', 'dispatch', '--blocks', str(g), '--threads', '1024',
                         '--bytes', str(1 << 30), '--trials', '5', '--warmups', '2'], mask_for(n), level=n)['bench'] = 'v5'
-        plan.native(lane, stage, 'e6_dispatch', f'n{n}_g{n}_lds0', ['--mode', 'dispatch', '--blocks', str(n), '--threads',
+        plan.native(lane, stage, 'e6_dispatch', f'n{n}_g{n}_lds0{tag}', ['--mode', 'dispatch', '--blocks', str(n), '--threads',
                     '1024', '--lds', '1', '--bytes', str(1 << 30), '--trials', '5', '--warmups', '2'], mask_for(n),
                     level=n)['bench'] = 'v5'
 
@@ -546,8 +547,8 @@ def build_se_study(cohort, smoke=False):
     p = Plan('auto', cohort)
     lanes = [f'L{i}' for i in range(8)]
     placement_core(p, 'pilot', levels=levels)
-    dispatch_suite(p, 'L0', 'pilot', levels)
-    dispatch_suite(p, 'L1', 'pilot', levels)
+    dispatch_suite(p, 'L0', 'pilot', levels, tag='_L0')  # v1.6.1: 499334 collided on untagged cells (L1 crashed)
+    dispatch_suite(p, 'L1', 'pilot', levels, tag='_L1')
     rng = random.Random(f'{SEED}:se_study:{cohort}')
     for lane in lanes[2:]:
         order = [FULL, 288, 272]; rng.shuffle(order)

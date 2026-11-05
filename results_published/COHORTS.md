@@ -26,6 +26,7 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261031_mi300x_cubw_v1_production_job487341` | 487341 | 20261031 | production cubw_v1.2 | [cubw_mi300x_production_review_20261031](../docs/amd/cubw_mi300x_production_review_20261031.md) |
 | `amd_20261103_mi300x_cubw_v1_3_auto_job492956` | 492956 | 20261103 | auto cubw_v1.3 | [compute_bandwidth_followup_results_20261103](../docs/amd/compute_bandwidth_followup_results_20261103.md) |
 | `amd_20261104_mi300x_cubw_v1_6_se_smoke_job499333` | 499333 | 20261104 | pilot cubw_v1.6 | [mi300x_se_smoke_review_20261104](../docs/amd/mi300x_se_smoke_review_20261104.md) |
+| `amd_20261105_mi300x_cubw_v1_6_se_job499334` | 499334 | 20261105 | auto cubw_v1.6 | [mi300x_se_review_20261105](../docs/amd/mi300x_se_review_20261105.md) |
 
 ## MI325X
 

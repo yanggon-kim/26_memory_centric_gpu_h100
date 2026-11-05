@@ -317,3 +317,15 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   in the smoke); no flag or verdict changes.
 - E3-minimal (8 blocks): memory 100% / arithmetic 100% = 1.25 (192), 1.23 (128). Expected direction met.
   Arithmetic 100% costs ~2%, memory 100% ~25–27%. Observational, clock-confounded.
+
+## 2026-11-05 — MI300X shader-engine study 499334: H_SE refuted on MI300X (pre-registered); balanced sizing recovers decode to 128 CUs
+
+- Review: [mi300x_se_review_20261105.md](mi300x_se_review_20261105.md). 337/337 steps with a return code had
+  rc = 0; outputs 98/98, 1 digest.
+- Port bug: lane L1's dispatch probe crashed (cell-name collision with L0). Fixed in plan.py v1.6.1 (`tag`);
+  P1m judged on L0 only; the verdict does not depend on L1.
+- P1m fail (the full device does not serialize; reduced unbalanced masks do, 4/4). P2m fail (304 only: 3/5).
+  P3m (a) pass at all 4 levels, (b) fail (0.9984, upper CI 1.00002). Verdict: refuted on MI300X.
+- Not pre-registered as a whole: balanced-sized decode R 0.993–0.998 at every level 288…128. This revises 492956
+  ("resizing slower at every level" — all unbalanced sizes). B_CU at which decode stays free: ~42 GB/s per CU on
+  both MI300X and MI350X.

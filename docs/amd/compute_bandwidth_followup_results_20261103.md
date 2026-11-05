@@ -25,7 +25,9 @@ Plan 2.0 asks how much compute memory-bound LLM decode needs relative to HBM ban
   - MI325X behaves similarly but less consistently.
   - MI350X loses 16–25% at any reduction.
 - **With the dominant skinny-GEMM kernel (`wvSplitK`) resized to the active CUs:** MI350X runs at full speed on
-  75% of its CUs. On MI300X and MI325X, resizing never helped.
+  75% of its CUs. On MI300X and MI325X, resizing never helped. **Revised after this version** (499334,
+  [mi300x_se_review_20261105.md](mi300x_se_review_20261105.md)): resizing to a shader-engine-balanced count keeps
+  MI300X decode at full speed down to 128 of 304 CUs; the earlier resizes all used unbalanced counts.
 - **Mechanism:** every level moves the same bytes. Decode time tracks how many HBM reads are in flight. A CU cut
   costs more the more HBM bandwidth each CU must sustain: MI300X 17, MI325X 20, MI350X 31 GB/s per CU.
 
@@ -142,7 +144,8 @@ cell. Values are decode time relative to no competitor at the same n:
 
 **What differs:**
 - On MI300X/MI325X the stock kernel is near its best. Resizing it only hurts, and a 34–40% CU cut costs about
-  1–6%.
+  1–6%. **Revised by 499334:** on MI300X, resizing to a balanced count (multiple of 32) gives R 0.993–0.998 at
+  every level from 288 to 128 CUs; only resizing to an unbalanced count hurts.
 - On MI350X the stock kernel is far from its best below 256 CUs. A kernel resized for 192 CUs recovers
   full-device speed, but the same resizing fails at 208/184/168/152.
 
@@ -164,6 +167,9 @@ E8 was run on MI350X and in v1 on the other cohorts.
   ([mi350x_followup_review_20261103.md](mi350x_followup_review_20261103.md)). Unequal active CUs per shader
   engine make the dispatcher serialize two `wvSplitK` workgroups on some CUs. Sizing to the largest multiple of
   32 restores R 1.004 at 232 CUs and 1.009 at 208 CUs (pre-registered H_SE; observational).
+- **Shader-engine balance on MI300X (499334):** the pre-registered H_SE verdict is *refuted on MI300X*, because
+  the full device (9,10,10,9 per SE) does not serialize. Reduced unbalanced masks do serialize, as on MI350X,
+  and balanced sizing removes the penalty. Both cohorts decode at full speed up to about 42 GB/s per CU (B_CU).
 - **Clock qualification:** any non-inferiority claim needs a run that passes the pooled clock gate. Clock and
   power changes remain unauthorized.
 - **Off-cluster raw archive:** the destination is still to be named by the owner.
