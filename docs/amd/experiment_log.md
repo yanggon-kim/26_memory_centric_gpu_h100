@@ -364,3 +364,15 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   were released **unchanged on fab0ea00** (502427 at 14:54, 502425/502426 at 14:55). Counter coverage gaps go to OC.
 - Pilot observation: FETCH_SIZE = 1.00× useful read bytes on gfx942 (pre-MALL), 0.50× on gfx950 streaming loads;
   decoder FETCH_SIZE per tick ≈ compulsory bytes on both.
+
+## 2026-11-05 — OC-v0 (overlap/service calibration): plan and pilots
+
+- Owner's additive OC0–OC7 assignment (`11a639d2`). Pre-registered plan:
+  [overlap_calibration_execution_plan_20261105.md](overlap_calibration_execution_plan_20261105.md) (d6dced90), written
+  before any OC data; OC6 dev/held-out sets and acceptance, and the OC4 decision rule, are fixed there.
+- Disassembly: vLLM bf16 wvSplitK issues `v_mfma_f32_4x4x4_16b_bf16` + `global_load_dwordx4` + `ds_read_b128` on both
+  gfx942 and gfx950. svc_bench v7 adds route-matched `mfma4`/`mfma4_lds` and known-schedule controls `split`/`fused`.
+- Container rocprofv3 1.3.2 ships the thread-trace decoder (host ROCm 7.2 does not); a copy is in
+  `$WORK/lib/rocprof-trace-decoder` for the host-side ATT probe.
+- Pilots on separate single-GPU allocations (G1–G8 untouched): 502623 (mi3001x, MI300X), 502625 (mi3501x, MI350X),
+  release d6dced90, 45 steps each, 4 h limit.
