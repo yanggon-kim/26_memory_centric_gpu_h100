@@ -1,0 +1,237 @@
+{
+ "model": "R(g) = 1 + k*max(0, peak_bw/g - B0)",
+ "parameters": {
+  "k": 0.007671,
+  "B0": 40.79,
+  "sse_dev_mi350x": 5.570990225116659e-05
+ },
+ "peak_GBps": {
+  "mi300x": 5300.0,
+  "mi325x": 6000.0,
+  "mi350x": 8000.0
+ },
+ "scope": "G8 held-out prediction model (goal follow-up, docs/amd/goal_based_followup_20261105.md \u00a710). CPU only.\n\nModel (frozen before any held-out acquisition):\n    R(g) = 1 + k * max(0, B(g) - B0),   B(g) = HBM peak bandwidth / g   [GB/s per CU]\nwhere g is the number of CUs that actually do the skinny-GEMM work (the shader-engine-balanced wvSplitK grid, which\nequals the mask when the mask is balanced) and R is decode time relative to the stock full-device decoder in the same\nblock (Qwen32B graph B1/C4096). The architecture enters only through B(g) (peak bandwidth and CU count per cohort);\nno cohort-specific offset is fitted. R < 1 seen on MI300X is treated as clock confounding, not as model signal.\n\nDevelopment data (already exposed, published): MI350X job 497082 (e6_balanced and e6_decode R at g = 224, 192, 160,\n128) fits k and B0 by least squares over a B0 grid; MI300X job 499334 (g = 288..128, all R 0.993-0.998) is a\nconsistency check only (all its points lie below the fitted B0). MI325X has no balanced-grid data at all.\n\nHeld-out points (none measured before freezing): MI325X g in {288 (on the full 304-CU mask), 256, 224, 192, 160, 128, 96};\nMI300X g in {160, 96}; MI350X g = 96. Observed values come from the G1 cells of the goal jobs (tuned grid = g).\n\nPre-registered verdict (judge): PASS iff every held-out |R_obs - R_pred| <= 0.05 AND the mean absolute error <= 0.025;\nREJECT otherwise; UNAVAILABLE for points without >= 3 complete paired blocks. Clock confounding is reported, not\ncorrected. A rejected model is not refit on these points and called held out.\n\n  g8_model.py freeze --out docs/amd/goal/g8_frozen_model.json\n  g8_model.py judge --frozen <json> --observed <goal_tables.json>... --out <json>",
+ "inputs": {
+  "amd_20261103_mi350x_cubw_v1_5_followup_job497082/hse_judgment.json": "24759e14bd82f84ec49bfc098df591bcdd4452bc08cdf7be559487936ac63bde",
+  "amd_20261103_mi350x_cubw_v1_5_followup_job497082/cubw_tables.json": "829014b4fff864055983016b4c03c015283c5b0451df82b0d369886c1da383d4",
+  "amd_20261105_mi300x_cubw_v1_6_se_job499334/hse_judgment.json": "a321c4ac5e122ccc029957466862c5c07222309bd821923b81fec7689ace7791"
+ },
+ "generator_sha256": "0336eb16a7c23d1649723b9557a698ee73cd0ee3336700aad6f950100d8e0d8b",
+ "development": [
+  {
+   "cohort": "mi350x",
+   "g": 224,
+   "B_GBps_per_CU": 35.71,
+   "R_obs": 1.0041,
+   "R_pred": 1.0,
+   "source": "497082 e6_balanced mask 232"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 192,
+   "B_GBps_per_CU": 41.67,
+   "R_obs": 1.0086,
+   "R_pred": 1.0067,
+   "source": "497082 e6_balanced mask 208"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 160,
+   "B_GBps_per_CU": 50.0,
+   "R_obs": 1.0683,
+   "R_pred": 1.0706,
+   "source": "497082 e6_balanced mask 184"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 160,
+   "B_GBps_per_CU": 50.0,
+   "R_obs": 1.0661,
+   "R_pred": 1.0706,
+   "source": "497082 e6_balanced mask 168"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 128,
+   "B_GBps_per_CU": 62.5,
+   "R_obs": 1.1675,
+   "R_pred": 1.1665,
+   "source": "497082 e6_balanced mask 152"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 192,
+   "B_GBps_per_CU": 41.67,
+   "R_obs": 1.0089478753115853,
+   "R_pred": 1.0067,
+   "source": "497082 e6_decode mask 192"
+  },
+  {
+   "cohort": "mi350x",
+   "g": 128,
+   "B_GBps_per_CU": 62.5,
+   "R_obs": 1.1683518321474764,
+   "R_pred": 1.1665,
+   "source": "497082 e6_decode mask 128"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 256,
+   "B_GBps_per_CU": 20.7,
+   "R_obs": 0.9963221977600056,
+   "R_pred": 1.0,
+   "source": "499334 e6_balanced mask 272"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 224,
+   "B_GBps_per_CU": 23.66,
+   "R_obs": 0.9973704987222111,
+   "R_pred": 1.0,
+   "source": "499334 e6_balanced mask 232"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 192,
+   "B_GBps_per_CU": 27.6,
+   "R_obs": 0.9971807402543558,
+   "R_pred": 1.0,
+   "source": "499334 e6_balanced mask 200"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 128,
+   "B_GBps_per_CU": 41.41,
+   "R_obs": 0.9935549733734861,
+   "R_pred": 1.0047,
+   "source": "499334 e6_balanced mask 152"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 288,
+   "B_GBps_per_CU": 18.4,
+   "R_obs": 0.99844979779012,
+   "R_pred": 1.0,
+   "source": "499334 e6_decode mask 288"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 256,
+   "B_GBps_per_CU": 20.7,
+   "R_obs": 0.995768301390665,
+   "R_pred": 1.0,
+   "source": "499334 e6_decode mask 256"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 224,
+   "B_GBps_per_CU": 23.66,
+   "R_obs": 0.997883771908221,
+   "R_pred": 1.0,
+   "source": "499334 e6_decode mask 224"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 192,
+   "B_GBps_per_CU": 27.6,
+   "R_obs": 0.9962822364134961,
+   "R_pred": 1.0,
+   "source": "499334 e6_decode mask 192"
+  },
+  {
+   "cohort": "mi300x",
+   "g": 128,
+   "B_GBps_per_CU": 41.41,
+   "R_obs": 0.9933884388568088,
+   "R_pred": 1.0047,
+   "source": "499334 e6_decode mask 128"
+  }
+ ],
+ "held_out_predictions": [
+  {
+   "cohort": "mi325x",
+   "g": 288,
+   "mask_n": 304,
+   "B_GBps_per_CU": 20.83,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi325x",
+   "g": 256,
+   "mask_n": 256,
+   "B_GBps_per_CU": 23.44,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi325x",
+   "g": 224,
+   "mask_n": 224,
+   "B_GBps_per_CU": 26.79,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi325x",
+   "g": 192,
+   "mask_n": 192,
+   "B_GBps_per_CU": 31.25,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi325x",
+   "g": 160,
+   "mask_n": 160,
+   "B_GBps_per_CU": 37.5,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi325x",
+   "g": 128,
+   "mask_n": 128,
+   "B_GBps_per_CU": 46.88,
+   "R_pred": 1.0467,
+   "R_pred_measured_bw_variant (not judged)": 1.0457
+  },
+  {
+   "cohort": "mi325x",
+   "g": 96,
+   "mask_n": 96,
+   "B_GBps_per_CU": 62.5,
+   "R_pred": 1.1665,
+   "R_pred_measured_bw_variant (not judged)": 1.1446
+  },
+  {
+   "cohort": "mi300x",
+   "g": 160,
+   "mask_n": 160,
+   "B_GBps_per_CU": 33.12,
+   "R_pred": 1.0,
+   "R_pred_measured_bw_variant (not judged)": 1.0
+  },
+  {
+   "cohort": "mi300x",
+   "g": 96,
+   "mask_n": 96,
+   "B_GBps_per_CU": 55.21,
+   "R_pred": 1.1106,
+   "R_pred_measured_bw_variant (not judged)": 1.1137
+  },
+  {
+   "cohort": "mi350x",
+   "g": 96,
+   "mask_n": 96,
+   "B_GBps_per_CU": 83.33,
+   "R_pred": 1.3263,
+   "R_pred_measured_bw_variant (not judged)": 1.2617
+  }
+ ],
+ "criteria": {
+  "per_point_abs_error_max": 0.05,
+  "mean_abs_error_max": 0.025,
+  "min_paired_blocks": 3
+ }
+}

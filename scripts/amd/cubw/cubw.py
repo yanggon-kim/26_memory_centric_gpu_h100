@@ -31,6 +31,9 @@ per-attempt CUBW_STEP_TAG and get the same orphan sweep and residual-process rec
 v1.5 (MI350X follow-up): 'cuprobe_t' treatment (svc_bench_v5 duration probe, leak test v3) runs from CUBW_BENCH5;
 a native step with bench='v5' (dispatch probe) runs CUBW_BENCH5 instead of CUBW_BENCH.
 
+goal v1 (docs/amd/goal_based_followup_20261105.md): step kind 'serve' runs scripts/amd/goal/serve_mix.py (mixed serving)
+with the same mask, competitor, residual-process and orphan handling as a vllm step; its extra arguments are serve_args.
+
 v1.6 (leak test v4, E3 on MI350X): 'gapprobe' treatment (svc_bench_v6 start-delay probe) runs from CUBW_BENCH6 with one
 16-wave full-LDS workgroup per CU of its mask per launch and a 200 us host gap between launches.
 
@@ -225,8 +228,12 @@ def run_attempt(step, gpu, root, adir, plan):
         extra.append(f"HSA_CU_MASK={gpu['index']}:{mask}")
     if comp:
         extra.append(f'RESEARCH_ALLOWED_PIDS={comp.pid}')
-    runner = ['scripts/controlled_vllm_experiments.py', '--config', str(root / step['config']), '--gpu-uuid', gpu['uuid'],
-              '--mode', step.get('mode', 'timing'), '--output', str(adir / 'run')]
+    if step['kind'] == 'serve':  # goal follow-up: mixed serving (scripts/amd/goal/serve_mix.py), same lifecycle
+        runner = ['scripts/amd/goal/serve_mix.py', '--config', str(root / step['config']), '--gpu-uuid', gpu['uuid'],
+                  '--mode', step.get('mode', 'timing'), '--output', str(adir / 'run')] + [str(x) for x in step['serve_args']]
+    else:
+        runner = ['scripts/controlled_vllm_experiments.py', '--config', str(root / step['config']), '--gpu-uuid', gpu['uuid'],
+                  '--mode', step.get('mode', 'timing'), '--output', str(adir / 'run')]
     if step.get('generated_tokens'):
         runner += ['--generated-tokens', str(step['generated_tokens'])]
     env = dict(os.environ)
@@ -270,7 +277,7 @@ def run_attempt(step, gpu, root, adir, plan):
         msg = json.loads(fail.read_text())['message'] if fail.exists() else ''
         rec['failure_message'] = msg[:500]
         # Output-identity/correctness assertions are scientific failures and are never retried.
-        correctness = any(k in msg for k in ('differ', 'barrier', 'decode did not progress'))
+        correctness = any(k in msg for k in ('differ', 'barrier', 'decode did not progress', 'incomplete', 'prompt changed'))
         rec['failure_class'] = 'correctness' if correctness else ('execution:timeout' if rec['timed_out'] else 'execution')
     return rec
 
