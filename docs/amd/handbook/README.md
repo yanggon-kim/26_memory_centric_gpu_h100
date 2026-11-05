@@ -1,5 +1,7 @@
 # AMD experiment handbook — start here
 
+**Next assignment (prepared 2026-11-05):** read [goal-based follow-up G1–G8](../goal_based_followup_20261105.md) for the next research goals and delivery contract. Pulling/reading does not authorize execution; the owner will order the experiments separately. This handbook describes the historical evidence below and adds no measurements for that next assignment.
+
 This handbook explains every AMD experiment on branch `amd/mi300x-phase0`, from the first MI300X campaign
 (2026-10-18) to the MI300X shader-engine study (2026-11-05). It covers 28 experiments, numbered #1–#28 in the
 order they happened.
