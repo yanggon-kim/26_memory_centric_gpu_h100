@@ -239,6 +239,15 @@ Shorthand:
 - **Cross-cohort:** `docs/amd/goal_followup_results_<date>.md`, the G8 judgment, the experiment log, the cohort index
   and a handbook chapter.
 - **Raw data:** stays in `$WORK/results_amd/` (no archive destination exists; reported as a delivery gap).
+- **Model inputs** (owner addendum, commit `5b98f281`; read before data):
+  - Each published folder also gets a `model_inputs.json` for the coordinating agent's fixed-area model V0
+    ([../area_allocation_mathematical_model_v0_20261105.md](../area_allocation_mathematical_model_v0_20261105.md)
+    §10–11).
+  - It lists each measured G1–G8 observable with its units, cohort/workload/kernel/clock scope, estimate and CI,
+    measured-vs-fitted status, source hashes and applicability.
+  - It also lists explicit unknowns: no mm² from CU masks, no PHY/SRAM areas, and no physical HBM quantity unless G4
+    validates one.
+  - This adds a CPU-side deliverable and no GPU steps.
 
 AMD acknowledgement for any presentation: "This work was supported in part by Advanced Micro Devices, Inc. under the
 AMD University Program's AI & HPC Cluster".
