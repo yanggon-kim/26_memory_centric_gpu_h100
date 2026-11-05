@@ -399,3 +399,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - 68/68 steps rc 0 each. Judged with the committed frozen files (sha256 fd6486c9…, 9c9381c5…).
 - MI300X: M1 40/60 (−1.3 %), M6 53/60 (−1.6 %); MI350X: M1 18/60 (+12.7 %), M6 39/60 (+5.1 %). Neither accepted.
 - Issued-MFMA form exact on 48 held-out points per cohort. Results: `docs/amd/overlap_calibration_results_20261105.md`.
+
+## 2026-11-05 — G1–G8 MI350X main (502427) analysed
+
+- 710/710 steps executed (96 competitor_only steps journal without t_end), 0 failures; 2 h 37 min on mi3508x.
+  In-job goal analysis crashed on the release snapshot (fab0ea00 `natives` bug); re-run post hoc with the fixed
+  reader on a devel node → `results_published/amd_20261105_mi350x_goal_v1_auto_job502427/`.
+- G1 (observational, clock-confounded; controlled clocks not authorized): R at matched grid 0.99–1.00 down to
+  mask 192; 1.055 (160), 1.155 (128), 1.392 (96); stock grid at reduced mask +17–19 %.
+- G8 partial judge: the one measured held-out point (MI350X n = 96) has |R_pred − R_obs| = 0.066 > 0.05 per-point
+  limit → REJECT already fixed by the per-point rule; MI300X/MI325X points pending (jobs 502425/502426 queued).

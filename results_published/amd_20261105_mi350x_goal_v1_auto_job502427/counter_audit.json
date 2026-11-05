@@ -1,0 +1,5420 @@
+{
+ "classification": "measured-real-GPU (native known traffic under rocprofv3 --pmc)",
+ "scope": "G4 traffic-observation audit (goal follow-up, docs/amd/goal_based_followup_20261105.md \u00a76). Host rocprofv3 on the\ncompute node, HIP_VISIBLE_DEVICES set, one GPU.\n\n1. Inventory: rocprofv3 version and counter list (-L), the installed counter definitions file(s) found under the ROCm\n   tree, and amd-smi firmware (rocprofv3 refused MI325X counters with CP firmware 177 < 186, job 492957).\n2. Candidates: every listed counter whose name matches memory-side patterns (FETCH/WRITE_SIZE, TCC_EA*_RD/WRREQ*,\n   *DRAM*, *MALL*, *HBM*, DF_*, TCC_HIT/MISS), preferring the aggregated \"_sum\" form when both exist.\n3. Known traffic (svc_bench_v3, one kernel per run, cold start; buffer initialisation is a separate dispatch and is\n   excluded by kernel name): reads at 8 MiB x 256 passes (L2-resident), 128 MiB x 16 (MALL-resident, above L2),\n   1 GiB x 4 and 4 GiB x 1 (streaming, far above the 256 MiB MALL); writes of 128 MiB and 4 GiB; copies of 128 MiB and\n   2 GiB (read + write). Each (counter, load) runs --reps times, one counter per rocprofv3 pass.\n4. Per run: counter total over the k_<mode> dispatch rows, useful bytes read and written, and the raw ratio under\n   each candidate unit (bytes, KiB, 32/64/128-byte requests). A counter is a physical-HBM candidate only if, for\n   streaming loads, ratio ~ 1 in some unit for reads (or writes) AND it falls toward the compulsory footprint for the\n   cache-resident loads (expected direction: counts << useful bytes). The judgment is written by\n   scripts/amd/goal/analyze_goal.py from this raw file; nothing here declares a unit.\n\n  counter_audit.py --out-dir <dir> [--max-counters 16 --reps 2 --bench <svc_bench_v3>]",
+ "inventory": {
+  "rocprofv3_version": "             version: 1.0.0\n        git_revision: \n        library_arch: \n         system_name: Linux\n    system_processor: x86_64\n      system_version: 5.15.0-151-generic\n         compiler_id: GNU\n    compiler_version: 12.2.1\n        rocm_version: 7.1.0\n",
+  "amd_smi_firmware": "GPU: 2\n    FW_LIST:\n        FW 0:\n            FW_ID: CP_MEC1\n            FW_VERSION: 41\n        FW 1:\n            FW_ID: CP_MEC2\n            FW_VERSION: 41\n        FW 2:\n            FW_ID: RLC\n            FW_VERSION: 43\n        FW 3:\n            FW_ID: SDMA0\n            FW_VERSION: 12\n        FW 4:\n            FW_ID: SDMA1\n            FW_VERSION: 12\n        FW 5:\n            FW_ID: VCN\n            FW_VERSION: 09.10.90.31\n        FW 6:\n            FW_ID: RLC_RESTORE_LIST_GPM_MEM\n            FW_VERSION: 4\n        FW 7:\n            FW_ID: RLC_RESTORE_LIST_SRM_MEM\n            FW_VERSION: 4\n        FW 8:\n            FW_ID: RLC_RESTORE_LIST_CNTL\n            FW_VERSION: 4\n        FW 9:\n            FW_ID: PSP_SOSDRV\n            FW_VERSION: 00.45.00.29\n        FW 10:\n            FW_ID: TA_RAS\n            FW_VERSION: 1B.45.00.0A\n        FW 11:\n            FW_ID: TA_XGMI\n            FW_VERSION: 20.00.00.14\n        FW 12:\n            FW_ID: PM\n            FW_VERSION: 04.86.11.02\n        FW 13:\n            FW_ID: PLDM_BUNDLE\n            FW_VERSION: 01.25.16.07\n\n",
+  "amd_smi_static": "Permission needed to access required GPU device node(s):\n  - /dev/dri/card0: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card1: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card10: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card11: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card12: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card13: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card14: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card15: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card16: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card17: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card18: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card19: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card192: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card2: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card20: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card21: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card22: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card23: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card24: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card25: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card26: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card27: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card28: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card29: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card3: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card30: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card31: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card32: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card33: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card34: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card35: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card36: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card37: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card38: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card39: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card4: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card40: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card41: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card42: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card43: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card44: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card45: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card46: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card47: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card48: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card49: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card5: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card50: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card51: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card52: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card53: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card54: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card55: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card56: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card57: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card58: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card59: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card6: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card60: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card61: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card62: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card63: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card7: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card8: Permission denied; owner=root(0):video(39);\n  - /dev/dri/card9: Permission denied; owner=root(0):video(39);\n\nYou can try:\n  \u2022 Add your user to the group that owns these devices:\n      sudo usermod -aG <group> \"$USER\"\n\nGPU: 2\n    ASIC:\n        MARKET_NAME: AMD Instinct MI350X\n        VENDOR_ID: 0x1002\n        VENDOR_NAME: Advanced Micro Devices Inc. [AMD/ATI]\n        SUBVENDOR_ID: 0x1002\n        DEVICE_ID: 0x75a0\n        SUBSYSTEM_ID: 0x75a0\n        REV_ID: 0x00\n        ASIC_SERIAL: 0x8DB46778120DBFC5\n        OAM_ID: 3\n        NUM_COMPUTE_UNITS: 256\n        TARGET_GRAPHICS_VERSION: gfx950\n    BUS:\n        BDF: 0000:67:00.0\n        MAX_PCIE_WIDTH: 16\n        MAX_PCIE_SPEED: 32 GT/s\n        PCIE_INTERFACE_VERSION: Gen 5\n        SLOT_TYPE: OAM\n    VRAM:\n        TYPE: UNKNOWN\n        VENDOR: MICRON\n        SIZE: 294896 MB\n        BIT_WIDTH: 8192\n        MAX_BANDWIDTH: 8192 GB/s\n\n",
+  "rocm_path": "/opt/rocm-7.1.0",
+  "definition_files": [
+   "/opt/rocm-6.3.1/share/rocprofiler-sdk/counter_defs.yaml",
+   "/opt/rocm-6.4.1/share/rocprofiler-sdk/counter_defs.yaml",
+   "/opt/rocm-7.1.0/share/rocprofiler-sdk/counter_defs.yaml",
+   "/opt/rocm-7.2.0/share/rocprofiler-sdk/counter_defs.yaml"
+  ]
+ },
+ "candidates_found": [
+  "CPC_SYNC_WRREQ_FIFO_BUSY",
+  "DRAM",
+  "FETCH_SIZE",
+  "TCC_EA0_RDREQ",
+  "TCC_EA0_RDREQ_128B",
+  "TCC_EA0_RDREQ_32B",
+  "TCC_EA0_RDREQ_64B",
+  "TCC_EA0_RDREQ_DRAM",
+  "TCC_EA0_RDREQ_DRAM_32B",
+  "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+  "TCC_EA0_RDREQ_GMI_32B",
+  "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+  "TCC_EA0_RDREQ_IO_32B",
+  "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+  "TCC_EA0_RDREQ_LEVEL",
+  "TCC_EA0_RD_UNCACHED_32B",
+  "TCC_EA0_WRREQ",
+  "TCC_EA0_WRREQ_64B",
+  "TCC_EA0_WRREQ_ATOMIC_DRAM",
+  "TCC_EA0_WRREQ_ATOMIC_DRAM_32B",
+  "TCC_EA0_WRREQ_ATOMIC_GMI_32B",
+  "TCC_EA0_WRREQ_ATOMIC_IO_32B",
+  "TCC_EA0_WRREQ_DRAM",
+  "TCC_EA0_WRREQ_DRAM_CREDIT_STALL",
+  "TCC_EA0_WRREQ_GMI_CREDIT_STALL",
+  "TCC_EA0_WRREQ_IO_CREDIT_STALL",
+  "TCC_EA0_WRREQ_LEVEL",
+  "TCC_EA0_WRREQ_PROBE_COMMAND",
+  "TCC_EA0_WRREQ_STALL",
+  "TCC_EA0_WRREQ_WRITE_ATOMIC_32B",
+  "TCC_EA0_WRREQ_WRITE_DRAM",
+  "TCC_EA0_WRREQ_WRITE_DRAM_32B",
+  "TCC_EA0_WRREQ_WRITE_GMI_32B",
+  "TCC_EA0_WRREQ_WRITE_IO_32B",
+  "TCC_EA0_WR_UNCACHED_32B",
+  "TCC_HIT",
+  "TCC_MISS",
+  "TCC_PERF_SEL_EA_RDREQ",
+  "TCC_PERF_SEL_EA_RDREQ_LEVEL",
+  "TCC_PERF_SEL_EA_WRREQ",
+  "TCC_PERF_SEL_EA_WRREQ_ATOMIC",
+  "TCC_PERF_SEL_EA_WRREQ_ATOMIC_LEVEL",
+  "TCC_PERF_SEL_EA_WRREQ_LEVEL",
+  "TCC_REQ",
+  "TCC_TOO_MANY_EA_WRREQS_STALL",
+  "WRITE_SIZE"
+ ],
+ "counters_tested": [
+  "FETCH_SIZE",
+  "WRITE_SIZE",
+  "CPC_SYNC_WRREQ_FIFO_BUSY",
+  "DRAM",
+  "TCC_EA0_RDREQ",
+  "TCC_EA0_RDREQ_128B",
+  "TCC_EA0_RDREQ_32B",
+  "TCC_EA0_RDREQ_64B",
+  "TCC_EA0_RDREQ_DRAM",
+  "TCC_EA0_RDREQ_DRAM_32B",
+  "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+  "TCC_EA0_RDREQ_GMI_32B",
+  "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+  "TCC_EA0_RDREQ_IO_32B",
+  "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+  "TCC_EA0_RDREQ_LEVEL"
+ ],
+ "runs": [
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4109.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.5
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.9134022295475006e-06,
+    "KiB": 0.0019593238830566406,
+    "req32": 6.122887134552002e-05,
+    "req64": 0.00012245774269104004,
+    "req128": 0.0002449154853820801
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4109.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 17.5
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.9134022295475006e-06,
+    "KiB": 0.0019593238830566406,
+    "req32": 6.122887134552002e-05,
+    "req64": 0.00012245774269104004,
+    "req128": 0.0002449154853820801
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048589.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 21.875
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.000488287303596735,
+    "KiB": 0.5000061988830566,
+    "req32": 0.01562519371509552,
+    "req64": 0.03125038743019104,
+    "req128": 0.06250077486038208
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048589.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 21.9375
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.000488287303596735,
+    "KiB": 0.5000061988830566,
+    "req32": 0.01562519371509552,
+    "req64": 0.03125038743019104,
+    "req128": 0.06250077486038208
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097165.125,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 29.4375
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.000488284305902198,
+    "KiB": 0.5000031292438507,
+    "req32": 0.015625097788870335,
+    "req64": 0.03125019557774067,
+    "req128": 0.06250039115548134
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097165.0625,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 27.375
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0004882842913502827,
+    "KiB": 0.5000031143426895,
+    "req32": 0.015625097323209047,
+    "req64": 0.031250194646418095,
+    "req128": 0.06250038929283619
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097165.125,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 44.0625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.000488284305902198,
+    "KiB": 0.5000031292438507,
+    "req32": 0.015625097788870335,
+    "req64": 0.03125019557774067,
+    "req128": 0.06250039115548134
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097165.125,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 44.25
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.000488284305902198,
+    "KiB": 0.5000031292438507,
+    "req32": 0.015625097788870335,
+    "req64": 0.03125019557774067,
+    "req128": 0.06250039115548134
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 12.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 22.75,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 8.940696716308594e-08,
+    "KiB": 9.1552734375e-05,
+    "req32": 2.86102294921875e-06,
+    "req64": 5.7220458984375e-06,
+    "req128": 1.1444091796875e-05
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 12.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 21.6875,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 8.940696716308594e-08,
+    "KiB": 9.1552734375e-05,
+    "req32": 2.86102294921875e-06,
+    "req64": 5.7220458984375e-06,
+    "req128": 1.1444091796875e-05
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 12.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 44.3125,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.7939677238464355e-09,
+    "KiB": 2.86102294921875e-06,
+    "req32": 8.940696716308594e-08,
+    "req64": 1.7881393432617188e-07,
+    "req128": 3.5762786865234375e-07
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 12.0625,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 45.625,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.8085196390748024e-09,
+    "KiB": 2.8759241104125977e-06,
+    "req32": 8.987262845039368e-08,
+    "req64": 1.7974525690078735e-07,
+    "req128": 3.594905138015747e-07
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65548.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 38.375,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00024418532848358154,
+    "KiB": 0.2500457763671875,
+    "req32": 0.00781393051147461,
+    "req64": 0.01562786102294922,
+    "req128": 0.03125572204589844
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65548.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 36.625,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00024418532848358154,
+    "KiB": 0.2500457763671875,
+    "req32": 0.00781393051147461,
+    "req64": 0.01562786102294922,
+    "req128": 0.03125572204589844
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048594.6875,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 75.6875,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0002441449760226533,
+    "KiB": 0.25000445544719696,
+    "req32": 0.007812639232724905,
+    "req64": 0.01562527846544981,
+    "req128": 0.03125055693089962
+   }
+  },
+  {
+   "counter": "FETCH_SIZE",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048593.0625,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 83.3125,
+    "__amd_rocclr_copyBuffer": 3.5625
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00024414459767285734,
+    "KiB": 0.2500040680170059,
+    "req32": 0.007812627125531435,
+    "req64": 0.01562525425106287,
+    "req128": 0.03125050850212574
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 8192.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 8192.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 131072.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 131072.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1048576.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1048576.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 131072.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 131072.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0009765625,
+    "KiB": 1.0,
+    "req32": 0.03125,
+    "req64": 0.0625,
+    "req128": 0.125
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 131072.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 131072.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0009765625,
+    "KiB": 1.0,
+    "req32": 0.03125,
+    "req64": 0.0625,
+    "req128": 0.125
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4194304.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0009765625,
+    "KiB": 1.0,
+    "req32": 0.03125,
+    "req64": 0.0625,
+    "req128": 0.125
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4194304.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0009765625,
+    "KiB": 1.0,
+    "req32": 0.03125,
+    "req64": 0.0625,
+    "req128": 0.125
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 131072.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 262144.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00048828125,
+    "KiB": 0.5,
+    "req32": 0.015625,
+    "req64": 0.03125,
+    "req128": 0.0625
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 131072.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 262144.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00048828125,
+    "KiB": 0.5,
+    "req32": 0.015625,
+    "req64": 0.03125,
+    "req128": 0.0625
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097152.125,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0004882812791038305,
+    "KiB": 0.5000000298023224,
+    "req32": 0.015625000931322575,
+    "req64": 0.03125000186264515,
+    "req128": 0.0625000037252903
+   }
+  },
+  {
+   "counter": "WRITE_SIZE",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2097152.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 4194304.0,
+    "__amd_rocclr_copyBuffer": 4.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00048828125,
+    "KiB": 0.5,
+    "req32": 0.015625,
+    "req64": 0.03125,
+    "req128": 0.0625
+   }
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 16.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 32.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 32.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 33.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "CPC_SYNC_WRREQ_FIFO_BUSY",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 32.0,
+    "__amd_rocclr_copyBuffer": 38.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "DRAM",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 0,
+   "counter_total": null,
+   "other_dispatches": {},
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65744.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 292.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.061443567276001e-05,
+    "KiB": 0.03134918212890625,
+    "req32": 0.0009796619415283203,
+    "req64": 0.0019593238830566406,
+    "req128": 0.003918647766113281
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65744.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 264.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.061443567276001e-05,
+    "KiB": 0.03134918212890625,
+    "req32": 0.0009796619415283203,
+    "req64": 0.0019593238830566406,
+    "req128": 0.003918647766113281
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777376.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 348.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00781257450580597,
+    "KiB": 8.000076293945312,
+    "req32": 0.250002384185791,
+    "req64": 0.500004768371582,
+    "req128": 1.000009536743164
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777424.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 362.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00781259685754776,
+    "KiB": 8.000099182128906,
+    "req32": 0.2500030994415283,
+    "req64": 0.5000061988830566,
+    "req128": 1.0000123977661133
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 443.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 440.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 718.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 721.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 345.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 348.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 733.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.470348358154297e-08,
+    "KiB": 4.57763671875e-05,
+    "req32": 1.430511474609375e-06,
+    "req64": 2.86102294921875e-06,
+    "req128": 5.7220458984375e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 708.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.470348358154297e-08,
+    "KiB": 4.57763671875e-05,
+    "req32": 1.430511474609375e-06,
+    "req64": 2.86102294921875e-06,
+    "req128": 5.7220458984375e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048768.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 598.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906965255737305,
+    "KiB": 4.000732421875,
+    "req32": 0.12502288818359375,
+    "req64": 0.2500457763671875,
+    "req128": 0.500091552734375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048768.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 580.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906965255737305,
+    "KiB": 4.000732421875,
+    "req32": 0.12502288818359375,
+    "req64": 0.2500457763671875,
+    "req128": 0.500091552734375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777518.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1077.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0039063203148543835,
+    "KiB": 4.000072002410889,
+    "req32": 0.12500225007534027,
+    "req64": 0.25000450015068054,
+    "req128": 0.5000090003013611
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777496.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1080.0,
+    "__amd_rocclr_copyBuffer": 58.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906315192580223,
+    "KiB": 4.000066757202148,
+    "req32": 0.12500208616256714,
+    "req64": 0.2500041723251343,
+    "req128": 0.5000083446502686
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65536.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.0517578125e-05,
+    "KiB": 0.03125,
+    "req32": 0.0009765625,
+    "req64": 0.001953125,
+    "req128": 0.00390625
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65536.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.0517578125e-05,
+    "KiB": 0.03125,
+    "req32": 0.0009765625,
+    "req64": 0.001953125,
+    "req128": 0.00390625
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777216.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777216.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554432.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554432.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554432.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554432.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0078125,
+    "KiB": 8.0,
+    "req32": 0.25,
+    "req64": 0.5,
+    "req128": 1.0
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048576.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00390625,
+    "KiB": 4.0,
+    "req32": 0.125,
+    "req64": 0.25,
+    "req128": 0.5
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048576.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00390625,
+    "KiB": 4.0,
+    "req32": 0.125,
+    "req64": 0.25,
+    "req128": 0.5
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777216.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00390625,
+    "KiB": 4.0,
+    "req32": 0.125,
+    "req64": 0.25,
+    "req128": 0.5
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_128B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777216.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 32.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00390625,
+    "KiB": 4.0,
+    "req32": 0.125,
+    "req64": 0.25,
+    "req128": 0.5
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 208.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 296.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.685754776000977e-08,
+    "KiB": 9.918212890625e-05,
+    "req32": 3.0994415283203125e-06,
+    "req64": 6.198883056640625e-06,
+    "req128": 1.239776611328125e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 208.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 291.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.685754776000977e-08,
+    "KiB": 9.918212890625e-05,
+    "req32": 3.0994415283203125e-06,
+    "req64": 6.198883056640625e-06,
+    "req128": 1.239776611328125e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 208.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 347.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.685754776000977e-08,
+    "KiB": 9.918212890625e-05,
+    "req32": 3.0994415283203125e-06,
+    "req64": 6.198883056640625e-06,
+    "req128": 1.239776611328125e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 208.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 346.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.685754776000977e-08,
+    "KiB": 9.918212890625e-05,
+    "req32": 3.0994415283203125e-06,
+    "req64": 6.198883056640625e-06,
+    "req128": 1.239776611328125e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 211.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 451.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.912726581096649e-08,
+    "KiB": 5.030632019042969e-05,
+    "req32": 1.5720725059509277e-06,
+    "req64": 3.1441450119018555e-06,
+    "req128": 6.288290023803711e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 209.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 405.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.866160452365875e-08,
+    "KiB": 4.982948303222656e-05,
+    "req32": 1.55717134475708e-06,
+    "req64": 3.11434268951416e-06,
+    "req128": 6.22868537902832e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 210.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 691.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.889443516731262e-08,
+    "KiB": 5.0067901611328125e-05,
+    "req32": 1.564621925354004e-06,
+    "req64": 3.129243850708008e-06,
+    "req128": 6.258487701416016e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 210.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 709.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.889443516731262e-08,
+    "KiB": 5.0067901611328125e-05,
+    "req32": 1.564621925354004e-06,
+    "req64": 3.129243850708008e-06,
+    "req128": 6.258487701416016e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 366.0,
+    "__amd_rocclr_copyBuffer": 25.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 362.0,
+    "__amd_rocclr_copyBuffer": 25.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 724.0,
+    "__amd_rocclr_copyBuffer": 25.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.470348358154297e-08,
+    "KiB": 4.57763671875e-05,
+    "req32": 1.430511474609375e-06,
+    "req64": 2.86102294921875e-06,
+    "req128": 5.7220458984375e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 739.0,
+    "__amd_rocclr_copyBuffer": 26.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.470348358154297e-08,
+    "KiB": 4.57763671875e-05,
+    "req32": 1.430511474609375e-06,
+    "req64": 2.86102294921875e-06,
+    "req128": 5.7220458984375e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 597.0,
+    "__amd_rocclr_copyBuffer": 25.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 7.152557373046875e-07,
+    "KiB": 0.000732421875,
+    "req32": 2.288818359375e-05,
+    "req64": 4.57763671875e-05,
+    "req128": 9.1552734375e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 611.0,
+    "__amd_rocclr_copyBuffer": 25.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 7.152557373046875e-07,
+    "KiB": 0.000732421875,
+    "req32": 2.288818359375e-05,
+    "req64": 4.57763671875e-05,
+    "req128": 9.1552734375e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 272.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1079.0,
+    "__amd_rocclr_copyBuffer": 41.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 6.332993507385254e-08,
+    "KiB": 6.4849853515625e-05,
+    "req32": 2.0265579223632812e-06,
+    "req64": 4.0531158447265625e-06,
+    "req128": 8.106231689453125e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_64B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 278.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1068.0,
+    "__amd_rocclr_copyBuffer": 26.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 6.472691893577576e-08,
+    "KiB": 6.628036499023438e-05,
+    "req32": 2.0712614059448242e-06,
+    "req64": 4.1425228118896484e-06,
+    "req128": 8.285045623779297e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65744.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 280.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.061443567276001e-05,
+    "KiB": 0.03134918212890625,
+    "req32": 0.0009796619415283203,
+    "req64": 0.0019593238830566406,
+    "req128": 0.003918647766113281
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 65744.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 274.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 3.061443567276001e-05,
+    "KiB": 0.03134918212890625,
+    "req32": 0.0009796619415283203,
+    "req64": 0.0019593238830566406,
+    "req128": 0.003918647766113281
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777424.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 349.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00781259685754776,
+    "KiB": 8.000099182128906,
+    "req32": 0.2500030994415283,
+    "req64": 0.5000061988830566,
+    "req128": 1.0000123977661133
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777416.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 347.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812593132257462,
+    "KiB": 8.00009536743164,
+    "req32": 0.25000298023223877,
+    "req64": 0.5000059604644775,
+    "req128": 1.000011920928955
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554641.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 437.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548661604524,
+    "KiB": 8.000049829483032,
+    "req32": 0.25000155717134476,
+    "req64": 0.5000031143426895,
+    "req128": 1.000006228685379
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 436.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554642.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 692.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548894435167,
+    "KiB": 8.000050067901611,
+    "req32": 0.25000156462192535,
+    "req64": 0.5000031292438507,
+    "req128": 1.0000062584877014
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 33554641.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 715.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.007812548661604524,
+    "KiB": 8.000049829483032,
+    "req32": 0.25000155717134476,
+    "req64": 0.5000031143426895,
+    "req128": 1.000006228685379
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 357.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 350.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.430511474609375e-06,
+    "KiB": 0.00146484375,
+    "req32": 4.57763671875e-05,
+    "req64": 9.1552734375e-05,
+    "req128": 0.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 192.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 707.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.470348358154297e-08,
+    "KiB": 4.57763671875e-05,
+    "req32": 1.430511474609375e-06,
+    "req64": 2.86102294921875e-06,
+    "req128": 5.7220458984375e-06
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 2611.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 740.0,
+    "__amd_rocclr_copyBuffer": 89.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 6.079208105802536e-07,
+    "KiB": 0.0006225109100341797,
+    "req32": 1.9453465938568115e-05,
+    "req64": 3.890693187713623e-05,
+    "req128": 7.781386375427246e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048768.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 598.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906965255737305,
+    "KiB": 4.000732421875,
+    "req32": 0.12502288818359375,
+    "req64": 0.2500457763671875,
+    "req128": 0.500091552734375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1048768.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 597.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906965255737305,
+    "KiB": 4.000732421875,
+    "req32": 0.12502288818359375,
+    "req64": 0.2500457763671875,
+    "req128": 0.500091552734375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777497.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1049.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906315425410867,
+    "KiB": 4.0000669956207275,
+    "req32": 0.12500209361314774,
+    "req64": 0.25000418722629547,
+    "req128": 0.5000083744525909
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 16777482.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1100.0,
+    "__amd_rocclr_copyBuffer": 57.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003906311932951212,
+    "KiB": 4.000063419342041,
+    "req32": 0.12500198185443878,
+    "req64": 0.25000396370887756,
+    "req128": 0.5000079274177551
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 262560.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 544.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00012226402759552002,
+    "KiB": 0.1251983642578125,
+    "req32": 0.003912448883056641,
+    "req64": 0.007824897766113281,
+    "req128": 0.015649795532226562
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 262560.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 552.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00012226402759552002,
+    "KiB": 0.1251983642578125,
+    "req32": 0.003912448883056641,
+    "req64": 0.007824897766113281,
+    "req128": 0.015649795532226562
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 67108896.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 728.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.031250014901161194,
+    "KiB": 32.00001525878906,
+    "req32": 1.0000004768371582,
+    "req64": 2.0000009536743164,
+    "req128": 4.000001907348633
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 67109280.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 722.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.03125019371509552,
+    "KiB": 32.00019836425781,
+    "req32": 1.0000061988830566,
+    "req64": 2.0000123977661133,
+    "req128": 4.000024795532227
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 134218148.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 870.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.031250097788870335,
+    "KiB": 32.00010013580322,
+    "req32": 1.0000031292438507,
+    "req64": 2.0000062584877014,
+    "req128": 4.000012516975403
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 134218146.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 874.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.03125009732320905,
+    "KiB": 32.000099658966064,
+    "req32": 1.0000031143426895,
+    "req64": 2.000006228685379,
+    "req128": 4.000012457370758
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 134218146.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1426.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.03125009732320905,
+    "KiB": 32.000099658966064,
+    "req32": 1.0000031143426895,
+    "req64": 2.000006228685379,
+    "req128": 4.000012457370758
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 134218148.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1416.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.031250097788870335,
+    "KiB": 32.00010013580322,
+    "req32": 1.0000031292438507,
+    "req64": 2.0000062584877014,
+    "req128": 4.000012516975403
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 384.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 730.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.86102294921875e-06,
+    "KiB": 0.0029296875,
+    "req32": 9.1552734375e-05,
+    "req64": 0.00018310546875,
+    "req128": 0.0003662109375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 384.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 732.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.86102294921875e-06,
+    "KiB": 0.0029296875,
+    "req32": 9.1552734375e-05,
+    "req64": 0.00018310546875,
+    "req128": 0.0003662109375
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 384.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1400.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 8.940696716308594e-08,
+    "KiB": 9.1552734375e-05,
+    "req32": 2.86102294921875e-06,
+    "req64": 5.7220458984375e-06,
+    "req128": 1.1444091796875e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 384.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1438.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 8.940696716308594e-08,
+    "KiB": 9.1552734375e-05,
+    "req32": 2.86102294921875e-06,
+    "req64": 5.7220458984375e-06,
+    "req128": 1.1444091796875e-05
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4194688.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1260.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.01562643051147461,
+    "KiB": 16.00146484375,
+    "req32": 0.5000457763671875,
+    "req64": 1.000091552734375,
+    "req128": 2.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 4194688.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 1204.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.01562643051147461,
+    "KiB": 16.00146484375,
+    "req32": 0.5000457763671875,
+    "req64": 1.000091552734375,
+    "req128": 2.00018310546875
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 67109464.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 2116.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.015625139698386192,
+    "KiB": 16.00014305114746,
+    "req32": 0.5000044703483582,
+    "req64": 1.0000089406967163,
+    "req128": 2.0000178813934326
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 67109426.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 2126.0,
+    "__amd_rocclr_copyBuffer": 178.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.015625130850821733,
+    "KiB": 16.000133991241455,
+    "req32": 0.5000041872262955,
+    "req64": 1.000008374452591,
+    "req128": 2.000016748905182
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 48923.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.2781547158956528e-05,
+    "KiB": 0.023328304290771484,
+    "req32": 0.0007290095090866089,
+    "req64": 0.0014580190181732178,
+    "req128": 0.0029160380363464355
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 53839.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 2.5070738047361374e-05,
+    "KiB": 0.025672435760498047,
+    "req32": 0.000802263617515564,
+    "req64": 0.001604527235031128,
+    "req128": 0.003209054470062256
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 7115600.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0033134594559669495,
+    "KiB": 3.3929824829101562,
+    "req32": 0.10603070259094238,
+    "req64": 0.21206140518188477,
+    "req128": 0.42412281036376953
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 7763173.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.003615009132772684,
+    "KiB": 3.7017693519592285,
+    "req32": 0.11568029224872589,
+    "req64": 0.23136058449745178,
+    "req128": 0.46272116899490356
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 20991078.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.004887366201728582,
+    "KiB": 5.004662990570068,
+    "req32": 0.15639571845531464,
+    "req64": 0.3127914369106293,
+    "req128": 0.6255828738212585
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 19724314.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.004592424724251032,
+    "KiB": 4.702642917633057,
+    "req32": 0.14695759117603302,
+    "req64": 0.29391518235206604,
+    "req128": 0.5878303647041321
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 19184268.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.004466685466468334,
+    "KiB": 4.573885917663574,
+    "req32": 0.1429339349269867,
+    "req64": 0.2858678698539734,
+    "req128": 0.5717357397079468
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 18420401.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.004288833821192384,
+    "KiB": 4.391765832901001,
+    "req32": 0.13724268227815628,
+    "req64": 0.27448536455631256,
+    "req128": 0.5489707291126251
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 216041.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0008048154413700104,
+    "KiB": 0.8241310119628906,
+    "req32": 0.025754094123840332,
+    "req64": 0.051508188247680664,
+    "req128": 0.10301637649536133
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 106287.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.00039594992995262146,
+    "KiB": 0.4054527282714844,
+    "req32": 0.012670397758483887,
+    "req64": 0.025340795516967773,
+    "req128": 0.05068159103393555
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 5950709.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0013855074066668749,
+    "KiB": 1.4187595844268799,
+    "req32": 0.044336237013339996,
+    "req64": 0.08867247402667999,
+    "req128": 0.17734494805335999
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_DRAM_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 6154186.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0014328830875456333,
+    "KiB": 1.4672722816467285,
+    "req32": 0.045852258801460266,
+    "req64": 0.09170451760292053,
+    "req128": 0.18340903520584106
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_GMI_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_32B",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_IO_CREDIT_STALL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 0.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 0.0,
+    "__amd_rocclr_copyBuffer": 0.0
+   },
+   "stderr_tail": ""
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 81125103.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 84780.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.03777681989595294,
+    "KiB": 38.68346357345581,
+    "req32": 1.208858236670494,
+    "req64": 2.417716473340988,
+    "req128": 4.835432946681976
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read8m_x256",
+   "mode": "read",
+   "buffer_bytes": 8388608,
+   "passes": 256,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 81863219.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 89686.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.03812053194269538,
+    "KiB": 39.03542470932007,
+    "req32": 1.2198570221662521,
+    "req64": 2.4397140443325043,
+    "req128": 4.8794280886650085
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 20753090201.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 117761.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.66391069861129,
+    "KiB": 9895.84455537796,
+    "req32": 309.24514235556126,
+    "req64": 618.4902847111225,
+    "req128": 1236.980569422245
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read128m_x16",
+   "mode": "read",
+   "buffer_bytes": 134217728,
+   "passes": 16,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 20902700086.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 104600.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 9.733578230254352,
+    "KiB": 9967.184107780457,
+    "req32": 311.47450336813927,
+    "req64": 622.9490067362785,
+    "req128": 1245.898013472557
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 79286023674.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 221398.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 18.460215924773365,
+    "KiB": 18903.261106967926,
+    "req32": 590.7269095927477,
+    "req64": 1181.4538191854954,
+    "req128": 2362.9076383709908
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read1g_x4",
+   "mode": "read",
+   "buffer_bytes": 1073741824,
+   "passes": 4,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 80268373928.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 213554.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 18.688937166705728,
+    "KiB": 19137.471658706665,
+    "req32": 598.0459893345833,
+    "req64": 1196.0919786691666,
+    "req128": 2392.183957338333
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 81285074024.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 447592.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 18.92565610446036,
+    "KiB": 19379.871850967407,
+    "req32": 605.6209953427315,
+    "req64": 1211.241990685463,
+    "req128": 2422.483981370926
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "read4g_x1",
+   "mode": "read",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 4294967296,
+   "useful_write_bytes": 0,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 81323361842.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 371426.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 18.9345706817694,
+    "KiB": 19389.000378131866,
+    "req32": 605.9062618166208,
+    "req64": 1211.8125236332417,
+    "req128": 2423.6250472664833
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 77478.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 133386.0,
+    "__amd_rocclr_copyBuffer": 14811.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0005772560834884644,
+    "KiB": 0.5911102294921875,
+    "req32": 0.01847219467163086,
+    "req64": 0.03694438934326172,
+    "req128": 0.07388877868652344
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "write128m",
+   "mode": "write",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 72823.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 113273.0,
+    "__amd_rocclr_copyBuffer": 14904.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 0.0005425736308097839,
+    "KiB": 0.5555953979492188,
+    "req32": 0.017362356185913086,
+    "req64": 0.03472471237182617,
+    "req128": 0.06944942474365234
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 74961.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 349540.0,
+    "__amd_rocclr_copyBuffer": 63087.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.745321787893772e-05,
+    "KiB": 0.017872095108032227,
+    "req32": 0.0005585029721260071,
+    "req64": 0.0011170059442520142,
+    "req128": 0.0022340118885040283
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "write4g",
+   "mode": "write",
+   "buffer_bytes": 4294967296,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 0,
+   "useful_write_bytes": 4294967296,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 80024.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 364355.0,
+    "__amd_rocclr_copyBuffer": 56732.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 1.8632039427757263e-05,
+    "KiB": 0.019079208374023438,
+    "req32": 0.0005962252616882324,
+    "req64": 0.0011924505233764648,
+    "req128": 0.0023849010467529297
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1086143958.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 221176.0,
+    "__amd_rocclr_copyBuffer": 39993.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.046201549470425,
+    "KiB": 4143.310386657715,
+    "req32": 129.4784495830536,
+    "req64": 258.9568991661072,
+    "req128": 517.9137983322144
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "copy128m",
+   "mode": "copy",
+   "buffer_bytes": 134217728,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 134217728,
+   "useful_write_bytes": 134217728,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 1101427848.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 193804.0,
+    "__amd_rocclr_copyBuffer": 42337.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 4.103138476610184,
+    "KiB": 4201.613800048828,
+    "req32": 131.30043125152588,
+    "req64": 262.60086250305176,
+    "req128": 525.2017250061035
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 0,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 46086459553.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 685482.0,
+    "__amd_rocclr_copyBuffer": 45904.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 10.730340041453019,
+    "KiB": 10987.868202447891,
+    "req32": 343.3708813264966,
+    "req64": 686.7417626529932,
+    "req128": 1373.4835253059864
+   }
+  },
+  {
+   "counter": "TCC_EA0_RDREQ_LEVEL",
+   "load": "copy2g",
+   "mode": "copy",
+   "buffer_bytes": 2147483648,
+   "passes": 1,
+   "rep": 1,
+   "useful_read_bytes": 2147483648,
+   "useful_write_bytes": 2147483648,
+   "returncode": 0,
+   "dispatch_rows": 1,
+   "counter_total": 45845267356.0,
+   "other_dispatches": {
+    "__amd_rocclr_fillBufferAligned": 691898.0,
+    "__amd_rocclr_copyBuffer": 45550.0
+   },
+   "stderr_tail": "",
+   "ratio": {
+    "bytes": 10.674183106981218,
+    "KiB": 10930.363501548767,
+    "req32": 341.57385942339897,
+    "req64": 683.1477188467979,
+    "req128": 1366.2954376935959
+   }
+  }
+ ]
+}
