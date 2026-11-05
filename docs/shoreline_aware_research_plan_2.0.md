@@ -5,6 +5,8 @@
 **Target:** A GPU-like, HBM-attached accelerator for memory-intensive autoregressive LLM decoding.  
 **Primary goal:** Minimize **system-relevant energy per generated token**, subject to specified decode performance, manufacturability, die, package, memory-capacity, and cost constraints.
 
+**Owner-requested modeling objective — 5 November 2026:** derive component counts and fixed-area allocations among arithmetic, RF/L1/L2/shared storage, request/control/communication and digital MC/PHY, with HBM stacks/package budgeted separately. Produce decode-only and prefill-plus-decode versions. Start with [mathematical model V0](area_allocation_mathematical_model_v0_20261105.md); Section 11 assigns ongoing modeling jobs and versions. Current-GPU suboptimality is a falsifiable hypothesis. V0 provides an ideal allocation rule, constrained energy/performance formulation and illustrative mixed-phase example, not a calibrated numerical optimum.
+
 > **One-sentence thesis.** Rather than assuming that unused GPU compute area should become on-chip SRAM, treat compute, cache capacity and bandwidth, HBM-controller/PHY capacity, off-chip HBM bandwidth, on-die interconnect, and *usable I/O shoreline* as coupled design resources. Then develop and validate a physically constrained optimizer and the targeted microarchitecture required to make its selected design practical.
 
 > **For a Linux AI research agent:** Treat every claimed performance gain as a hypothesis until reproduced. Do not fabricate H100 trace availability, physical die layouts, PHY sizes, foundry rules, or energy/area measurements. Record sources, versions, assumptions, uncertainty ranges, and negative results.

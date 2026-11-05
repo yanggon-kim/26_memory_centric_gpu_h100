@@ -2,6 +2,8 @@
 
 ## Next AMD assignment — prepared 2026-11-05
 
+Additional research deliverable: read [fixed-area mathematical model V0](docs/area_allocation_mathematical_model_v0_20261105.md). The coordinating agent develops D (decode-only) and PD (prefill-plus-decode) resource/area optimizers; the AMD agent returns G1–G8 observables and uncertainty as model inputs. Masks do not measure reclaimed area and HBM stack silicon is not compute-die area. Preserve the separate execution checkpoint below.
+
 On `amd/mi300x-phase0`, read [docs/amd/goal_based_followup_20261105.md](docs/amd/goal_based_followup_20261105.md) FIRST for the next G1–G8 follow-up on clocks, tuned serving/energy guardrails, traffic-counter validation, tuned memory competition, request-generation limits, SRAM opportunity and held-out prediction. It permits adapting methods to available hardware while preserving the existing scientific gates. Pulling/reading is preparation only: wait for the owner's separate execution instruction before new GPU experiments or allocation submissions. Once ordered, implement and execute a feasible versioned plan autonomously within the authorized scope, publish reproducible evidence and return results on this AMD branch. Read the November 5 handbook revisions before reusing older conclusions. The October 26 E0–E8 contract below remains methodological context; its historical automatic ordering is not the new assignment.
 
 ## Active AMD follow-up — updated 2026-10-26

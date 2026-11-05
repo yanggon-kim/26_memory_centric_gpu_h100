@@ -14,6 +14,8 @@ Clock/power/driver/firmware/cluster changes remain outside the existing authoriz
 
 ## 1. Project goal and why this follow-up exists
 
+**Additional owner goal, 5 November 2026:** support a mathematical optimizer that returns component counts and fixed-area allocations among arithmetic, storage/request/communication and MC/PHY, with HBM stacks/package resources budgeted separately, for both decode-only and prefill-plus-decode. Read [mathematical model V0](../area_allocation_mathematical_model_v0_20261105.md), especially Sections 10–11. The coordinating agent owns area-model/optimizer development; the AMD agent supplies measured demand, service curves, kernel/dispatch behavior, traffic, energy and uncertainty from G1–G8. Include parameter constraints and unavailable quantities in the results. Do not infer mm² from CU masks, invent process/PHY/SRAM areas, or treat stock-GPU suboptimality as already proven. This adds a modeling deliverable to the research, not a ninth automatic GPU campaign or a change to the execution checkpoint.
+
 The governing architecture specification is [shoreline-aware research plan 2.0](../shoreline_aware_research_plan_2.0.md). We investigate whether reallocating excess GPU arithmetic area toward SRAM, memory controllers/PHYs, HBM interfaces and memory delivery can improve system-relevant J/token under die area, placeable shoreline, capacity, package, performance and power constraints. Lower arithmetic utilization alone does not prove architectural opportunity. No benefit is assumed.
 
 Recent AMD work gives unusually useful motivation:
@@ -174,6 +176,7 @@ Use versioned new artifacts on `amd/mi300x-phase0`. Suggested names are conventi
 | `docs/amd/goal_followup_results_<date>.md` | Per-goal findings, negative results, sources, qualifications, architecture implications and remaining uncertainty |
 | `results_published/<cohort>_<date>_goal_followup_job<id>/` | Cohort/source manifest, actual launch plan, gates, compact trial-level timing/energy tables, output digests, counter exports/definitions, reader versions and hashes |
 | `results_published/<...>/goal_status.json` | G1–G8 status, actual evidence paths, qualification, missing observables, failed attempts and next action |
+| `results_published/<...>/model_inputs.json` | V0-model inputs/constraints from G1–G8: component/operation/interface identity, units, cohort/workload/kernel/clock scope, estimate/range, measured versus fitted status, source hashes and applicability; explicit unknowns for unmeasured area and physical HBM quantities |
 | `scripts/amd/<versioned readers/adapters>` | Reproducible generators/readers, including model fitting/freezing/judgment; meaningful verification of changed readers |
 | `docs/amd/experiment_log.md` and cohort index | Dated progress and navigable links without rewriting historical outcomes |
 
