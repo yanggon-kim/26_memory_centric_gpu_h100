@@ -385,3 +385,11 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   `scripts/amd/oc/oc_att.py`) passes (ii)–(iv) on both cohorts, split check degenerate in the pilot.
 - Amendments: SQ_INSTS_VALU expectation from ISA (v_pk_fma_f32); reader re-parses template-kernel CSVs.
 - Development plan (`plan_oc.py --kind dev`) submitted after this commit.
+
+## 2026-11-05 — OC6 development (502805 / 502806) and freeze
+
+- 44/44 steps rc 0 each. Review and freeze: `docs/amd/oc_dev_review_20261105.md`; frozen
+  `docs/amd/oc/oc6_frozen_{mi300x,mi350x}.json` (committed before the held-out job).
+- Issued MFMA = 4·m·⌈k/1024⌉ exactly (grid/mask independent). Pre-registered M1 fails in development (η > 1, 19/40 and
+  25/40 in-sample); η not identifiable from timings (C/M 0.04–0.07, collinear). ATT: X/A_C = 0.94–1.00 on every
+  development shape (compute hidden under outstanding loads per CU). Amended M6 = sqrt(O² + (κM)²) frozen alongside.

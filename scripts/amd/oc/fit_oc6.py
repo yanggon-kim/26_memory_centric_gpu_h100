@@ -14,6 +14,14 @@ its largest relative residual is <= 1 %, otherwise the extended form a*m*k + b*m
 eta: one per cohort, least squares on log time over the development cells (grid search on [-0.5, 1.5]), with the
 profile SSE, an approximate 95 % profile interval and the (O-scale, eta) trade-off over O x {0.5 .. 1.5}.
 
+Development amendments (docs/amd/oc_dev_review_20261105.md), frozen with the model before any held-out acquisition:
+  - issued_MFMA: per-dispatch counts are independent of grid and mask and equal 4*m*ceil(k/1024) exactly (wvSplitK
+    template: 64 threads x 8 elements x unroll 2 = 1024 k per step, 4 issued MFMA per row and step); both linear forms
+    above leave up to 70 % residual, so the exact form is used ('4*m*ceil(k/1024)').
+  - two frozen models are judged: M1 (pre-registered, eta fitted on [-3, 3]) and M6 = sqrt(O^2 + (kappa*M)^2), one
+    kappa per cohort (O as a floor that merges smoothly with the streaming time; no eta: on the development cells eta is
+    not identifiable from timings, C/M ~ 0.04-0.07 and collinear with M). The acceptance rule is unchanged.
+
   fit_oc6.py fit   --root <dev run root> --cohort mi300x --out docs/amd/oc/oc6_frozen_mi300x.json
   fit_oc6.py judge --root <held-out run root> --frozen docs/amd/oc/oc6_frozen_mi300x.json --out validation.json
 """
@@ -124,7 +132,10 @@ def fit_issued(counts):
         res = [abs(sum(a * b for a, b in zip(coef, x)) / v - 1) for x, v in zip(X, y)]
         out['forms'][name] = {'coef': coef, 'max_rel_residual': max(res), 'median_rel_residual': st.median(res)}
     pre = out['forms']['a*m*k + b*g']
-    out['used'] = 'a*m*k + b*g' if pre['max_rel_residual'] <= 0.01 else 'a*m*k + b*m + c*g + d'
+    exact = [abs(4 * c['m'] * math.ceil(c['k'] / 1024) / c['mfma'] - 1) for c in pts]
+    out['forms']['4*m*ceil(k/1024)'] = {'coef': [], 'max_rel_residual': max(exact), 'median_rel_residual': st.median(exact)}
+    out['used'] = 'a*m*k + b*g' if pre['max_rel_residual'] <= 0.01 else (
+        '4*m*ceil(k/1024)' if max(exact) <= 0.01 else 'a*m*k + b*m + c*g + d')
     out['amended'] = out['used'] != 'a*m*k + b*g'
     by_mask = collections.defaultdict(dict)
     for c in pts:
@@ -135,6 +146,8 @@ def fit_issued(counts):
 
 
 def issued(fi, m, k, g):
+    if fi['used'] == '4*m*ceil(k/1024)':
+        return 4 * m * math.ceil(k / 1024)
     coef = fi['forms'][fi['used']]['coef']
     x = [m * k, g] if fi['used'] == 'a*m*k + b*g' else [m * k, m, g, 1.0]
     return sum(a * b for a, b in zip(coef, x))
@@ -163,12 +176,21 @@ def pred(c, eta, oscale=1.0):
     return c['O'] * oscale + c['C'] + c['M'] - eta * min(c['C'], c['M'])
 
 
+def pred_m6(c, kappa):
+    return math.hypot(c['O'], kappa * c['M'])
+
+
+def fit_kappa(cs):
+    grid = [0.8 + i * 0.0005 for i in range(1201)]
+    return min(grid, key=lambda k: sum((math.log(pred_m6(c, k)) - math.log(c['T_meas'])) ** 2 for c in cs))
+
+
 def sse(cs, eta, oscale=1.0):
     return sum((math.log(pred(c, eta, oscale)) - math.log(c['T_meas'])) ** 2 for c in cs)
 
 
 def fit_eta(cs, oscale=1.0):
-    grid = [-0.5 + i * 0.001 for i in range(2001)]
+    grid = [-3 + i * 0.001 for i in range(6001)]
     best = min(grid, key=lambda e: sse(cs, e, oscale))
     return best, sse(cs, best, oscale)
 
@@ -203,18 +225,24 @@ def do_fit(a):
     n = len(cs)
     thr = s0 * (1 + 3.84 / max(n - 1, 1))
     prof = {round(-0.5 + i * 0.05, 2): sse(cs, -0.5 + i * 0.05) for i in range(41)}
-    inside = [e for e in (-0.5 + i * 0.001 for i in range(2001)) if sse(cs, e) <= thr]
+    inside = [e for e in (-3 + i * 0.001 for i in range(6001)) if sse(cs, e) <= thr]
+    kappa = fit_kappa(cs)
     trade = {s: dict(zip(('eta', 'sse'), fit_eta(cs, s))) for s in (0.5, 0.75, 1.0, 1.25, 1.5)}
     for c in cs:
         c['T_pred'] = pred(c, eta)
         c['rel_err'] = c['T_pred'] / c['T_meas'] - 1
+        c['T_pred_m6'] = pred_m6(c, kappa)
+        c['rel_err_m6'] = c['T_pred_m6'] / c['T_meas'] - 1
         c['feasible'] = max(c['C'], c['M']) <= c['T_meas'] - c['O'] <= c['C'] + c['M']
         c['C_over_M'] = c['C'] / c['M']
     frozen = {
         'version': 'oc6_v0', 'cohort': a.cohort, 'family': 'decode projection, wvSplitK bf16, N = 1',
         'model': 'T_pred = O_ref(n,g) + issued_MFMA(m,k,g)/R_mfma4(n,g) + 2mk/B_ref(n,g) - eta*min(C, M)',
         'dev_root': str(a.root), 'dev_plan_sha256': plan.get('plan_sha256'), 'dev_cells': plan.get('dev_cells'),
-        'eta': eta, 'sse_log': s0, 'n_cells': n, 'eta_profile_95': [min(inside), max(inside)] if inside else None,
+        'eta': eta, 'sse_log': s0, 'kappa_m6': kappa,
+        'models': {'M1': 'pre-registered: O + C + M - eta*min(C, M)', 'M6': 'amended on development: sqrt(O^2 + (kappa*M)^2)'},
+        'dev_fit_m6': {'within_10pct': sum(abs(c['rel_err_m6']) <= 0.10 for c in cs),
+                       'median_signed_err': st.median(c['rel_err_m6'] for c in cs) if cs else None}, 'n_cells': n, 'eta_profile_95': [min(inside), max(inside)] if inside else None,
         'eta_profile_sse': prof, 'o_scale_tradeoff': trade, 'issued_mfma_fit': {k: v for k, v in fi.items() if k != 'measured'},
         'issued_mfma_measured': fi.get('measured'),
         'references': {f'{n}_{g}': {k: st.median(v) for k, v in r.items()} for (n, g), r in sorted(refs.items())},
@@ -229,7 +257,8 @@ def do_fit(a):
     a.out.write_text(json.dumps(frozen, indent=1, default=str) + '\n')
     print(f"{a.cohort}: eta={eta:.3f} 95%~{frozen['eta_profile_95']} n={n} within10={frozen['dev_fit']['within_10pct']}/{n} "
           f"median_err={frozen['dev_fit']['median_signed_err']} issued={fi.get('used')} max_res="
-          f"{fi['forms'][fi['used']]['max_rel_residual'] if fi.get('forms') else None}")
+          f"{fi['forms'][fi['used']]['max_rel_residual'] if fi.get('forms') else None} kappa_m6={kappa:.4f} "
+          f"m6_within10={frozen['dev_fit_m6']['within_10pct']}/{n}")
 
 
 def do_judge(a):
@@ -241,6 +270,9 @@ def do_judge(a):
         c['T_pred'] = pred(c, fz['eta'])
         c['rel_err'] = c['T_pred'] / c['T_meas'] - 1
         c['pass'] = abs(c['rel_err']) <= 0.10
+        c['T_pred_m6'] = pred_m6(c, fz['kappa_m6'])
+        c['rel_err_m6'] = c['T_pred_m6'] / c['T_meas'] - 1
+        c['pass_m6'] = abs(c['rel_err_m6']) <= 0.10
     chk = []
     for x in counts:  # issued-MFMA function vs held-out measured counts (reported, not a criterion)
         if x.get('mfma'):
@@ -258,9 +290,15 @@ def do_judge(a):
                                    for k, v in sorted(per_model.items())],
            'issued_check': chk,
            'accepted': bool(cs) and npass >= 0.9 * len(cs) and abs(med) <= 0.05}
+    n6 = sum(c['pass_m6'] for c in cs)
+    med6 = st.median(c['rel_err_m6'] for c in cs) if cs else None
+    res['m6'] = {'kappa': fz['kappa_m6'], 'n_pass': n6, 'median_signed_err': med6,
+                 'accepted': bool(cs) and n6 >= 0.9 * len(cs) and abs(med6) <= 0.05,
+                 'worst': max(cs, key=lambda c: abs(c['rel_err_m6'])) if cs else None}
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(res, indent=1, default=str) + '\n')
-    print(f"judge: {npass}/{len(cs)} within 10 %, median signed {med}, accepted={res['accepted']}")
+    print(f"judge M1: {npass}/{len(cs)} within 10 %, median signed {med}, accepted={res['accepted']}; "
+          f"M6: {n6}/{len(cs)}, median {med6}, accepted={res['m6']['accepted']}")
 
 
 if __name__ == '__main__':
