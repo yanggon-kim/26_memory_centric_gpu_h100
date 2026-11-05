@@ -19,7 +19,12 @@ Per run: return code, stderr tail, and per kernel name: dispatches, summed count
 dispatch duration (profiled, replay-affected). Expected values and the validation verdicts are computed by
 scripts/amd/oc/analyze_oc.py from this raw file; nothing here declares a counter valid.
 
+For the gemv target each run also keeps `dispatch_rows`: the wvSplitK dispatches in dispatch order with grid and
+counters, so a --count invocation of oc_kernels.py (one call per shape and grid, `call_order`) maps row i to call i.
+
   oc_counters.py --out-dir <dir> --bench <svc_bench_v7> [--targets native,gemv] [--light]
+  oc_counters.py --out-dir <dir> --bench <b> --targets gemv --groups mfma,inst,fetch \
+      --gemv-args '--models qwen32b,qwen1p5b --grids 304,128,192 --count'
 """
 import argparse
 import collections
@@ -63,11 +68,25 @@ def native_targets(cus, light):
 
 def listing(container):
     if container:
-        env = dict(os.environ, AMD_ENTRY='rocprofv3', AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}")
+        env = dict(os.environ, AMD_ENTRY='rocprofv3', AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}"
+                + (f",HSA_CU_MASK={os.environ['HSA_CU_MASK']}" if os.environ.get('HSA_CU_MASK') else ''))
         p = subprocess.run([str(REPO / 'scripts/amd/vllm_in_container.sh'), '-L'], capture_output=True, text=True, env=env, timeout=600)
     else:
         p = subprocess.run(['rocprofv3', '-L'], capture_output=True, text=True, timeout=600)
     return p.stdout + p.stderr
+
+
+def dispatch_rows(d):
+    rows = collections.OrderedDict()
+    for f in sorted(d.rglob('*counter_collection.csv')):
+        for r in csv.DictReader(open(f)):
+            if 'wvSplitK' not in r['Kernel_Name']:
+                continue
+            did = int(r.get('Dispatch_Id') or r.get('Correlation_Id'))
+            e = rows.setdefault(did, {'dispatch_id': did, 'kernel': r['Kernel_Name'][:120], 'grid': r.get('Grid_Size'),
+                                      'workgroup': r.get('Workgroup_Size'), 'counters': collections.Counter()})
+            e['counters'][r['Counter_Name']] += float(r['Counter_Value'])
+    return [dict(v, counters=dict(v['counters'])) for _, v in sorted(rows.items())]
 
 
 def parse(d, args_kernel_prefix=None):
@@ -75,7 +94,7 @@ def parse(d, args_kernel_prefix=None):
     for f in sorted(d.rglob('*counter_collection.csv')):
         for r in csv.DictReader(open(f)):
             name = r['Kernel_Name']
-            if args_kernel_prefix and not name.startswith(args_kernel_prefix) and 'wvSplitK' not in name:
+            if args_kernel_prefix and not name.replace('void ', '', 1).startswith(args_kernel_prefix) and 'wvSplitK' not in name:
                 continue
             k = per.setdefault(name[:160], {'dispatch_ids': set(), 'counters': collections.Counter(), 'duration_ns': 0,
                                             'grid': r.get('Grid_Size'), 'workgroup': r.get('Workgroup_Size'),
@@ -105,10 +124,15 @@ def main(a):
         names = set(re.findall(r'\b([A-Z][A-Z0-9_]{2,})\b', lst))
         res['listing_names'][tgt] = len(names)
         loads = native_targets(cus, a.light) if tgt == 'native' else {
-            'gemv_qwen32b': ['python3', 'scripts/amd/oc/oc_kernels.py', '--models', 'qwen32b', '--grids', 'dev', '--light',
-                             '--out', '/dev/null']}
+            'gemv_qwen32b': ['python3', 'scripts/amd/oc/oc_kernels.py'] + (a.gemv_args.split() if a.gemv_args else
+                                                                          ['--models', 'qwen32b', '--grids', 'dev', '--light'])}
         for load, argv in loads.items():
             for g, ctrs in GROUPS.items():
+                if a.groups and g not in a.groups:
+                    continue
+                if tgt == 'gemv':
+                    argv = argv[:2] + [x for x in argv[2:] if x != '--out' and not x.startswith('/')]
+                    argv = argv + ['--out', str(a.out_dir / f'calls_{g}.json')]
                 have = [c for c in ctrs if c in names]
                 miss = [c for c in ctrs if c not in names]
                 run = {'target': tgt, 'load': load, 'group': g, 'counters': have, 'not_listed': miss}
@@ -121,7 +145,8 @@ def main(a):
                 if container:
                     cmd = [str(REPO / 'scripts/amd/vllm_in_container.sh')] + pre + ['--'] + argv
                     env = dict(os.environ, AMD_ENTRY='rocprofv3',  # --cleanenv drops HIP_VISIBLE_DEVICES
-                               AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}")
+                               AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}"
+                + (f",HSA_CU_MASK={os.environ['HSA_CU_MASK']}" if os.environ.get('HSA_CU_MASK') else ''))
                 else:
                     cmd = ['rocprofv3'] + pre + ['--', str(a.bench)] + argv + ['--reps', '1', '--trials', '1', '--warmups', '0']
                     env = dict(os.environ)
@@ -133,6 +158,10 @@ def main(a):
                     run.update(returncode=-1, stderr_tail=str(error)[:400])
                 run['args'] = argv
                 run['kernels'] = parse(d, 'k_' if tgt == 'native' else None)
+                if tgt == 'gemv':
+                    run['dispatch_rows'] = dispatch_rows(d)
+                    cf = a.out_dir / f'calls_{g}.json'
+                    run['call_order'] = json.loads(cf.read_text()).get('call_order') if cf.exists() else None
                 res['runs'].append(run)
                 print(json.dumps({k: run.get(k) for k in ('target', 'load', 'group', 'returncode')}), flush=True)
                 (a.out_dir / 'oc_counters.json').write_text(json.dumps(res, indent=1, default=list) + '\n')
@@ -147,4 +176,6 @@ if __name__ == '__main__':
     q.add_argument('--targets', type=lambda v: v.split(','), default=['native', 'gemv'])
     q.add_argument('--timeout', type=int, default=300)
     q.add_argument('--light', action='store_true')
+    q.add_argument('--groups', type=lambda v: v.split(','), default=None)
+    q.add_argument('--gemv-args', default='', help='oc_kernels.py arguments for the gemv target (default: qwen32b --light)')
     main(q.parse_args())

@@ -8,7 +8,10 @@ Kinds:
           kernels and on the decode projection route, OC2/OC3 route-matched references and known-schedule controls,
           OC1/OC6 development-model kernel controls (Qwen32B, Qwen1.5B), OC1 eager counter passes and a graph kernel trace.
           One acquisition per cell; pilot-labelled; judges nothing.
-  dev     (written after the pilot review) OC2/OC3 references and OC6 development cells, 3 acquisitions x 10 trials.
+  dev     (written after the pilot review, docs/amd/oc_pilot_review_20261105.md) OC6 development cells: projection
+          kernels of the development models at each (mask, grid) cell with the matched mfma4 / read references and the
+          tiny-shape O_ref, 3 acquisitions x 10 trials in randomized order; issued-MFMA counter rows per (shape, grid);
+          ATT per development shape at (full, full) and (n_p, n_p) and split traces with both workgroup types per CU.
   heldout (written after the frozen OC6 commit) fresh held-out cells only.
 
   plan_oc.py --cohort mi300x --kind pilot --out plan.json
@@ -27,10 +30,12 @@ SEED = 20261106
 VERSION = 'oc_v0'
 COHORTS = {
     'mi300x': {'full': 304, 'arch': 'gfx942', 'gpu_name': 'MI300X', 'partition': 'mi3001x', 'rate': 0.125, 'n_p': 128,
-               'pool': '256-303'},
+               'pool': '256-303', 'extra': 192, 'heldout_extra': 224},
     'mi350x': {'full': 256, 'arch': 'gfx950', 'gpu_name': 'MI350X', 'partition': 'mi3501x', 'rate': 0.175, 'n_p': 192,
-               'pool': '224-255'},
+               'pool': '224-255', 'extra': 224, 'heldout_extra': 160},
 }
+SHAPES = ('qkv', 'o_proj', 'gate_up', 'down', 'lm_head')
+ACQ = 3
 DEV_MODELS = 'qwen32b,qwen1p5b'  # OC6 development; qwen7b, mistral7b and the qwen14b MLP shapes stay unexposed
 OC1_GROUPS = {'inst': ['SQ_WAVES', 'SQ_INSTS_VALU', 'SQ_INSTS_VMEM_RD', 'SQ_INSTS_SALU'],
               'mfma': ['SQ_INSTS_MFMA', 'SQ_INSTS_VALU_MFMA_MOPS_BF16', 'SQ_VALU_MFMA_BUSY_CYCLES', 'GRBM_GUI_ACTIVE'],
@@ -75,8 +80,10 @@ def build(cohort, kind):
     f, n_p = c['full'], c['n_p']
     p = P.Plan(kind, cohort)
     st = 'pilot'
+    if kind == 'dev':
+        return build_dev(p, c)
     if kind != 'pilot':
-        raise SystemExit('dev/heldout plans are generated after the pilot review (execution plan section 6)')
+        raise SystemExit('the heldout plan is generated after the frozen OC6 commit (execution plan section 6)')
     P.placement_core(p, st, lanes=['L0'], levels=[f, n_p])
     p.shell('L0', st, 'oc0_probe', 'probe', f'$PY scripts/amd/oc/oc_probe.py --out-dir "$CUBW_STEP_DIR" --bench "$CUBW_BENCH7" --cus {f}',
             est=900, timeout=3600)
@@ -108,13 +115,57 @@ def build(cohort, kind):
     return p
 
 
+def dev_cells(c):
+    f, n_p, x = c['full'], c['n_p'], c['extra']
+    return [(f, f), (f, n_p), (n_p, n_p), (x, x)]
+
+
+def build_dev(p, c):
+    f, n_p = c['full'], c['n_p']
+    st = 'dev'
+    P.placement_core(p, st, lanes=['L0'], levels=sorted({n for n, _ in dev_cells(c)}, reverse=True))
+    cells = dev_cells(c)
+    grids = ','.join(str(g) for g in sorted({g for _, g in cells}, reverse=True))
+    # issued work per (shape, grid): one call each, per-dispatch counter rows (mask does not change instruction counts;
+    # the n_p run checks that)
+    for n, gl in ((f, grids), (n_p, str(n_p))):
+        m = f'HSA_CU_MASK=$HIP_VISIBLE_DEVICES:0-{n - 1} ' if n < f else ''
+        p.shell('L0', st, 'oc6_counts', f'counts_n{n}', f'{m}$PY scripts/amd/oc/oc_counters.py --out-dir "$CUBW_STEP_DIR" '
+                f'--bench "$CUBW_BENCH7" --cus {f} --targets gemv --groups mfma,inst,fetch,write '
+                f"--gemv-args '--models {DEV_MODELS} --grids {gl} --count'", est=600, timeout=3600, level=n)
+    specs = ','.join(f'{m}:{s}' for m in DEV_MODELS.split(',') for s in SHAPES)
+    for n in (f, n_p):
+        m = f'HSA_CU_MASK=$HIP_VISIBLE_DEVICES:0-{n - 1} ' if n < f else ''
+        p.shell('L0', st, 'oc4_att', f'att_n{n}', f'{m}$PY scripts/amd/oc/oc_probe.py --out-dir "$CUBW_STEP_DIR" '
+                f'--bench "$CUBW_BENCH7" --cus {n} --dev --gemv-shapes {specs} --grids {n}', est=900, timeout=3600, level=n)
+    rng = random.Random(f'{SEED}:{p.cohort}:dev')
+    G = 1 << 30
+    work = []
+    for a in range(1, ACQ + 1):
+        for n, g in cells:
+            work.append(('kern', n, g, a))
+            work.append(('ref', n, f'mfma4_n{n}_g{g}_a{a}', f'--mode mfma4 --iters 8192 --blocks {g} --threads 1024 --reps 20 --trials 10 --warmups 3'))
+            work.append(('ref', n, f'read_n{n}_g{g}_a{a}', f'--mode read --bytes {G} --blocks {g} --threads 1024 --reps 20 --trials 10 --warmups 3'))
+    rng.shuffle(work)
+    for w in work:
+        if w[0] == 'ref':
+            _, n, name, args = w
+            p.shell('L0', st, 'oc23_refs', name, bench(n, f, args), est=30, timeout=600, level=n)
+        else:
+            _, n, g, a = w
+            p.shell('L0', st, 'oc6_kernels', f'kernels_n{n}_g{g}_a{a}',
+                    kernels_cmd(n, f, DEV_MODELS, 'dev' if g == f else str(g), '--overhead'), est=120, timeout=2400, level=n)
+    p.levels = sorted({n for n, _ in cells}, reverse=True)
+    return p
+
+
 def finalize(p, cohort, src):
     c = COHORTS[cohort]
     longest = sum(s['est_s'] for s in p.steps)
     outs = [s['out'] for s in p.steps]
     assert len(set(outs)) == len(outs), 'two steps share an attempt directory'
     return {
-        'version': VERSION, 'kind': p.kind, 'cohort': cohort, 'seed': SEED, 'smoke': p.kind == 'pilot',
+        'version': VERSION, 'kind': p.kind, 'cohort': cohort, 'seed': SEED, 'smoke': p.kind == 'pilot', 'pilot_review': 'docs/amd/oc_pilot_review_20261105.md',
         'assignment': 'docs/amd/overlap_calibration_followup_20261105.md',
         'framework': 'docs/compute_memory_overlap_calibration_framework_v0_20261105.md',
         'execution_plan': 'docs/amd/overlap_calibration_execution_plan_20261105.md',
@@ -122,7 +173,8 @@ def finalize(p, cohort, src):
         'partition': c['partition'], 'levels': p.levels, 'lanes': {'L0': {'gpu_index': 0}},
         'derived_configs': P.derived_configs(src), 'config_source': str(src), 'dev_models': DEV_MODELS,
         'unavailable': {'controlled_clocks': 'not authorized (owner): not attempted'},
-        'retry_policy': 'two attempts maximum, only for execution/tool failures', 'reserve_s': 900, 'stages': ['pilot'],
+        'retry_policy': 'two attempts maximum, only for execution/tool failures', 'reserve_s': 900, 'stages': [p.kind],
+        'dev_cells': dev_cells(c) if p.kind == 'dev' else None, 'acquisitions': ACQ if p.kind == 'dev' else 1,
         'budget': {'longest_lane_s': longest, 'node_hours_est': round(longest / 3600 + 0.3, 2),
                    'allocation_units_est': round((longest / 3600 + 0.3) * c['rate'], 3), 'rate_units_per_node_hour': c['rate']},
         'steps': p.steps,

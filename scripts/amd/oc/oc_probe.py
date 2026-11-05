@@ -14,7 +14,12 @@ Tries, and records rather than assumes, each route the framework asks about:
 Per route: command, return code, wall time, stderr tail, every output file with its size, and a short head of each
 CSV/JSON output. No estimator is built here; the OC4 decision rule (execution plan) reads this file.
 
+Development mode (--dev): no PC sampling; ATT on each development projection shape separately (oc_kernels.py --count,
+one call per grid, so the decoded dispatch is that shape) and on split variants that put both workgroup types on the
+traced CU (4 and 8 workgroups per CU, target CUs 0 and 1), plus fused and read as controls.
+
   oc_probe.py --out-dir <dir> --bench <svc_bench_v7> --cus <n>
+  oc_probe.py --out-dir <dir> --bench <b> --cus <n> --dev --gemv-shapes qwen32b:qkv,qwen1p5b:down --grids 304
 """
 import argparse
 import hashlib
@@ -50,14 +55,45 @@ def run(name, cmd, out, env=None, timeout=900):
             'stdout_tail': so[-600:], 'files': files[:200], 'n_files': len(files)}
 
 
+def att_args(cu):
+    return ['--att', '--att-target-cu', str(cu), '--att-simd-select', '0xF', '--att-activity', '8']
+
+
+def dev(a, res, wrap, cenv):
+    for spec in a.gemv_shapes:
+        model, shape = spec.split(':')
+        d = a.out_dir / f'att_gemv_{model}_{shape}'
+        res['routes'].append(run(d.name, wrap + att_args(1) + ['--kernel-include-regex', 'wvSplitK', '-d', str(d), '-o', 'p',
+                                                              '--output-format', 'csv', '--', 'python3', 'scripts/amd/oc/oc_kernels.py',
+                                                              '--models', model, '--shapes', shape, '--grids', a.grids, '--count',
+                                                              '--out', str(d / 'calls.json')], d, env=cenv))
+    G = str(1 << 28)
+    natives = {f'split_b{k}_cu{cu}': (cu, ['--mode', 'split', '--bytes', G, '--iters', '512', '--blocks', str(k * a.cus), '--threads', '1024'])
+               for k in (4, 8) for cu in (0, 1)}
+    natives['fused'] = (1, ['--mode', 'fused', '--bytes', G, '--intensity', '8', '--blocks', str(a.cus), '--threads', '1024'])
+    natives['read'] = (1, ['--mode', 'read', '--bytes', G, '--blocks', str(a.cus), '--threads', '1024'])
+    for load, (cu, args) in natives.items():
+        d = a.out_dir / f'att_native_{load}'
+        res['routes'].append(run(d.name, ['rocprofv3'] + att_args(cu) + ['--att-library-path', str(DECODER), '-d', str(d), '-o', 'p',
+                                                                         '--output-format', 'csv', '--', str(a.bench)] + args
+                                 + ['--reps', '1', '--trials', '1', '--warmups', '0'], d, timeout=600))
+
+
 def main(a):
     a.out_dir.mkdir(parents=True, exist_ok=True)
     cenv = dict(os.environ, AMD_ENTRY='rocprofv3',  # --cleanenv drops HIP_VISIBLE_DEVICES; pass it explicitly
-                AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}")
+                AMD_EXTRA_ENV=f"HIP_VISIBLE_DEVICES={os.environ.get('HIP_VISIBLE_DEVICES', '0')}"
+                + (f",HSA_CU_MASK={os.environ['HSA_CU_MASK']}" if os.environ.get('HSA_CU_MASK') else ''))
     wrap = [str(REPO / 'scripts/amd/vllm_in_container.sh')]
     res = {'scope': __doc__.strip(), 'routes': [], 'decoder_copy': {}}
     for f in sorted(DECODER.glob('*')):
         res['decoder_copy'][f.name] = hashlib.sha256(f.read_bytes()).hexdigest()
+    if a.dev:
+        dev(a, res, wrap, cenv)
+        for r in res['routes']:
+            print(json.dumps({k: r[k] for k in ('name', 'returncode', 'wall_s', 'n_files')}), flush=True)
+        (a.out_dir / 'oc_probe.json').write_text(json.dumps(res, indent=1) + '\n')
+        return
     res['container_L'] = run('container_L', wrap + ['-L'], a.out_dir / 'none', env=cenv)
     (a.out_dir / 'container_L.txt').write_text(res['container_L'].pop('stdout_tail') + res['container_L']['stderr_tail'])
     for meth, unit, interval in (('host_trap', 'time', '100'), ('stochastic', 'cycles', '1048576')):
@@ -90,4 +126,7 @@ if __name__ == '__main__':
     q.add_argument('--out-dir', type=Path, required=True)
     q.add_argument('--bench', type=Path, required=True)
     q.add_argument('--cus', type=int, required=True)
+    q.add_argument('--dev', action='store_true')
+    q.add_argument('--gemv-shapes', type=lambda v: v.split(','), default=[])
+    q.add_argument('--grids', default='dev')
     main(q.parse_args())

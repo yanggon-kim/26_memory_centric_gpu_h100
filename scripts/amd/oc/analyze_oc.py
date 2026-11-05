@@ -7,13 +7,19 @@ overlap_bounds.json, oc_status.json, oc_summary.md}. Raw files are never modifie
 """
 import argparse
 import collections
+import sys
 import csv
 import json
 from pathlib import Path
 import re
 import statistics as st
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import oc_att  # noqa: E402
+import oc_counters  # noqa: E402
+
 WAVE = 64
+FMA_PER_ITER_ISA = 4  # k_fma: 8 scalar fmaf per iteration compile to 4 v_pk_fma_f32 (gfx942 and gfx950 disassembly)
 MFMA4_FLOPS = 2048  # 2*4*4*4*16 per wave-level v_mfma_f32_4x4x4_16b_bf16
 
 
@@ -59,12 +65,19 @@ def validation(root, plan):
     it = 4096
     n4 = (1 << 30) // 16
     runs = {(r['load'], r['group']): r for r in d['runs']}
+    # oc_counters <= 6f56b1d9 kept only names starting with 'k_' and so dropped 'void k_read_ilp<K>(...)'; re-read the
+    # raw CSVs (kept in the attempt) for any native run that came back empty
+    base = files[0].parent / 'rocprof'
+    for (l, g), r in runs.items():
+        if r.get('target') == 'native' and r.get('returncode') == 0 and not r.get('kernels') and (base / f'{l}_{g}').exists():
+            r['kernels'] = {k: v for k, v in oc_counters.parse(base / f'{l}_{g}').items() if 'k_' in k.split('(')[0]}
+            r['kernels_reparsed_from_csv'] = True
 
     def val(load, group, ctr, kprefix='k_'):
         r = runs.get((load, group))
         if not r or r.get('returncode') != 0:
             return None
-        ks = [v for k, v in r.get('kernels', {}).items() if k.startswith(kprefix)]
+        ks = [v for k, v in r.get('kernels', {}).items() if k.replace('void ', '', 1).startswith(kprefix)]
         if not ks:
             return None
         tot = sum(v['counters'].get(ctr, 0) for v in ks)
@@ -86,10 +99,18 @@ def validation(root, plan):
         m = val(f'mfma4_{w}', 'mfma', 'SQ_INSTS_VALU_MFMA_MOPS_BF16')
         t[f'SQ_INSTS_VALU_MFMA_MOPS_BF16_{w}'] = {'measured': m, 'per_mfma4_instruction': m / (8 * it * waves) if m else None,
                                                   'status': 'measured-unvalidated' if m else 'unavailable'}
+        b = val(f'mfma4_{w}', 'mfma', 'SQ_VALU_MFMA_BUSY_CYCLES')
+        t[f'SQ_VALU_MFMA_BUSY_CYCLES_{w}'] = {'measured': b, 'per_mfma4_instruction': b / (8 * it * waves) if b else None,
+                                              'status': 'measured-unvalidated' if b else 'unavailable',
+                                              'note': 'a fixed charge per issued MFMA (work domain), not observed time'}
         x = val(f'fma_{w}', 'inst', 'SQ_INSTS_VALU')
         exp = 8 * it * waves
         t[f'SQ_INSTS_VALU_{w}'] = {'measured': x, 'expected_min': exp, 'ratio': x / exp if x else None,
                                    'status': 'validated' if x and 1.0 <= x / exp <= 1.25 else ('invalid' if x else 'unavailable')}
+        # amendment (pilot review): the pre-registered expectation assumed scalar v_fma_f32; the binary issues packed FMAs
+        exp2 = FMA_PER_ITER_ISA * it * waves
+        t[f'SQ_INSTS_VALU_{w}'].update(expected_isa=exp2, ratio_isa=x / exp2 if x else None,
+                                       status_isa='validated' if x and 1.0 <= x / exp2 <= 1.25 else ('invalid' if x else 'unavailable'))
     for ctr in ('FETCH_SIZE',):
         x = val('read', 'fetch', ctr)
         t[ctr] = {'measured': x, 'useful_bytes': 1 << 30, 'ratio_KiB': x * 1024 / (1 << 30) if x else None}
@@ -135,7 +156,17 @@ def validation(root, plan):
             r = [fr[f'{l}_w4'] / fr[f'{l}_w1'] for l in loads if fr.get(f'{l}_w1') and fr.get(f'{l}_w4')]
             if r:
                 cls = 'per-unit any-active' if max(r) <= 1.2 else ('per-wave sum' if min(r) >= 2.5 else 'ambiguous')
-        act[ctr] = {'fraction_of_denominator': fr, 'w4_over_w1': r if loads else None, 'class': cls}
+        # an "ACTIVE" counter equal to the issued-instruction count of the same loads counts instructions, not cycles
+        ref = {'SQ_ACTIVE_INST_VALU': ('inst', 'SQ_INSTS_VALU'), 'SQ_ACTIVE_INST_VMEM': ('inst', 'SQ_INSTS_VMEM_RD')}.get(ctr)
+        eq = []
+        for load in ('fma_w1', 'fma_w4', 'mfma4_w1', 'mfma4_w4', 'read', 'split', 'fused'):
+            a, c = val(load, group, ctr), (val(load, *ref) if ref else None)
+            if a is not None and c:
+                eq.append(a / c)
+        if eq and all(abs(e - 1) <= 0.01 for e in eq):
+            cls = 'instruction count (not a time-domain counter)'
+        act[ctr] = {'fraction_of_denominator': fr, 'w4_over_w1': r if loads else None, 'class': cls,
+                    'ratio_to_issued_instructions': eq or None}
     # VMEM: no occupancy pair of pure memory with equal work; classify with ilp8 vs ilp1 (same bytes, more in flight)
     f = act['SQ_ACTIVE_INST_VMEM']['fraction_of_denominator']
     if f.get('ilp1') and f.get('ilp8'):
@@ -173,6 +204,39 @@ def oc4(valid):
     res['bounds_on_controls'] = {l: {'lower': lb(l), 'upper': ub(l)} for l in ('split', 'fused', 'mfma4_w4', 'read')}
     res['note'] = 'never device-level physical HBM activity; that observable remains unavailable'
     return res
+
+
+def oc4_b(root):
+    """Candidate B rule (plan section 7): the same checks on ATT-derived c(t), m(t) of the traced CU (oc_att.py)."""
+    dirs = sorted(root.glob('oc0_probe/**/att_native_read'))
+    if not dirs:
+        return {'verdict': 'unavailable', 'reason': 'no thread-trace output'}
+    pd = dirs[-1].parent
+    by = {}
+    for route in sorted(pd.glob('att_*')):
+        cells = []
+        for d in sorted(route.glob('ui_output_agent_*_dispatch_*')):
+            r = oc_att.dispatch(d)
+            for cu, v in r['cus'].items():
+                if v['mfma_instructions'] or v['vmem_loads']:
+                    cells.append(dict(v, kernel=r['kernel'], dispatch=d.name.rsplit('_', 1)[1], cu=cu))
+        by[route.name.replace('att_native_', '').replace('att_', '')] = cells
+    one = lambda k, f: by[k][0][f] / by[k][0]['T_cycles'] if by.get(k) else None
+    c = {'ii_mfma4_A_M_over_T': one('mfma4', 'A_M'), 'ii_read_A_C_over_T': one('read', 'A_C'),
+         'iii_split_X_over_T': one('split', 'X'), 'iv_fused_X_over_T': one('fused', 'X'),
+         'iii_split_traced_cu_ran_both_types': bool(by.get('split')) and all(v['vmem_loads'] and v['mfma_instructions'] for v in by['split']),
+         'gemv_decoded': bool(by.get('gemv'))}
+    c['ii'] = c['ii_mfma4_A_M_over_T'] is not None and c['ii_mfma4_A_M_over_T'] <= 0.05 and \
+        c['ii_read_A_C_over_T'] is not None and c['ii_read_A_C_over_T'] <= 0.2
+    c['iii'] = c['iii_split_X_over_T'] is not None and c['iii_split_X_over_T'] <= 0.05
+    c['iv'] = c['iv_fused_X_over_T'] is not None and c['iv_fused_X_over_T'] > 0
+    ok = c['ii'] and c['iii'] and c['iv'] and c['gemv_decoded']
+    return {'candidate': 'B (ATT per-instruction timelines, one CU per SE; oc_att.py)', 'checks': c,
+            'verdict': 'bounded (per-CU scope)' if ok else 'unavailable',
+            'caveat': None if c['iii_split_traced_cu_ran_both_types'] else
+            'split check is degenerate: the traced CU ran one workgroup type only (X = 0 trivially); a split trace with '
+            'both types on the traced CU is added to the development job',
+            'routes': by, 'note': 'one CU, all SIMDs; m(t) ends at the retiring s_waitcnt (upper estimate); not device HBM activity'}
 
 
 # ---------------------------------------------------------------- references and kernels
@@ -317,7 +381,7 @@ def main(a):
     out.mkdir(exist_ok=True)
     v = validation(root, plan)
     tables = {'version': 'oc_v0 reader 1', 'cohort': plan['cohort'], 'kind': plan['kind'], 'plan_sha256': plan.get('plan_sha256'),
-              'probe': probe(root), 'counter_validation': v, 'oc4_candidate_A': oc4(v), 'references': refs(root, plan, att),
+              'probe': probe(root), 'counter_validation': v, 'oc4_candidate_A': oc4(v), 'oc4_candidate_B': oc4_b(root), 'references': refs(root, plan, att),
               'kernels': kernels(root, plan, att), 'oc1_eager_demand': eager_demand(root, plan, att),
               'oc1_graph_timeline': graph_timeline(root, plan, att)}
     (out / 'oc_tables.json').write_text(json.dumps(tables, indent=1, default=str) + '\n')
@@ -328,12 +392,24 @@ def main(a):
     lines += ['', '## Counter validation', '']
     for k, r in v.get('tests', {}).items():
         lines.append(f"- {k}: {r.get('status')} (ratio {r.get('ratio') or r.get('ratio_KiB') or r.get('ratio_req')})")
+        if 'status_isa' in r:
+            lines.append(f"  - ISA-amended expectation: {r['status_isa']} (ratio {r['ratio_isa']})")
     for k, r in v.get('activity', {}).items():
         if k.startswith('_alt_'):
             continue
         lines.append(f"- {k}: {r['class']}; w4/w1 {r.get('w4_over_w1')}; ilp8/ilp1 {r.get('ilp8_over_ilp1')}")
     o = tables['oc4_candidate_A']
+    ob = tables['oc4_candidate_B']
     lines += ['', f"## OC4 candidate A: **{o['verdict']}**", '', '```', json.dumps(o.get('checks'), indent=1, default=str), '```', '',
+              f"## OC4 candidate B (ATT): **{ob['verdict']}**", '', '```', json.dumps(ob.get('checks'), indent=1, default=str), '```', '',
+              f"Caveat: {ob.get('caveat')}", '', '| route | dispatch | CU | T cycles | A_C/T | A_M/T | X/T | loads w/o stall |',
+              '|---|---|---|---:|---:|---:|---:|---:|']
+    for k, cells in ob.get('routes', {}).items():
+        for v in cells:
+            r3 = lambda x: round(x, 3) if isinstance(x, float) else x
+            lines.append(f"| {k} | {v['dispatch']} | {v['cu']} | {v['T_cycles']} | {r3(v['A_C_over_T'])} | {r3(v['A_M_over_T'])} | "
+                         f"{r3(v['X_over_T'])} | {r3(v['loads_retired_without_stall'])} |")
+    lines += ['',
               '## References', '', '| cell | mode | median ms | GB/s | TFLOP/s | cv |', '|---|---|---:|---:|---:|---:|']
     for k, r in sorted(tables['references'].items()):
         lines.append(f"| {k} | {r.get('mode')} | {r.get('median_ms')} | {r.get('useful_gb_per_s')} | {r.get('useful_tflop_per_s')} | "

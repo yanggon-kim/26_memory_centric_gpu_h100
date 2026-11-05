@@ -16,7 +16,11 @@ outputs are checked against an fp32 reference (max |diff| / max |ref|). Useful F
 (weights + activation + output) are recorded; physical traffic needs rocprofv3 counters separately. A kernel control
 is not full-model latency.
 
+With --count, every (model, shape, grid) is called exactly once, in the order written to `call_order`, with nothing
+else on the GPU route in between (for per-dispatch rocprofv3 counter rows); --shapes restricts the shapes.
+
   oc_kernels.py --models qwen32b,qwen1p5b --grids dev,192 --out k.json [--overhead] [--prefill 4096] [--light]
+  oc_kernels.py --models qwen32b --shapes qkv --grids dev --count --out k.json
 """
 import argparse
 import glob
@@ -80,9 +84,29 @@ def main(a):
             us = timed(lambda: ops.wvSplitK(w, x, g), lambda j: (), warm, trials, max(reps, 200) if not a.light else reps)
             res['rows'].append({'model': None, 'shape': 'tiny', 'm': 64, 'k': 256, 'n_tokens': 1, 'route': 'wvSplitK',
                                 'history': 'same', 'grid': g, 'us_per_call': us, 'median_us': med(us)})
+    if a.count:
+        res['call_order'] = []
+        for model in a.models:
+            shapes, _ = model_shapes(model)
+            for name, (m, k) in shapes.items():
+                if a.shapes and name not in a.shapes:
+                    continue
+                w = torch.randn(m, k, device=dev, dtype=torch.bfloat16) * 0.02
+                x = torch.randn(1, k, device=dev, dtype=torch.bfloat16)
+                torch.cuda.synchronize()
+                for g in grids:
+                    ops.wvSplitK(w, x, g)
+                    torch.cuda.synchronize()
+                    res['call_order'].append({'model': model, 'shape': name, 'm': m, 'k': k, 'grid': g})
+                del w
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text(json.dumps(res, indent=1) + '\n')
+        print(json.dumps(res['call_order']))
+        return
     for model in a.models:
         shapes, cfg = model_shapes(model)
         res.setdefault('model_configs', {})[model] = cfg
+        shapes = {k: v for k, v in shapes.items() if not a.shapes or k in a.shapes}
         for name, (m, k) in shapes.items():
             wbytes = m * k * 2
             copies = max(2, math.ceil((1 << 30) / wbytes))
@@ -135,4 +159,6 @@ if __name__ == '__main__':
     p.add_argument('--overhead', action='store_true')
     p.add_argument('--prefill', type=int, default=0)
     p.add_argument('--light', action='store_true', help='few calls (under rocprofv3 counter collection)')
+    p.add_argument('--count', action='store_true', help='one call per (model, shape, grid); order recorded')
+    p.add_argument('--shapes', type=lambda v: v.split(','), default=None)
     main(p.parse_args())

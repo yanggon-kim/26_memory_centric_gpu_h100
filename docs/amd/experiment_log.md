@@ -376,3 +376,12 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   `$WORK/lib/rocprof-trace-decoder` for the host-side ATT probe.
 - Pilots on separate single-GPU allocations (G1–G8 untouched): 502623 (mi3001x, MI300X), 502625 (mi3501x, MI350X),
   release d6dced90, 45 steps each, 4 h limit.
+
+## 2026-11-05 — OC-v0 pilots reviewed; development jobs
+
+- Pilots 502623 (MI300X) / 502625 (MI350X): 45/45 steps rc 0 each. Review: `docs/amd/oc_pilot_review_20261105.md`;
+  published `results_published/amd_20261105_{mi300x_oc_v0_pilot_job502623,mi350x_oc_v0_pilot_job502625}/`.
+- OC4 candidate A unavailable (SQ_ACTIVE_INST_* are instruction counts); candidate B (ATT per-CU timelines,
+  `scripts/amd/oc/oc_att.py`) passes (ii)–(iv) on both cohorts, split check degenerate in the pilot.
+- Amendments: SQ_INSTS_VALU expectation from ISA (v_pk_fma_f32); reader re-parses template-kernel CSVs.
+- Development plan (`plan_oc.py --kind dev`) submitted after this commit.

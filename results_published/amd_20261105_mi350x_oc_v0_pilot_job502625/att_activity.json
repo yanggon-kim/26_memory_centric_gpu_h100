@@ -1,0 +1,175 @@
+{
+ "scope": "OC4 candidate B: per-CU compute / memory activity and overlap from decoded thread traces (ATT).\n\nInput: the rocprofv3 --att output directories written by oc_probe.py (decoded `ui_output_agent_*_dispatch_*/` folders:\ncode.json for the instruction text, one se*_sm*_sl*_wv*.json per traced wave with [time, type, stall, latency, code\nindex] per issued instruction, gfx clock). One CU (all four SIMDs) is traced per shader engine.\n\nPer traced CU of each dispatch, on the CU window T = [first wave begin, last wave end]:\n\n  c(t) = 1 while any MFMA on the CU is executing: union of [issue, issue + latency] of v_mfma* instructions\n  m(t) = 1 while any VMEM load on the CU is outstanding: a load is outstanding from its issue until the end of the\n         first s_waitcnt whose vmcnt(N) bound retires it (in-order vmcnt; stores count toward vmcnt but not toward m).\n         This is an upper estimate: a load whose waitcnt did not stall may have returned before the waitcnt issued.\n         The fraction of loads retired by a non-stalling waitcnt is reported (`loads_retired_without_stall`).\n  A_C = |c|, A_M = |m|, X = |c and m|; also the coupled bounds max(0, A_C + A_M - T) <= X <= min(A_C, A_M).\n\nThe section 7 checks (execution plan) are evaluated by analyze_oc.py on these numbers. Scope: one CU per SE, replay\nand serialization as recorded by the tool; this is never device-level HBM activity.\n\n  oc_att.py --probe-dir <oc0_probe attempt dir> --out <att_activity.json>",
+ "routes": {
+  "att_gemv": {
+   "37": {
+    "kernel": "void wvSplitK_hf_sml_<__hip_bfloat16, 64, 2, 16, 8, 2, 1>(int, int, int, int, int, int, __hip_bfloat16 const*, __hip_bfloat16 const*, __hip_bfloat16 const*, __hip_bfloat16*, int, int)",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 23436,
+      "waves": 16,
+      "mfma_instructions": 560,
+      "vmem_loads": 290,
+      "A_C": 3080,
+      "A_M": 21256,
+      "X": 3064,
+      "A_C_over_T": 0.13142174432497014,
+      "A_M_over_T": 0.9069807134323263,
+      "X_over_T": 0.1307390339648404,
+      "X_lower": 900,
+      "X_upper": 3080,
+      "loads_retired_without_stall": 0.0
+     }
+    }
+   }
+  },
+  "att_native_fused": {
+   "1": {
+    "kernel": "",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 57164,
+      "waves": 4,
+      "mfma_instructions": 0,
+      "vmem_loads": 0,
+      "A_C": 0,
+      "A_M": 0,
+      "X": 0,
+      "A_C_over_T": 0.0,
+      "A_M_over_T": 0.0,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": null
+     }
+    }
+   },
+   "2": {
+    "kernel": "k_fused(HIP_vector_type<float, 4u> const*, unsigned long, int, float*)",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 70768,
+      "waves": 16,
+      "mfma_instructions": 8192,
+      "vmem_loads": 1024,
+      "A_C": 33384,
+      "A_M": 67056,
+      "X": 33384,
+      "A_C_over_T": 0.471738638932851,
+      "A_M_over_T": 0.9475469138593715,
+      "X_over_T": 0.471738638932851,
+      "X_lower": 29672,
+      "X_upper": 33384,
+      "loads_retired_without_stall": 0.0
+     }
+    }
+   }
+  },
+  "att_native_mfma4": {
+   "1": {
+    "kernel": "k_mfma4(float*, long)",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 286188,
+      "waves": 16,
+      "mfma_instructions": 131072,
+      "vmem_loads": 0,
+      "A_C": 272408,
+      "A_M": 0,
+      "X": 0,
+      "A_C_over_T": 0.9518498329769243,
+      "A_M_over_T": 0.0,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": null
+     }
+    }
+   }
+  },
+  "att_native_read": {
+   "1": {
+    "kernel": "",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 57768,
+      "waves": 4,
+      "mfma_instructions": 0,
+      "vmem_loads": 0,
+      "A_C": 0,
+      "A_M": 0,
+      "X": 0,
+      "A_C_over_T": 0.0,
+      "A_M_over_T": 0.0,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": null
+     }
+    }
+   },
+   "2": {
+    "kernel": "k_read(HIP_vector_type<float, 4u> const*, unsigned long, float*, int)",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 78164,
+      "waves": 16,
+      "mfma_instructions": 0,
+      "vmem_loads": 1024,
+      "A_C": 0,
+      "A_M": 74476,
+      "X": 0,
+      "A_C_over_T": 0.0,
+      "A_M_over_T": 0.9528171536768845,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": 0.0
+     }
+    }
+   }
+  },
+  "att_native_split": {
+   "1": {
+    "kernel": "",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 58268,
+      "waves": 4,
+      "mfma_instructions": 0,
+      "vmem_loads": 0,
+      "A_C": 0,
+      "A_M": 0,
+      "X": 0,
+      "A_C_over_T": 0.0,
+      "A_M_over_T": 0.0,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": null
+     }
+    }
+   },
+   "2": {
+    "kernel": "k_split(HIP_vector_type<float, 4u> const*, unsigned long, long, float*)",
+    "cus": {
+     "se0_cu1": {
+      "T_cycles": 2265192,
+      "waves": 32,
+      "mfma_instructions": 1048576,
+      "vmem_loads": 0,
+      "A_C": 2260732,
+      "A_M": 0,
+      "X": 0,
+      "A_C_over_T": 0.9980310719797704,
+      "A_M_over_T": 0.0,
+      "X_over_T": 0.0,
+      "X_lower": 0,
+      "X_upper": 0,
+      "loads_retired_without_stall": null
+     }
+    }
+   }
+  }
+ }
+}
