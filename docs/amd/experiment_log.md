@@ -393,3 +393,9 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Issued MFMA = 4·m·⌈k/1024⌉ exactly (grid/mask independent). Pre-registered M1 fails in development (η > 1, 19/40 and
   25/40 in-sample); η not identifiable from timings (C/M 0.04–0.07, collinear). ATT: X/A_C = 0.94–1.00 on every
   development shape (compute hidden under outstanding loads per CU). Amended M6 = sqrt(O² + (κM)²) frozen alongside.
+
+## 2026-11-05 — OC6 held-out (502898 / 502899): not accepted
+
+- 68/68 steps rc 0 each. Judged with the committed frozen files (sha256 fd6486c9…, 9c9381c5…).
+- MI300X: M1 40/60 (−1.3 %), M6 53/60 (−1.6 %); MI350X: M1 18/60 (+12.7 %), M6 39/60 (+5.1 %). Neither accepted.
+- Issued-MFMA form exact on 48 held-out points per cohort. Results: `docs/amd/overlap_calibration_results_20261105.md`.
