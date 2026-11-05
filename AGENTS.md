@@ -1,5 +1,9 @@
 # Research contract
 
+## Additive active assignment — overlap/service calibration, 2026-11-05
+
+The owner confirms G1–G8 is running and now requests additional measurements. Read [docs/amd/overlap_calibration_followup_20261105.md](docs/amd/overlap_calibration_followup_20261105.md) and its [shared framework](docs/compute_memory_overlap_calibration_framework_v0_20261105.md). OC0–OC7 is authorized as a follow-on within existing allocation/submission permissions and restrictions; it does not require the earlier read-only onboarding checkpoint again. Reconcile live jobs, preserve running/queued G1–G8 releases and frozen G8 predictions, reuse compatible evidence, and use separate plans/run roots at verified free devices or safe campaign boundaries. No clock/power/driver/firmware changes are authorized. Return independent service references, activity/bounds or explicit unavailability, constrained calibration with fresh heldouts, and model inputs through this branch. Never force an overlap percentage from incompatible counters. Historical execution checkpoints below have been satisfied for the already ordered G1–G8 campaign; they do not revoke that order.
+
 ## Next AMD assignment — prepared 2026-11-05
 
 Additional research deliverable: read [fixed-area mathematical model V0](docs/area_allocation_mathematical_model_v0_20261105.md). The coordinating agent develops D (decode-only) and PD (prefill-plus-decode) resource/area optimizers; the AMD agent returns G1–G8 observables and uncertainty as model inputs. Masks do not measure reclaimed area and HBM stack silicon is not compute-die area. Preserve the separate execution checkpoint below.

@@ -263,3 +263,9 @@ The AMD agent supplies G1–G8 observables and parameter constraints, including 
 - AMD G1–G8 assignment: `docs/amd/goal_based_followup_20261105.md`, initially committed as `e9c76bc5ec3932f8c04f9668af18cccde59383d7`.
 - Coordinating workspace: `reports/gpu_branch_review_20261105.md` and `.sources.json`; 1,208 published acquisition means checked, with raw/readback limits retained; `reports/gpu1b_critical_adoption_review_20261102.md`.
 - Physical and energy requirements remain governed by shoreline-aware plan 2.0 and its cited sources. V0 derives equations and reuses campaign facts; it introduces no newly verified physical area coefficients.
+
+## 13. New calibration job — activity, overlap and independent service
+
+The owner requested additional GPU measurements to improve this model. Use [compute–memory calibration framework V0](compute_memory_overlap_calibration_framework_v0_20261105.md). It defines compatible activity domains and four disjoint durations, coupled bounds when joint activity is missing, independent compute/memory references, a constrained overlap/overhead model, resource sensitivities, profiling/replay limits, and held-out validation. Physical activity intersection is different from fitted effective overlap and critical-path sensitivity; do not replace missing observables with utilization percentages.
+
+The AMD agent executes the additive OC0–OC7 assignment in `docs/amd/overlap_calibration_followup_20261105.md` on `amd/mi300x-phase0`, preserving the running G1–G8 campaign, release snapshots and frozen G8 predictions. The coordinating agent integrates its validated service/traffic/request/energy constraints into later model versions. Unsupported activity or HBM observables remain unavailable; GPU measurements do not identify physical area coefficients. This addendum changes no prior fitted model or measured result.

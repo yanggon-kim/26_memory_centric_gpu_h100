@@ -2,6 +2,8 @@
 
 Prepared 5 November 2026. Intended reader: the agent operating the AMD allocation and returning evidence through GitHub on `amd/mi300x-phase0`.
 
+**Later execution/update notice:** the owner has ordered G1–G8 and reports it running; see `goal_followup_execution_plan_20261105.md` and the experiment log for actual releases/submissions. The preparation-only checkpoint below describes the original handoff and is not a new stop instruction. The owner now adds [OC0–OC7 overlap/service calibration](overlap_calibration_followup_20261105.md), to be planned/executed incrementally without cancelling, rewriting or duplicating G1–G8 or contaminating its frozen G8 test. Read the [shared framework](../compute_memory_overlap_calibration_framework_v0_20261105.md); preserve current campaign evidence and use separate new artifacts.
+
 ## 0. Readiness and authorization
 
 **Pulling or reading this document is preparation only. Wait for the owner's subsequent instruction to execute this follow-up before starting GPU experiments or submitting new allocations.** This document describes what to achieve once that instruction arrives; it does not start a job itself. Read it now, reconcile current work, and be ready to propose or execute an adapted plan when ordered.

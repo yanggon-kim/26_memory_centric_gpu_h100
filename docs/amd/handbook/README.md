@@ -1,5 +1,7 @@
 # AMD experiment handbook — start here
 
+**Latest additive assignment:** the owner reports G1–G8 running and adds [OC0–OC7 activity/service calibration](../overlap_calibration_followup_20261105.md). Read it at the next safe coordination point, preserve current jobs/releases and frozen tests, and reuse existing evidence before new acquisitions. The historical read-only checkpoint in the earlier notice below does not revoke an execution order already given.
+
 **Next assignment (prepared 2026-11-05):** read [goal-based follow-up G1–G8](../goal_based_followup_20261105.md) for the next research goals and delivery contract. Pulling/reading does not authorize execution; the owner will order the experiments separately. This handbook describes the historical evidence below and adds no measurements for that next assignment.
 
 This handbook explains every AMD experiment on branch `amd/mi300x-phase0`, from the first MI300X campaign
