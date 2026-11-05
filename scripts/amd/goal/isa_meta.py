@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """G6 static metadata of vLLM's ROCm skinny-GEMM kernels (wvSplitK, wvSplitKrc, LLMM1) for this GPU's architecture.
 
-Runs inside the vLLM container (CPU only). Finds the extension library that holds the kernels, unbundles the code
-object for --arch with clang-offload-bundler (or roc-obj when present), and records for every matching kernel the
+Runs inside the vLLM container (CPU only). Finds the extension library that holds the kernels, dumps its .hip_fatbin
+section with llvm-objcopy, unbundles the code object for --arch with clang-offload-bundler, and records for every matching kernel the
 AMDGPU metadata notes (VGPR/AGPR/SGPR counts, LDS = group_segment_fixed_size, private segment, wavefront size, max
 flat workgroup size) plus an instruction-class census of the disassembly (global/buffer loads and stores, LDS ops,
 MFMA/dot, waitcnt). Static metadata explains resource limits; it is not a measured stall breakdown.
@@ -41,22 +41,31 @@ def main(a):
     root = Path(vllm.__file__).parent
     libs = sorted(glob.glob(str(root / '_rocm_C*.so')) + glob.glob(str(root / '_C*.so')))
     res = {'scope': __doc__.strip(), 'arch': a.arch, 'libraries': libs, 'tools': {}, 'kernels': {}, 'errors': []}
-    bundler, readelf, objdump = tool('clang-offload-bundler'), tool('llvm-readelf'), tool('llvm-objdump')
-    res['tools'] = {'clang-offload-bundler': bundler, 'llvm-readelf': readelf, 'llvm-objdump': objdump}
+    bundler, readelf, objdump, objcopy = (tool(t) for t in ('clang-offload-bundler', 'llvm-readelf', 'llvm-objdump', 'llvm-objcopy'))
+    res['tools'] = {'clang-offload-bundler': bundler, 'llvm-readelf': readelf, 'llvm-objdump': objdump, 'llvm-objcopy': objcopy}
     for lib in libs:
         co = a.out / (Path(lib).name + f'.{a.arch}.co')
+        # the bundle lives in the .hip_fatbin section; the bundler does not read it from the shared object itself
+        fb, scratch = a.out / (Path(lib).name + '.hip_fatbin'), a.out / (Path(lib).name + '.objcopy_out')
+        rc, out, err = run([objcopy, '--dump-section', f'.hip_fatbin={fb}', lib, str(scratch)])
+        scratch.unlink(missing_ok=True)
+        if rc != 0 or not fb.exists():
+            res['errors'].append({'lib': lib, 'step': 'dump .hip_fatbin', 'stderr': err[-500:]})
+            continue
         target = f'hipv4-amdgcn-amd-amdhsa--{a.arch}'
         ok = False
         for tgt in (target, target + ':sramecc+:xnack-', target + ':xnack-', target + ':sramecc+'):
-            rc, out, err = run([bundler, '--type=o', f'--targets={tgt}', f'--input={lib}', f'--output={co}', '--unbundle'])
+            rc, out, err = run([bundler, '--type=o', f'--targets={tgt}', f'--input={fb}', f'--output={co}', '--unbundle'])
             if rc == 0 and co.exists() and co.stat().st_size > 0:
                 ok = True
                 res.setdefault('unbundled', {})[lib] = tgt
                 break
         if not ok:
-            rc, out, err = run([bundler, '--list', '--type=o', f'--input={lib}'])
+            rc, out, err = run([bundler, '--list', '--type=o', f'--input={fb}'])
+            fb.unlink(missing_ok=True)
             res['errors'].append({'lib': lib, 'step': 'unbundle', 'available_targets': out[-2000:], 'stderr': err[-500:]})
             continue
+        fb.unlink(missing_ok=True)
         rc, notes, err = run([readelf, '--notes', str(co)])
         (a.out / (co.name + '.notes.txt')).write_text(notes + err)
         rc, dis, err = run([objdump, '-d', '--no-show-raw-insn', str(co)], timeout=1800)
@@ -70,12 +79,14 @@ def main(a):
             if cur:
                 ins = line.strip().split(' ')[0] if line.strip() else ''
                 for cls, rx in (('global_load', r'^global_load'), ('buffer_load', r'^buffer_load'), ('global_store', r'^global_store'),
-                                ('buffer_store', r'^buffer_store'), ('ds_read', r'^ds_(read|load)'), ('ds_write', r'^ds_(write|store)'),
+                                ('buffer_store', r'^buffer_store'), ('ds_read', r'^ds_(read|load)'), ('ds_write', r'^ds_(write|store)'), ('load_to_lds', r'^(global|buffer)_load_lds'),
                                 ('mfma', r'^v_mfma'), ('dot', r'^v_dot'), ('waitcnt', r'^s_waitcnt'), ('total', r'.')):
                     if re.match(rx, ins):
                         census[cur][cls] += 1
-        # kernel metadata: parse the YAML-ish msgpack dump of readelf --notes
-        for block in re.split(r'\n\s*- \.agpr_count|\n\s*- \.args', notes):
+        # kernel metadata: readelf prints the msgpack note as YAML; each amdhsa.kernels entry is a list item at the
+        # shallowest '- .' indentation (argument entries are nested deeper)
+        ind = min((len(m.group(1)) for m in re.finditer(r'\n( *)- \.', notes)), default=0)
+        for block in re.split(r'\n {%d}- (?=\.)' % ind, notes):
             name = re.search(r'\.name:\s+(\S+)', block)
             if not name or not PAT.search(name.group(1)):
                 continue
@@ -88,6 +99,7 @@ def main(a):
             res['kernels'][name.group(1)] = {'library': Path(lib).name, 'metadata': meta}
         for k, c in census.items():
             res['kernels'].setdefault(k, {'library': Path(lib).name})['census'] = dict(c)
+        co.unlink(missing_ok=True)  # large; the notes text and census are kept
     res['kernel_count'] = len(res['kernels'])
     (a.out / 'isa_meta.json').write_text(json.dumps(res, indent=1) + '\n')
     print(f"{res['kernel_count']} matching kernels; errors {len(res['errors'])}")

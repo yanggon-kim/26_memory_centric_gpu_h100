@@ -394,7 +394,8 @@ def natives(plan, attempts, exp):
         if exp == 'g6_dispatch' or s['experiment'] == 'e6_dispatch':
             out[s['cell']] = A.dispatch_summary(res)
         else:
-            out[s['cell']] = {'level': s.get('level'), **A.metric(res)}
+            k, v = A.metric(res)
+            out[s['cell']] = {'level': s.get('level'), 'metric': k, 'value': v}
     return out
 
 
@@ -482,16 +483,23 @@ def g7_counters(plan, attempts):
             run = Path(rec['attempt_dir']) / 'run' / 'run.json'
             if mk and cc and run.exists():
                 rj = json.loads(run.read_text())
-                dec = [(int(r['Start_Timestamp']), int(r['End_Timestamp'])) for r in csv.DictReader(mk.open()) if r['Function'] == 'decode']
-                tot, rows = 0.0, 0
+                dec = sorted((int(r['Start_Timestamp']), int(r['End_Timestamp'])) for r in csv.DictReader(mk.open()) if r['Function'] == 'decode')
+                per_range = [0.0] * len(dec)
+                rows = 0
                 for r in csv.DictReader(cc.open()):
                     t = int(r.get('Start_Timestamp') or r.get('Begin_Timestamp') or 0)
-                    if any(lo <= t <= hi for lo, hi in dec):
-                        tot += float(r['Counter_Value']); rows += 1
-                ticks = sum(t['decode_iterations'] for c in rj.get('cases', []) for t in c['trials'][:1]) or None
-                row.update(decode_total=tot, dispatch_rows=rows, decode_ticks_profiled=ticks,
-                           per_tick=tot / ticks if ticks else None,
-                           note='kernels matching ^(_|triton) excluded from collection; eager mode; first trial is the profiled one')
+                    i = next((i for i, (lo, hi) in enumerate(dec) if lo <= t <= hi), None)
+                    if i is not None:
+                        per_range[i] += float(r['Counter_Value']); rows += 1
+                # every decode marker range (warmups and trials alike) generates the same token count, so each range
+                # is one sample of per-tick traffic; summing ranges and dividing by one trial's ticks overstated it
+                its = {t['decode_iterations'] for c in rj.get('cases', []) for t in c['trials']}
+                ticks = its.pop() if len(its) == 1 else None
+                ptk = [v / ticks for v in per_range] if ticks else []
+                row.update(decode_total=sum(per_range), dispatch_rows=rows, decode_ranges=len(dec), ticks_per_range=ticks,
+                           per_tick_by_range=ptk, per_tick=st.median(ptk) if ptk else None,
+                           note='kernels matching ^(_|triton) excluded from collection; eager mode; per_tick = median over '
+                                'decode marker ranges (warmups and trials) of range total / decode iterations')
         out[s['cell']] = row
     return out
 

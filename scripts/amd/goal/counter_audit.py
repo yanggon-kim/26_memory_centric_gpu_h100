@@ -30,6 +30,7 @@ import subprocess
 WORK = Path(os.environ.get('WORK', '/work1/proj_blaisetine/yanggon'))
 PATTERN = re.compile(r'(MALL|DRAM|HBM|^DF_|TCC_EA0?_RD|TCC_EA0?_WR|RDREQ|WRREQ|^FETCH_SIZE$|^WRITE_SIZE$|'
                      r'^TCC_HIT(_sum)?$|^TCC_MISS(_sum)?$|^TCC_REQ(_sum)?$)')
+NOT_VOLUME = re.compile(r'(STALL|LEVEL|BUSY|FIFO|CREDIT|PROBE_COMMAND|_PERF_SEL_)')
 G = 1 << 30
 M = 1 << 20
 LOADS = [  # name, mode, bytes per buffer, passes; useful read/write bytes derived below
@@ -64,11 +65,19 @@ def main(a):
             (a.out_dir / ('defs_' + Path(f).name)).write_text(Path(f).read_text())
         except OSError:
             pass
-    names = sorted({w for w in re.findall(r'\b([A-Z][A-Z0-9_]{3,})\b', listing) if PATTERN.search(w)})
-    chosen = [n for n in names if n.endswith('_sum') or not any(m == n + '_sum' for m in names)]
-    prio = ['FETCH_SIZE', 'WRITE_SIZE', 'TCC_EA0_RDREQ_DRAM_sum', 'TCC_EA0_WRREQ_DRAM_sum', 'TCC_EA0_RDREQ_sum',
-            'TCC_EA0_WRREQ_sum', 'TCC_HIT_sum', 'TCC_MISS_sum']
-    chosen = [c for c in prio if c in chosen] + [c for c in chosen if c not in prio]
+    names = sorted({w for w in re.findall(r'\b([A-Z][A-Z0-9_]{3,})\b', listing) if '_' in w and PATTERN.search(w)})
+    # traffic-volume counters only: stall/occupancy/credit/FIFO counters cannot carry a byte count. Ordering puts the
+    # derived sizes, then EA request counts by size class (gfx950 lists TCC_EA0_RDREQ_128B; rocprofv3 there exposes the
+    # per-block names without a _sum alias), then DRAM-qualified requests, then L2 hit/miss; MALL/DF/HBM names follow.
+    names = [n for n in names if not NOT_VOLUME.search(n)]
+    base = ['FETCH_SIZE', 'WRITE_SIZE', 'TCC_EA0_RDREQ', 'TCC_EA0_RDREQ_32B', 'TCC_EA0_RDREQ_64B', 'TCC_EA0_RDREQ_128B',
+            'TCC_EA0_RDREQ_DRAM', 'TCC_EA0_RDREQ_DRAM_32B', 'TCC_EA0_WRREQ', 'TCC_EA0_WRREQ_64B', 'TCC_EA0_WRREQ_DRAM',
+            'TCC_EA0_WRREQ_WRITE_DRAM_32B', 'TCC_HIT', 'TCC_MISS', 'TCC_REQ', 'TCC_EA0_RD_UNCACHED_32B']
+    prio = [b + '_sum' if b + '_sum' in names else b for b in base]
+    rest = [n for n in names if n not in prio and not any(n == b or n == b + '_sum' for b in base)
+            and (n.endswith('_sum') or n + '_sum' not in names)]
+    chosen = [c for c in prio if c in names] + [n for n in rest if re.search(r'MALL|HBM|DRAM|^DF_', n)] + \
+             [n for n in rest if not re.search(r'MALL|HBM|DRAM|^DF_', n)]
     chosen = chosen[:a.max_counters]
     res = {'classification': 'measured-real-GPU (native known traffic under rocprofv3 --pmc)', 'scope': __doc__.strip(),
            'inventory': inv, 'candidates_found': names, 'counters_tested': chosen, 'runs': []}
