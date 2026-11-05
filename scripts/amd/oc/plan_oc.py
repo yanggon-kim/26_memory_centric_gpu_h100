@@ -12,7 +12,10 @@ Kinds:
           kernels of the development models at each (mask, grid) cell with the matched mfma4 / read references and the
           tiny-shape O_ref, 3 acquisitions x 10 trials in randomized order; issued-MFMA counter rows per (shape, grid);
           ATT per development shape at (full, full) and (n_p, n_p) and split traces with both workgroup types per CU.
-  heldout (written after the frozen OC6 commit) fresh held-out cells only.
+  heldout (after the frozen OC6 commit, docs/amd/oc/oc6_frozen_<cohort>.json) fresh held-out cells only: Qwen2.5-7B and
+          Mistral-7B (5 shapes) and Qwen2.5-14B gate_up/down at the development (mask, grid) pairs plus one new pair,
+          with fresh references, 3 acquisitions x 10 trials; issued-MFMA counts of the held-out shapes; secondary
+          transfer check: Qwen2.5-7B B1 graph decode kernel trace at the full mask.
 
   plan_oc.py --cohort mi300x --kind pilot --out plan.json
 """
@@ -82,8 +85,11 @@ def build(cohort, kind):
     st = 'pilot'
     if kind == 'dev':
         return build_dev(p, c)
-    if kind != 'pilot':
-        raise SystemExit('the heldout plan is generated after the frozen OC6 commit (execution plan section 6)')
+    if kind == 'heldout':
+        frozen = Path(__file__).resolve().parents[3] / f'docs/amd/oc/oc6_frozen_{cohort}.json'
+        if not frozen.exists():
+            raise SystemExit(f'{frozen} is not committed; the held-out plan follows the frozen OC6 commit')
+        return build_heldout(p, c)
     P.placement_core(p, st, lanes=['L0'], levels=[f, n_p])
     p.shell('L0', st, 'oc0_probe', 'probe', f'$PY scripts/amd/oc/oc_probe.py --out-dir "$CUBW_STEP_DIR" --bench "$CUBW_BENCH7" --cus {f}',
             est=900, timeout=3600)
@@ -159,6 +165,46 @@ def build_dev(p, c):
     return p
 
 
+HELDOUT = [('qwen7b,mistral7b', None), ('qwen14b', 'gate_up,down')]
+
+
+def build_heldout(p, c):
+    f, n_p, hx = c['full'], c['n_p'], c['heldout_extra']
+    st = 'heldout'
+    cells = dev_cells(c) + [(hx, hx)]
+    P.placement_core(p, st, lanes=['L0'], levels=sorted({n for n, _ in cells}, reverse=True))
+    grids = ','.join(str(g) for g in sorted({g for _, g in cells}, reverse=True))
+    for i, (models, shapes) in enumerate(HELDOUT):
+        sh = f' --shapes {shapes}' if shapes else ''
+        p.shell('L0', st, 'oc6_counts', f'counts_h{i}_n{f}', f'$PY scripts/amd/oc/oc_counters.py --out-dir "$CUBW_STEP_DIR" '
+                f'--bench "$CUBW_BENCH7" --cus {f} --targets gemv --groups mfma '
+                f"--gemv-args '--models {models}{sh} --grids {grids} --count'", est=300, timeout=3600, level=f)
+    rng = random.Random(f'{SEED}:{p.cohort}:heldout')
+    G = 1 << 30
+    work = []
+    for a in range(1, ACQ + 1):
+        for n, g in cells:
+            for i in range(len(HELDOUT)):
+                work.append(('kern', n, g, a, i))
+            work.append(('ref', n, f'mfma4_n{n}_g{g}_a{a}', f'--mode mfma4 --iters 8192 --blocks {g} --threads 1024 --reps 20 --trials 10 --warmups 3'))
+            work.append(('ref', n, f'read_n{n}_g{g}_a{a}', f'--mode read --bytes {G} --blocks {g} --threads 1024 --reps 20 --trials 10 --warmups 3'))
+    rng.shuffle(work)
+    for w in work:
+        if w[0] == 'ref':
+            _, n, name, args = w
+            p.shell('L0', st, 'oc23_refs', name, bench(n, f, args), est=30, timeout=600, level=n)
+        else:
+            _, n, g, a, i = w
+            models, shapes = HELDOUT[i]
+            extra = '--overhead' + (f' --shapes {shapes}' if shapes else '')
+            p.shell('L0', st, 'oc6_heldout_kernels', f'kernels_h{i}_n{n}_g{g}_a{a}',
+                    kernels_cmd(n, f, models, 'dev' if g == f else str(g), extra), est=120, timeout=2400, level=n)
+    P.CASE['qwen7b'], P.EST['qwen7b'] = 'qwen7b_graph_b1_c4096', 110
+    p.vllm('L0', st, 'oc6_transfer', 'qwen7b', f, profile={'kind': 'kernel_trace'}, tag='__ktrace')
+    p.levels = sorted({n for n, _ in cells}, reverse=True)
+    return p
+
+
 def finalize(p, cohort, src):
     c = COHORTS[cohort]
     longest = sum(s['est_s'] for s in p.steps)
@@ -174,7 +220,10 @@ def finalize(p, cohort, src):
         'derived_configs': P.derived_configs(src), 'config_source': str(src), 'dev_models': DEV_MODELS,
         'unavailable': {'controlled_clocks': 'not authorized (owner): not attempted'},
         'retry_policy': 'two attempts maximum, only for execution/tool failures', 'reserve_s': 900, 'stages': [p.kind],
-        'dev_cells': dev_cells(c) if p.kind == 'dev' else None, 'acquisitions': ACQ if p.kind == 'dev' else 1,
+        'dev_cells': dev_cells(c) if p.kind in ('dev', 'heldout') else None,
+        'heldout_cells': dev_cells(c) + [(c['heldout_extra'], c['heldout_extra'])] if p.kind == 'heldout' else None,
+        'frozen_model': f'docs/amd/oc/oc6_frozen_{cohort}.json' if p.kind == 'heldout' else None,
+        'acquisitions': ACQ if p.kind in ('dev', 'heldout') else 1,
         'budget': {'longest_lane_s': longest, 'node_hours_est': round(longest / 3600 + 0.3, 2),
                    'allocation_units_est': round((longest / 3600 + 0.3) * c['rate'], 3), 'rate_units_per_node_hour': c['rate']},
         'steps': p.steps,
