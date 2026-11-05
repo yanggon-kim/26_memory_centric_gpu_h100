@@ -337,3 +337,17 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   01–05. [handbook/05_minor_checks.md](handbook/05_minor_checks.md) writes up the checks that were only in this
   log (470176 attempts 1–2, 483497, 492951, 496003, 496056/496059/496060), reconstructed from the raw `$WORK` files.
 - `scripts/amd/cubw/judge_se_mi300x.py` added; it reproduces 499334's `hse_judgment.json` byte for byte.
+
+## 2026-11-05 — Goal follow-up G1–G8 (goal_v1): plan, code and submissions
+
+- Owner order: execute G1–G8 on all three cohorts, no budget cap, mixed serving in G2. Controlled clocks are not
+  authorized, so they are marked unavailable and not attempted.
+- Pre-registered plan: [goal_followup_execution_plan_20261105.md](goal_followup_execution_plan_20261105.md) (commits
+  1dbd43ac, fab0ea00). Frozen G8 predictions: `docs/amd/goal/g8_frozen_model.json`.
+- New code: `scripts/amd/goal/` (serve_mix, counter_audit, isa_meta, plan_goal, analyze_goal, g8_model, goal.sbatch,
+  submit_goal.sh, test_goal; 0 failures), plus `cubw.py` step kind `serve`.
+- The CU-count override reaches only the skinny GEMMs (wvSplitK for n ≤ 5 tokens; wvSplitKrc for 10–128 on gfx950).
+  Prefill and B8 decode use hipBLASLt, so G2 traces the kernel route per case.
+- Cost-rate correction: plan.py rates were about 8× the real charge multipliers; goal_v1 uses 1.0, 1.2 and 1.4.
+- Submitted from release fab0ea00: smokes 502423 (mi3001x) and 502424 (mi3501x). The 8-GPU jobs 502425 (MI300X),
+  502426 (MI325X) and 502427 (MI350X) are **held** until the smoke review.
