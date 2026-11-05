@@ -329,3 +329,11 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Not pre-registered as a whole: balanced-sized decode R 0.993–0.998 at every level 288…128. This revises 492956
   ("resizing slower at every level" — all unbalanced sizes). B_CU at which decode stays free: ~42 GB/s per CU on
   both MI300X and MI350X.
+
+## 2026-11-05 — Experiment handbook
+
+- Owner asked for full write-ups that another agent can follow. New: [handbook/README.md](handbook/README.md)
+  (overview, glossary, pipeline, index of all 28 experiments, current conclusions, open items) and chapters
+  01–05. [handbook/05_minor_checks.md](handbook/05_minor_checks.md) writes up the checks that were only in this
+  log (470176 attempts 1–2, 483497, 492951, 496003, 496056/496059/496060), reconstructed from the raw `$WORK` files.
+- `scripts/amd/cubw/judge_se_mi300x.py` added; it reproduces 499334's `hse_judgment.json` byte for byte.
