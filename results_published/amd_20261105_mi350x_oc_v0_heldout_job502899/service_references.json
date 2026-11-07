@@ -1,0 +1,899 @@
+{
+ "cohort": "mi350x",
+ "frozen_cells": {
+  "192_192": {
+   "B_ref": 5416741000000.0,
+   "O_ref": 7.1265399456024164e-06,
+   "R_mfma4": 192348144531.25
+  },
+  "224_224": {
+   "B_ref": 5960553000000.0,
+   "R_mfma4": 224534179687.5,
+   "O_ref": 4.8031499981880186e-06
+  },
+  "256_192": {
+   "R_mfma4": 192524414062.5,
+   "O_ref": 7.140997350215912e-06,
+   "B_ref": 5408803000000.0
+  },
+  "256_256": {
+   "B_ref": 6467683000000.0,
+   "O_ref": 4.8522450029850005e-06,
+   "R_mfma4": 256127441406.25
+  }
+ },
+ "frozen_acquisitions": {
+  "192_192": {
+   "B_ref": [
+    5416741000000.0,
+    5425061000000.0,
+    5400804000000.0
+   ],
+   "O_ref": [
+    7.1265399456024164e-06,
+    7.223897278308868e-06,
+    4.77344736456871e-06
+   ],
+   "R_mfma4": [
+    192681152343.75,
+    192258789062.5,
+    192348144531.25
+   ]
+  },
+  "224_224": {
+   "B_ref": [
+    5960553000000.0,
+    5928787000000.0,
+    5973983000000.0
+   ],
+   "R_mfma4": [
+    224324707031.25,
+    225527343750.0,
+    224534179687.5
+   ],
+   "O_ref": [
+    4.8031499981880186e-06,
+    7.23629742860794e-06,
+    4.6586474776268e-06
+   ]
+  },
+  "256_192": {
+   "R_mfma4": [
+    192287597656.25,
+    192537109375.0,
+    192524414062.5
+   ],
+   "O_ref": [
+    4.786455035209655e-06,
+    7.140997350215912e-06,
+    7.493440210819244e-06
+   ],
+   "B_ref": [
+    5433593000000.0,
+    5408803000000.0,
+    5385687000000.0
+   ]
+  },
+  "256_256": {
+   "B_ref": [
+    6481475000000.0,
+    6456718000000.0,
+    6467683000000.0
+   ],
+   "O_ref": [
+    7.467634975910187e-06,
+    4.8522450029850005e-06,
+    4.786147475242614e-06
+   ],
+   "R_mfma4": [
+    255985351562.50003,
+    256127441406.25,
+    256519531250.0
+   ]
+  }
+ },
+ "pilot": {
+  "ilp2_n256_g192": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.383146,
+   "cv": 0.0027962071508318385,
+   "useful_gb_per_s": 6347.594,
+   "useful_tflop_per_s": null
+  },
+  "split_n256_g256": {
+   "mode": "split",
+   "mask": 256,
+   "blocks": 512,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 42.894066,
+   "cv": 0.0020100171676834186,
+   "useful_gb_per_s": 250.324,
+   "useful_tflop_per_s": 256.332
+  },
+  "mfma4_n192_g192": {
+   "mode": "mfma4",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 20.892584,
+   "cv": 0.0005818881886688693,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 394.702
+  },
+  "mfma4_n256_g192": {
+   "mode": "mfma4",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 20.961758,
+   "cv": 0.0007788917127708204,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 393.399
+  },
+  "fused_n192_g192": {
+   "mode": "fused",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 2.044859,
+   "cv": 0.013029663904242098,
+   "useful_gb_per_s": 5250.933,
+   "useful_tflop_per_s": 84.015
+  },
+  "ilp1_n256_g256": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.460972,
+   "cv": 0.0048411935094547515,
+   "useful_gb_per_s": 6204.857,
+   "useful_tflop_per_s": null
+  },
+  "read_n256_g8x": {
+   "mode": "read",
+   "mask": 256,
+   "blocks": 2048,
+   "threads": 256,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.299146,
+   "cv": 0.003786850753826759,
+   "useful_gb_per_s": 6509.211,
+   "useful_tflop_per_s": null
+  },
+  "ilp8_n192_g192": {
+   "mode": "read_ilp",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.593829,
+   "cv": 0.0015982168011863032,
+   "useful_gb_per_s": 5975.475,
+   "useful_tflop_per_s": null
+  },
+  "fused_n256_g256": {
+   "mode": "fused",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 1.727056,
+   "cv": 0.017995663209922498,
+   "useful_gb_per_s": 6217.18,
+   "useful_tflop_per_s": 99.475
+  },
+  "read_n192_g8x": {
+   "mode": "read",
+   "mask": 192,
+   "blocks": 1536,
+   "threads": 256,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.261737,
+   "cv": 0.0034721897131206746,
+   "useful_gb_per_s": 6583.865,
+   "useful_tflop_per_s": null
+  },
+  "mfma4lds_n256_g256": {
+   "mode": "mfma4_lds",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 15.317509,
+   "cv": 0.0065579097987246,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 358.907
+  },
+  "ilp2_n192_g192": {
+   "mode": "read_ilp",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.37663,
+   "cv": 0.002674319761379711,
+   "useful_gb_per_s": 6359.843,
+   "useful_tflop_per_s": null
+  },
+  "read_mall_n256_g256": {
+   "mode": "read",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 67108864,
+   "median_ms": 2.862025,
+   "cv": 0.0007891130178580639,
+   "useful_gb_per_s": 7503.371,
+   "useful_tflop_per_s": null
+  },
+  "ilp1_n192_g192": {
+   "mode": "read_ilp",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 4.288764,
+   "cv": 0.004168631552726737,
+   "useful_gb_per_s": 5007.232,
+   "useful_tflop_per_s": null
+  },
+  "ilp4_n192_g192": {
+   "mode": "read_ilp",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.885391,
+   "cv": 0.0016107460076496842,
+   "useful_gb_per_s": 5527.072,
+   "useful_tflop_per_s": null
+  },
+  "mfma4lds_n192_g192": {
+   "mode": "mfma4_lds",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 13.994624,
+   "cv": 0.0007887393470051681,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 294.625
+  },
+  "ilp4_n256_g256": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.648952,
+   "cv": 0.002531070791848017,
+   "useful_gb_per_s": 5885.207,
+   "useful_tflop_per_s": null
+  },
+  "read_n256_g256": {
+   "mode": "read",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.32375,
+   "cv": 0.0025904475850574487,
+   "useful_gb_per_s": 6461.026,
+   "useful_tflop_per_s": null
+  },
+  "read_n256_g192": {
+   "mode": "read",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.945506,
+   "cv": 0.002816524372984965,
+   "useful_gb_per_s": 5442.86,
+   "useful_tflop_per_s": null
+  },
+  "ilp1_n256_g192": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 4.251755,
+   "cv": 0.0045794396511668585,
+   "useful_gb_per_s": 5050.817,
+   "useful_tflop_per_s": null
+  },
+  "read_mall_n256_g192": {
+   "mode": "read",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 67108864,
+   "median_ms": 2.830654,
+   "cv": 0.0012929768281625916,
+   "useful_gb_per_s": 7586.528,
+   "useful_tflop_per_s": null
+  },
+  "read_mall_n192_g192": {
+   "mode": "read",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 67108864,
+   "median_ms": 2.835464,
+   "cv": 0.0009643412595897056,
+   "useful_gb_per_s": 7573.659,
+   "useful_tflop_per_s": null
+  },
+  "ilp2_n256_g256": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.291427,
+   "cv": 0.00644141267782849,
+   "useful_gb_per_s": 6524.476,
+   "useful_tflop_per_s": null
+  },
+  "read_n192_g192": {
+   "mode": "read",
+   "mask": 192,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.942933,
+   "cv": 0.002684898820441312,
+   "useful_gb_per_s": 5446.412,
+   "useful_tflop_per_s": null
+  },
+  "ilp8_n256_g256": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.611432,
+   "cv": 0.001217143488460106,
+   "useful_gb_per_s": 5946.349,
+   "useful_tflop_per_s": null
+  },
+  "mfma4lds_n256_g192": {
+   "mode": "mfma4_lds",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 14.001935,
+   "cv": 0.0006602706286437878,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 294.471
+  },
+  "split_n192_g192": {
+   "mode": "split",
+   "mask": 192,
+   "blocks": 384,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 42.707417,
+   "cv": 0.000699089131930086,
+   "useful_gb_per_s": 251.418,
+   "useful_tflop_per_s": 193.089
+  },
+  "split_n256_g192": {
+   "mode": "split",
+   "mask": 256,
+   "blocks": 384,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 43.03056,
+   "cv": 0.0012653346830266347,
+   "useful_gb_per_s": 249.53,
+   "useful_tflop_per_s": 191.639
+  },
+  "ilp4_n256_g192": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.887071,
+   "cv": 0.001653568761442753,
+   "useful_gb_per_s": 5524.684,
+   "useful_tflop_per_s": null
+  },
+  "mfma4_n256_g256": {
+   "mode": "mfma4",
+   "mask": 256,
+   "blocks": 256,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 21.03326,
+   "cv": 0.0008039865957782805,
+   "useful_gb_per_s": null,
+   "useful_tflop_per_s": 522.749
+  },
+  "ilp8_n256_g192": {
+   "mode": "read_ilp",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 3.585226,
+   "cv": 0.0019559313384189675,
+   "useful_gb_per_s": 5989.814,
+   "useful_tflop_per_s": null
+  },
+  "fused_n256_g192": {
+   "mode": "fused",
+   "mask": 256,
+   "blocks": 192,
+   "threads": 1024,
+   "footprint_bytes": 1073741824,
+   "median_ms": 2.03512,
+   "cv": 0.015577237210153388,
+   "useful_gb_per_s": 5276.061,
+   "useful_tflop_per_s": 84.417
+  }
+ },
+ "g6_service_goal": {
+  "n256_seqread4g": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 6396.739
+  },
+  "n256_ilp1": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 6526.122
+  },
+  "n256_ilp2": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 6015.894
+  },
+  "n256_ilp4": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 5813.876
+  },
+  "n256_ilp8": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 5708.833
+  },
+  "n256_ilp16": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 5267.506
+  },
+  "n256_grid256": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 2462.062
+  },
+  "n256_grid1024": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 6310.855
+  },
+  "n256_grid8192": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 5960.264
+  },
+  "n256_stride4": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 1581.283
+  },
+  "n256_stride16": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 758.129
+  },
+  "n256_gather1g": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 1090.797
+  },
+  "n256_chase_c1": {
+   "level": 256,
+   "metric": "ns_per_dependent_load",
+   "value": 103.455
+  },
+  "n256_chase_c256": {
+   "level": 256,
+   "metric": "ns_per_dependent_load",
+   "value": 548.863
+  },
+  "n256_chase_c4096": {
+   "level": 256,
+   "metric": "ns_per_dependent_load",
+   "value": 570.317
+  },
+  "n256_chase_c16384": {
+   "level": 256,
+   "metric": "ns_per_dependent_load",
+   "value": 637.881
+  },
+  "n256_reuse8m": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 31260.314
+  },
+  "n256_reuse32m": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 28632.81
+  },
+  "n256_reuse128m": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 7089.576
+  },
+  "n256_reuse512m": {
+   "level": 256,
+   "metric": "useful_gb_per_s",
+   "value": 6445.888
+  },
+  "n256_mfma": {
+   "level": 256,
+   "metric": "useful_tflop_per_s",
+   "value": 1130.407
+  },
+  "n256_fma": {
+   "level": 256,
+   "metric": "useful_tflop_per_s",
+   "value": 99.51
+  },
+  "n192_seqread4g": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5410.358
+  },
+  "n192_ilp1": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 4381.645
+  },
+  "n192_ilp2": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5271.754
+  },
+  "n192_ilp4": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5735.125
+  },
+  "n192_ilp8": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5795.109
+  },
+  "n192_ilp16": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5605.128
+  },
+  "n192_grid256": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 2300.339
+  },
+  "n192_grid1024": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 6194.428
+  },
+  "n192_grid8192": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 5923.184
+  },
+  "n192_stride4": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 1483.199
+  },
+  "n192_stride16": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 742.019
+  },
+  "n192_gather1g": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 1007.962
+  },
+  "n192_chase_c1": {
+   "level": 192,
+   "metric": "ns_per_dependent_load",
+   "value": 99.859
+  },
+  "n192_chase_c256": {
+   "level": 192,
+   "metric": "ns_per_dependent_load",
+   "value": 539.478
+  },
+  "n192_chase_c4096": {
+   "level": 192,
+   "metric": "ns_per_dependent_load",
+   "value": 571.565
+  },
+  "n192_chase_c16384": {
+   "level": 192,
+   "metric": "ns_per_dependent_load",
+   "value": 638.847
+  },
+  "n192_reuse8m": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 20951.633
+  },
+  "n192_reuse32m": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 19194.354
+  },
+  "n192_reuse128m": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 7308.657
+  },
+  "n192_reuse512m": {
+   "level": 192,
+   "metric": "useful_gb_per_s",
+   "value": 6355.54
+  },
+  "n192_mfma": {
+   "level": 192,
+   "metric": "useful_tflop_per_s",
+   "value": 827.609
+  },
+  "n192_fma": {
+   "level": 192,
+   "metric": "useful_tflop_per_s",
+   "value": 82.73
+  },
+  "n128_seqread4g": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 5713.645
+  },
+  "n128_ilp1": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 4424.648
+  },
+  "n128_ilp2": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 3927.382
+  },
+  "n128_ilp4": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 4048.516
+  },
+  "n128_ilp8": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 4285.351
+  },
+  "n128_ilp16": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 4195.406
+  },
+  "n128_grid256": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 2303.665
+  },
+  "n128_grid1024": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 5910.923
+  },
+  "n128_grid8192": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 5275.696
+  },
+  "n128_stride4": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 1368.422
+  },
+  "n128_stride16": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 757.171
+  },
+  "n128_gather1g": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 770.256
+  },
+  "n128_chase_c1": {
+   "level": 128,
+   "metric": "ns_per_dependent_load",
+   "value": 100.449
+  },
+  "n128_chase_c256": {
+   "level": 128,
+   "metric": "ns_per_dependent_load",
+   "value": 548.588
+  },
+  "n128_chase_c4096": {
+   "level": 128,
+   "metric": "ns_per_dependent_load",
+   "value": 565.732
+  },
+  "n128_chase_c16384": {
+   "level": 128,
+   "metric": "ns_per_dependent_load",
+   "value": 635.772
+  },
+  "n128_reuse8m": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 17337.236
+  },
+  "n128_reuse32m": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 17000.185
+  },
+  "n128_reuse128m": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 7827.858
+  },
+  "n128_reuse512m": {
+   "level": 128,
+   "metric": "useful_gb_per_s",
+   "value": 7246.713
+  },
+  "n128_mfma": {
+   "level": 128,
+   "metric": "useful_tflop_per_s",
+   "value": 568.571
+  },
+  "n128_fma": {
+   "level": 128,
+   "metric": "useful_tflop_per_s",
+   "value": 64.814
+  },
+  "n96_seqread4g": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 4310.226
+  },
+  "n96_ilp1": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 2975.406
+  },
+  "n96_ilp2": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 3089.16
+  },
+  "n96_ilp4": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 3085.023
+  },
+  "n96_ilp8": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 3190.002
+  },
+  "n96_ilp16": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 3177.824
+  },
+  "n96_grid256": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 2234.638
+  },
+  "n96_grid1024": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 3499.68
+  },
+  "n96_grid8192": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 4389.807
+  },
+  "n96_stride4": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 1073.842
+  },
+  "n96_stride16": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 576.283
+  },
+  "n96_gather1g": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 590.514
+  },
+  "n96_chase_c1": {
+   "level": 96,
+   "metric": "ns_per_dependent_load",
+   "value": 98.709
+  },
+  "n96_chase_c256": {
+   "level": 96,
+   "metric": "ns_per_dependent_load",
+   "value": 534.616
+  },
+  "n96_chase_c4096": {
+   "level": 96,
+   "metric": "ns_per_dependent_load",
+   "value": 567.773
+  },
+  "n96_chase_c16384": {
+   "level": 96,
+   "metric": "ns_per_dependent_load",
+   "value": 644.113
+  },
+  "n96_reuse8m": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 12242.094
+  },
+  "n96_reuse32m": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 12512.592
+  },
+  "n96_reuse128m": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 7322.233
+  },
+  "n96_reuse512m": {
+   "level": 96,
+   "metric": "useful_gb_per_s",
+   "value": 5708.66
+  },
+  "n96_mfma": {
+   "level": 96,
+   "metric": "useful_tflop_per_s",
+   "value": 416.07
+  },
+  "n96_fma": {
+   "level": 96,
+   "metric": "useful_tflop_per_s",
+   "value": 48.494
+  }
+ },
+ "units": {
+  "R_mfma4": "issued 4x4x4 bf16 MFMA wave-instructions/s",
+  "B_ref": "B/s (matched 1024-thread read, same mask and grid)",
+  "O_ref": "s (64x256 wvSplitK call)",
+  "useful_gb_per_s": "GB/s useful bytes",
+  "value": "per metric field"
+ },
+ "history": "stream (cold weights per call); MALL-resident read reported separately in pilot"
+}

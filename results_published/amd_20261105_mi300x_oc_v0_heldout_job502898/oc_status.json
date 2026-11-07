@@ -1,0 +1,48 @@
+{
+ "cohort": "mi300x",
+ "source_sha256": {
+  "pilot/oc_tables.json": "99db9252420af1fdfc071484e33854d427c6212b86c3761a07bb17343b57320c",
+  "frozen": "fd6486c901e5856f696698b6675d14191546c54bdda0fa96dd99f565307a3fb2",
+  "heldout/validation.json": "25607432aaf3a8d223fca43ee42d74f05c4bb602bd2b444f410becd3c6e54b11",
+  "heldout/transfer_qwen7b.json": "8db71a1f2605b958ec0e74a93ece34a9928e984db064a58580da87b211b04451",
+  "goal/goal_tables.json": "62f3ffd8dd3aa7fde2240d2d1892531965cbee5b97a5aaadf207728b0301645a"
+ },
+ "goals": {
+  "OC0": {
+   "status": "complete",
+   "evidence": "pilot probe",
+   "result": "PC sampling and ATT decode on both tool routes"
+  },
+  "OC1": {
+   "status": "complete (reused G-campaign Qwen32B graph and eager traces)",
+   "evidence": "pilot oc1_*"
+  },
+  "OC2": {
+   "status": "complete",
+   "evidence": "service_references.json"
+  },
+  "OC3": {
+   "status": "complete",
+   "evidence": "pilot/dev/held-out references and kernel controls"
+  },
+  "OC4": {
+   "status": "complete: candidate A unavailable, candidate B bounded (per-CU)",
+   "evidence": "overlap_bounds.json",
+   "missing": "device-scope activity; non-degenerate split control"
+  },
+  "OC5": {
+   "status": "complete (mechanism table from existing contrasts, no new GPU steps)",
+   "evidence": "docs/amd/overlap_calibration_results_20261107.md section OC5",
+   "g1_cells": 10
+  },
+  "OC6": {
+   "status": "complete: neither frozen model accepted on held-out",
+   "evidence": "calibration_frozen.json, validation.json"
+  },
+  "OC7": {
+   "status": "complete (reused G2/G3 scopes; no new transfer cases justified)",
+   "evidence": "model_inputs.json, transfer_qwen7b.json"
+  }
+ },
+ "next_action": "none queued; a new memory reference (wvSplitK-shaped stream) would be needed before refitting OC6"
+}

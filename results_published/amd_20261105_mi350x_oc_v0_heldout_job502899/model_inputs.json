@@ -1,0 +1,520 @@
+{
+ "cohort": "mi350x",
+ "source_sha256": {
+  "pilot/oc_tables.json": "68a7da49e469f9f8d7d5ba1aacb3070bbe3708f4475785be84686091736b646e",
+  "frozen": "9c9381c58993daf52cbf24e82293293ad1a9428fcb48aeda57209f2853d53ff1",
+  "heldout/validation.json": "e6a4841ac8672e152838863ceb1033852df0817871fae1a01756d9bb063e3ffe",
+  "heldout/transfer_qwen7b.json": "ba5ed5a2aa953ee117ba7cd64cbf728716fe737b402fe280284a99d6b60af798",
+  "goal/goal_tables.json": "75785caa74f754faa7831512902737971ef083234f4e9e26a42dbb603e3e04ef"
+ },
+ "family": "decode projection, wvSplitK bf16, N = 1",
+ "inputs": [
+  {
+   "name": "issued_MFMA_wvSplitK",
+   "units": "MFMA instructions per call",
+   "estimate": "4*m*ceil(k/1024)",
+   "status": "measured, validated on held-out shapes",
+   "check": [
+    {
+     "model": "qwen7b",
+     "shape": "qkv",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 73728.0,
+     "fitted": 73728
+    },
+    {
+     "model": "qwen7b",
+     "shape": "qkv",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 73728.0,
+     "fitted": 73728
+    },
+    {
+     "model": "qwen7b",
+     "shape": "qkv",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 73728.0,
+     "fitted": 73728
+    },
+    {
+     "model": "qwen7b",
+     "shape": "qkv",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 73728.0,
+     "fitted": 73728
+    },
+    {
+     "model": "qwen7b",
+     "shape": "o_proj",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 57344.0,
+     "fitted": 57344
+    },
+    {
+     "model": "qwen7b",
+     "shape": "o_proj",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 57344.0,
+     "fitted": 57344
+    },
+    {
+     "model": "qwen7b",
+     "shape": "o_proj",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 57344.0,
+     "fitted": 57344
+    },
+    {
+     "model": "qwen7b",
+     "shape": "o_proj",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 57344.0,
+     "fitted": 57344
+    },
+    {
+     "model": "qwen7b",
+     "shape": "gate_up",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 606208.0,
+     "fitted": 606208
+    },
+    {
+     "model": "qwen7b",
+     "shape": "gate_up",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 606208.0,
+     "fitted": 606208
+    },
+    {
+     "model": "qwen7b",
+     "shape": "gate_up",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 606208.0,
+     "fitted": 606208
+    },
+    {
+     "model": "qwen7b",
+     "shape": "gate_up",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 606208.0,
+     "fitted": 606208
+    },
+    {
+     "model": "qwen7b",
+     "shape": "down",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 272384.0,
+     "fitted": 272384
+    },
+    {
+     "model": "qwen7b",
+     "shape": "down",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 272384.0,
+     "fitted": 272384
+    },
+    {
+     "model": "qwen7b",
+     "shape": "down",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 272384.0,
+     "fitted": 272384
+    },
+    {
+     "model": "qwen7b",
+     "shape": "down",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 272384.0,
+     "fitted": 272384
+    },
+    {
+     "model": "qwen7b",
+     "shape": "lm_head",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 2433024.0,
+     "fitted": 2433024
+    },
+    {
+     "model": "qwen7b",
+     "shape": "lm_head",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 2433024.0,
+     "fitted": 2433024
+    },
+    {
+     "model": "qwen7b",
+     "shape": "lm_head",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 2433024.0,
+     "fitted": 2433024
+    },
+    {
+     "model": "qwen7b",
+     "shape": "lm_head",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 2433024.0,
+     "fitted": 2433024
+    },
+    {
+     "model": "mistral7b",
+     "shape": "qkv",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 98304.0,
+     "fitted": 98304
+    },
+    {
+     "model": "mistral7b",
+     "shape": "qkv",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 98304.0,
+     "fitted": 98304
+    },
+    {
+     "model": "mistral7b",
+     "shape": "qkv",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 98304.0,
+     "fitted": 98304
+    },
+    {
+     "model": "mistral7b",
+     "shape": "qkv",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 98304.0,
+     "fitted": 98304
+    },
+    {
+     "model": "mistral7b",
+     "shape": "o_proj",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 65536.0,
+     "fitted": 65536
+    },
+    {
+     "model": "mistral7b",
+     "shape": "o_proj",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 65536.0,
+     "fitted": 65536
+    },
+    {
+     "model": "mistral7b",
+     "shape": "o_proj",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 65536.0,
+     "fitted": 65536
+    },
+    {
+     "model": "mistral7b",
+     "shape": "o_proj",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 65536.0,
+     "fitted": 65536
+    },
+    {
+     "model": "mistral7b",
+     "shape": "gate_up",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 458752.0,
+     "fitted": 458752
+    },
+    {
+     "model": "mistral7b",
+     "shape": "gate_up",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 458752.0,
+     "fitted": 458752
+    },
+    {
+     "model": "mistral7b",
+     "shape": "gate_up",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 458752.0,
+     "fitted": 458752
+    },
+    {
+     "model": "mistral7b",
+     "shape": "gate_up",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 458752.0,
+     "fitted": 458752
+    },
+    {
+     "model": "mistral7b",
+     "shape": "down",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 229376.0,
+     "fitted": 229376
+    },
+    {
+     "model": "mistral7b",
+     "shape": "down",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 229376.0,
+     "fitted": 229376
+    },
+    {
+     "model": "mistral7b",
+     "shape": "down",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 229376.0,
+     "fitted": 229376
+    },
+    {
+     "model": "mistral7b",
+     "shape": "down",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 229376.0,
+     "fitted": 229376
+    },
+    {
+     "model": "mistral7b",
+     "shape": "lm_head",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 524288.0,
+     "fitted": 524288
+    },
+    {
+     "model": "mistral7b",
+     "shape": "lm_head",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 524288.0,
+     "fitted": 524288
+    },
+    {
+     "model": "mistral7b",
+     "shape": "lm_head",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 524288.0,
+     "fitted": 524288
+    },
+    {
+     "model": "mistral7b",
+     "shape": "lm_head",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 524288.0,
+     "fitted": 524288
+    },
+    {
+     "model": "qwen14b",
+     "shape": "gate_up",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 552960.0,
+     "fitted": 552960
+    },
+    {
+     "model": "qwen14b",
+     "shape": "gate_up",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 552960.0,
+     "fitted": 552960
+    },
+    {
+     "model": "qwen14b",
+     "shape": "gate_up",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 552960.0,
+     "fitted": 552960
+    },
+    {
+     "model": "qwen14b",
+     "shape": "gate_up",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 552960.0,
+     "fitted": 552960
+    },
+    {
+     "model": "qwen14b",
+     "shape": "down",
+     "grid": 256,
+     "mask": 256,
+     "mfma": 286720.0,
+     "fitted": 286720
+    },
+    {
+     "model": "qwen14b",
+     "shape": "down",
+     "grid": 224,
+     "mask": 256,
+     "mfma": 286720.0,
+     "fitted": 286720
+    },
+    {
+     "model": "qwen14b",
+     "shape": "down",
+     "grid": 192,
+     "mask": 256,
+     "mfma": 286720.0,
+     "fitted": 286720
+    },
+    {
+     "model": "qwen14b",
+     "shape": "down",
+     "grid": 160,
+     "mask": 256,
+     "mfma": 286720.0,
+     "fitted": 286720
+    }
+   ],
+   "applicability": "wvSplitK_hf_sml_<bf16,64,2,16,8,2,1>, N = 1; independent of grid and mask"
+  },
+  {
+   "name": "R_mfma4, B_ref, O_ref",
+   "units": {
+    "R_mfma4": "issued 4x4x4 bf16 MFMA wave-instructions/s",
+    "B_ref": "B/s (matched 1024-thread read, same mask and grid)",
+    "O_ref": "s (64x256 wvSplitK call)",
+    "useful_gb_per_s": "GB/s useful bytes",
+    "value": "per metric field"
+   },
+   "estimate": {
+    "192_192": {
+     "B_ref": 5416741000000.0,
+     "O_ref": 7.1265399456024164e-06,
+     "R_mfma4": 192348144531.25
+    },
+    "224_224": {
+     "B_ref": 5960553000000.0,
+     "R_mfma4": 224534179687.5,
+     "O_ref": 4.8031499981880186e-06
+    },
+    "256_192": {
+     "R_mfma4": 192524414062.5,
+     "O_ref": 7.140997350215912e-06,
+     "B_ref": 5408803000000.0
+    },
+    "256_256": {
+     "B_ref": 6467683000000.0,
+     "O_ref": 4.8522450029850005e-06,
+     "R_mfma4": 256127441406.25
+    }
+   },
+   "status": "measured (3 acquisitions)"
+  },
+  {
+   "name": "eta (fitted overlap)",
+   "status": "not identifiable from timings",
+   "range": [
+    2.569,
+    3.0
+   ]
+  },
+  {
+   "name": "X/A_C per CU (ATT)",
+   "units": "fraction",
+   "range": [
+    0.9384615384615385,
+    0.9994921279837481
+   ],
+   "status": "measured, per-CU scope"
+  },
+  {
+   "name": "M6 kappa",
+   "estimate": 0.9850000000000001,
+   "status": "fitted on development; held-out not accepted",
+   "heldout": {
+    "kappa": 0.9850000000000001,
+    "n_pass": 39,
+    "median_signed_err": 0.05057348089326574,
+    "accepted": false,
+    "worst": {
+     "model": "qwen14b",
+     "shape": "gate_up",
+     "m": 27648,
+     "k": 5120,
+     "n": 160,
+     "g": 160,
+     "T_meas": 4.8087430000305174e-05,
+     "T_acq": [
+      4.788853883743286e-05,
+      4.816817045211792e-05,
+      4.8087430000305174e-05
+     ],
+     "issued_mfma": 552960,
+     "issued_source": "fitted",
+     "R_mfma4": 160483398437.5,
+     "B_ref": 4708846000000.0,
+     "C": 3.445590044725713e-06,
+     "M": 6.012418329246699e-05,
+     "O": 6.407870054244995e-06,
+     "acq": 3,
+     "T_pred": 5.964087325726056e-05,
+     "rel_err": 0.24025911255565258,
+     "pass": false,
+     "T_pred_m6": 5.95679783872124e-05,
+     "rel_err_m6": 0.23874323054557856,
+     "pass_m6": false
+    }
+   }
+  },
+  {
+   "name": "M1 eta",
+   "estimate": 3.0,
+   "status": "fitted on development; held-out not accepted",
+   "heldout": {
+    "n_pass": 18,
+    "n_cells": 60,
+    "median_signed_err": 0.12681917864583736,
+    "accepted": false
+   }
+  },
+  {
+   "name": "transfer (Qwen2.5-7B graph decode)",
+   "per_tick_projection_rel_err": {
+    "m1": 0.05249439534358302,
+    "m6": -0.030942065688396414
+   },
+   "status": "secondary check, not an acceptance criterion"
+  }
+ ],
+ "unknowns": [
+  "device HBM activity in time",
+  "physical overlap at device scope",
+  "eta as an architectural constant",
+  "arithmetic/SRAM/NoC/MC/PHY areas (not derivable from utilization)"
+ ]
+}

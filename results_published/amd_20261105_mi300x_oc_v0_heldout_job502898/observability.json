@@ -1,0 +1,171 @@
+{
+ "cohort": "mi300x",
+ "tools": {
+  "rocprofv3": "container 1.3.2 (vLLM routes, ATT projection), host 1.1.0 (native routes)",
+  "time_base": "gfx clock (ATT)"
+ },
+ "metrics": {
+  "SQ_INSTS_VMEM_RD": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": 1.0,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_MFMA_w1": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": 1.0,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_VALU_MFMA_MOPS_BF16_w1": {
+   "status": "measured-unvalidated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_VALU_MFMA_BUSY_CYCLES_w1": {
+   "status": "measured-unvalidated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": "a fixed charge per issued MFMA (work domain), not observed time",
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_VALU_w1": {
+   "status": "invalid",
+   "status_isa": "validated",
+   "ratio": 0.500518798828125,
+   "ratio_isa": 1.00103759765625,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_MFMA_w4": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": 1.0,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_VALU_MFMA_MOPS_BF16_w4": {
+   "status": "measured-unvalidated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_VALU_MFMA_BUSY_CYCLES_w4": {
+   "status": "measured-unvalidated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": "a fixed charge per issued MFMA (work domain), not observed time",
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_INSTS_VALU_w4": {
+   "status": "invalid",
+   "status_isa": "validated",
+   "ratio": 0.500518798828125,
+   "ratio_isa": 1.00103759765625,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "FETCH_SIZE": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ_32B": {
+   "status": "unavailable",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ_64B": {
+   "status": "unavailable",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ_128B": {
+   "status": "unavailable",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ_DRAM": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "TCC_EA0_RDREQ_LEVEL": {
+   "status": "validated",
+   "status_isa": null,
+   "ratio": null,
+   "ratio_isa": null,
+   "note": null,
+   "scope": "dispatch aggregate, device; replay per counter group (rocprofv3 --pmc)"
+  },
+  "SQ_ACTIVE_INST_VALU": {
+   "status": "unavailable as time",
+   "class": "instruction count (not a time-domain counter)",
+   "scope": "dispatch aggregate"
+  },
+  "SQ_ACTIVE_INST_VMEM": {
+   "status": "unavailable as time",
+   "class": "unidentified",
+   "scope": "dispatch aggregate"
+  },
+  "SQ_ACTIVE_INST_ANY": {
+   "status": "unavailable as time",
+   "class": "ambiguous",
+   "scope": "dispatch aggregate"
+  },
+  "ATT_c_m_X": {
+   "status": "measured (checks ii, iv pass; iii degenerate)",
+   "definition": "c(t): any MFMA executing on the traced CU; m(t): any VMEM load outstanding (issue to end of retiring s_waitcnt vmcnt); X = |c and m|",
+   "units": "gfx cycles",
+   "scope": "one CU per SE, all SIMDs; ATT serialization as recorded"
+  },
+  "device_HBM_activity": {
+   "status": "unavailable",
+   "reason": "no counter validated as a time-domain or physical HBM observable"
+  }
+ },
+ "oc4_candidate_A": "unavailable",
+ "oc4_candidate_B": {
+  "verdict": "bounded (per-CU scope)",
+  "caveat": "split check is degenerate: the traced CU ran one workgroup type only (X = 0 trivially); a split trace with both types on the traced CU is added to the development job"
+ },
+ "pc_sampling": {
+  "pc_host_trap": 0,
+  "pc_stochastic": 0
+ }
+}

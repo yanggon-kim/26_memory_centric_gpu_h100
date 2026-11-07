@@ -1,0 +1,3146 @@
+{
+ "cohort": "mi350x",
+ "arch": "gfx950",
+ "cus_full": 256,
+ "source_sha256": {
+  "goal_tables.json": "75785caa74f754faa7831512902737971ef083234f4e9e26a42dbb603e3e04ef",
+  "gates.json": "070ff70413d16a1f633344b50b002c49856274481458cf2e1a0f8d92cb83880b"
+ },
+ "gates": {
+  "placement_ok": true,
+  "lifecycle_ok": true,
+  "outputs_ok": true,
+  "leak_ok_v4": true,
+  "leak_ok_v2": false
+ },
+ "inputs": [
+  {
+   "name": "G1.R_restrict[mask=256,grid=192]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 0.9891751523867245,
+    "ci95": [
+     0.9844754900705918,
+     0.9945695881065822
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 256,
+    "wvsplitk_grid": 192,
+    "clock": {
+     "gfx_median": 2096,
+     "gfx_min": 1318,
+     "gfx_max": 2190,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=224,grid=224]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 0.9908933430126668,
+    "ci95": [
+     0.9863714850730967,
+     0.9960647369559905
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 224,
+    "wvsplitk_grid": 224,
+    "clock": {
+     "gfx_median": 2097.0,
+     "gfx_min": 1318,
+     "gfx_max": 2186,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=192,grid=stock]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 1.1869040996598634,
+    "ci95": [
+     1.181455313257051,
+     1.1927270873892284
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 192,
+    "wvsplitk_grid": "stock",
+    "clock": {
+     "gfx_median": 2118,
+     "gfx_min": 1318,
+     "gfx_max": 2199,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=192,grid=192]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 0.9962872313220337,
+    "ci95": [
+     0.9912156183157196,
+     1.0024519912457521
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 192,
+    "wvsplitk_grid": 192,
+    "clock": {
+     "gfx_median": 2104,
+     "gfx_min": 1318,
+     "gfx_max": 2192,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=160,grid=160]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 1.0553501190760952,
+    "ci95": [
+     1.0496207920479697,
+     1.0613392901384757
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 160,
+    "wvsplitk_grid": 160,
+    "clock": {
+     "gfx_median": 2112,
+     "gfx_min": 1318,
+     "gfx_max": 2197,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=128,grid=stock]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 1.1709002150145404,
+    "ci95": [
+     1.165502458935906,
+     1.1762799114066946
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 128,
+    "wvsplitk_grid": "stock",
+    "clock": {
+     "gfx_median": 2122.0,
+     "gfx_min": 1318,
+     "gfx_max": 2198,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=128,grid=128]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 1.1545920568984522,
+    "ci95": [
+     1.1493060941453213,
+     1.1602715694028691
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 128,
+    "wvsplitk_grid": 128,
+    "clock": {
+     "gfx_median": 2122,
+     "gfx_min": 1318,
+     "gfx_max": 2198,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G1.R_restrict[mask=96,grid=96]",
+   "units": "ratio (decode step time / stock full device)",
+   "estimate": {
+    "estimate": 1.3919726787942297,
+    "ci95": [
+     1.3862619187512883,
+     1.3978820904902571
+    ],
+    "blocks": 8
+   },
+   "scope": {
+    "workload": "Qwen2.5-32B BF16 vLLM graph decode, batch 1, context 4096",
+    "cus_active": 96,
+    "wvsplitk_grid": 96,
+    "clock": {
+     "gfx_median": 2134,
+     "gfx_min": 1318,
+     "gfx_max": 2204,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded",
+   "outputs_match_stock": true,
+   "applicability": "CU mask restricts issue resources; it does not identify mm2 per CU"
+  },
+  {
+   "name": "G2.isolated[mistral7b_graph_b1_c4096,B]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0229389165399954,
+    "ci95": [
+     0.9998222691529723,
+     1.0450371623765553
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mistral7b_graph_b1_c4096",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 2085.5,
+     "gfx_min": 1730,
+     "gfx_max": 2167,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[mistral7b_graph_b1_c4096,C]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0387701682256683,
+    "ci95": [
+     1.0279575904854057,
+     1.0499606330196223
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mistral7b_graph_b1_c4096",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 2134,
+     "gfx_min": 1936,
+     "gfx_max": 2187,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[mistral7b_graph_b1_c4096,Cb]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1606998719715897,
+    "ci95": [
+     1.1508606260544307,
+     1.1733264683621503
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mistral7b_graph_b1_c4096",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 2159.5,
+     "gfx_min": 1770,
+     "gfx_max": 2189,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[mistral7b_graph_b1_c4096,D]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1706332526269656,
+    "ci95": [
+     1.1347310591615014,
+     1.2129117930251336
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mistral7b_graph_b1_c4096",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 2142,
+     "gfx_min": 1952,
+     "gfx_max": 2183,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen14b_graph_b1_c4096,B]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0164341748215313,
+    "ci95": [
+     0.9916852023094036,
+     1.0384354879796207
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen14b_graph_b1_c4096",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 2113.0,
+     "gfx_min": 1692,
+     "gfx_max": 2186,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen14b_graph_b1_c4096,C]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0224024231732876,
+    "ci95": [
+     0.9950114210497107,
+     1.059019017788021
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen14b_graph_b1_c4096",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 2142,
+     "gfx_min": 1907,
+     "gfx_max": 2190,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen14b_graph_b1_c4096,Cb]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1462409656911312,
+    "ci95": [
+     1.117878938132829,
+     1.1749332647492854
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen14b_graph_b1_c4096",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 2175.0,
+     "gfx_min": 2020,
+     "gfx_max": 2195,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen14b_graph_b1_c4096,D]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1903433539585193,
+    "ci95": [
+     1.1694799336109156,
+     1.2120560614195863
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen14b_graph_b1_c4096",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 2157,
+     "gfx_min": 1965,
+     "gfx_max": 2197,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_graph_b1_c16384,B]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0100526619003085,
+    "ci95": [
+     0.9868502398558461,
+     1.0303108634675986
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c16384",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 2123,
+     "gfx_min": 1560,
+     "gfx_max": 2193,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_graph_b1_c16384,C]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 0.992329203788772,
+    "ci95": [
+     0.9685995327283718,
+     1.01776596059634
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c16384",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 2135.5,
+     "gfx_min": 1729,
+     "gfx_max": 2186,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_graph_b1_c16384,Cb]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.157675408784914,
+    "ci95": [
+     1.1322077751639321,
+     1.1916172514901266
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c16384",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 2166.0,
+     "gfx_min": 1819,
+     "gfx_max": 2195,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_graph_b1_c16384,D]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1697340122750186,
+    "ci95": [
+     1.1521682138941833,
+     1.1891420683509213
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c16384",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 2166,
+     "gfx_min": 1638,
+     "gfx_max": 2197,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_prefill,B]",
+   "units": "ratio (prefill_wall_ms vs A = full, stock)",
+   "estimate": {
+    "estimate": 0.9316580482868752,
+    "ci95": [
+     0.874979456394494,
+     0.9923049435619301
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_prefill",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 1623,
+     "gfx_min": 1610,
+     "gfx_max": 1667,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_prefill,C]",
+   "units": "ratio (prefill_wall_ms vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.2142197401204582,
+    "ci95": [
+     1.096841151595254,
+     1.3465840869829995
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_prefill",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 1878,
+     "gfx_min": 1747,
+     "gfx_max": 1939,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_prefill,Cb]",
+   "units": "ratio (prefill_wall_ms vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.287277299355937,
+    "ci95": [
+     1.1986945300794105,
+     1.4176367530679055
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_prefill",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 1943,
+     "gfx_min": 1779,
+     "gfx_max": 2017,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen32b_prefill,D]",
+   "units": "ratio (prefill_wall_ms vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.175539318944419,
+    "ci95": [
+     1.090377684499857,
+     1.2752533737054297
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen32b_prefill",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 1916,
+     "gfx_min": 1819,
+     "gfx_max": 1977,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b4_c1024,B]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0509533511682305,
+    "ci95": [
+     1.015863094718118,
+     1.0899790455892853
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b4_c1024",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 2011,
+     "gfx_min": 1487,
+     "gfx_max": 2123,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b4_c1024,C]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.0236298669839239,
+    "ci95": [
+     1.0160217497420614,
+     1.031510014334047
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b4_c1024",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 2079,
+     "gfx_min": 1850,
+     "gfx_max": 2143,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b4_c1024,Cb]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1506024680205513,
+    "ci95": [
+     1.1436660988300604,
+     1.1566295161473512
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b4_c1024",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 2177.0,
+     "gfx_min": 2060,
+     "gfx_max": 2191,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b4_c1024,D]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.269618993816396,
+    "ci95": [
+     1.2514625851500951,
+     1.28775689730798
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b4_c1024",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 2146.5,
+     "gfx_min": 1788,
+     "gfx_max": 2186,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b8_c4096,B]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 0.996138479696762,
+    "ci95": [
+     0.9728608989988919,
+     1.019064147942228
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b8_c4096",
+    "condition": "B",
+    "clock": {
+     "gfx_median": 2036,
+     "gfx_min": 1517,
+     "gfx_max": 2153,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b8_c4096,C]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.1426790075761157,
+    "ci95": [
+     1.126078802642535,
+     1.1589632100930995
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b8_c4096",
+    "condition": "C",
+    "clock": {
+     "gfx_median": 2117,
+     "gfx_min": 1779,
+     "gfx_max": 2182,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b8_c4096,Cb]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.2624115284539765,
+    "ci95": [
+     1.230244701069996,
+     1.2835908398064422
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b8_c4096",
+    "condition": "Cb",
+    "clock": {
+     "gfx_median": 2141,
+     "gfx_min": 1854,
+     "gfx_max": 2187,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.isolated[qwen7b_graph_b8_c4096,D]",
+   "units": "ratio (ms_per_step vs A = full, stock)",
+   "estimate": {
+    "estimate": 1.132553019198878,
+    "ci95": [
+     1.1223663795428565,
+     1.1435205481857598
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "qwen7b_graph_b8_c4096",
+    "condition": "D",
+    "clock": {
+     "gfx_median": 2126.5,
+     "gfx_min": 1845,
+     "gfx_max": 2180,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,B,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.9811025992778399,
+    "ci95": [
+     0.9636109884893577,
+     0.998112371954345
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,B,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.010102951714089,
+    "ci95": [
+     0.7504353868896079,
+     1.3723179778134882
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,B,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.0088888747974354,
+    "ci95": [
+     0.895940229425944,
+     1.1680237622091492
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,B,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.020716089663744,
+    "ci95": [
+     0.9776034608121197,
+     1.0661419527193992
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,C,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.9461126874391854,
+    "ci95": [
+     0.9277093731402342,
+     0.9638359465873556
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,C,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.1784726969036912,
+    "ci95": [
+     0.8902687901781488,
+     1.579923772756145
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,C,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.0326778603279316,
+    "ci95": [
+     0.9198754080775984,
+     1.1856232456106186
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,C,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.0637911213441686,
+    "ci95": [
+     1.0178101248890743,
+     1.1122094582583577
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,Cb,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.8019666698395863,
+    "ci95": [
+     0.7872719385634449,
+     0.8158318094265092
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,Cb,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.3444038716082174,
+    "ci95": [
+     1.043622785423402,
+     1.7566584560879637
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,Cb,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.132982253669602,
+    "ci95": [
+     1.016322640559052,
+     1.3122512776163222
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,Cb,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.246906759815256,
+    "ci95": [
+     1.1957202284526578,
+     1.2998364343038835
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,D,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.8056176065001931,
+    "ci95": [
+     0.7917947928139866,
+     0.8197580700389937
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,D,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.172516636682207,
+    "ci95": [
+     0.8947016919226368,
+     1.5560286005678279
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,D,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.1566377153134784,
+    "ci95": [
+     1.04014611200422,
+     1.3268506269691043
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c2,D,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.2368353851592508,
+    "ci95": [
+     1.188138919768452,
+     1.2857641431282216
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c2",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,B,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.002556925655528,
+    "ci95": [
+     0.9815924344503038,
+     1.0238757675441055
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,B,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.9928071445335567,
+    "ci95": [
+     0.9532563384973143,
+     1.0329903146224422
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,B,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.0032005828963646,
+    "ci95": [
+     0.9779167873135758,
+     1.0285187573658008
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,B,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.9938368439496325,
+    "ci95": [
+     0.9697736672366879,
+     1.0184125748751167
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "B"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,C,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.8008440777996555,
+    "ci95": [
+     0.7860300437132366,
+     0.8192234626534382
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,C,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.161185422367169,
+    "ci95": [
+     1.1060040706517422,
+     1.2087351535178097
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,C,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.3424539487515617,
+    "ci95": [
+     1.3164758341073048,
+     1.3673433979413208
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,C,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.282401445283545,
+    "ci95": [
+     1.2523182759368958,
+     1.3086533648014158
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,Cb,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.7058317929537011,
+    "ci95": [
+     0.6974724001031353,
+     0.7143409324783612
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,Cb,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.482894666534293,
+    "ci95": [
+     1.448528292706995,
+     1.5183931566634317
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,Cb,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.6378729840251185,
+    "ci95": [
+     1.6083124550759536,
+     1.669937401598526
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,Cb,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.4598298246173644,
+    "ci95": [
+     1.4411011550058643,
+     1.4792581211922324
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "Cb"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,D,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.772355712479761,
+    "ci95": [
+     0.7619975039937898,
+     0.7829047278657576
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,D,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.1836265502637897,
+    "ci95": [
+     1.1522139575645445,
+     1.2153800772179197
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,D,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.3553443651178676,
+    "ci95": [
+     1.3341976873785961,
+     1.3767119515500057
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g2_serve:c8,D,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.2969831298978212,
+    "ci95": [
+     1.2768536831359887,
+     1.317975334921171
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g2_serve:c8",
+    "condition": "D"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g3_serve_energy:c8,C,tok_s]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 0.8020548071040281,
+    "ci95": [
+     0.7783761600146712,
+     0.8232918428450349
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g3_serve_energy:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g3_serve_energy:c8,C,ttft_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.1622322139248416,
+    "ci95": [
+     1.1031804643781098,
+     1.229580868392989
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g3_serve_energy:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g3_serve_energy:c8,C,itl_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.3442552001236956,
+    "ci95": [
+     1.309919991903894,
+     1.3824415054589887
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g3_serve_energy:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g3_serve_energy:c8,C,e2e_p99]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.2801318892425961,
+    "ci95": [
+     1.246150601540481,
+     1.322665890400165
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g3_serve_energy:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G2.serving[g3_serve_energy:c8,C,j_per_tok]",
+   "units": "ratio vs A",
+   "estimate": {
+    "estimate": 1.121278736879657,
+    "ci95": [
+     1.1067391924348295,
+     1.142491416580557
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "workload": "mixed prefill+decode serving, Qwen2.5-32B",
+    "table": "g3_serve_energy:c8",
+    "condition": "C"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G3.decode_energy[qwen32b_graph_b1_c4096,A]",
+   "units": "J/token (board accumulator, decode window)",
+   "estimate": {
+    "estimate": 11.648595362246933,
+    "avg_power_w": 910.7009527449276,
+    "ratio_vs_A": null
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c4096",
+    "condition": "A",
+    "scope": "decode-only window, board energy accumulator; primary J/token NA when sensor checks fail"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)",
+   "applicability": "board energy; no component (CU/SRAM/HBM/PHY) split"
+  },
+  {
+   "name": "G3.decode_energy[qwen32b_graph_b1_c4096,B]",
+   "units": "J/token (board accumulator, decode window)",
+   "estimate": {
+    "estimate": 11.564735144019103,
+    "avg_power_w": 913.3029479800748,
+    "ratio_vs_A": {
+     "estimate": 0.9928008300039659,
+     "ci95": [
+      0.9871358576131213,
+      0.9986077290581697
+     ],
+     "blocks": 4
+    }
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c4096",
+    "condition": "B",
+    "scope": "decode-only window, board energy accumulator; primary J/token NA when sensor checks fail"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)",
+   "applicability": "board energy; no component (CU/SRAM/HBM/PHY) split"
+  },
+  {
+   "name": "G3.decode_energy[qwen32b_graph_b1_c4096,C]",
+   "units": "J/token (board accumulator, decode window)",
+   "estimate": {
+    "estimate": 11.665102059802281,
+    "avg_power_w": 898.7654740996771,
+    "ratio_vs_A": {
+     "estimate": 1.001417054764289,
+     "ci95": [
+      0.996537837222793,
+      1.006771720118259
+     ],
+     "blocks": 4
+    }
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c4096",
+    "condition": "C",
+    "scope": "decode-only window, board energy accumulator; primary J/token NA when sensor checks fail"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)",
+   "applicability": "board energy; no component (CU/SRAM/HBM/PHY) split"
+  },
+  {
+   "name": "G3.decode_energy[qwen32b_graph_b1_c4096,Cb]",
+   "units": "J/token (board accumulator, decode window)",
+   "estimate": {
+    "estimate": 12.387420921252597,
+    "avg_power_w": 833.9181489670218,
+    "ratio_vs_A": {
+     "estimate": 1.063426150194915,
+     "ci95": [
+      1.0566193840309968,
+      1.070210389016171
+     ],
+     "blocks": 4
+    }
+   },
+   "scope": {
+    "workload": "qwen32b_graph_b1_c4096",
+    "condition": "Cb",
+    "scope": "decode-only window, board energy accumulator; primary J/token NA when sensor checks fail"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)",
+   "applicability": "board energy; no component (CU/SRAM/HBM/PHY) split"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=224,inactive]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0110009088683822,
+    "ci95": [
+     0.9843658407899512,
+     1.0408722614563861
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 224,
+    "competitor": "inactive",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 2108,
+     "gfx_min": 1787,
+     "gfx_max": 2189,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=224,mem50]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.1112334193258144,
+    "ci95": [
+     1.0711181423717786,
+     1.1515015239214241
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 224,
+    "competitor": "mem50",
+    "competitor_gb_s": 558.9820131641726,
+    "clock": {
+     "gfx_median": 2104.5,
+     "gfx_min": 1747,
+     "gfx_max": 2189,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=224,mem100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.257692247669746,
+    "ci95": [
+     1.237728095896841,
+     1.277325972883803
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 224,
+    "competitor": "mem100",
+    "competitor_gb_s": 1162.4721118893906,
+    "clock": {
+     "gfx_median": 2099.0,
+     "gfx_min": 1718,
+     "gfx_max": 2176,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=224,mem25]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.037969930870019,
+    "ci95": [
+     1.0256707119763038,
+     1.0476840356156751
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 224,
+    "competitor": "mem25",
+    "competitor_gb_s": 294.8866040926272,
+    "clock": {
+     "gfx_median": 2118,
+     "gfx_min": 1804,
+     "gfx_max": 2185,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=224,arith100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0062372375250859,
+    "ci95": [
+     0.9772422117945051,
+     1.0439404935993177
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 224,
+    "competitor": "arith100",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 1928.5,
+     "gfx_min": 1708,
+     "gfx_max": 2013,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=192,mem100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.2099005561460785,
+    "ci95": [
+     1.1673205730567435,
+     1.252948706275788
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 192,
+    "competitor": "mem100",
+    "competitor_gb_s": 1298.2635118823882,
+    "clock": {
+     "gfx_median": 2137,
+     "gfx_min": 1764,
+     "gfx_max": 2194,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=192,inactive]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0213017350349423,
+    "ci95": [
+     0.9921909573304086,
+     1.0678093530965256
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 192,
+    "competitor": "inactive",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 2125,
+     "gfx_min": 1524,
+     "gfx_max": 2193,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=192,mem25]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0583453069320936,
+    "ci95": [
+     1.0259921506292224,
+     1.0959513187369678
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 192,
+    "competitor": "mem25",
+    "competitor_gb_s": 303.7503211678239,
+    "clock": {
+     "gfx_median": 2124,
+     "gfx_min": 1824,
+     "gfx_max": 2187,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=192,arith100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0306140392684746,
+    "ci95": [
+     0.9793605630516663,
+     1.0885518561050467
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 192,
+    "competitor": "arith100",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 1929,
+     "gfx_min": 1728,
+     "gfx_max": 2014,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=192,mem50]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.1230359854199277,
+    "ci95": [
+     1.0819288722084512,
+     1.160062474169356
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 192,
+    "competitor": "mem50",
+    "competitor_gb_s": 591.2788217342588,
+    "clock": {
+     "gfx_median": 2115.5,
+     "gfx_min": 1792,
+     "gfx_max": 2182,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=128,mem50]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.056722383716744,
+    "ci95": [
+     1.0386185911534533,
+     1.078984900883119
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 128,
+    "competitor": "mem50",
+    "competitor_gb_s": 737.1795093204166,
+    "clock": {
+     "gfx_median": 2178,
+     "gfx_min": 1948,
+     "gfx_max": 2196,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=128,mem25]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.060005712356563,
+    "ci95": [
+     1.037744367526267,
+     1.0837594657909349
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 128,
+    "competitor": "mem25",
+    "competitor_gb_s": 346.85653663345335,
+    "clock": {
+     "gfx_median": 2164.5,
+     "gfx_min": 1975,
+     "gfx_max": 2190,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=128,arith100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.0287102607439684,
+    "ci95": [
+     1.0054969901799637,
+     1.049288762465292
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 128,
+    "competitor": "arith100",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 2075,
+     "gfx_min": 1896,
+     "gfx_max": 2181,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=128,mem100]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.1418555262304837,
+    "ci95": [
+     1.1293740451865621,
+     1.1548997062968287
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 128,
+    "competitor": "mem100",
+    "competitor_gb_s": 1497.1451843091481,
+    "clock": {
+     "gfx_median": 2169.5,
+     "gfx_min": 1874,
+     "gfx_max": 2196,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G5.decoder_slowdown[n=128,inactive]",
+   "units": "ratio (decoder time with competitor / absent)",
+   "estimate": {
+    "estimate": 1.010248281152017,
+    "ci95": [
+     1.000642331125399,
+     1.021629082353184
+    ],
+    "blocks": 4
+   },
+   "scope": {
+    "cus_active": 128,
+    "competitor": "inactive",
+    "competitor_gb_s": null,
+    "clock": {
+     "gfx_median": 2175.5,
+     "gfx_min": 1697,
+     "gfx_max": 2197,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    }
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_seqread4g]",
+   "units": "useful_gb_per_s",
+   "estimate": 6396.739,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_ilp1]",
+   "units": "useful_gb_per_s",
+   "estimate": 6526.122,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_ilp2]",
+   "units": "useful_gb_per_s",
+   "estimate": 6015.894,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_ilp4]",
+   "units": "useful_gb_per_s",
+   "estimate": 5813.876,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_ilp8]",
+   "units": "useful_gb_per_s",
+   "estimate": 5708.833,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_ilp16]",
+   "units": "useful_gb_per_s",
+   "estimate": 5267.506,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_grid256]",
+   "units": "useful_gb_per_s",
+   "estimate": 2462.062,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_grid1024]",
+   "units": "useful_gb_per_s",
+   "estimate": 6310.855,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_grid8192]",
+   "units": "useful_gb_per_s",
+   "estimate": 5960.264,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_stride4]",
+   "units": "useful_gb_per_s",
+   "estimate": 1581.283,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_stride16]",
+   "units": "useful_gb_per_s",
+   "estimate": 758.129,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_gather1g]",
+   "units": "useful_gb_per_s",
+   "estimate": 1090.797,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_chase_c1]",
+   "units": "ns_per_dependent_load",
+   "estimate": 103.455,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_chase_c256]",
+   "units": "ns_per_dependent_load",
+   "estimate": 548.863,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_chase_c4096]",
+   "units": "ns_per_dependent_load",
+   "estimate": 570.317,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_chase_c16384]",
+   "units": "ns_per_dependent_load",
+   "estimate": 637.881,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_reuse8m]",
+   "units": "useful_gb_per_s",
+   "estimate": 31260.314,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_reuse32m]",
+   "units": "useful_gb_per_s",
+   "estimate": 28632.81,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_reuse128m]",
+   "units": "useful_gb_per_s",
+   "estimate": 7089.576,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_reuse512m]",
+   "units": "useful_gb_per_s",
+   "estimate": 6445.888,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_mfma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 1130.407,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n256_fma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 99.51,
+   "scope": {
+    "cus_active": 256,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_seqread4g]",
+   "units": "useful_gb_per_s",
+   "estimate": 5410.358,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_ilp1]",
+   "units": "useful_gb_per_s",
+   "estimate": 4381.645,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_ilp2]",
+   "units": "useful_gb_per_s",
+   "estimate": 5271.754,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_ilp4]",
+   "units": "useful_gb_per_s",
+   "estimate": 5735.125,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_ilp8]",
+   "units": "useful_gb_per_s",
+   "estimate": 5795.109,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_ilp16]",
+   "units": "useful_gb_per_s",
+   "estimate": 5605.128,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_grid256]",
+   "units": "useful_gb_per_s",
+   "estimate": 2300.339,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_grid1024]",
+   "units": "useful_gb_per_s",
+   "estimate": 6194.428,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_grid8192]",
+   "units": "useful_gb_per_s",
+   "estimate": 5923.184,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_stride4]",
+   "units": "useful_gb_per_s",
+   "estimate": 1483.199,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_stride16]",
+   "units": "useful_gb_per_s",
+   "estimate": 742.019,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_gather1g]",
+   "units": "useful_gb_per_s",
+   "estimate": 1007.962,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_chase_c1]",
+   "units": "ns_per_dependent_load",
+   "estimate": 99.859,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_chase_c256]",
+   "units": "ns_per_dependent_load",
+   "estimate": 539.478,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_chase_c4096]",
+   "units": "ns_per_dependent_load",
+   "estimate": 571.565,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_chase_c16384]",
+   "units": "ns_per_dependent_load",
+   "estimate": 638.847,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_reuse8m]",
+   "units": "useful_gb_per_s",
+   "estimate": 20951.633,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_reuse32m]",
+   "units": "useful_gb_per_s",
+   "estimate": 19194.354,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_reuse128m]",
+   "units": "useful_gb_per_s",
+   "estimate": 7308.657,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_reuse512m]",
+   "units": "useful_gb_per_s",
+   "estimate": 6355.54,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_mfma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 827.609,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n192_fma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 82.73,
+   "scope": {
+    "cus_active": 192,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_seqread4g]",
+   "units": "useful_gb_per_s",
+   "estimate": 5713.645,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_ilp1]",
+   "units": "useful_gb_per_s",
+   "estimate": 4424.648,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_ilp2]",
+   "units": "useful_gb_per_s",
+   "estimate": 3927.382,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_ilp4]",
+   "units": "useful_gb_per_s",
+   "estimate": 4048.516,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_ilp8]",
+   "units": "useful_gb_per_s",
+   "estimate": 4285.351,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_ilp16]",
+   "units": "useful_gb_per_s",
+   "estimate": 4195.406,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_grid256]",
+   "units": "useful_gb_per_s",
+   "estimate": 2303.665,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_grid1024]",
+   "units": "useful_gb_per_s",
+   "estimate": 5910.923,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_grid8192]",
+   "units": "useful_gb_per_s",
+   "estimate": 5275.696,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_stride4]",
+   "units": "useful_gb_per_s",
+   "estimate": 1368.422,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_stride16]",
+   "units": "useful_gb_per_s",
+   "estimate": 757.171,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_gather1g]",
+   "units": "useful_gb_per_s",
+   "estimate": 770.256,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_chase_c1]",
+   "units": "ns_per_dependent_load",
+   "estimate": 100.449,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_chase_c256]",
+   "units": "ns_per_dependent_load",
+   "estimate": 548.588,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_chase_c4096]",
+   "units": "ns_per_dependent_load",
+   "estimate": 565.732,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_chase_c16384]",
+   "units": "ns_per_dependent_load",
+   "estimate": 635.772,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_reuse8m]",
+   "units": "useful_gb_per_s",
+   "estimate": 17337.236,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_reuse32m]",
+   "units": "useful_gb_per_s",
+   "estimate": 17000.185,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_reuse128m]",
+   "units": "useful_gb_per_s",
+   "estimate": 7827.858,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_reuse512m]",
+   "units": "useful_gb_per_s",
+   "estimate": 7246.713,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_mfma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 568.571,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n128_fma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 64.814,
+   "scope": {
+    "cus_active": 128,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_seqread4g]",
+   "units": "useful_gb_per_s",
+   "estimate": 4310.226,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_ilp1]",
+   "units": "useful_gb_per_s",
+   "estimate": 2975.406,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_ilp2]",
+   "units": "useful_gb_per_s",
+   "estimate": 3089.16,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_ilp4]",
+   "units": "useful_gb_per_s",
+   "estimate": 3085.023,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_ilp8]",
+   "units": "useful_gb_per_s",
+   "estimate": 3190.002,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_ilp16]",
+   "units": "useful_gb_per_s",
+   "estimate": 3177.824,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_grid256]",
+   "units": "useful_gb_per_s",
+   "estimate": 2234.638,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_grid1024]",
+   "units": "useful_gb_per_s",
+   "estimate": 3499.68,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_grid8192]",
+   "units": "useful_gb_per_s",
+   "estimate": 4389.807,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_stride4]",
+   "units": "useful_gb_per_s",
+   "estimate": 1073.842,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_stride16]",
+   "units": "useful_gb_per_s",
+   "estimate": 576.283,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_gather1g]",
+   "units": "useful_gb_per_s",
+   "estimate": 590.514,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_chase_c1]",
+   "units": "ns_per_dependent_load",
+   "estimate": 98.709,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_chase_c256]",
+   "units": "ns_per_dependent_load",
+   "estimate": 534.616,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_chase_c4096]",
+   "units": "ns_per_dependent_load",
+   "estimate": 567.773,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_chase_c16384]",
+   "units": "ns_per_dependent_load",
+   "estimate": 644.113,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_reuse8m]",
+   "units": "useful_gb_per_s",
+   "estimate": 12242.094,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_reuse32m]",
+   "units": "useful_gb_per_s",
+   "estimate": 12512.592,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_reuse128m]",
+   "units": "useful_gb_per_s",
+   "estimate": 7322.233,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_reuse512m]",
+   "units": "useful_gb_per_s",
+   "estimate": 5708.66,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_mfma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 416.07,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G6.service[n96_fma]",
+   "units": "useful_tflop_per_s",
+   "estimate": 48.494,
+   "scope": {
+    "cus_active": 96,
+    "kernel": "native control"
+   },
+   "status": "measured",
+   "qualification": "observational_clock_confounded (controlled clocks: unavailable, not authorized)"
+  },
+  {
+   "name": "G7.logical_demand",
+   "units": "bytes/token",
+   "estimate": {
+    "weights_bytes_per_token": 63968378880,
+    "kv_read_bytes_per_token_at_4096": 1073741824,
+    "kv_write_bytes_per_token": 262144,
+    "compulsory_read_bytes_per_token": 65042120704
+   },
+   "scope": {
+    "scope": "logical demand, BF16; activations and norms excluded (< 1 MB); no reuse within a token is assumed or excluded"
+   },
+   "status": "derived (model shapes, BF16)"
+  },
+  {
+   "name": "G7.counter[qwen32b_graph_b1_c4096__n256__absent__stock__eager__FETCH_SIZE]",
+   "units": "FETCH_SIZE per decode tick (unit per G4 audit)",
+   "estimate": 63619826.98759921,
+   "scope": {
+    "cus_active": 256,
+    "grid": null,
+    "mode": "eager"
+   },
+   "status": "measured",
+   "qualification": "unclassified"
+  },
+  {
+   "name": "G7.counter[qwen32b_graph_b1_c4096__n192__absent__g192__eager__FETCH_SIZE]",
+   "units": "FETCH_SIZE per decode tick (unit per G4 audit)",
+   "estimate": 63617181.87053572,
+   "scope": {
+    "cus_active": 192,
+    "grid": 192,
+    "mode": "eager"
+   },
+   "status": "measured",
+   "qualification": "unclassified"
+  },
+  {
+   "name": "G7.counter[qwen32b_graph_b1_c4096__n256__absent__stock__eager__WRITE_SIZE]",
+   "units": "WRITE_SIZE per decode tick (unit per G4 audit)",
+   "estimate": 126873.86160714287,
+   "scope": {
+    "cus_active": 256,
+    "grid": null,
+    "mode": "eager"
+   },
+   "status": "measured",
+   "qualification": "write-traffic counter, streaming-consistent (KiB); MALL behaviour of writes not separable here"
+  },
+  {
+   "name": "G7.counter[qwen32b_graph_b1_c4096__n192__absent__g192__eager__WRITE_SIZE]",
+   "units": "WRITE_SIZE per decode tick (unit per G4 audit)",
+   "estimate": 126652.85689484127,
+   "scope": {
+    "cus_active": 192,
+    "grid": 192,
+    "mode": "eager"
+   },
+   "status": "measured",
+   "qualification": "write-traffic counter, streaming-consistent (KiB); MALL behaviour of writes not separable here"
+  }
+ ],
+ "g8_frozen_model": {
+  "verdict": "REJECT",
+  "mae": 0.035484092300772596,
+  "max_abs_error": 0.13257169870955643,
+  "source_sha256": "945971a00fd0c0f002dc9e744d4675542f9a93e95d046425bf8f621208c039db",
+  "rows": [
+   {
+    "cohort": "mi350x",
+    "g": 96,
+    "mask_n": 96,
+    "B_GBps_per_CU": 83.33,
+    "R_pred": 1.3263,
+    "R_pred_measured_bw_variant (not judged)": 1.2617,
+    "R_obs": 1.3919726787942297,
+    "R_obs_ci95": [
+     1.3862619187512883,
+     1.3978820904902571
+    ],
+    "blocks": 8,
+    "abs_error": 0.06567267879422967,
+    "clock": {
+     "gfx_median": 2134,
+     "gfx_min": 1318,
+     "gfx_max": 2204,
+     "mem_min": 2000,
+     "mem_max": 2000,
+     "pooled_ok": false
+    },
+    "status": "measured"
+   }
+  ]
+ },
+ "oc6": {
+  "frozen_file_sha256": "9c9381c58993daf52cbf24e82293293ad1a9428fcb48aeda57209f2853d53ff1",
+  "verdict": "not accepted on held-out (see overlap_calibration_results_20261105.md)",
+  "issued_mfma_wvsplitk": "4*m*ceil(k/1024) per call (exact, validated on held-out shapes)",
+  "eta": "not identifiable from kernel timings; ATT per-CU X/A_C 0.94-1.00"
+ },
+ "unknowns": [
+  "mm2 per CU / per MFMA engine (CU masks do not identify area)",
+  "SRAM, memory-controller and PHY areas (not measured; none invented)",
+  "physical HBM read traffic: no counter validated as physical HBM by G4",
+  "component energy split (only board energy measured)",
+  "clock-controlled restriction curves (clock changes not authorized)"
+ ]
+}
