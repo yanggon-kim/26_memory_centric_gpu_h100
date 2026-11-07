@@ -409,3 +409,21 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   mask 192; 1.055 (160), 1.155 (128), 1.392 (96); stock grid at reduced mask +17–19 %.
 - G8 partial judge: the one measured held-out point (MI350X n = 96) has |R_pred − R_obs| = 0.066 > 0.05 per-point
   limit → REJECT already fixed by the per-point rule; MI300X/MI325X points pending (jobs 502425/502426 queued).
+
+## 2026-11-07 — G1–G8 MI300X (502425) and MI325X (502426) analysed; final G8 judge
+
+- MI300X: 593/594 steps rc 0 (one G7 eager FETCH_SIZE step at full mask timed out, no retry per plan); 3 h 53 min.
+  MI325X: 590/590; 3 h 12 min. In-job goal analysis crashed on both (same fab0ea00 reader bug); re-run post hoc on
+  devel → `results_published/amd_20261107_mi300x_goal_v1_auto_job502425/`, `amd_20261106_mi325x_goal_v1_auto_job502426/`.
+- G1 sized grid: R ≤ 1.005 down to 128 CUs on both gfx942 cohorts; 1.009 (MI300X) / 1.034 (MI325X) at 96.
+  Isolation leak_v4 fails on both → G5 not released there.
+- G8 final (`docs/amd/goal/g8_judge_final.json`): REJECT, MAE 0.035, max error 0.133 (MI325X 96).
+- `model_inputs.json` added to all three goal folders (`scripts/amd/goal/model_inputs.py`).
+- Results: `docs/amd/goal_followup_results_20261107.md`.
+
+## 2026-11-07 — OC transfer check, OC5/OC7 synthesis (no new GPU steps)
+
+- Qwen2.5-7B graph trace vs frozen models (`scripts/amd/oc/oc_transfer.py`): per-step projection error M1 +9.8 % /
+  M6 +8.7 % (MI300X), +5.2 % / −3.1 % (MI350X); shape-level errors up to +31 %.
+- OC delivery files per cohort in the held-out folders (`scripts/amd/oc/oc_deliver.py`).
+- OC5 mechanism table and dispositions: `docs/amd/overlap_calibration_results_20261107.md`.
