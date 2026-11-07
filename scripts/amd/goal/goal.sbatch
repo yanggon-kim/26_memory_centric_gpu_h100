@@ -28,7 +28,8 @@ cohort=$(python3 -c "import json;print(json.load(open('$PLAN'))['cohort'])")
 arch=$(python3 -c "import json;print(json.load(open('$PLAN')).get('arch', 'gfx942'))")
 full=$(python3 -c "import json;print(json.load(open('$PLAN')).get('full_cus', 304))")
 nl=$(python3 -c "import json;print(len(json.load(open('$PLAN'))['lanes']))")  # GPUs = lanes (1 for the MI350X smoke)
-if [ "$DRY" = 1 ]; then name=dryrun_goal_${cohort}_${kind}_$(date +%Y%m%d_%H%M%S); else name=amd_$(date +%Y%m%d)_${cohort}_goal_v1_${kind}_job${SLURM_JOB_ID}; fi
+ver=$(python3 -c "import json;print(json.load(open('$PLAN')).get('version', 'goal_v1'))")
+if [ "$DRY" = 1 ]; then name=dryrun_goal_${cohort}_${kind}_$(date +%Y%m%d_%H%M%S); else name=amd_$(date +%Y%m%d)_${cohort}_${ver}_${kind}_job${SLURM_JOB_ID}; fi
 root=$WORK/results_amd/$name
 mkdir -p "$root"
 [ "$DRY" = 1 ] || ln -sfn "$root" "/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/results/$name"
@@ -57,6 +58,7 @@ EOF
 for b in svc_bench_${arch}_v3 svc_bench_${arch}_v4 svc_bench_${arch}_v5 svc_bench_${arch}_v6; do
   [ -x "$WORK/bin/$b" ] || { status "aborting: missing $WORK/bin/$b"; exit 3; }
 done
+if [ "$ver" = goal_g5x ]; then [ -x "$WORK/bin/svc_bench_${arch}_v8" ] || { status "aborting: missing svc_bench_${arch}_v8"; exit 3; }; fi
 
 if [ "$DRY" = 1 ]; then
   for i in $(seq 0 $((nl - 1))); do printf '%s\tGPU-DRYRUN%02d\t-\n' $i $i; done > "$root/gpus.tsv"
@@ -70,7 +72,7 @@ if [ "$DRY" = 1 ]; then
 fi
 
 source scripts/amd/env.sh
-export CUBW_BENCH=$WORK/bin/svc_bench_${arch}_v3 CUBW_BENCH4=$WORK/bin/svc_bench_${arch}_v4 CUBW_BENCH5=$WORK/bin/svc_bench_${arch}_v5 CUBW_BENCH6=$WORK/bin/svc_bench_${arch}_v6
+export CUBW_BENCH=$WORK/bin/svc_bench_${arch}_v3 CUBW_BENCH4=$WORK/bin/svc_bench_${arch}_v4 CUBW_BENCH5=$WORK/bin/svc_bench_${arch}_v5 CUBW_BENCH6=$WORK/bin/svc_bench_${arch}_v6 CUBW_BENCH8=$WORK/bin/svc_bench_${arch}_v8
 expect=$(python3 -c "import json;d=json.load(open('$PLAN'));print(d.get('gpu_name') or {'mi325x': 'MI325X'}.get(d['cohort'], 'MI300X'))")
 status "preflight start on $(hostname)"
 if ! $PY scripts/amd/preflight_node.py --root "$root" --expect-gpus $nl --expect-name $expect --expect-arch $arch --expect-cus $full > "$root/preflight.out" 2>&1; then
@@ -93,7 +95,7 @@ wait_lanes() {  # lanes only; the monitor never exits on its own
 }
 
 for stage in $(python3 -c "import json;print(' '.join(json.load(open('$PLAN'))['stages']))"); do
-  if [ "$kind" = auto ] && [ "$stage" != pilot ]; then
+  if { [ "$kind" = auto ] || [ "$kind" = g5x ]; } && [ "$stage" != pilot ]; then
     $PY scripts/amd/goal/analyze_goal.py gate --root "$root" --out "$root/gates.json" >> "$root/RUN_STATUS.log" 2>&1
     status "gates: $(python3 -c "import json;d=json.load(open('$root/gates.json'));print({k:v for k,v in d.items() if k.endswith('_ok') or k.startswith('release') or k=='goal_isolation'})")"
   fi
@@ -110,7 +112,11 @@ kill $MON 2>/dev/null; wait $MON 2>/dev/null
 status "analysis start"
 $PY scripts/amd/cubw/analyze.py report --root "$root" > "$root/analysis.log" 2>&1
 status "analysis rc=$?"
-$PY scripts/amd/goal/analyze_goal.py report --root "$root" > "$root/analysis_goal.log" 2>&1
+if [ "$ver" = goal_g5x ]; then
+  $PY scripts/amd/goal/analyze_g5x.py report --root "$root" > "$root/analysis_goal.log" 2>&1
+else
+  $PY scripts/amd/goal/analyze_goal.py report --root "$root" > "$root/analysis_goal.log" 2>&1
+fi
 status "goal analysis rc=$?"
 (cd "$root" && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
 status "COMPLETE ($(wc -l < "$root/SHA256SUMS") files hashed)"

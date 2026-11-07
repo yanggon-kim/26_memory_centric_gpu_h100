@@ -37,6 +37,10 @@ with the same mask, competitor, residual-process and orphan handling as a vllm s
 v1.6 (leak test v4, E3 on MI350X): 'gapprobe' treatment (svc_bench_v6 start-delay probe) runs from CUBW_BENCH6 with one
 16-wave full-LDS workgroup per CU of its mask per launch and a 200 us host gap between launches.
 
+goal G5 extension (leak test v5, docs/amd/goal_g5x_plan_20261107.md): 'storm_lds' and 'storm_small' treatments
+(svc_bench_v8 launch-storm negative controls: back-to-back short kernels, 64 per synchronize, one workgroup per CU of
+the mask for storm_lds, four 256-thread workgroups per CU for storm_small) run from CUBW_BENCH8.
+
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
 import argparse
@@ -55,14 +59,17 @@ BIN = Path(os.environ.get('CUBW_BENCH', WORK / 'bin/svc_bench_gfx942_v3'))
 BIN4 = Path(os.environ.get('CUBW_BENCH4', WORK / 'bin/svc_bench_gfx942_v4'))
 BIN5 = Path(os.environ.get('CUBW_BENCH5', WORK / 'bin/svc_bench_gfx950_v5'))
 BIN6 = Path(os.environ.get('CUBW_BENCH6', WORK / 'bin/svc_bench_gfx950_v6'))
+BIN8 = Path(os.environ.get('CUBW_BENCH8', WORK / 'bin/svc_bench_gfx942_v8'))
 COMPETITOR_BYTES = 1 << 30  # 1 GiB read footprint: far above the 256 MiB MALL
 TREATMENTS = {  # name -> (competitor mode, requested duty); None = competitor absent
     'absent': None, 'inactive': ('idle', 1.0),
     'mem25': ('read', 0.25), 'mem50': ('read', 0.50), 'mem75': ('read', 0.75), 'mem100': ('read', 1.00),
     'arith100': ('fma', 1.00), 'leakprobe': ('fma', 1.00), 'cuprobe': ('cuprobe', 1.00),
     'cuprobe_t': ('cuprobe_t', 1.00), 'gapprobe': ('gapprobe', 1.00),
+    'storm_lds': ('storm', 1.00), 'storm_small': ('storm_small', 1.00),
 }
-BENCH_FOR_MODE = {'cuprobe': BIN4, 'cuprobe_t': BIN5, 'gapprobe': BIN6}
+BENCH_FOR_MODE = {'cuprobe': BIN4, 'cuprobe_t': BIN5, 'gapprobe': BIN6, 'storm': BIN8, 'storm_small': BIN8}
+STORM = ['--iters', '100', '--reps', '64']
 GAPPROBE = ['--iters', '600', '--threads', '1024', '--gap-us', '200', '--late-ns', '5000']
 
 
@@ -169,6 +176,10 @@ def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
     elif mode == 'gapprobe':  # one workgroup per CU of the (contiguous lo-hi) probe mask
         lo, hi = (int(x) for x in mask.split('-'))
         args += GAPPROBE + ['--blocks', str(hi - lo + 1)]
+    elif mode in ('storm', 'storm_small'):  # launch storm on the (contiguous lo-hi) mask
+        lo, hi = (int(x) for x in mask.split('-'))
+        args += STORM + (['--threads', '1024', '--blocks', str(hi - lo + 1)] if mode == 'storm'
+                         else ['--threads', '256', '--blocks', str(4 * (hi - lo + 1))])
     env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
     out = open(adir / f'{name}.jsonl', 'w')
     err = open(adir / f'{name}.err', 'w')
