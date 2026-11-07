@@ -583,7 +583,7 @@ int main(int argc, char** argv) {
     CHECK(hipMemcpy(starts, st.data(), a.chains * 4, hipMemcpyHostToDevice));
     CHECK(hipMalloc(&buf2, a.chains * 4));
     a.reps = 1;
-  } else if (a.mode == "cuprobe") {
+  } else if (a.mode == "cuprobe" || a.mode == "storm") {
     CHECK(hipMalloc(&buf, 4096 * 4)); CHECK(hipMemset(buf, 0, 4096 * 4));
   } else if (a.mode == "cuprobe_t") {
     CHECK(hipMalloc(&buf, 4096 * 2 * 8)); CHECK(hipMemset(buf, 0, 4096 * 2 * 8));

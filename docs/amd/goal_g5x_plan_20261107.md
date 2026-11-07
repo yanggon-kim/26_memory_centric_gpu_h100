@@ -103,3 +103,21 @@ to goal_v1 (`analyze_goal.g5_surface`: block-paired bootstrap, 10,000 draws).
 
 Published folders: `results_published/amd_<date>_<cohort>_goal_g5x_g5x_job<id>/`. A results note will be added to
 `docs/amd/goal_followup_results_20261107.md` as a dated addendum, and to the experiment log and handbook.
+
+## 5. Amendment after smoke 507394 (2026-11-07, before the mains were released)
+
+Smoke result (`mi3001x`, 20/20 steps, 19.5 min; pilot-labelled, judges nothing):
+
+- **storm_small:** ran at 137,056 kernels/s, 3.5× the MI300X decoder rate, so it is dispatch-matched.
+- **storm_lds:** exited at start (`illegal memory access`). Its per-CU counter buffer was not allocated in `storm` mode
+  (`svc_bench_v8.hip`: the `cuprobe` allocation branch did not include `storm`).
+- **Fix:** add `storm` to that branch. The binary was rebuilt (sha256 7da07a48…). The smoke binary is kept as
+  `svc_bench_gfx942_v8.smoke507394`.
+- **Unchanged:** the kernels, iteration counts, rule and plans.
+- **Smoke leak v5 at n = 256:**
+  - decoder T8 0.001, against the T8 threshold of 0.329 and the minimum positive T8 of 0.645;
+  - leak_ok_v5 true;
+  - leak v4 also passed on this GPU.
+- **Smoke G5 at n = 256, one block, pilot:** mem100 1.197, arith100 1.070.
+
+The mains (507396, 507397) use the same release and plan. They read the rebuilt binary from `$WORK/bin`.
