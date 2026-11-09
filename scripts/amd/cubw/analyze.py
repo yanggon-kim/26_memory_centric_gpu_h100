@@ -204,6 +204,11 @@ def gap_counts(wins):
     return out if out['launches'] else None
 
 
+def contiguous(mask):
+    """True for a single 'lo-hi' CU range (the masks leak tests v1-v5 use)."""
+    return ',' not in mask and mask.count('-') == 1
+
+
 def late_fraction(g, cus):
     """f_c = (late launches + launches in which c ran no probe workgroup) / launches, for each CU key in cus."""
     L = g['launches']
@@ -739,6 +744,8 @@ def gates_from(plan, acqs, ptab, comp_only):
         if a['competitor']['mode'] != 'cuprobe_t':
             continue
         mask = a['competitor']['mask'].split(':', 1)[1]
+        if not contiguous(mask):  # leak v6 shader-engine-balanced lists are read by scripts/amd/goal/analyze_g5y.py
+            continue
         lo, hi = (int(x) for x in mask.split('-'))
         rows = [v for v in comp_only.values() if v['probe_mask'] == mask and v['probe_mode'] == 'cuprobe_t'
                 and v['lane'] == a['lane'] and v.get('cu_speed')]
@@ -759,6 +766,8 @@ def gates_from(plan, acqs, ptab, comp_only):
     gap_dec = [a for a in comp if a['competitor']['mode'] == 'gapprobe' and a['competitor'].get('gap')]
     for a in gap_dec:
         mask = a['competitor']['mask'].split(':', 1)[1]
+        if not contiguous(mask):  # leak v6 shader-engine-balanced lists are read by scripts/amd/goal/analyze_g5y.py
+            continue
         lo, hi = (int(x) for x in mask.split('-'))
         if a['n'] != lo:
             continue

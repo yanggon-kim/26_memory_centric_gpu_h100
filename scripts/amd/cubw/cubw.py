@@ -41,6 +41,11 @@ goal G5 extension (leak test v5, docs/amd/goal_g5x_plan_20261107.md): 'storm_lds
 (svc_bench_v8 launch-storm negative controls: back-to-back short kernels, 64 per synchronize, one workgroup per CU of
 the mask for storm_lds, four 256-thread workgroups per CU for storm_small) run from CUBW_BENCH8.
 
+goal G5 leak test v6 (docs/amd/goal_g5y_plan_20261109.md): a competitor or co-runner mask may be a reference '@<name>',
+resolved at run time from <root>/cumap/<lane>.json (written by scripts/amd/goal/cumap.py in the same lane), so that the
+probe runs on shader-engine-balanced CU lists of this GPU. Masks may be comma lists of indices and ranges; gapprobe and
+storm block counts are the number of CUs in the resolved mask. An unresolved reference is a failed competitor start.
+
   cubw.py lane --plan <launch_plan.json> --root <root> --lane <name> [--dry-run]
 """
 import argparse
@@ -75,6 +80,23 @@ GAPPROBE = ['--iters', '600', '--threads', '1024', '--gap-us', '200', '--late-ns
 
 def mask_range(lo, hi):
     return f'{lo}-{hi}'
+
+
+def mask_cus(mask):
+    """Number of CU indices in an HSA_CU_MASK list such as '0-255,260,268'."""
+    n = 0
+    for part in mask.split(','):
+        lo, _, hi = part.partition('-')
+        n += int(hi or lo) - int(lo) + 1
+    return n
+
+
+def resolve_mask(mask, root, lane):
+    """'@name' -> the mask of that name in <root>/cumap/<lane>.json (None if absent); other masks unchanged."""
+    if not mask or not mask.startswith('@'):
+        return mask
+    f = root / 'cumap' / f'{lane}.json'
+    return json.loads(f.read_text()).get('masks', {}).get(mask[1:]) if f.exists() else None
 
 
 def decoder_mask(n, full):
@@ -165,7 +187,14 @@ def stop_group(proc, grace=15):
 
 def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
     mode, duty = TREATMENTS[step['treatment']]
-    mask = step.get('competitor_mask') or step['plan_competitor_mask']
+    ref = step.get('competitor_mask') or step['plan_competitor_mask']
+    mask = resolve_mask(ref, step['_root'], step['lane'])
+    if not mask:  # unresolved '@' reference: recorded as a failed start (a no-op process keeps the stop path uniform)
+        proc = subprocess.Popen(['true'], start_new_session=True)
+        proc.wait()
+        (adir / f'{name}.jsonl').write_text('')
+        return proc, {'mode': mode, 'duty_requested': duty, 'mask_ref': ref, 'hsa_cu_mask': f"{gpu['index']}:unresolved",
+                      'start_failed': f'mask reference {ref} not resolved'}
     args = [str(BENCH_FOR_MODE.get(mode, BIN)), '--mode', mode, '--seconds', str(seconds), '--duty', str(duty)]
     if mode == 'read':
         args += ['--bytes', str(COMPETITOR_BYTES)]
@@ -173,18 +202,18 @@ def start_competitor(step, gpu, adir, seconds, tag, name='competitor'):
         args += ['--iters', '2000']
     elif mode == 'cuprobe_t':
         args += ['--iters', '500']
-    elif mode == 'gapprobe':  # one workgroup per CU of the (contiguous lo-hi) probe mask
-        lo, hi = (int(x) for x in mask.split('-'))
-        args += GAPPROBE + ['--blocks', str(hi - lo + 1)]
-    elif mode in ('storm', 'storm_small'):  # launch storm on the (contiguous lo-hi) mask
-        lo, hi = (int(x) for x in mask.split('-'))
-        args += STORM + (['--threads', '1024', '--blocks', str(hi - lo + 1)] if mode == 'storm'
-                         else ['--threads', '256', '--blocks', str(4 * (hi - lo + 1))])
+    elif mode == 'gapprobe':  # one workgroup per CU of the probe mask
+        args += GAPPROBE + ['--blocks', str(mask_cus(mask))]
+    elif mode in ('storm', 'storm_small'):  # launch storm on the mask
+        args += STORM + (['--threads', '1024', '--blocks', str(mask_cus(mask))] if mode == 'storm'
+                         else ['--threads', '256', '--blocks', str(4 * mask_cus(mask))])
     env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpu['index']), HSA_CU_MASK=f"{gpu['index']}:{mask}", CUBW_STEP_TAG=tag)
     out = open(adir / f'{name}.jsonl', 'w')
     err = open(adir / f'{name}.err', 'w')
     proc = subprocess.Popen(args, env=env, stdout=out, stderr=err, start_new_session=True)
     rec = {'argv': args, 'hsa_cu_mask': env['HSA_CU_MASK'], 'pid': proc.pid, 'mode': mode, 'duty_requested': duty}
+    if ref != mask:
+        rec['mask_ref'] = ref
     deadline = now() + 90
     while now() < deadline:  # activity proof: the "started" event follows the first completed launch
         if proc.poll() is not None:
@@ -381,7 +410,7 @@ def lane(args):
     deadline = float(os.environ.get('CUBW_DEADLINE', '0')) or None
     gates = None
     for step in steps:
-        step = dict(step, plan_competitor_mask=plan['competitor_mask'])
+        step = dict(step, plan_competitor_mask=plan['competitor_mask'], _root=args.root)
         if args.dry_run:
             print(f"[{args.lane} gpu{gpu['index']}] {step['id']}: {describe(step, gpu, plan)}")
             continue

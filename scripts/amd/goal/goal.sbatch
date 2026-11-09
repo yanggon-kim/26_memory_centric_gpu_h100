@@ -58,7 +58,7 @@ EOF
 for b in svc_bench_${arch}_v3 svc_bench_${arch}_v4 svc_bench_${arch}_v5 svc_bench_${arch}_v6; do
   [ -x "$WORK/bin/$b" ] || { status "aborting: missing $WORK/bin/$b"; exit 3; }
 done
-if [ "$ver" = goal_g5x ]; then [ -x "$WORK/bin/svc_bench_${arch}_v8" ] || { status "aborting: missing svc_bench_${arch}_v8"; exit 3; }; fi
+if [ "$ver" = goal_g5x ] || [ "$ver" = goal_g5y ]; then [ -x "$WORK/bin/svc_bench_${arch}_v8" ] || { status "aborting: missing svc_bench_${arch}_v8"; exit 3; }; fi
 
 if [ "$DRY" = 1 ]; then
   for i in $(seq 0 $((nl - 1))); do printf '%s\tGPU-DRYRUN%02d\t-\n' $i $i; done > "$root/gpus.tsv"
@@ -95,7 +95,7 @@ wait_lanes() {  # lanes only; the monitor never exits on its own
 }
 
 for stage in $(python3 -c "import json;print(' '.join(json.load(open('$PLAN'))['stages']))"); do
-  if { [ "$kind" = auto ] || [ "$kind" = g5x ]; } && [ "$stage" != pilot ]; then
+  if { [ "$kind" = auto ] || [ "$kind" = g5x ] || [ "$kind" = g5y ]; } && [ "$stage" != pilot ]; then
     $PY scripts/amd/goal/analyze_goal.py gate --root "$root" --out "$root/gates.json" >> "$root/RUN_STATUS.log" 2>&1
     status "gates: $(python3 -c "import json;d=json.load(open('$root/gates.json'));print({k:v for k,v in d.items() if k.endswith('_ok') or k.startswith('release') or k=='goal_isolation'})")"
   fi
@@ -114,6 +114,8 @@ $PY scripts/amd/cubw/analyze.py report --root "$root" > "$root/analysis.log" 2>&
 status "analysis rc=$?"
 if [ "$ver" = goal_g5x ]; then
   $PY scripts/amd/goal/analyze_g5x.py report --root "$root" > "$root/analysis_goal.log" 2>&1
+elif [ "$ver" = goal_g5y ]; then
+  $PY scripts/amd/goal/analyze_g5y.py report --root "$root" > "$root/analysis_goal.log" 2>&1
 else
   $PY scripts/amd/goal/analyze_goal.py report --root "$root" > "$root/analysis_goal.log" 2>&1
 fi
