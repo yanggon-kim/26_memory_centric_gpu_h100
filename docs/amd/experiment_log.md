@@ -427,3 +427,24 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   M6 +8.7 % (MI300X), +5.2 % / −3.1 % (MI350X); shape-level errors up to +31 %.
 - OC delivery files per cohort in the held-out folders (`scripts/amd/oc/oc_deliver.py`).
 - OC5 mechanism table and dispositions: `docs/amd/overlap_calibration_results_20261107.md`.
+
+## 2026-11-07 — G5 extension on gfx942: pre-registration, smoke 507394, storm fix
+
+- Plan `docs/amd/goal_g5x_plan_20261107.md` (commit 9af6d272): leak test v5 = leak v4 suite plus launch-storm
+  negative controls (svc_bench_v8 `storm`, `storm_small`) on the decoder mask; G5 runs on placement, leak v5 sets the
+  disposition only.
+- Smoke 507394 (mi3001x, 20/20, 19.5 min, pilot): storm_lds crashed (per-CU buffer not allocated in `storm` mode);
+  fixed and rebuilt before the mains were released (§5 amendment, commit 3bf9cd7e). Smoke leak v5 at 256 OK.
+
+## 2026-11-09 — G5 extension mains MI300X (507396) and MI325X (507397) analysed
+
+- 360/360 steps each, 1 h 04 min each; in-job `analyze_g5x.py report` ran cleanly.
+- Leak v5 available and sensitive on both (storms 139–176 k kernels/s vs decoder 39–44 k/s). OK 8/8 at n = 128;
+  6/8 at n = 256 on each cohort (fail MI300X L2/L4, MI325X L5/L6) → leak_ok_v5 false → G5 **observational:
+  isolation not established**. The uniform ≈ 0.25 probe step at n = 256 also appears with storms and with low-rate
+  natives on other GPUs, so it is not specific to launch rate.
+- G5 (8 blocks): mem100 1.19 / 1.22 / 1.26 (MI300X n 256/192/128), 1.16 / 1.18 / 1.21 (MI325X); arith100 1.03–1.06;
+  inactive 1.00; mem100/arith100 1.10–1.20, CIs far from 1.
+- Published: `results_published/amd_20261108_mi300x_goal_g5x_g5x_job507396/`,
+  `amd_20261109_mi325x_goal_g5x_g5x_job507397/`, smoke `amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394/`.
+  Results: addendum in `docs/amd/goal_followup_results_20261107.md`.

@@ -1,4 +1,4 @@
-# Chapter 06 — Goal follow-up G1–G8 (#29–#33) and overlap calibration OC0–OC7 (#34–#39)
+# Chapter 06 — Goal follow-up G1–G8 (#29–#33), overlap calibration OC0–OC7 (#34–#39), G5 on gfx942 (#40–#42)
 
 Two assignments ran at the same time on 2026-11-05 to 2026-11-07:
 
@@ -63,7 +63,7 @@ under the plan, was not retried.
 - **G3.** Board power does not change with the mask, so J/token follows step time.
 - **G4.** No physical-HBM counter is validated on any cohort.
 - **G5 (MI350X only).** A memory competitor costs the decoder 14–26 %; an arithmetic competitor costs ≤ 3 %. Isolation
-  failed on gfx942, so G5 was not released there.
+  failed on gfx942, so G5 was not released there (later run as #40–#42, observational).
 - **G6.** Sequential read per active CU saturates at 41 / 37 / 45 GB/s/CU at 96 CUs.
 - **G7 (MI300X).** FETCH_SIZE per token = 1.0016 × logical compulsory read (request side).
 - **G8.** REJECT (MAE 0.035; MI325X 96 error 0.133, MI300X 96 0.102, MI350X 96 0.066).
@@ -76,7 +76,7 @@ under the plan, was not retried.
 What limits sized decode is a cohort-specific per-CU delivery ceiling, not the advertised bandwidth per CU.
 
 **Failures and caveats.** Every timing is observational and clock-confounded (clock control is not authorized). On
-MI325X there are no G7 steps (eager pmc is unusable on its firmware). G5 is unavailable on gfx942.
+MI325X there are no G7 steps (eager pmc is unusable on its firmware). G5 was unavailable on gfx942 in these jobs; see #40–#42.
 
 **Files.** One folder per cohort above: `goal_tables.json`, `goal_summary.md`, `goal_status.json`, `model_inputs.json`,
 `counter_audit.json`, `isa_meta_gfx9xx.json`. The final judge is `docs/amd/goal/g8_judge_final.json`.
@@ -130,3 +130,43 @@ MI325X there are no G7 steps (eager pmc is unusable on its firmware). G5 is unav
 **Files.** Per cohort, in `results_published/amd_20261105_*_oc_v0_heldout_job*/`: `validation.json`,
 `transfer_qwen7b.json`, `observability.json`, `overlap_bounds.json`, `service_references.json`,
 `calibration_frozen.json`, `model_inputs.json`, `oc_status.json`.
+
+---
+
+## #40–#42 G5 extension on gfx942 (507394 smoke, 507396 MI300X, 507397 MI325X)
+
+**At a glance.**
+
+| Job | Partition | Wall | Steps | Folder |
+|---|---|---|---|---|
+| smoke 507394 | `mi3001x` | 19.5 min | 20 / 20 | `amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394` |
+| MI300X 507396 | `mi3008x` | 1 h 04 min | 360 / 360 | `amd_20261108_mi300x_goal_g5x_g5x_job507396` |
+| MI325X 507397 | `mi3258x` | 1 h 04 min | 360 / 360 | `amd_20261109_mi325x_goal_g5x_g5x_job507397` |
+
+**Question.** Owner order: run G5 on MI300X/MI325X. Can isolation be established there with a probe that controls for
+the decoder's kernel launch rate, and what does a competitor cost the tuned decoder?
+
+**Design.** Pre-registration `docs/amd/goal_g5x_plan_20261107.md`. Leak test v5 = the leak v4 suite plus two
+launch-storm negative controls on the decoder mask (`svc_bench_v8` `storm`, `storm_small`), at n = 256 and 128 on all
+8 GPUs. Then G5: 3 levels × 6 treatments × 8 blocks. G5 runs on placement; leak v5 sets only the disposition.
+
+**How it was run.** The smoke found a crash in `storm` mode (per-CU buffer not allocated). It was fixed and rebuilt,
+and the fix was recorded as a §5 amendment before the mains were released. The mains ran unchanged, without retries.
+
+**Results.**
+
+- Leak v5: storms run at 139–176 k kernels/s (decoder 39–44 k/s), positives are sensitive, OK 8 / 8 at n = 128 but 6 / 8
+  at n = 256 on each cohort → **leak_ok_v5 false**, G5 **observational: isolation not established**.
+- The n = 256 probe step (≈ 0.25, uniform) also appears with storms and with low-rate natives on other GPUs, so it is not
+  specific to launch rate.
+- G5: mem100 1.19–1.26 (MI300X), 1.16–1.21 (MI325X), rising as the decoder has fewer CUs; arith100 1.03–1.06; inactive
+  1.00. mem100 / arith100 = 1.10–1.20 at every level, CIs far from 1.
+
+**What it means.** The MI350X ordering (memory competition hurts, arithmetic competition barely does) holds on gfx942 as
+an observational result. The extra arithmetic cost on gfx942 (3–6 % vs ≤ 3 % on MI350X) cannot be assigned to the
+memory system or to shared CUs while isolation is not established.
+
+**Failures and caveats.** Clock-confounded like every timing. Isolation not established under the frozen rule.
+
+**Files.** Results: addendum in `docs/amd/goal_followup_results_20261107.md`. Per folder: `g5x_tables.json`,
+`g5x_summary.md`, `gates.json`, `launch_plan.json`, `cubw_tables.json`, `raw_SHA256SUMS`, `raw_root.txt`.

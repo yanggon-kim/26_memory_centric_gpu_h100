@@ -99,7 +99,8 @@ classification: `counter_audit.json` and `goal_summary.md` per folder.
 | arith100 | 1.006 | 1.031 | 1.029 |
 
 Ratios are decoder time vs the competitor-absent cell in the same block. A memory competitor slows the tuned decoder
-by up to 26 %; an arithmetic competitor costs at most 3 %. MI300X/MI325X: unavailable (isolation gate failed).
+by up to 26 %; an arithmetic competitor costs at most 3 %. MI300X/MI325X: not released in goal_v1 (isolation gate failed);
+run later as an extension, reported as observational (addendum 2026-11-09 below).
 
 ## G6 — dispatch / request-generation knee
 
@@ -154,14 +155,103 @@ the OC6 frozen model. Explicit unknowns:
 - physical HBM traffic;
 - component energy;
 - clock-controlled curves;
-- G5 on MI300X/MI325X.
+- G5 on MI300X/MI325X (at the time of writing; see the addendum: observational rows now exist).
 
 ## Remaining uncertainty and next actions
 
 - Clock qualification is impossible without authorization. Every G1/G2 effect is observational.
-- G5 on gfx942 needs an isolation probe that passes there (leak v4 fails on both gfx942 cohorts).
+- G5 on gfx942 needs an isolation probe that passes there (leak v4 fails on both gfx942 cohorts). Addendum 2026-11-09:
+  leak v5 also fails there; G5 rows are observational.
 - No physical HBM counter has been validated, so traffic claims stay at the request side.
 - Raw archive destination: still needed from the owner.
+
+## Addendum 2026-11-09 — G5 extension on MI300X and MI325X (leak test v5)
+
+Pre-registration: `docs/amd/goal_g5x_plan_20261107.md`, including the §5 amendment written after smoke 507394 and
+before the mains were released. Owner order: run G5 on MI300X/MI325X. G5 runs whenever placement passes; the isolation
+verdict sets the disposition of the rows, not whether they run.
+
+| Job | Partition | Wall | Steps completed | Published |
+|---|---|---|---|---|
+| smoke 507394 (pilot-labelled) | `mi3001x` | 19.5 min | 20 / 20 | `results_published/amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394/` |
+| MI300X 507396 | `mi3008x` | 1 h 04 min | 360 / 360 | `results_published/amd_20261108_mi300x_goal_g5x_g5x_job507396/` |
+| MI325X 507397 | `mi3258x` | 1 h 04 min | 360 / 360 | `results_published/amd_20261109_mi325x_goal_g5x_g5x_job507397/` |
+
+In each main, 232 steps returned rc 0. The other 128 are leak competitor/co-runner pairs, which are stopped by SIGTERM
+at the end of the window; every stopped process returned 0. Nothing was retried. The in-job `analyze_g5x.py report`
+ran without error; the published tables are its output, unchanged.
+
+### Gates
+
+| Gate | MI300X | MI325X |
+|---|---|---|
+| placement / lifecycle | pass / pass | pass / pass |
+| leak v4 (unchanged rule) | fail | fail |
+| leak v5 available (a storm at or above the decoder kernel rate) | yes: storm_lds 155–175 k/s, storm_small 139–157 k/s vs 39 k/s | yes: 167–176 k/s and 150–158 k/s vs 44 k/s |
+| leak v5 sensitive (every positive) | yes (min positive T8 0.42–0.62) | yes (0.41–0.55) |
+| leak v5 OK at n = 128 | 8 / 8 GPUs | 8 / 8 GPUs |
+| leak v5 OK at n = 256 | 6 / 8 (fail L2, L4) | 6 / 8 (fail L5, L6) |
+| **leak_ok_v5** | **false** | **false** |
+| **G5 disposition** | **observational: isolation not established** | **observational: isolation not established** |
+
+### What the probe showed at n = 256
+
+At n = 128 the decoder's probe excess equals the natives' on every GPU (decoder T8 ≤ 0.085, no flagged CU).
+
+At n = 256 the excess has the same form as in goal_v1: a uniform step, T8 = M ≈ 0.25 on most GPUs, with 12–32 probe
+CUs flagged. The positives (8 overlapping CUs) give 0.44–0.71. The non-overlapping natives on 0..255 show the same
+step on some GPUs but not on others, and which native shows it changes from GPU to GPU:
+
+| GPU | MI300X decoder | natives that reach ≥ 0.18 | MI325X decoder | natives that reach ≥ 0.18 |
+|---|---|---|---|---|
+| L0 | 0.251 | storm_small 0.250, storm_lds 0.208 | 0.222 | arith100 0.208 |
+| L1 | 0.041 | none | 0.250 | arith100 0.185, storm_small 0.186 |
+| L2 | 0.251 | none → **fail** | 0.250 | arith100 0.246, mem100 0.249 |
+| L3 | 0.251 | arith100 0.250 | 0.223 | mem100 0.222, storm_small 0.188 |
+| L4 | 0.250 | none (max 0.102) → **fail** | 0.150 | none needed (natives 0.138) |
+| L5 | 0.251 | storm_small 0.250, arith100 0.232 | 0.160 | none (max 0.000) → **fail** |
+| L6 | 0.131 | none needed (natives ≤ 0.096) | 0.251 | none (max 0.104) → **fail** |
+| L7 | 0.251 | storm_small 0.250, mem100 0.241 | 0.251 | mem100 0.250, arith100 0.217, storm_small 0.194 |
+
+Reading, against the plan's falsifiers:
+
+- A storm reproduces the decoder pattern (T8 ≥ 0.18) on 3 / 8 GPUs on each cohort. The low-rate natives (mem100,
+  arith100, a few long kernels per second) reproduce it too, on 3 / 8 MI300X and 5 / 8 MI325X GPUs. So the step is **not
+  specific to launch rate**. The dispatch-contention explanation in §1 of the plan is weakened, as its second falsifier
+  allows.
+- The step appears beside non-overlapping co-runners and does not have the positive (few CUs, large excess) form. This
+  fits a probe-level start offset that appears intermittently with any co-runner on 0..255, more than a decoder
+  workgroup on probe CUs. That reading is not a pre-registered test and does not change the verdict.
+- Under the frozen rule, isolation is **not established** on either cohort. The G5 rows below are observational with
+  respect to placement, and mem100 / arith100 is the contrast robust to shared-CU effects.
+
+### G5 results (Qwen2.5-32B graph B1/C4096, tuned decoder grid = n, competitor on CUs 256–303; 8 blocks, 95 % CI)
+
+Ratio = decoder time vs the competitor-absent cell in the same block. Competitor traffic in brackets.
+
+| Competitor | MI300X n = 256 | n = 192 | n = 128 | MI325X n = 256 | n = 192 | n = 128 |
+|---|---|---|---|---|---|---|
+| inactive | 1.000 | 1.002 | 1.002 | 0.999 | 1.000 | 1.000 |
+| mem25 | 1.044 (221 GB/s) | 1.046 (247) | 1.056 (281) | 1.029 (231) | 1.035 (271) | 1.042 (307) |
+| mem50 | 1.088 (432) | 1.099 (483) | 1.115 (540) | 1.065 (463) | 1.075 (525) | 1.088 (598) |
+| mem100 | 1.189 (864) | 1.219 (950) | 1.262 (1083) | 1.157 (954) | 1.179 (1073) | 1.211 (1232) |
+| arith100 | 1.058 | 1.056 | 1.056 | 1.055 | 1.045 | 1.034 |
+| **mem100 / arith100** | **1.123** [1.119, 1.127] | **1.154** [1.150, 1.158] | **1.195** [1.189, 1.201] | **1.097** [1.090, 1.104] | **1.128** [1.122, 1.134] | **1.172** [1.164, 1.179] |
+
+CIs on the single ratios are within ±0.01 (full intervals in `g5x_summary.md`).
+
+- The ordering found on MI350X holds on both gfx942 cohorts: a memory competitor costs the decoder 3–26 % and grows
+  with competitor traffic; an arithmetic competitor costs 3–6 %; a resident but idle competitor costs nothing.
+- The robust contrast mem100 / arith100 is 1.10–1.20 on every level and both cohorts, with CIs far from 1.
+- arith100 costs more on gfx942 (3.4–5.8 %) than on MI350X (0.6–3.1 %). Under isolation-not-established this extra
+  cost cannot be assigned to the memory system or to shared CUs.
+- On gfx942 the memory cost rises as the decoder has fewer CUs (MI300X mem100 1.19 → 1.26 from 256 to 128). On MI350X
+  it fell (1.26 → 1.14). The competitor also draws more bandwidth when the decoder has fewer CUs (864 → 1083 GB/s), so
+  this difference is confounded with competitor traffic.
+- Every timing is observational with respect to clock (controlled clocks not authorized).
+
+Disposition: G5 on MI300X and MI325X is **complete, observational (isolation not established under leak v5)**. The G8
+verdict and frozen predictions are unaffected.
 
 AMD acknowledgement for any publication: "This work was supported in part by Advanced Micro Devices, Inc. under the
 AMD University Program's AI & HPC Cluster".
