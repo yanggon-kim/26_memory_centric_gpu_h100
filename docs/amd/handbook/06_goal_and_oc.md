@@ -1,4 +1,4 @@
-# Chapter 06 — Goal follow-up G1–G8 (#29–#33), overlap calibration OC0–OC7 (#34–#39), G5 on gfx942 (#40–#42)
+# Chapter 06 — Goal follow-up G1–G8 (#29–#33), overlap calibration OC0–OC7 (#34–#39), G5 on gfx942 (#40–#45)
 
 Two assignments ran at the same time on 2026-11-05 to 2026-11-07:
 
@@ -63,7 +63,7 @@ under the plan, was not retried.
 - **G3.** Board power does not change with the mask, so J/token follows step time.
 - **G4.** No physical-HBM counter is validated on any cohort.
 - **G5 (MI350X only).** A memory competitor costs the decoder 14–26 %; an arithmetic competitor costs ≤ 3 %. Isolation
-  failed on gfx942, so G5 was not released there (later run as #40–#42, observational).
+  failed on gfx942, so G5 was not released there (later run as #40–#42, observational, and #43–#45, isolated).
 - **G6.** Sequential read per active CU saturates at 41 / 37 / 45 GB/s/CU at 96 CUs.
 - **G7 (MI300X).** FETCH_SIZE per token = 1.0016 × logical compulsory read (request side).
 - **G8.** REJECT (MAE 0.035; MI325X 96 error 0.133, MI300X 96 0.102, MI350X 96 0.066).
@@ -76,7 +76,7 @@ under the plan, was not retried.
 What limits sized decode is a cohort-specific per-CU delivery ceiling, not the advertised bandwidth per CU.
 
 **Failures and caveats.** Every timing is observational and clock-confounded (clock control is not authorized). On
-MI325X there are no G7 steps (eager pmc is unusable on its firmware). G5 was unavailable on gfx942 in these jobs; see #40–#42.
+MI325X there are no G7 steps (eager pmc is unusable on its firmware). G5 was unavailable on gfx942 in these jobs; see #40–#45.
 
 **Files.** One folder per cohort above: `goal_tables.json`, `goal_summary.md`, `goal_status.json`, `model_inputs.json`,
 `counter_audit.json`, `isa_meta_gfx9xx.json`. The final judge is `docs/amd/goal/g8_judge_final.json`.
@@ -167,6 +167,50 @@ an observational result. The extra arithmetic cost on gfx942 (3–6 % vs ≤ 3 %
 memory system or to shared CUs while isolation is not established.
 
 **Failures and caveats.** Clock-confounded like every timing. Isolation not established under the frozen rule.
+Superseded for disposition by #43–#45: the probe step came from the probe's own unbalanced shader-engine layout.
 
 **Files.** Results: addendum in `docs/amd/goal_followup_results_20261107.md`. Per folder: `g5x_tables.json`,
 `g5x_summary.md`, `gates.json`, `launch_plan.json`, `cubw_tables.json`, `raw_SHA256SUMS`, `raw_root.txt`.
+
+## #43–#45 G5 on gfx942 with leak test v6 (511190 smoke, 511191 MI300X, 511192 MI325X)
+
+**At a glance.**
+
+| Job | Partition | Wall | Steps | Folder |
+|---|---|---|---|---|
+| smoke 511190 | `mi3001x` | 44.5 min | 51 / 51 | `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190` |
+| MI300X 511191 | `mi3008x` | 1 h 20 min | 528 / 528 | `amd_20261110_mi300x_goal_g5y_g5y_job511191` |
+| MI325X 511192 | `mi3258x` | 1 h 19 min | 528 / 528 | `amd_20261111_mi325x_goal_g5y_g5y_job511192` |
+
+**Question.** Owner order: an isolation probe that behaves consistently on gfx942 at 256 CUs. With it, is G5 on
+MI300X/MI325X isolated?
+
+**Design.** Pre-registration `docs/amd/goal_g5y_plan_20261109.md`. Diagnosis from 507396: probe CUs 256–303 sit
+1,2,2,1 per shader engine on every XCD, and the dispatcher hands a launch's 6 workgroups per XCD to the engines from a
+rotating start, so some CUs get two probe workgroups and some none; a co-runner shifts the rotation (the ≈ 0.25 step).
+Leak v6 maps every probe index to its physical CU (8 indices per placement run, so no XCD mask is empty), builds two
+lists per level with k CUs on every engine (k = 1 / 3 / 5 at 256 / 192 / 128), proves each list by placement, and runs
+the probe alone, beside four natives, beside an 8-CU positive, and beside the decoder on each list. New validity check:
+alone, ≤ 2 % of launches may miss a CU or double it. G5 reruns as in #41–#42.
+
+**How it was run.** The smoke passed the three release checks (map, validity, no start failures); the mains were
+released unchanged. Every step ran on its first attempt.
+
+**Results.**
+
+- Probe alone: exactly one workgroup per CU in every launch, on all 96 lists over 16 GPUs (missing / multi 0.000).
+- Leak v6 OK on 48 / 48 per cohort: decoder T8 ≤ 0.005 with no flagged CU, natives ≤ 0.005, positives 0.39–0.72 →
+  **leak_ok_v6 true**, G5 **isolated (leak v6)**.
+- G5: mem100 1.19–1.26 (MI300X), 1.14–1.19 (MI325X); arith100 1.06 (MI300X), 1.02–1.03 (MI325X); inactive 1.00.
+  mem100 / arith100 = 1.11–1.19, CIs far from 1. MI300X repeats #41 within 0.005.
+
+**What it means.** The v4/v5 failures on gfx942 were a probe artefact. The masked tuned decoder does not reach the
+competitor's CUs, so the memory-vs-arithmetic gap on gfx942 is contention in the shared memory system, as on MI350X.
+arith100's remaining cost is not from shared CUs; clock or power interaction cannot be tested here.
+
+**Failures and caveats.** Clock-confounded like every timing. MI325X single ratios moved by 0.02–0.03 between #42 and
+#45 (the ratio of ratios by ≤ 0.015); runs are not pooled.
+
+**Files.** Results: addendum 2026-11-15 in `docs/amd/goal_followup_results_20261107.md`. Per folder: `g5y_tables.json`,
+`g5y_summary.md`, `cumap/`, `gates.json` (mains), `launch_plan.json`, `cubw_tables.json`, `raw_SHA256SUMS`,
+`raw_root.txt`.

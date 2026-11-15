@@ -161,7 +161,8 @@ the OC6 frozen model. Explicit unknowns:
 
 - Clock qualification is impossible without authorization. Every G1/G2 effect is observational.
 - G5 on gfx942 needs an isolation probe that passes there (leak v4 fails on both gfx942 cohorts). Addendum 2026-11-09:
-  leak v5 also fails there; G5 rows are observational.
+  leak v5 also fails there; G5 rows are observational. Addendum 2026-11-15: leak v6 (shader-engine-balanced probe)
+  passes on both cohorts and G5 on gfx942 is isolated.
 - No physical HBM counter has been validated, so traffic claims stay at the request side.
 - Raw archive destination: still needed from the owner.
 
@@ -252,6 +253,89 @@ CIs on the single ratios are within ±0.01 (full intervals in `g5x_summary.md`).
 
 Disposition: G5 on MI300X and MI325X is **complete, observational (isolation not established under leak v5)**. The G8
 verdict and frozen predictions are unaffected.
+
+AMD acknowledgement for any publication: "This work was supported in part by Advanced Micro Devices, Inc. under the
+AMD University Program's AI & HPC Cluster".
+
+## Addendum 2026-11-15 — G5 on gfx942 with leak test v6 (shader-engine-balanced probe)
+
+Pre-registration: `docs/amd/goal_g5y_plan_20261109.md` (commit 83a01dbc, before any data). Owner order (2026-11-09):
+an isolation probe that behaves consistently on gfx942 at 256 CUs. No amendment was needed; the smoke was reviewed
+against the plan's §4 release rule and the mains were released unchanged. These are new runs, not pooled with
+507396/507397.
+
+| Job | Partition | Wall | Steps completed | Published |
+|---|---|---|---|---|
+| smoke 511190 (pilot-labelled) | `mi3001x` | 44.5 min | 51 / 51 | `results_published/amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190/` |
+| MI300X 511191 | `mi3008x` | 1 h 20 min | 528 / 528 | `results_published/amd_20261110_mi300x_goal_g5y_g5y_job511191/` |
+| MI325X 511192 | `mi3258x` | 1 h 19 min | 528 / 528 | `results_published/amd_20261111_mi325x_goal_g5y_g5y_job511192/` |
+
+Every step ran on its first attempt with rc 0; no mask was unresolved and no step timed out. The published tables are
+the in-job `analyze_g5y.py report` output, unchanged. Each folder also holds `cumap/<lane>.json` (CU map, balanced lists
+and their placement proofs).
+
+**Smoke review (§4).** map_ok; at 256 / 192 / 128 the probe range has 1,2,2,1 / 3,4,4,3 / 5,6,6,5 CUs per shader engine
+on every XCD, so k = 1 / 3 / 5 and the lists hold 32 / 96 / 160 CUs; both lists proven by placement at every level;
+the probe alone was valid on all six lists (missing 0.000, multi 0.000); no start failures. Mains released 2026-11-09.
+
+### Gates
+
+| Gate | MI300X | MI325X |
+|---|---|---|
+| placement / lifecycle | pass / pass | pass / pass |
+| CU map, both lists proven at every level | 8 / 8 GPUs | 8 / 8 GPUs |
+| leak v6 valid (probe alone: missing / multi) | 48 / 48 lists (0.000 / 0.000 on every one) | 48 / 48 (0.000 / 0.000) |
+| leak v6 sensitive (positive T8) | 48 / 48 (0.39–0.67, ≥ 8 flags each) | 48 / 48 (0.50–0.72, ≥ 8 flags each) |
+| max native T8 (mem100, arith100, storm_lds, storm_small) | 0.005 | 0.002 |
+| decoder T8 / max M / flagged CUs | 0.001–0.002 / 0.002 / 0 | −0.001–0.005 / 0.005 / 0 |
+| lowest T8 threshold (midpoint) | 0.195 | 0.250 |
+| **leak_ok_v6** (all levels) | **true** | **true** |
+| **G5 disposition** | **isolated (leak v6)** | **isolated (leak v6)** |
+
+Storms ran at 139–176 k kernels/s (MI300X) and 148–177 k/s (MI325X), against decoder rates of 39 and 44 k/s.
+
+Reading, against the plan's falsifiers:
+
+- The balance diagnosis holds: on balanced lists the probe alone puts exactly one workgroup on each CU in every launch,
+  on all 16 GPUs. The ≈ 0.25 step of v4/v5 does not appear beside any co-runner, decoder included. It came from the
+  probe's unbalanced shader-engine layout, not from the decoder.
+- The decoder's excess on probe CUs equals the natives' (≤ 0.005) while an 8-CU overlap gives 0.39–0.72. The tuned
+  decoder masked to 0..n−1 does not reach CUs n..303 at any level on either cohort.
+- clock_ok is false as in every earlier gfx942 job; timings stay observational with respect to clock.
+
+### G5 results (Qwen2.5-32B graph B1/C4096, tuned decoder grid = n, competitor on CUs 256–303; 8 blocks, 95 % CI)
+
+Ratio = decoder time vs the competitor-absent cell in the same block. Competitor traffic in brackets.
+
+| Competitor | MI300X n = 256 | n = 192 | n = 128 | MI325X n = 256 | n = 192 | n = 128 |
+|---|---|---|---|---|---|---|
+| inactive | 0.999 | 0.999 | 1.001 | 1.000 | 0.999 | 1.000 |
+| mem25 | 1.043 (221 GB/s) | 1.045 (252) | 1.053 (281) | 1.031 (231) | 1.032 (271) | 1.042 (303) |
+| mem50 | 1.088 (433) | 1.099 (482) | 1.115 (541) | 1.061 (462) | 1.070 (523) | 1.084 (602) |
+| mem100 | 1.189 (860) | 1.218 (952) | 1.258 (1090) | 1.142 (955) | 1.157 (1072) | 1.194 (1222) |
+| arith100 | 1.058 | 1.056 | 1.056 | 1.027 | 1.016 | 1.016 |
+| **mem100 / arith100** | **1.124** [1.121, 1.127] | **1.153** [1.151, 1.155] | **1.192** [1.187, 1.195] | **1.112** [1.107, 1.117] | **1.138** [1.131, 1.144] | **1.176** [1.172, 1.179] |
+
+CIs on the single ratios are within ±0.01 except MI325X n = 256 mem100 [1.133, 1.153] and arith100 [1.017, 1.037]
+(full intervals in `g5y_summary.md`).
+
+- With isolation established, the MI350X ordering holds on gfx942 as a placement-isolated result: a memory competitor
+  on CUs the decoder does not use costs it 3–26 %, rising with competitor traffic; an arithmetic competitor costs
+  1.6–5.8 %; a resident idle competitor costs nothing.
+- mem100 / arith100 = 1.11–1.19 at every level on both cohorts, CIs far from 1. Because the decoder does not share CUs
+  with the competitor, this contention goes through the shared memory system (HBM, MALL, fabric), as C13 found on the
+  other cohorts.
+- arith100's remaining cost (MI300X 5.6–5.8 %, MI325X 1.6–2.7 %) is now not from shared CUs. It may come from clock or
+  power interaction, which this cluster cannot control, so it is not assigned further.
+- Separate-run comparison (not pooled): MI300X reproduces goal_g5x within 0.005 on every mem and arith ratio. On MI325X
+  this run's mem100 (1.14–1.19) and arith100 (1.02–1.03) are lower than 507397's (1.16–1.21, 1.03–1.06), while
+  mem100 / arith100 agrees within 0.015. Run-to-run variation of single ratios on MI325X is therefore about 0.02–0.03.
+- The rise of memory cost as the decoder has fewer CUs (opposite to MI350X) repeats, again with competitor traffic
+  rising too (860 → 1090 GB/s on MI300X), so it stays confounded with traffic.
+
+Disposition: G5 on MI300X and MI325X is **complete and isolated (leak v6)**, observational with respect to clock. It
+supersedes the 2026-11-09 disposition (observational: isolation not established); the 507396/507397 results are not
+edited. The G8 verdict and frozen predictions are unaffected.
 
 AMD acknowledgement for any publication: "This work was supported in part by Advanced Micro Devices, Inc. under the
 AMD University Program's AI & HPC Cluster".

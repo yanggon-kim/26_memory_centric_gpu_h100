@@ -1,13 +1,13 @@
 # AMD experiment handbook — start here
 
-**Status 2026-11-09:** G1–G8 (all three cohorts), OC0–OC7 (MI300X, MI350X) and the G5 extension on MI300X/MI325X (#40–#42, observational) are complete; see [06_goal_and_oc.md](06_goal_and_oc.md), `../goal_followup_results_20261107.md` (with its 2026-11-09 addendum) and `../overlap_calibration_results_20261107.md`. Nothing is queued.
+**Status 2026-11-15:** G1–G8 (all three cohorts), OC0–OC7 (MI300X, MI350X) and G5 on MI300X/MI325X (#40–#42 observational; #43–#45 isolated with leak v6) are complete; see [06_goal_and_oc.md](06_goal_and_oc.md), `../goal_followup_results_20261107.md` (with its 2026-11-09 and 2026-11-15 addenda) and `../overlap_calibration_results_20261107.md`. Nothing is queued.
 
 **Latest additive assignment:** the owner reports G1–G8 running and adds [OC0–OC7 activity/service calibration](../overlap_calibration_followup_20261105.md). Read it at the next safe coordination point, preserve current jobs/releases and frozen tests, and reuse existing evidence before new acquisitions. The historical read-only checkpoint in the earlier notice below does not revoke an execution order already given.
 
 **Next assignment (prepared 2026-11-05):** read [goal-based follow-up G1–G8](../goal_based_followup_20261105.md) for the next research goals and delivery contract. Pulling/reading does not authorize execution; the owner will order the experiments separately. This handbook describes the historical evidence below and adds no measurements for that next assignment.
 
 This handbook explains every AMD experiment on branch `amd/mi300x-phase0`, from the first MI300X campaign
-(2026-10-18) to the G1–G8 and OC0–OC7 assignments and the G5 extension (2026-11-09). It covers 42 experiments, numbered #1–#42 in the
+(2026-10-18) to the G1–G8 and OC0–OC7 assignments and the G5 extension (2026-11-15). It covers 45 experiments, numbered #1–#45 in the
 order they happened.
 
 The existing review documents in `docs/amd/` are short and assume you already know the story. This handbook
@@ -32,7 +32,7 @@ handbook says "not recorded".
 | [03_mi350x.md](03_mi350x.md) | #21–#24 | MI350X port (v1.4), MI350X campaign, shader-engine follow-up (v1.5) |
 | [04_v16_followups.md](04_v16_followups.md) | #25–#28 | v1.6: leak test v4 + E3 on MI350X; shader-engine study on MI300X |
 | [05_minor_checks.md](05_minor_checks.md) | #4, #10, #16, #19, #20 | failed attempts, MI210 smoke tests, the MI350X toy job, failed MI350X smokes |
-| [06_goal_and_oc.md](06_goal_and_oc.md) | #29–#42 | goal follow-up G1–G8 on all three cohorts; overlap calibration OC0–OC7 on MI300X/MI350X; G5 extension on MI300X/MI325X |
+| [06_goal_and_oc.md](06_goal_and_oc.md) | #29–#45 | goal follow-up G1–G8 on all three cohorts; overlap calibration OC0–OC7 on MI300X/MI350X; G5 extension on MI300X/MI325X (leak v5, leak v6) |
 
 Each chapter uses the same headings for every experiment: at a glance, question, design, how it was run, what
 was measured, results, what it means, failures and caveats, files.
@@ -413,11 +413,14 @@ Paths: methodology and results docs are in `docs/amd/` unless they start with `d
 | 40 | G5 extension smoke (507394) | 1× MI300X, `mi3001x` | 2026-11-07 | leak v5 storms run; pilot G5 | 06 | `goal_g5x_plan_20261107.md` | same §5 | `amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394` |
 | 41 | G5 extension MI300X (507396) | 8× MI300X, `mi3008x` | 2026-11-08 | leak v5, then G5 | 06 | same | `goal_followup_results_20261107.md` addendum | `amd_20261108_mi300x_goal_g5x_g5x_job507396` |
 | 42 | G5 extension MI325X (507397) | 8× MI325X, `mi3258x` | 2026-11-09 | leak v5, then G5 | 06 | same | same | `amd_20261109_mi325x_goal_g5x_g5x_job507397` |
+| 43 | G5 leak v6 smoke (511190) | 1× MI300X, `mi3001x` | 2026-11-09 | CU map, balanced lists, leak v6; pilot G5 | 06 | `goal_g5y_plan_20261109.md` | `goal_followup_results_20261107.md` addendum 2026-11-15 | `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190` |
+| 44 | G5 leak v6 MI300X (511191) | 8× MI300X, `mi3008x` | 2026-11-10 | leak v6, then G5 | 06 | same | same | `amd_20261110_mi300x_goal_g5y_g5y_job511191` |
+| 45 | G5 leak v6 MI325X (511192) | 8× MI325X, `mi3258x` | 2026-11-11 | leak v6, then G5 | 06 | same | same | `amd_20261111_mi325x_goal_g5y_g5y_job511192` |
 
 Cross-job reports: `interim_synthesis_20261028.md` (cross-run reading of #1–#8),
 `compute_bandwidth_followup_results_20261101.md` (cubw results v1: #8–#14) and
 `compute_bandwidth_followup_results_20261103.md` (v2: adds #17, #18, #22, with revision notes up to #28),
-`goal_followup_results_20261107.md` (#29–#33, addendum #40–#42) and `overlap_calibration_results_20261105.md` / `…_20261107.md` (#34–#39).
+`goal_followup_results_20261107.md` (#29–#33, addenda #40–#42 and #43–#45) and `overlap_calibration_results_20261105.md` / `…_20261107.md` (#34–#39).
 
 ## 7. What we know now
 
@@ -449,7 +452,8 @@ None is a qualified noninferiority result. Each claim names its cohort; cohorts 
 | C19 | Decode projection compute is hidden under memory on every traced CU: ATT shows 94–100 % of MFMA time overlapping an outstanding load. Issued MFMA per wvSplitK call = 4·m·⌈k/1024⌉. The fitted overlap η is not identifiable from timings. | MI300X, MI350X | 502623–502899 | `overlap_calibration_results_20261105.md` |
 | C20 | Neither frozen OC6 timing model (M1, M6) passes held-out acceptance; the matched streaming-read reference is the weak term. | MI300X, MI350X | 502898, 502899 | same |
 | C21 | Masking CUs does not lower board power (P ratio 0.99–1.00); J/token follows step time. Serving at reduced CUs costs 12–28 % J/token because prefill slows. | all three | 502425–502427 | `goal_followup_results_20261107.md` G2, G3 |
-| C22 | On gfx942 too, a memory competitor slows the tuned decoder far more than an arithmetic one: mem100 1.16–1.26, arith100 1.03–1.06, mem100/arith100 1.10–1.20. **Observational**: leak v5 did not establish isolation (fails at n = 256 on 2 of 8 GPUs per cohort; the probe step also appears beside non-overlapping natives). | MI300X, MI325X | 507396, 507397 | `goal_followup_results_20261107.md` addendum 2026-11-09 |
+| C22 | (Disposition superseded by C23.) On gfx942 too, a memory competitor slows the tuned decoder far more than an arithmetic one: mem100 1.16–1.26, arith100 1.03–1.06, mem100/arith100 1.10–1.20. **Observational**: leak v5 did not establish isolation (fails at n = 256 on 2 of 8 GPUs per cohort; the probe step also appears beside non-overlapping natives). | MI300X, MI325X | 507396, 507397 | `goal_followup_results_20261107.md` addendum 2026-11-09 |
+| C23 | **G5 on gfx942 is isolated** with leak v6 (shader-engine-balanced probe): the v4/v5 ≈ 0.25 step was the probe's 1,2,2,1 shader-engine layout under rotating dispatch. The masked decoder does not reach CUs n..303 (T8 ≤ 0.005 vs positives 0.39–0.72, 48/48 per cohort). G5: mem100 1.14–1.26, arith100 1.02–1.06, mem100/arith100 1.11–1.19 — memory-system contention, as C13. | MI300X, MI325X | 511191, 511192 | `goal_followup_results_20261107.md` addendum 2026-11-15 |
 
 ### 7.2 Revisions over time
 
@@ -472,7 +476,7 @@ None is a qualified noninferiority result. Each claim names its cohort; cohorts 
 | **Clock qualification** | Any noninferiority claim needs a run that passes the pooled clock gate (≤ 1.05). Clock and power changes are not authorized, so this is unavailable. Every result stays observational. | results v2 §5; `mi300x_se_review_20261105.md` §4 |
 | **Off-cluster raw archive** | Raw data lives only in `$WORK` (not backed up) and `<repo>/results/`. A checksum readback was done; the off-cluster destination has not been named by the owner. | results v2 §5; `cubw_extension_plan_20261101.md` |
 | **MI325X balanced sizing** | Resolved by 502426: sized decode R ≤ 1.005 down to 128 CUs (G1). The 492957 "resizing slower" result is revised. | `goal_followup_results_20261107.md` G1 |
-| **G5 on gfx942** | Run as #41–#42 (observational). Leak v5 (launch-storm controls) did not establish isolation at n = 256; the ≈ 0.25 probe step appears intermittently beside any co-runner on 0..255, so a probe that is stable on gfx942 at that level is still missing. | `goal_followup_results_20261107.md` addendum 2026-11-09 |
+| **G5 on gfx942** | Resolved by #44–#45: leak v6 (shader-engine-balanced probe lists) passes 48/48 per cohort and G5 is isolated. #41–#42 stay as published (observational). | `goal_followup_results_20261107.md` addendum 2026-11-15 |
 | **Revised CU-restriction model** | G8 rejected; a per-CU delivery-ceiling model is a hypothesis, not yet pre-registered or tested. | same, G8 |
 | **Leak v4 on-node spread** | On the 8-GPU node (499332) each positive control flagged the 8 shared CUs plus about 17 unshared ones (late starts > 5 µs in ~67% of launches); on the one-GPU slice (499331) only the 8. A likely cause is in-order dispatch; why it shows only on the 8-GPU node is not known. It changes no verdict. | `mi350x_leak4_review_20261104.md` §2 |
 | Missing generator scripts | 497082's `hse_judgment.json` and `e6_inflight.json` were computed by ad-hoc CPU scripts that were not saved; their inputs are published, so they can be recomputed. 499334's `hse_judgment.json` is reproducible with `scripts/amd/cubw/judge_se_mi300x.py`. `e6_kernels_*.json` come from `e6_kernels.py`. | `03_mi350x.md`; `04_v16_followups.md` |

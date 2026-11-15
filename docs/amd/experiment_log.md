@@ -448,3 +448,23 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Published: `results_published/amd_20261108_mi300x_goal_g5x_g5x_job507396/`,
   `amd_20261109_mi325x_goal_g5x_g5x_job507397/`, smoke `amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394/`.
   Results: addendum in `docs/amd/goal_followup_results_20261107.md`.
+
+## 2026-11-09 — G5 on gfx942 with leak test v6: pre-registration and smoke 511190
+
+- Diagnosis from 507396: probe 256–303 has 1,2,2,1 CUs per shader engine on every XCD; rotating shader-engine dispatch
+  gives 2 or 0 probe workgroups on some CUs, and a co-runner shifts the phase (the ≈ 0.25 step).
+- Plan `docs/amd/goal_g5y_plan_20261109.md` (commit 83a01dbc): CU map (`scripts/amd/goal/cumap.py`), two
+  shader-engine-balanced probe lists per level, leak v6 rule with a validity check; G5 rerun on placement.
+- Smoke 511190 (mi3001x, 51/51, 44.5 min, pilot): map_ok, k = 1/3/5 at 256/192/128, both lists proven, probe alone
+  valid (0.000 / 0.000) everywhere, no start failures → mains 511191/511192 released unchanged.
+
+## 2026-11-15 — G5 leak v6 mains MI300X (511191) and MI325X (511192) analysed
+
+- 528/528 steps each, first attempt, rc 0; 1 h 20 min / 1 h 19 min.
+- Leak v6 valid, sensitive and OK on 48/48 GPU × level × list per cohort: decoder T8 ≤ 0.005, natives ≤ 0.005,
+  positives 0.39–0.72 → leak_ok_v6 true → G5 **isolated (leak v6)** on both cohorts.
+- G5 (8 blocks): mem100 1.19 / 1.22 / 1.26 (MI300X n 256/192/128), 1.14 / 1.16 / 1.19 (MI325X); arith100 1.06 (MI300X),
+  1.02–1.03 (MI325X); inactive 1.00; mem100/arith100 1.11–1.19. MI300X repeats 507396 within 0.005.
+- Published: `results_published/amd_20261110_mi300x_goal_g5y_g5y_job511191/`,
+  `amd_20261111_mi325x_goal_g5y_g5y_job511192/`, smoke `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190/`.
+  Results: addendum 2026-11-15 in `docs/amd/goal_followup_results_20261107.md`.
