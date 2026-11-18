@@ -234,7 +234,8 @@ def s3(cohort, params):
         deps = {'single': ['--deployment', 'single', '--rates', ','.join(f'{x * L2 / 2:.3g}' for x in GRID)],
                 'colo_stock': ['--deployment', 'colocated', '--rates', rs],
                 'colo_tuned': ['--deployment', 'colocated', '--rates', rs, '--policy', best['policy'], '--budget', best['budget']]
-                + (['--cus', best['cus'], '--grid', best['grid']] if best.get('cus') else []),
+                + (['--cus', best['cus'], '--grid', best['grid']] if best.get('cus') else [])
+                + (['--no-chunk'] if best.get('whole') else []),
                 'disagg_full': ['--deployment', 'disagg', '--rates', rs],
                 'disagg_r128': ['--deployment', 'disagg', '--rates', rs, '--decode-cus', c['low'], '--decode-grid', c['low']]}
         for dn, extra in deps.items():

@@ -51,12 +51,13 @@ def mask_range(n):
 
 def server_cmd(a, cfg, port, role=None):
     s = C.engine_settings(cfg, dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=a.max_seqs,
-                                    max_model_len=a.max_model_len, gpu_memory_utilization=a.gpu_mem))
+                                    max_model_len=min(a.max_model_len, a.budget) if a.no_chunk else a.max_model_len,
+                                    gpu_memory_utilization=a.gpu_mem))
     cmd = [sys.executable, '-m', 'vllm.entrypoints.cli.main', 'serve', s['model'], '--port', str(port), '--host', '127.0.0.1',
            '--dtype', 'bfloat16', '--seed', str(s['seed']), '--generation-config', 'vllm', '--max-model-len', str(s['max_model_len']),
            '--max-num-seqs', str(s['max_num_seqs']), '--max-num-batched-tokens', str(s['max_num_batched_tokens']),
            '--gpu-memory-utilization', str(s['gpu_memory_utilization']), '--no-enable-prefix-caching',
-           '--enable-chunked-prefill', '--scheduler-cls', 'cp_sched.PolicyScheduler', '--served-model-name', 'm',
+           '--no-enable-chunked-prefill' if a.no_chunk else '--enable-chunked-prefill', '--scheduler-cls', 'cp_sched.PolicyScheduler', '--served-model-name', 'm',
            '--disable-uvicorn-access-log', '--tensor-parallel-size', '1', '--no-async-scheduling',
            '--compilation-config', json.dumps(C.COMPILATION)]
     if role:
@@ -322,6 +323,7 @@ if __name__ == '__main__':
     p.add_argument('--deployment', choices=('single', 'colocated', 'disagg'), required=True)
     p.add_argument('--policy', choices=('mixed', 'separate'), default='mixed')
     p.add_argument('--budget', type=int, default=2048)
+    p.add_argument('--no-chunk', action='store_true', help='whole prompts only (chunked prefill off)')
     p.add_argument('--workload', choices=sorted(T.WORKLOADS), required=True)
     p.add_argument('--arrivals', type=lambda v: v.split(','), default=['poisson'])
     p.add_argument('--rates', type=floats, required=True)

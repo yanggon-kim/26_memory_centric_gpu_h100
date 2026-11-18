@@ -224,3 +224,13 @@ rules are unchanged. Experiment-3 serving rate: 0.25 req/s (cold 8448-token prom
 first token at every decode width tested (Qwen2.5-32B full, S = 8192: N = 32 decode step 48 ms; +16 tokens 51 ms; +256
 tokens 80 ms; +2048 tokens 352 ms; the same 2048 tokens alone take 418 ms). The 5 % headroom is therefore 0 or 16
 tokens everywhere; experiment 1 reports the curves and the attribution.
+
+## 12. Tuning-selection details (2026-11-18, before any stage-2 data)
+
+`cp_analyze.py select`: per (workload, allocation ∈ {full, 128-tuned}, family ∈ {whole-separate, chunked-separate,
+mixed}) the tuned budget is chosen on development seed 101, Poisson (the only development trace every candidate has:
+the B = 2048 configurations of the common-budget stage ran seed 101 only); sustainable rate = the highest grid rate such
+that every trace at that and lower rates has attainment ≥ 0.9 and no incomplete request; ties → mean goodput at the top
+grid rate over the available development seeds → smaller budget. The best colocated configuration for experiment 5 is
+the family/budget/allocation with the highest sustainable rate per GPU on the same development data (ties → full
+allocation). Held-out judging uses seeds 201–203 only.

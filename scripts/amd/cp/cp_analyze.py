@@ -455,6 +455,58 @@ def serve_cmd(a):
     print(f'serve rows {len(rows)} -> {out}')
 
 
+# ---------------------------------------------------------------- tuning selection (design sections 4 and 12)
+FAMILY = {'whole': 'whole', 'sep2048': 'separate', 'mix2048': 'mixed', 'mix256': 'mixed', 'mix512': 'mixed', 'mix1024': 'mixed',
+          'mix4096': 'mixed', 'sep512': 'separate', 'sep4096': 'separate'}
+
+
+def sustainable(rows):
+    """Highest rate r such that every trace at rates <= r has attainment >= 0.9 and no incomplete request."""
+    best = 0.0
+    for rate in sorted({r['rate'] for r in rows}):
+        rs = [r for r in rows if r['rate'] == rate]
+        if all(r.get('attainment', 0) >= 0.9 and r['incomplete'] == 0 for r in rs):
+            best = rate
+        else:
+            break
+    return best
+
+
+def select(a):
+    rows = json.loads(Path(a.serve).read_text())
+    s1p = json.loads(Path(a.params).read_text())
+    dev = [r for r in rows if r.get('status') == 'complete' and r['experiment'] in ('e2c', 'e2t') and r['model'] == 'q32'
+           and r['arrival'] == 'poisson']
+    out = {'lambda_star': s1p['lambda_star'], 'tuned': {}, 'best_colocated': {}, 'selection': {}}
+    for wl in ('dheavy', 'balanced', 'pheavy'):
+        cand = []
+        for alloc in ('full', '128t'):
+            for fam in ('whole', 'separate', 'mixed'):
+                opts = []
+                for pn in sorted({r['pname'] for r in dev if r['workload'] == wl and r['alloc'] == alloc and FAMILY[r['pname']] == fam}):
+                    rs = [r for r in dev if r['workload'] == wl and r['alloc'] == alloc and r['pname'] == pn]
+                    s101 = [r for r in rs if r['seed'] == 101]
+                    sus = sustainable(s101)
+                    rates = sorted({r['rate'] for r in rs})
+                    hi = [r for r in rs if r['rate'] == rates[-1]]
+                    gp = st.mean(r.get('goodput_rps') or 0 for r in hi) if hi else 0
+                    opts.append({'pname': pn, 'budget': rs[0]['budget'], 'sustainable_rps': sus, 'goodput_at_top_rate': gp,
+                                 'seeds': sorted({r['seed'] for r in rs})})
+                if not opts:
+                    continue
+                opts.sort(key=lambda o: (-o['sustainable_rps'], -o['goodput_at_top_rate'], o['budget']))
+                out['tuned'][f'q32_{wl}_{alloc}_{fam}'] = opts[0]['pname']
+                out['selection'][f'q32_{wl}_{alloc}_{fam}'] = opts
+                cand.append((opts[0], fam, alloc))
+        b = sorted(cand, key=lambda x: (-x[0]['sustainable_rps'], -x[0]['goodput_at_top_rate'], x[2] != 'full'))[0]
+        pol = {'whole': 'separate', 'separate': 'separate', 'mixed': 'mixed'}[b[1]]
+        out['best_colocated'][wl] = {'policy': pol, 'budget': b[0]['budget'], 'whole': b[1] == 'whole', 'alloc': b[2],
+                                     'pname': b[0]['pname'], 'cus': None if b[2] == 'full' else 128,
+                                     'grid': None if b[2] == 'full' else 128}
+    Path(a.out).write_text(json.dumps(out, indent=1) + '\n')
+    print(json.dumps({'tuned': out['tuned'], 'best_colocated': out['best_colocated']}, indent=1))
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = q.add_subparsers(dest='cmd', required=True)
@@ -466,5 +518,9 @@ if __name__ == '__main__':
         r.add_argument('--root', required=True)
         r.add_argument('--slo', required=True)
         r.add_argument('--out')
+    r = s.add_parser('select')
+    r.add_argument('--serve', required=True)
+    r.add_argument('--params', required=True)
+    r.add_argument('--out', required=True)
     a = q.parse_args()
-    {'s1': s1, 'serve': serve_cmd, 'disagg': disagg}[a.cmd](a)
+    {'s1': s1, 'serve': serve_cmd, 'disagg': disagg, 'select': select}[a.cmd](a)
