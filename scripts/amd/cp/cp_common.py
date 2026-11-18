@@ -17,6 +17,12 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[1]))  # scripts/
 from software_decode_experiments import Sensor, digest, dump  # noqa: E402,F401
 
+# CUDA/HIP graph policy common to every engine of the campaign: vLLM's own capture-size pattern (1, 2, 4, then every 8
+# up to 256, then every 16) up to 512 tokens, the limit stock `vllm serve` uses at its default max_num_seqs. vLLM would
+# otherwise derive the limit from max_num_seqs (2 x max_num_seqs), so it would differ between harness settings. Mixed
+# iterations above 512 tokens run eagerly in stock serving and here (recorded per step as graph path). Dev run 2026-11-18:
+# a custom list up to 2048 padded a 1032-token step to 1280 and made it slower than eager (43.8 vs 35.7 ms, Qwen2.5-7B).
+COMPILATION = {'max_cudagraph_capture_size': 512}
 ENGINE_KEYS = ('max_model_len', 'max_num_seqs', 'max_num_batched_tokens', 'gpu_memory_utilization',
                'enable_chunked_prefill', 'enable_prefix_caching', 'long_prefill_token_threshold', 'enforce_eager')
 
@@ -61,6 +67,7 @@ def build(cfg, over, policy, steplog):
     import vllm
     from cp_sched import PolicyScheduler
     s = engine_settings(cfg, over)
+    s['compilation_config'] = dict(COMPILATION)
     llm = vllm.LLM(scheduler_cls=PolicyScheduler, **s)
     engine = llm.llm_engine
     sched = engine.engine_core.engine_core.scheduler

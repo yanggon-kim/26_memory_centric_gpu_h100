@@ -87,7 +87,7 @@ def main(a):
     torch.cuda.empty_cache()
     ctx = mp.get_context('spawn')
     q = ctx.Queue()
-    ps = [ctx.Process(target=rccl_worker, args=(r, [nb for _, nb in sizes], lay['layers'], 29531, q)) for r in range(2)]
+    ps = [ctx.Process(target=rccl_worker, args=(r, [nb for _, nb in sizes], lay['layers'], 29531 + int(os.environ.get("HIP_VISIBLE_DEVICES", "0").split(",")[0]), q)) for r in range(2)]
     for p in ps:
         p.start()
     res = q.get(timeout=900)

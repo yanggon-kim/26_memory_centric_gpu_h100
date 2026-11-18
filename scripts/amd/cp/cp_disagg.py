@@ -41,8 +41,8 @@ import cp_common as C  # noqa: E402
 import cp_trace as T  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
-HTTP = (18101, 18102)
-KV_PORT = (21101, 22101)
+HTTP = [18101, 18102]  # offset per lane by 10 x first GPU index (concurrent lanes on one node, set in main)
+KV_PORT = [21101, 22101]
 
 
 def mask_range(n):
@@ -57,10 +57,11 @@ def server_cmd(a, cfg, port, role=None):
            '--max-num-seqs', str(s['max_num_seqs']), '--max-num-batched-tokens', str(s['max_num_batched_tokens']),
            '--gpu-memory-utilization', str(s['gpu_memory_utilization']), '--no-enable-prefix-caching',
            '--enable-chunked-prefill', '--scheduler-cls', 'cp_sched.PolicyScheduler', '--served-model-name', 'm',
-           '--disable-uvicorn-access-log', '--tensor-parallel-size', '1']
+           '--disable-uvicorn-access-log', '--tensor-parallel-size', '1', '--no-async-scheduling',
+           '--compilation-config', json.dumps(C.COMPILATION)]
     if role:
         kv = {'kv_connector': 'P2pNcclConnector', 'kv_role': role, 'kv_port': str(KV_PORT[0] if role == 'kv_producer' else KV_PORT[1]),
-              'kv_ip': '127.0.0.1', 'kv_buffer_size': '1e1' if role == 'kv_producer' else '8e9',
+              'kv_buffer_size': '1e1' if role == 'kv_producer' else '8e9',
               'kv_connector_extra_config': {'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16', 'http_port': str(port)}}
         cmd += ['--kv-transfer-config', json.dumps(kv)]
     return cmd
@@ -68,14 +69,19 @@ def server_cmd(a, cfg, port, role=None):
 
 def start_servers(a, cfg, out, uuids, idx):
     procs = []
-    env0 = dict(os.environ, PYTHONPATH=f"{REPO / 'scripts'}:{REPO / 'scripts/amd/cp'}", CP_POLICY=a.policy,
+    env0 = dict(os.environ, PYTHONPATH=f"{REPO / 'scripts'}:{REPO / 'scripts/amd/cp'}", CP_POLICY=a.policy, CP_P2P_CUMEM='0',
                 VLLM_NO_USAGE_STATS='1', HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1')
     env0.pop('VLLM_ENABLE_V1_MULTIPROCESSING', None)
     env0.pop('HSA_CU_MASK', None)
     env0.pop('CUBW_CU_COUNT_OVERRIDE', None)
     plan = {'single': [(0, None)], 'colocated': [(0, None), (1, None)], 'disagg': [(0, 'kv_producer'), (1, 'kv_consumer')]}[a.deployment]
     for k, role in plan:
-        env = dict(env0, HIP_VISIBLE_DEVICES=str(idx[k]), CP_STEPLOG=str(out / f'steplog_w{k}.jsonl'))
+        # disagg: both GPUs visible, own GPU first (vLLM uses device 0), so RCCL can open the peer for the KV transfer
+        # (with only its own GPU visible, ncclCommInitRank failed with 'unhandled cuda error', dev run 2026-11-18)
+        vis = [idx[k], idx[1 - k]] if a.deployment == 'disagg' else [idx[k]]
+        env = dict(env0, HIP_VISIBLE_DEVICES=','.join(map(str, vis)), CP_STEPLOG=str(out / f'steplog_w{k}.jsonl'))
+        if a.nccl_debug:
+            env['NCCL_DEBUG'] = 'INFO'
         cus, grid = (a.decode_cus, a.decode_grid) if (a.deployment == 'disagg' and k == 1) else (a.cus, a.grid)
         if cus:
             env['HSA_CU_MASK'] = f'{idx[k]}:{mask_range(cus)}'
@@ -142,7 +148,7 @@ async def one(session, a, q, t0, route, rec, out_load):
     rec['send_s'] = time.perf_counter() - t0
     try:
         if a.deployment == 'disagg':
-            rid = f"___prefill_addr_127.0.0.1:{KV_PORT[0]}___decode_addr_127.0.0.1:{KV_PORT[1]}_{uuid.uuid4().hex}"
+            rid = f"___prefill_addr_{a.kv_ip}:{KV_PORT[0]}___decode_addr_{a.kv_ip}:{KV_PORT[1]}_{uuid.uuid4().hex}"
             hdr = {'X-Request-Id': rid}
             pb = dict(body, max_tokens=1, stream=False)
             tp = time.perf_counter()
@@ -196,7 +202,8 @@ async def run_trace(session, a, reqs, procs, deadline_s):
 
     def route(q):
         return min(range(2), key=lambda k: (out_load[k], k)) if a.deployment == 'colocated' else 0
-    recs = [{'id': q['id'], 'arrival_s': q['arrival_s'], 'prompt_len': len(q['prompt_ids']), 'max_tokens': q['max_tokens']}
+    recs = [{'id': q['id'], 'arrival_s': q['arrival_s'], 'prompt_len': len(q['prompt_ids']), 'max_tokens': q['max_tokens'],
+             'tokens': 0}
             for q in reqs]
     stop, metrics = asyncio.Event(), []
     t0 = time.perf_counter()
@@ -218,6 +225,11 @@ def main(a):
     C.setup_env()
     os.environ.pop('VLLM_ENABLE_V1_MULTIPROCESSING', None)
     uuids, idx = a.gpu_uuids.split(','), [int(x) for x in a.gpu_indices.split(',')]
+    from vllm.utils.network_utils import get_ip
+    off = 10 * idx[0]
+    HTTP[:] = [18101 + off, 18102 + off]
+    KV_PORT[:] = [21101 + off, 22101 + off]
+    a.kv_ip = get_ip()  # the P2pNccl engine binds its ZMQ router to this address (kv_ip is not used for binding)
     from gpu_target import load_nvml
     nvml = load_nvml()
     nvml.nvmlInit()
@@ -319,6 +331,7 @@ if __name__ == '__main__':
     p.add_argument('--decode-cus', type=int, default=None)
     p.add_argument('--decode-grid', type=int, default=None)
     p.add_argument('--ready-s', type=float, default=1200)
+    p.add_argument('--nccl-debug', action='store_true')
     a = p.parse_args()
     a.output.mkdir(parents=True, exist_ok=False)
     try:

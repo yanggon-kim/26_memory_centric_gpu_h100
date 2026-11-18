@@ -26,6 +26,27 @@ from vllm.v1.core.sched.request_queue import create_request_queue
 from vllm.v1.core.sched.scheduler import Scheduler
 
 
+def _p2p_without_cumem():
+    """Platform adaptation (dev run 2026-11-18): vLLM 0.23's P2pNcclConnector forces NCCL_CUMEM_ENABLE=1 while it creates
+    its RCCL communicator, and RCCL's cuMem peer path needs Linux >= 6.8 (cluster nodes run 5.14): the KV channel failed
+    with 'unhandled cuda error'. With CP_P2P_CUMEM=0 the same context manager sets NCCL_CUMEM_ENABLE=0 (RCCL's IPC peer
+    path, which carried the cp_link.py RCCL transfers). Nothing else in the connector changes."""
+    from contextlib import contextmanager
+    import vllm.distributed.kv_transfer.kv_connector.v1.p2p.p2p_nccl_engine as eng
+    orig = eng.set_p2p_nccl_context
+
+    @contextmanager
+    def ctx(num_channels):
+        with orig(num_channels):
+            os.environ['NCCL_CUMEM_ENABLE'] = '0'
+            yield
+    eng.set_p2p_nccl_context = ctx
+
+
+if os.environ.get('CP_P2P_CUMEM') == '0':
+    _p2p_without_cumem()
+
+
 class PolicyScheduler(Scheduler):
     def __init__(self, *a, **k):
         super().__init__(*a, **k)

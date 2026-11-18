@@ -129,7 +129,8 @@ def main(a):
     C.setup_env()
     nvml, handle, physical, torch = C.open_gpu(a.gpu_uuid)
     prefix = a.workload == 'prefix'
-    over = dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=a.max_seqs, max_model_len=a.max_model_len,
+    over = dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=a.max_seqs,
+                max_model_len=min(a.max_model_len, a.budget) if a.no_chunk else a.max_model_len,
                 enable_chunked_prefill=not a.no_chunk, enable_prefix_caching=prefix and a.prefix_mode != 'none',
                 gpu_memory_utilization=a.gpu_mem)
     layout = C.model_layout(cfg)
