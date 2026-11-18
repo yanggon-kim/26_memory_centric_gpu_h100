@@ -468,3 +468,16 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - Published: `results_published/amd_20261110_mi300x_goal_g5y_g5y_job511191/`,
   `amd_20261111_mi325x_goal_g5y_g5y_job511192/`, smoke `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190/`.
   Results: addendum 2026-11-15 in `docs/amd/goal_followup_results_20261107.md`.
+
+## 2026-11-18 — Chunked-prefill campaign: harness, dev allocation 529777, stage 1 (529791)
+
+- Owner execution prompt (handoff `docs/amd/chunked_prefill_campaign_20261118.md`, commit 1d8d7b5c). Design and
+  pre-registration `docs/amd/cp_campaign_design_20261118.md`; harness `scripts/amd/cp/`.
+- Dev allocation 529777 (MI300X, 22 min): validated policy scheduler, step replay, prefix replay, open-loop serving,
+  colocated servers, runner + competitor + rocprofv3. Fixes: stock 512-token graph limit; P2pNccl KV path needed both
+  GPUs visible, NCCL_CUMEM_ENABLE=0 (kernel 5.14) and VLLM_DISABLE_REQUEST_ID_RANDOMIZATION=1 (30/30 requests through
+  the real KV transfer).
+- Stage 1 529791 (mi3008x, 1 h 18 min): 122/122 steps, first attempts, no composition mismatch. Experiment 1 headroom
+  (5 % rule) 0–16 tokens everywhere; prefill tokens cost almost linearly from the first token. SLO pilot values and the
+  rate-grid amendment: design section 11. Published `results_published/amd_20261118_mi300x_cp_s1/`.
+- Queued: s2 529873 (MI300X, experiment 2 development + experiment 3 serving), x1 529874 (MI350X), x1 529875 (MI325X).
