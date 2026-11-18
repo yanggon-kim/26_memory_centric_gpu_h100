@@ -166,6 +166,10 @@ def trace_summary(t, slo=None):
            'ttft_p99_s': pct([r['ttft_s'] for r in done], .99),
            'itl_p50_ms': pct([x for r in done for x in r['itl_ms']], .5), 'itl_p99_ms': pct([x for r in done for x in r['itl_ms']], .99),
            'req_itl_p95_median_ms': st.median([p95(r['itl_ms']) for r in done if r['itl_ms']]) if done else None,
+           # exploratory (not the pre-registered compliance rule): the longest stall each request saw
+           'req_itl_max_median_ms': st.median([max(r['itl_ms']) for r in done if r['itl_ms']]) if done else None,
+           'req_itl_max_p99_ms': pct([max(r['itl_ms']) for r in done if r['itl_ms']], .99),
+           'itl_mean_ms': st.mean([x for r in done for x in r['itl_ms']]) if done else None,
            'window_s': span}
     first = min(r['arrival_s'] for r in t['requests'])
     lastdone = max((r.get('done_s') or 0) for r in t['requests'])
