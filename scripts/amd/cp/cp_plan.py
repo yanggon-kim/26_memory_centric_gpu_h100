@@ -154,7 +154,7 @@ def s1(cohort, smoke=False):
     return p, lanes, load
 
 
-GRID = (0.4, 0.6, 0.8, 1.0, 1.2, 1.5)
+GRID = (0.5, 0.75, 1.0, 1.25, 1.5, 2.0)  # amendment 2026-11-18 (design section 11)
 POLICIES = {'whole': ('separate', 8192, True), 'sep2048': ('separate', 2048, False), 'mix2048': ('mixed', 2048, False)}
 TUNE = {'mix256': ('mixed', 256, False), 'mix512': ('mixed', 512, False), 'mix1024': ('mixed', 1024, False),
         'mix4096': ('mixed', 4096, False), 'sep512': ('separate', 512, False), 'sep4096': ('separate', 4096, False)}
@@ -168,7 +168,7 @@ def serve_step(p, stage, exp, sid, m, wl, pol, cg, lam, seeds, arrivals, n, **k)
     policy, budget, whole = pol
     cus, grid = cg
     rs = [x * lam for x in GRID]
-    est = int(len(seeds) * len(arrivals) * sum(n / r + 75 for r in rs) + 420)
+    est = int(len(seeds) * len(arrivals) * sum(n / r + 40 for r in rs) + 420)
     args = ['--config', CFG[m], '--gpu-uuid', '@UUID', '--policy', policy, '--budget', budget, '--workload', wl,
             '--rates', rates(lam), '--seeds', ','.join(map(str, seeds)), '--arrivals', ','.join(arrivals),
             '--requests', n, '--drain-s', 60, '--energy'] + (['--no-chunk'] if whole else [])

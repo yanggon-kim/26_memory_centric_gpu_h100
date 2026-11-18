@@ -195,3 +195,32 @@ Per plan: published folder `results_published/amd_<date>_<cohort>_cp_<plan>/` wi
 manifest, plan, journals and SHA-256 lists; raw roots on `$WORK` with checksums. Analysis `scripts/amd/cp/cp_analyze.py`;
 report `docs/amd/cp_campaign_results_20261118.md` with, per experiment, completed / partial / blocked, evidence and
 reproduction commands.
+
+## 11. Amendment 2026-11-18 (after the stage-1 pilot, before any policy-comparison data)
+
+Pilot values (stock: full allocation, mixed, budget 2048; job 529791; frozen SLO rule of section 4):
+
+| Model / workload | L_TTFT (s) | L_ITL (ms, per-request p95) | pilot p90 TTFT (s) | pilot median per-request p95 ITL (ms) |
+|---|---|---|---|---|
+| Qwen2.5-32B dheavy | 0.48 | 120 | 0.095 | 22.4 |
+| Qwen2.5-32B balanced | 1.4 | 110 | 0.263 | 20.1 |
+| Qwen2.5-32B pheavy | 4.4 | 89 | 0.871 | 17.7 |
+| Qwen2.5-7B dheavy | 0.12 | 28 | 0.022 | 5.45 |
+| Qwen2.5-7B balanced | 0.30 | 25 | 0.058 | 4.97 |
+| Qwen2.5-7B pheavy | 1.2 | 25 | 0.220 | 4.86 |
+
+**Rate-grid anchor changed (grid placement only).** The pre-registered anchor λ* (highest stock-pilot rate with SLO
+attainment ≥ 0.9) is undefined for Qwen2.5-32B pheavy (attainment 0.79 already at 0.25 req/s: with budget 2048 each
+prompt chunk stalls co-running decodes beyond the strict ITL limit), is non-monotone for dheavy (0.84 at 2.5, 0.96 at 3.0,
+0.93 at 4.0) and gives 0.5 req/s for balanced, which would place the whole grid below saturation. The grid must span
+saturation for the policies to be compared, so it is now anchored at **λ_q = the highest ladder rate such that this and
+every lower ladder rate at full allocation has no incomplete request and p99 TTFT ≤ L_TTFT**, and the grid is
+**{0.5, 0.75, 1, 1.25, 1.5, 2} × λ_q**. λ_q: 32B dheavy 2.0, balanced 1.0, pheavy 0.75; 7B dheavy 10, balanced 10,
+pheavy 3 req/s (`scripts/amd/cp/params/mi300x_s2.json`). SLO limits, compliance, sustainable rate, tuning and held-out
+rules are unchanged. Experiment-3 serving rate: 0.25 req/s (cold 8448-token prompts keep the worker about one-third busy;
+40 warmed 8K prefixes fit in the 450K-token KV pool of Qwen2.5-32B).
+
+**Stage-1 observation that bears on the design (not a judged result).** Fresh prompt tokens cost almost linearly from the
+first token at every decode width tested (Qwen2.5-32B full, S = 8192: N = 32 decode step 48 ms; +16 tokens 51 ms; +256
+tokens 80 ms; +2048 tokens 352 ms; the same 2048 tokens alone take 418 ms). The 5 % headroom is therefore 0 or 16
+tokens everywhere; experiment 1 reports the curves and the attribution.
