@@ -234,3 +234,14 @@ that every trace at that and lower rates has attainment ≥ 0.9 and no incomplet
 grid rate over the available development seeds → smaller budget. The best colocated configuration for experiment 5 is
 the family/budget/allocation with the highest sustainable rate per GPU on the same development data (ties → full
 allocation). Held-out judging uses seeds 201–203 only.
+
+## 13. Amendment 2026-11-18 — MI350X graph-capture fallback
+
+MI350X job 529874 (x1): every Qwen2.5-32B engine under the 128-CU mask (stock or tuned grid) hung while capturing the
+PIECEWISE (mixed) graphs at capture 41 of 51 (size 64), in the 8-GPU job and again on a single-GPU MI350X slice
+(diagnostic 530036, `scripts/amd/cp/diag_mi350x_capture.sh`); Qwen2.5-7B at 128 and 192 CUs and Qwen2.5-32B at full
+allocation captured normally (530032). Limits 256 and 512 hang; limit 32 completes. Fallback (documented platform
+limitation, no driver/firmware change): the MI350X reproduction reruns with `max_cudagraph_capture_size = 32` for every
+step at every allocation (plan x1_cap32), so mixed iterations above 32 tokens run eagerly on MI350X; the completed
+full-allocation steps of 529874 (limit 512) are kept as an additional comparison. MI350X timings are therefore not
+graph-path matched to MI300X/MI325X; cohorts are never pooled.

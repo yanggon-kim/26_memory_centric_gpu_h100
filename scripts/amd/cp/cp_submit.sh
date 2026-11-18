@@ -6,9 +6,9 @@
 #   e.g. scripts/amd/cp/cp_submit.sh s1 mi300x 03:00:00
 set -euo pipefail
 which=$1; cohort=$2; tlimit=$3; shift 3
-smoke=; root=; params=; sb=()
+smoke=; root=; params=; mcap=; sb=()
 while [ $# -gt 0 ]; do
-  case $1 in --smoke) smoke=--smoke; shift;; --root) root=$2; shift 2;; --params) params=$(readlink -f $2); shift 2;; --) shift; sb=("$@"); break;; *) echo "bad arg $1" >&2; exit 1;; esac
+  case $1 in --smoke) smoke=--smoke; shift;; --root) root=$2; shift 2;; --params) params=$(readlink -f $2); shift 2;; --max-capture) mcap=$2; shift 2;; --) shift; sb=("$@"); break;; *) echo "bad arg $1" >&2; exit 1;; esac
 done
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.." && pwd)"; cd "$repo"
 WORK=${WORK:-/work1/proj_blaisetine/yanggon}
@@ -24,9 +24,9 @@ if [ -n "$root" ]; then
   plan=$root/launch_plan.json
 else
   mkdir -p "$WORK/cp_plans"
-  tag=${which}${smoke:+_smoke}
+  tag=${which}${smoke:+_smoke}${mcap:+_cap$mcap}
   plan=$WORK/cp_plans/cp_${cohort}_${tag}_$(date +%Y%m%d_%H%M%S)_${sha:0:8}.json
-  python3.12 "$rel/scripts/amd/cp/cp_plan.py" "$which" --cohort "$cohort" $smoke ${params:+--params "$params"} --out "$plan"
+  python3.12 "$rel/scripts/amd/cp/cp_plan.py" "$which" --cohort "$cohort" $smoke ${params:+--params "$params"} ${mcap:+--max-capture $mcap} --out "$plan"
   chmod a-w "$plan"
   root=$WORK/results_amd/amd_$(date +%Y%m%d)_${cohort}_cp_${tag}
   [ -e "$root" ] && root=${root}_$(date +%H%M%S)

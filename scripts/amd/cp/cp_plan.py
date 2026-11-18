@@ -248,11 +248,11 @@ def s3(cohort, params):
     return p, lanes, load
 
 
-def x1(cohort, params):
+def x1(cohort, params, max_capture=None):
     """Cross-cohort reproduction (design section 8): experiment 1 (both models, full and reduced stock/tuned) and
     experiment-2 common-budget points around the MI300X transitions (balanced, pheavy; rates = MI300X lambda_q x GRID;
     SLOs = the MI300X limits as common application targets)."""
-    p = Plan('x1', cohort)
+    p = Plan('x1' if not max_capture else f'x1_cap{max_capture}', cohort)
     c = p.c
     R = 'scripts/amd/cp/cp_replay.py'
     low = c['low']
@@ -267,6 +267,9 @@ def x1(cohort, params):
             for pn, pol in POLICIES.items():
                 serve_step(p, 'a', 'e2c', f'e2c_q32_{wl}_{an}_{pn}', 'q32', wl, pol, a_, lam[f'q32_{wl}'], [101], ['poisson'],
                            150, alloc=an, pname=pn)
+    if max_capture:  # platform fallback (MI350X: 32B at 128 CUs hangs capturing mid-size piecewise graphs)
+        for st_ in p.steps:
+            st_['env'] = {'CP_MAX_CAPTURE': max_capture}
     lanes = {'a': {f'L{i}': [i] for i in range(8)}}
     load = {'a': p.assign('a', list(lanes['a']))}
     return p, lanes, load
@@ -294,12 +297,15 @@ if __name__ == '__main__':
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
+    q.add_argument('--max-capture', type=int)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     if a.which == 's1':
         p, lanes, load = s1(a.cohort, a.smoke)
     else:
-        p, lanes, load = {'s2': s2, 's3': s3, 'x1': x1}[a.which](a.cohort, json.loads(a.params.read_text()))
+        prm = json.loads(a.params.read_text())
+        p, lanes, load = (x1(a.cohort, prm, a.max_capture) if a.which == 'x1'
+                          else {'s2': s2, 's3': s3}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "
