@@ -366,11 +366,105 @@ def s1(a):
     return res
 
 
+# ---------------------------------------------------------------- experiment 5
+def disagg_trace(t, slo, kv_per_tok):
+    reqs = t['requests']
+    nw = int(len(reqs) * 0.10)
+    order = sorted(reqs, key=lambda r: r['arrival_s'])
+    meas = order[nw:]
+    done = [r for r in meas if r['tokens'] == r['max_tokens'] and r['token_s']]
+    span = meas[-1]['arrival_s'] - meas[0]['arrival_s'] if len(meas) > 1 else None
+    def itl(r):
+        ts = r['token_s']
+        return [1e3 * (b - a) for a, b in zip(ts, ts[1:])]
+    ttft = [r['token_s'][0] - r['arrival_s'] for r in done]
+    ok = [r for r in done if r['token_s'][0] - r['arrival_s'] <= slo['ttft_s'] and (len(r['token_s']) < 2 or p95(itl(r)) <= slo['itl_ms'])]
+    out = {'requests': len(meas), 'complete': len(done), 'attainment': len(ok) / len(meas) if meas else None,
+           'goodput_rps': len(ok) / span if span else None, 'goodput_tok_s': sum(r['tokens'] for r in ok) / span if span else None,
+           'ttft_p50_s': pct(ttft, .5), 'ttft_p99_s': pct(ttft, .99),
+           'itl_p50_ms': pct([x for r in done for x in itl(r)], .5), 'itl_p99_ms': pct([x for r in done for x in itl(r)], .99)}
+    pre = [r for r in done if r.get('prefill_s') is not None]
+    if pre:
+        out['prefill_response_p50_s'] = pct([r['prefill_s'] for r in pre], .5)
+        out['decode_first_token_after_prefill_p50_s'] = pct([r['token_s'][0] - r['prefill_done_s'] for r in pre], .5)
+        out['kv_bytes_logical_mean'] = st.mean(r['prompt_len'] * kv_per_tok for r in pre)
+    tok = sum(r['tokens'] for r in reqs)
+    js = [x.get('counter_j') for x in t.get('telemetry', [])]
+    if tok and js and all(isinstance(j, (int, float)) for j in js):
+        out['joules_per_output_token_two_boards'] = sum(js) / tok
+        out['joules_by_board'] = js
+    m = t.get('metrics') or []
+    for k in ('w0_num_requests_waiting', 'w1_num_requests_waiting', 'w0_num_requests_running', 'w1_num_requests_running'):
+        v = [x[k] for x in m if k in x]
+        if v:
+            out[k + '_max'] = max(v)
+    return out
+
+
+def disagg(a):
+    root = Path(a.root)
+    out = Path(a.out or root / 'analysis')
+    out.mkdir(parents=True, exist_ok=True)
+    slo = json.loads(Path(a.slo).read_text())
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    jr = journal(root)
+    rows = []
+    for s in plan['steps']:
+        if s['experiment'] != 'e5':
+            continue
+        rec = final(jr.get(s['id'], []))
+        if not rec or not rec.get('command_completed'):
+            rows.append({'id': s['id'], 'status': 'missing' if not rec else rec.get('failure_class'),
+                         'message': (rec or {}).get('failure_message')})
+            continue
+        run = run_dir(rec)
+        meta = json.loads((run / 'run.json').read_text())
+        kv = meta['layout']['kv_bytes_per_token']
+        lim = slo[f"{s['model']}_{s['workload']}"]
+        for tr in meta['traces']:
+            t = json.loads((run / tr['file']).read_text())
+            rows.append({'id': s['id'], 'deployment': s['deployment'], 'workload': s['workload'], 'rate': t['rate'],
+                         'trace_sha256': t['trace_sha256'], **disagg_trace(t, lim, kv)})
+    (out / 'e5_tables.json').write_text(json.dumps(rows, indent=1, default=str) + '\n')
+    print(f'e5 rows {len(rows)} -> {out}')
+
+
+def serve_cmd(a):
+    root = Path(a.root)
+    out = Path(a.out or root / 'analysis')
+    out.mkdir(parents=True, exist_ok=True)
+    slo = json.loads(Path(a.slo).read_text())
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    jr = journal(root)
+    rows = []
+    for s in plan['steps']:
+        if s['experiment'] not in ('e2c', 'e2t', 'e2h', 'e3v'):
+            continue
+        rec = final(jr.get(s['id'], []))
+        base = {k: s.get(k) for k in ('id', 'experiment', 'model', 'workload', 'alloc', 'pname', 'policy', 'budget', 'whole',
+                                      'family', 'P', 'mode', 'cus', 'grid')}
+        if not rec or not rec.get('command_completed'):
+            rows.append(dict(base, status='missing' if not rec else rec.get('failure_class'), message=(rec or {}).get('failure_message')))
+            continue
+        wl = s.get('workload') or 'balanced'
+        lim = slo.get(f"{s['model']}_{wl}") or slo.get(f"{s['model']}_balanced")
+        _, tr = serve_run(run_dir(rec), lim)
+        for r in tr:
+            rows.append(dict(base, status='complete', **r))
+    (out / 'serve_tables.json').write_text(json.dumps(rows, indent=1, default=str) + '\n')
+    print(f'serve rows {len(rows)} -> {out}')
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = q.add_subparsers(dest='cmd', required=True)
     r = s.add_parser('s1')
     r.add_argument('--root', required=True)
     r.add_argument('--out')
+    for nm in ('serve', 'disagg'):
+        r = s.add_parser(nm)
+        r.add_argument('--root', required=True)
+        r.add_argument('--slo', required=True)
+        r.add_argument('--out')
     a = q.parse_args()
-    {'s1': s1}[a.cmd](a)
+    {'s1': s1, 'serve': serve_cmd, 'disagg': disagg}[a.cmd](a)
