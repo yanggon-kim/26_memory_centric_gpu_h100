@@ -245,3 +245,12 @@ limitation, no driver/firmware change): the MI350X reproduction reruns with `max
 step at every allocation (plan x1_cap32), so mixed iterations above 32 tokens run eagerly on MI350X; the completed
 full-allocation steps of 529874 (limit 512) are kept as an additional comparison. MI350X timings are therefore not
 graph-path matched to MI300X/MI325X; cohorts are never pooled.
+
+Update (same day, x1_cap32 530065): with capture limit 32, Qwen2.5-32B at 128 CUs hung again at the first **eager**
+mixed iteration of 64 tokens (N = 32 decodes + C = 32), after completing the N = 1 cells; the cap-32 diagnostic had
+passed only because its iterations were 72 and 264 tokens. The hang is therefore a 64-token iteration of this model under
+the 128-CU mask on MI350X, graph or eager (Qwen2.5-7B at 128 CUs and Qwen2.5-32B at 192 CUs run normally, 530032 and
+530036). **Qwen2.5-32B at 128 CUs on MI350X is blocked** (exact blocker above; resume: `cp_submit.sh x1 mi350x 02:30:00
+--params scripts/amd/cp/params/mi300x_s2.json` after a ROCm/vLLM change). The MI350X reproduction uses **192 CUs** as its
+reduced allocation (stock 512 capture limit; plan x1_low192). Completed steps of 529874 and 530065 are kept and labelled
+by their capture limit.

@@ -248,11 +248,13 @@ def s3(cohort, params):
     return p, lanes, load
 
 
-def x1(cohort, params, max_capture=None):
+def x1(cohort, params, max_capture=None, low=None):
     """Cross-cohort reproduction (design section 8): experiment 1 (both models, full and reduced stock/tuned) and
     experiment-2 common-budget points around the MI300X transitions (balanced, pheavy; rates = MI300X lambda_q x GRID;
     SLOs = the MI300X limits as common application targets)."""
-    p = Plan('x1' if not max_capture else f'x1_cap{max_capture}', cohort)
+    p = Plan('x1' + (f'_cap{max_capture}' if max_capture else '') + (f'_low{low}' if low else ''), cohort)
+    if low:  # reduced allocation override (MI350X: 128 CUs blocked for Qwen2.5-32B, design amendment 13)
+        p.c = dict(p.c, low=low)
     c = p.c
     R = 'scripts/amd/cp/cp_replay.py'
     low = c['low']
@@ -298,13 +300,14 @@ if __name__ == '__main__':
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
     q.add_argument('--max-capture', type=int)
+    q.add_argument('--low', type=int, help='x1: reduced allocation override')
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     if a.which == 's1':
         p, lanes, load = s1(a.cohort, a.smoke)
     else:
         prm = json.loads(a.params.read_text())
-        p, lanes, load = (x1(a.cohort, prm, a.max_capture) if a.which == 'x1'
+        p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
                           else {'s2': s2, 's3': s3}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
