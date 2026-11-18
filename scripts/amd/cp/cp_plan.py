@@ -247,6 +247,30 @@ def s3(cohort, params):
     return p, lanes, load
 
 
+def x1(cohort, params):
+    """Cross-cohort reproduction (design section 8): experiment 1 (both models, full and reduced stock/tuned) and
+    experiment-2 common-budget points around the MI300X transitions (balanced, pheavy; rates = MI300X lambda_q x GRID;
+    SLOs = the MI300X limits as common application targets)."""
+    p = Plan('x1', cohort)
+    c = p.c
+    R = 'scripts/amd/cp/cp_replay.py'
+    low = c['low']
+    for m, allocs in (('q32', ('full', f'{low}s', f'{low}t')), ('q7', ('full', f'{low}t'))):
+        for name, (cus, grid) in p.allocs(allocs).items():
+            p.add('a', 'e1', f'e1_{m}_{name}', R, ['--config', CFG[m], '--gpu-uuid', '@UUID', '--contexts', '1024,8192',
+                  '--widths', '1,8,32', '--chunks', E1_CHUNKS, '--reps', 10, '--budget', 4096, '--anchors', '--seed-offset', 1],
+                  est=900 if m == 'q32' else 600, cus=cus, grid=grid, model=m, alloc=name)
+    lam = params['lambda_star']
+    for wl in ('balanced', 'pheavy'):
+        for an, a_ in p.allocs(('full', f'{low}t')).items():
+            for pn, pol in POLICIES.items():
+                serve_step(p, 'a', 'e2c', f'e2c_q32_{wl}_{an}_{pn}', 'q32', wl, pol, a_, lam[f'q32_{wl}'], [101], ['poisson'],
+                           150, alloc=an, pname=pn)
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    load = {'a': p.assign('a', list(lanes['a']))}
+    return p, lanes, load
+
+
 def finalize(p, lanes, load):
     c = p.c
     plan = {'campaign': 'cp_20261118', 'plan': p.name, 'cohort': p.cohort, 'arch': c['arch'], 'full_cus': c['full'],
@@ -265,7 +289,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -274,7 +298,7 @@ if __name__ == '__main__':
     if a.which == 's1':
         p, lanes, load = s1(a.cohort, a.smoke)
     else:
-        p, lanes, load = {'s2': s2, 's3': s3}[a.which](a.cohort, json.loads(a.params.read_text()))
+        p, lanes, load = {'s2': s2, 's3': s3, 'x1': x1}[a.which](a.cohort, json.loads(a.params.read_text()))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "
