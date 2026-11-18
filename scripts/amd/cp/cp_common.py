@@ -68,6 +68,8 @@ def build(cfg, over, policy, steplog):
     from cp_sched import PolicyScheduler
     s = engine_settings(cfg, over)
     s['compilation_config'] = dict(COMPILATION)
+    if os.environ.get('CP_MAX_CAPTURE'):  # platform fallback, recorded in run.json (environment / engine_info)
+        s['compilation_config']['max_cudagraph_capture_size'] = int(os.environ['CP_MAX_CAPTURE'])
     llm = vllm.LLM(scheduler_cls=PolicyScheduler, **s)
     engine = llm.llm_engine
     sched = engine.engine_core.engine_core.scheduler
@@ -111,7 +113,7 @@ def versions(torch):
 
 def env_record():
     return {k: os.environ.get(k, 'unset') for k in ('HIP_VISIBLE_DEVICES', 'HSA_CU_MASK', 'CUBW_CU_COUNT_OVERRIDE',
-                                                     'CP_POLICY', 'VLLM_ENABLE_V1_MULTIPROCESSING', 'CUBW_STEP_TAG')}
+                                                     'CP_POLICY', 'VLLM_ENABLE_V1_MULTIPROCESSING', 'CUBW_STEP_TAG', 'CP_MAX_CAPTURE')}
 
 
 def sha_file(p):
