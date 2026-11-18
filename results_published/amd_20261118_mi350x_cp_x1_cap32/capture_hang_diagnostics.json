@@ -1,0 +1,104 @@
+{
+ "note": "MI350X single-GPU slices (mi3501x); cp_replay S=1024 N=8 C in {0,64,256}; status running = hung (killed by timeout 900 s)",
+ "runs": [
+  {
+   "job": "530032",
+   "model": "Qwen/Qwen2.5-7B-Instruct",
+   "case": "full_cap512",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "unset",
+    "CUBW_CU_COUNT_OVERRIDE": "unset",
+    "CP_MAX_CAPTURE": "unset"
+   }
+  },
+  {
+   "job": "530032",
+   "model": "Qwen/Qwen2.5-7B-Instruct",
+   "case": "m128_cap256",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "256"
+   }
+  },
+  {
+   "job": "530032",
+   "model": "Qwen/Qwen2.5-7B-Instruct",
+   "case": "m128_cap32",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "32"
+   }
+  },
+  {
+   "job": "530032",
+   "model": "Qwen/Qwen2.5-7B-Instruct",
+   "case": "m128_cap512",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "unset"
+   }
+  },
+  {
+   "job": "530032",
+   "model": "Qwen/Qwen2.5-7B-Instruct",
+   "case": "m192_cap512",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-191",
+    "CUBW_CU_COUNT_OVERRIDE": "192",
+    "CP_MAX_CAPTURE": "unset"
+   }
+  },
+  {
+   "job": "530036",
+   "model": "Qwen/Qwen2.5-32B-Instruct",
+   "case": "m128_cap256",
+   "status": "running",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "256"
+   }
+  },
+  {
+   "job": "530036",
+   "model": "Qwen/Qwen2.5-32B-Instruct",
+   "case": "m128_cap32",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "32"
+   }
+  },
+  {
+   "job": "530036",
+   "model": "Qwen/Qwen2.5-32B-Instruct",
+   "case": "m128_cap512",
+   "status": "running",
+   "env": {
+    "HSA_CU_MASK": "0:0-127",
+    "CUBW_CU_COUNT_OVERRIDE": "128",
+    "CP_MAX_CAPTURE": "unset"
+   }
+  },
+  {
+   "job": "530036",
+   "model": "Qwen/Qwen2.5-32B-Instruct",
+   "case": "m192_cap512",
+   "status": "complete",
+   "env": {
+    "HSA_CU_MASK": "0:0-191",
+    "CUBW_CU_COUNT_OVERRIDE": "192",
+    "CP_MAX_CAPTURE": "unset"
+   }
+  }
+ ]
+}
