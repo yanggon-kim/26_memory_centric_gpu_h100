@@ -481,3 +481,10 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   (5 % rule) 0–16 tokens everywhere; prefill tokens cost almost linearly from the first token. SLO pilot values and the
   rate-grid amendment: design section 11. Published `results_published/amd_20261118_mi300x_cp_s1/`.
 - Queued: s2 529873 (MI300X, experiment 2 development + experiment 3 serving), x1 529874 (MI350X), x1 529875 (MI325X).
+- 2026-11-18 14:24 (s2 529873, node k002-002): all eight running engines failed within 18 s with "unspecified launch
+  failure" (one step per lane, different configurations, including stock ones that passed in stage 1). `amd-smi metric
+  --ecc` afterwards: GPU 3 73 deferred and 1 correctable, GPU 2 2 deferred ECC errors; kernel log shows SOC throttling
+  warnings. Classified as a node hardware (RAS) event, not a campaign failure; each step's attempt 1 is preserved and
+  attempt 2 was started automatically. Record: `<root>/ras_ecc_after_1424.txt`.
+- MI350X x1 529874: every Qwen2.5-32B engine at 128 CUs hung in piecewise graph capture; diagnosed on single-GPU MI350X
+  slices (530032, 530036); fallback capture limit 32 (design amendment 13), rerun as x1_cap32 530065.
