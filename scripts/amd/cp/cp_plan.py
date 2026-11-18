@@ -154,6 +154,99 @@ def s1(cohort, smoke=False):
     return p, lanes, load
 
 
+GRID = (0.4, 0.6, 0.8, 1.0, 1.2, 1.5)
+POLICIES = {'whole': ('separate', 8192, True), 'sep2048': ('separate', 2048, False), 'mix2048': ('mixed', 2048, False)}
+TUNE = {'mix256': ('mixed', 256, False), 'mix512': ('mixed', 512, False), 'mix1024': ('mixed', 1024, False),
+        'mix4096': ('mixed', 4096, False), 'sep512': ('separate', 512, False), 'sep4096': ('separate', 4096, False)}
+
+
+def rates(lam):
+    return ','.join(f'{x * lam:.3g}' for x in GRID)
+
+
+def serve_step(p, stage, exp, sid, m, wl, pol, cg, lam, seeds, arrivals, n, **k):
+    policy, budget, whole = pol
+    cus, grid = cg
+    rs = [x * lam for x in GRID]
+    est = int(len(seeds) * len(arrivals) * sum(n / r + 75 for r in rs) + 420)
+    args = ['--config', CFG[m], '--gpu-uuid', '@UUID', '--policy', policy, '--budget', budget, '--workload', wl,
+            '--rates', rates(lam), '--seeds', ','.join(map(str, seeds)), '--arrivals', ','.join(arrivals),
+            '--requests', n, '--drain-s', 60, '--energy'] + (['--no-chunk'] if whole else [])
+    p.add(stage, exp, sid, 'scripts/amd/cp/cp_serve.py', args, est=est, cus=cus, grid=grid, model=m, workload=wl,
+          policy=policy, budget=budget, whole=whole, lam=lam, **k)
+
+
+def s2(cohort, params):
+    """Experiment 2 development stage (common budget + tuning) and experiment 3 serving. params = analysis s1 output
+    (lambda_star per model/workload at full allocation)."""
+    p = Plan('s2', cohort)
+    c = p.c
+    al = p.allocs(('full', f"{c['mid']}t", f"{c['low']}t"))
+    lam = params['lambda_star']
+    for m in ('q32', 'q7'):
+        for wl in ('dheavy', 'balanced', 'pheavy'):
+            L = lam[f'{m}_{wl}']
+            for an, a_ in al.items():
+                if m == 'q7' and an == f"{c['mid']}t":
+                    continue
+                for pn, pol in POLICIES.items():
+                    serve_step(p, 'a', 'e2c', f'e2c_{m}_{wl}_{an}_{pn}', m, wl, pol, a_, L, [101],
+                               ['poisson', 'bursty'], 150 if m == 'q32' else 300, alloc=an, pname=pn)
+                if m == 'q32' and an != f"{c['mid']}t":
+                    for pn, pol in TUNE.items():
+                        serve_step(p, 'a', 'e2t', f'e2t_{m}_{wl}_{an}_{pn}', m, wl, pol, a_, L, [101, 102], ['poisson'],
+                                   150, alloc=an, pname=pn)
+    # experiment 3 serving: own prefix per request + 256 fresh tokens, output 128, fixed rate, warm vs cold
+    for an, (cus, grid) in p.allocs(('full', f"{c['low']}t")).items():
+        for P_ in (0, 1024, 4096, 8192):
+            for mode in (('warm', 'cold') if P_ else ('none',)):
+                p.add('a', 'e3v', f'e3v_q32_{an}_P{P_}_{mode}', 'scripts/amd/cp/cp_serve.py',
+                      ['--config', CFG['q32'], '--gpu-uuid', '@UUID', '--policy', 'mixed', '--budget', 2048, '--workload', 'prefix',
+                       '--prefix-len', P_, '--prefix-mode', mode, '--suffix', 256, '--output-len', 128,
+                       '--rates', params['e3_rate'], '--seeds', 101, '--requests', 40, '--drain-s', 120, '--energy'],
+                      est=900, cus=cus, grid=grid, model='q32', alloc=an, P=P_, mode=mode)
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    load = {'a': p.assign('a', list(lanes['a']))}
+    return p, lanes, load
+
+
+def s3(cohort, params):
+    """Experiment 2 held-out judging and experiment 5. params: lambda_star, tuned[{m}_{wl}_{alloc}_{policy}] = config name
+    (from TUNE or POLICIES), best_colocated[{wl}] = {'policy', 'budget', 'whole', 'alloc'}."""
+    p = Plan('s3', cohort)
+    c = p.c
+    al = p.allocs(('full', f"{c['low']}t"))
+    lam = params['lambda_star']
+    cfgs = dict(POLICIES, **TUNE)
+    for wl in ('dheavy', 'balanced', 'pheavy'):
+        L = lam[f'q32_{wl}']
+        for an, a_ in al.items():
+            for pol in ('whole', 'separate', 'mixed'):
+                pn = params['tuned'][f'q32_{wl}_{an}_{pol}']
+                serve_step(p, 'a', 'e2h', f'e2h_q32_{wl}_{an}_{pol}_{pn}', 'q32', wl, cfgs[pn], a_, L, [201, 202, 203],
+                           ['poisson', 'bursty'], 150, alloc=an, pname=pn, family=pol)
+    # experiment 5: two-GPU lanes
+    D = 'scripts/amd/cp/cp_disagg.py'
+    for wl in ('dheavy', 'balanced', 'pheavy'):
+        L2 = 2 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L2:.3g}' for x in GRID)
+        best = params['best_colocated'][wl]
+        deps = {'single': ['--deployment', 'single', '--rates', ','.join(f'{x * L2 / 2:.3g}' for x in GRID)],
+                'colo_stock': ['--deployment', 'colocated', '--rates', rs],
+                'colo_tuned': ['--deployment', 'colocated', '--rates', rs, '--policy', best['policy'], '--budget', best['budget']]
+                + (['--cus', best['cus'], '--grid', best['grid']] if best.get('cus') else []),
+                'disagg_full': ['--deployment', 'disagg', '--rates', rs],
+                'disagg_r128': ['--deployment', 'disagg', '--rates', rs, '--decode-cus', c['low'], '--decode-grid', c['low']]}
+        for dn, extra in deps.items():
+            est = int(sum(150 / (x * L2) + 40 for x in GRID) + 600)
+            p.add('b', 'e5', f'e5_q32_{wl}_{dn}', D, ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX',
+                  '--workload', wl, '--seeds', 201, '--requests', 150, '--drain-s', 60] + extra, est=est, model='q32',
+                  workload=wl, deployment=dn)
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}, 'b': {'P01': [0, 1], 'P23': [2, 3], 'P45': [4, 5], 'P67': [6, 7]}}
+    load = {st: p.assign(st, list(lanes[st])) for st in lanes}
+    return p, lanes, load
+
+
 def finalize(p, lanes, load):
     c = p.c
     plan = {'campaign': 'cp_20261118', 'plan': p.name, 'cohort': p.cohort, 'arch': c['arch'], 'full_cus': c['full'],
@@ -172,12 +265,16 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1',))
+    q.add_argument('which', choices=('s1', 's2', 's3'))
+    q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
-    p, lanes, load = {'s1': s1}[a.which](a.cohort, a.smoke)
+    if a.which == 's1':
+        p, lanes, load = s1(a.cohort, a.smoke)
+    else:
+        p, lanes, load = {'s2': s2, 's3': s3}[a.which](a.cohort, json.loads(a.params.read_text()))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "
