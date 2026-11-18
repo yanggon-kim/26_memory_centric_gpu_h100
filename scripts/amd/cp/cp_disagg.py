@@ -72,6 +72,11 @@ def start_servers(a, cfg, out, uuids, idx):
     env0 = dict(os.environ, PYTHONPATH=f"{REPO / 'scripts'}:{REPO / 'scripts/amd/cp'}", CP_POLICY=a.policy, CP_P2P_CUMEM='0',
                 VLLM_NO_USAGE_STATS='1', HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1')
     env0.pop('VLLM_ENABLE_V1_MULTIPROCESSING', None)
+    if a.deployment == 'disagg':
+        # P2pNcclConnector keys transferred tensors by request id; vLLM 0.23 appends a random suffix per engine, so the
+        # decode worker waited forever for KV under a different id (dev run 2026-11-18). The client makes every request id
+        # unique (uuid4 in X-Request-Id), so vLLM's documented switch is safe here.
+        env0['VLLM_DISABLE_REQUEST_ID_RANDOMIZATION'] = '1'
     env0.pop('HSA_CU_MASK', None)
     env0.pop('CUBW_CU_COUNT_OVERRIDE', None)
     plan = {'single': [(0, None)], 'colocated': [(0, None), (1, None)], 'disagg': [(0, 'kv_producer'), (1, 'kv_consumer')]}[a.deployment]

@@ -155,6 +155,15 @@ across masks at matched achieved traffic where it overlaps. Above-stock bandwidt
 - **disagg-restricted**: the same with the decode worker on 128 CUs, tuned grid.
 - single-GPU reference (one server; the second board metered idle).
 
+Platform adaptations for the real KV path, found in the dev allocation 529777 (2026-11-18) and required for any
+end-to-end disaggregated run on this stack (Qwen2.5-7B dev trace: 30/30 requests completed through the KV transfer):
+(1) both workers see both GPUs, own GPU first; (2) the connector forces `NCCL_CUMEM_ENABLE=1`, but RCCL's cuMem peer
+path needs Linux ≥ 6.8 (nodes run 5.14), so `cp_sched.py` sets it to 0 inside the same context (`CP_P2P_CUMEM=0`), RCCL
+then connects over P2P/IPC; (3) vLLM 0.23 appends a random suffix to request ids per engine, so the two workers keyed
+the KV tensors differently and decode waited forever; `VLLM_DISABLE_REQUEST_ID_RANDOMIZATION=1` on both servers (the
+client makes every id unique); (4) servers run with `--no-async-scheduling` to match experiments 1–4; (5) per-lane
+ports. Peer-copy and RCCL KV-sized transfers reach 41–50 GB/s for ≥ 1024-token KV of Qwen2.5-7B between two GPUs.
+
 Workloads dheavy, balanced, pheavy; open-loop Poisson load grid {0.4 … 1.5} × 2λ* (experiment-2 λ*), held-out seed 201.
 Measured: both queues (server metrics every 0.25 s), prefill-worker response time, decode first-token time after the
 prefill response (transfer + decode queue), logical KV bytes per request, sustainable goodput, tails, and energy per
