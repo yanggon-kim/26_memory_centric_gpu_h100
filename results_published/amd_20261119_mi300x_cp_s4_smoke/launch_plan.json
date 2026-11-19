@@ -1,0 +1,146 @@
+{
+ "campaign": "cp_20261118",
+ "plan": "s4_smoke",
+ "cohort": "mi300x",
+ "arch": "gfx942",
+ "full_cus": 304,
+ "gpu_name": "MI300X",
+ "gpus": 8,
+ "partition": "mi3008x",
+ "charge_rate": 1.0,
+ "competitor_mask": "256-303",
+ "stages": [
+  "a"
+ ],
+ "lanes": {
+  "a": {
+   "Q0123": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "Q4567": [
+    4,
+    5,
+    6,
+    7
+   ]
+  }
+ },
+ "reserve_s": 900,
+ "design": "docs/amd/cp_campaign_design_20261118.md",
+ "handoff": "docs/amd/chunked_prefill_campaign_20261118.md",
+ "steps": [
+  {
+   "id": "e6s_q32_balanced_d2p2",
+   "stage": "a",
+   "experiment": "e6",
+   "kind": "engine",
+   "script": "scripts/amd/cp/cp_disagg.py",
+   "args": [
+    "--config",
+    "scripts/amd/cp/configs/qwen32b.json",
+    "--gpu-uuids",
+    "@UUIDS",
+    "--gpu-indices",
+    "@IDX",
+    "--drain-s",
+    "60",
+    "--workload",
+    "balanced",
+    "--seeds",
+    "201",
+    "--requests",
+    "40",
+    "--deployment",
+    "disagg",
+    "--prefill-workers",
+    "2",
+    "--rates",
+    "2",
+    "--max-seqs",
+    "128",
+    "--p2p-none-blocks-fix"
+   ],
+   "cus": null,
+   "grid": null,
+   "treatment": "absent",
+   "est_s": 900,
+   "timeout_s": 3600,
+   "pin": null,
+   "model": "q32",
+   "workload": "balanced",
+   "deployment": "d2p2",
+   "prefill_workers": 2,
+   "lane": "Q0123",
+   "order": 0
+  },
+  {
+   "id": "e6s_q32_pheavy_d3p1_r128_kv8",
+   "stage": "a",
+   "experiment": "e6",
+   "kind": "engine",
+   "script": "scripts/amd/cp/cp_disagg.py",
+   "args": [
+    "--config",
+    "scripts/amd/cp/configs/qwen32b.json",
+    "--gpu-uuids",
+    "@UUIDS",
+    "--gpu-indices",
+    "@IDX",
+    "--drain-s",
+    "60",
+    "--workload",
+    "pheavy",
+    "--seeds",
+    "201",
+    "--requests",
+    "40",
+    "--deployment",
+    "disagg",
+    "--prefill-workers",
+    "3",
+    "--rates",
+    "1.5",
+    "--max-seqs",
+    "128",
+    "--decode-kv-bytes",
+    "8589934592",
+    "--decode-cus",
+    "128",
+    "--decode-grid",
+    "128",
+    "--p2p-none-blocks-fix"
+   ],
+   "cus": null,
+   "grid": null,
+   "treatment": "absent",
+   "est_s": 900,
+   "timeout_s": 3600,
+   "pin": null,
+   "model": "q32",
+   "workload": "pheavy",
+   "deployment": "d3p1_r128_kv8",
+   "prefill_workers": 3,
+   "decode_kv_gib": 8,
+   "decode_alloc": "128t",
+   "lane": "Q4567",
+   "order": 0
+  }
+ ],
+ "budget": {
+  "lane_seconds": {
+   "a": {
+    "Q0123": 900,
+    "Q4567": 900
+   }
+  },
+  "longest_lane_s": {
+   "a": 900
+  },
+  "node_hours_est": 0.55,
+  "allocation_units_est": 0.55
+ },
+ "plan_sha256": "b24b2224e8a599b59c6dc380d69e00d3cdf569e2531ce12fe112902a95df7613"
+}

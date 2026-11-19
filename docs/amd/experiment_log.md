@@ -517,3 +517,10 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   r128 6.0, colocated-stock ≥ 8. Published `results_published/amd_20261118_mi300x_cp_s3d`.
 - Report `docs/amd/cp_campaign_results_20261118.md` completed (experiment 5, win/lose/uncertain, area-model inputs,
   deviations 10–13).
+
+### 2026-11-19 — cp s4 smoke passed; s4 released
+
+- Smoke s4_smoke (job 531379, 4 min): four-GPU P2pNccl disagg works. 2P2D balanced at 2 rps: 40/40, routes over all
+  four workers. 3P1D pheavy at 1.5 rps with 128t decode and 8 GiB decode KV (32,768 tokens, confirmed in the server log):
+  40/40, no errors, 0 preemptions. Published `results_published/amd_20261119_mi300x_cp_s4_smoke`.
+- Full s4 (job 531381, 70 steps, pre-registered in design section 14) released from hold.
