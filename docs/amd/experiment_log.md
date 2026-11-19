@@ -507,3 +507,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Rerun of the four affected cases plus exploratory 128-seat decode cases: plan s3d (530958).
   - Disaggregated decode-heavy traffic was capped by the common `max_num_seqs` = 64 on the single decode worker.
 - s3 left out the pre-registered held-out stock reference (mixed, B = 2048, full). It was added as plan s3r (530904).
+
+### 2026-11-19 — cp s3r and s3d complete; campaign report final
+
+- s3r (job 530904, mi3008x, 46:52): 18/18 steps, 108 traces complete. Held-out stock reference (mixed B = 2048, full):
+  dheavy 3.0, balanced 0.75, pheavy < 0.375 rps (Poisson, all seeds). Published `results_published/amd_20261118_mi300x_cp_s3r`.
+- s3d (job 530958, mi3008x, 24:07): 7/7 steps, 42 traces complete, no connector crash with `--p2p-none-blocks-fix`.
+  balanced disagg full/r128 ≥ 4 rps; pheavy disagg full/r128 1.12 rps; exploratory 128 seats: dheavy disagg full ≥ 8,
+  r128 6.0, colocated-stock ≥ 8. Published `results_published/amd_20261118_mi300x_cp_s3d`.
+- Report `docs/amd/cp_campaign_results_20261118.md` completed (experiment 5, win/lose/uncertain, area-model inputs,
+  deviations 10–13).

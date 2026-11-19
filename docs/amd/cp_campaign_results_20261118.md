@@ -15,10 +15,10 @@ grid tuned to n CUs. No clocks, power limits, drivers or firmware were changed.
 | # | Experiment | Status | Cohorts |
 |---|---|---|---|
 | 1 | Replayed mixed steps and prefill headroom | **completed** | MI300X (both models; 304, 192s/t, 128s/t); MI325X (304, 128s/t); MI350X (256, 192s/t; 128 blocked for 32B) |
-| 2 | Three scheduling policies under identical open-loop traffic | __E2_STATUS__ | MI300X (dev: 32B and 7B; held-out: 32B); MI325X and MI350X common-budget reproduction |
+| 2 | Three scheduling policies under identical open-loop traffic | **completed** (development, tuning, held-out, stock reference, cross-cohort) | MI300X (dev: 32B and 7B; held-out: 32B); MI325X and MI350X common-budget reproduction |
 | 3 | Resident history vs fresh prefill | **completed** (step and serving level; physical HBM bytes unavailable) | MI300X, both models (step), 32B (serving) |
 | 4 | Disjoint-CU competition on mixed steps | **completed** | MI300X 32B, masks 128/192/256 |
-| 5 | Colocated replicas vs disaggregated workers | __E5_STATUS__ | MI300X 32B, four GPU pairs |
+| 5 | Colocated replicas vs disaggregated workers | **completed** (all four pre-registered deployments and the single-GPU reference on three workloads; two disaggregated cases completed in a rerun after a connector fix; exploratory 128-seat cases labelled) | MI300X 32B, four GPU pairs |
 
 Main answers (details and qualifications below):
 
@@ -31,15 +31,24 @@ Main answers (details and qualifications below):
   - MI350X full: ≈62 µs per token.
 
   Decode steps on these GPUs are not compute-starved enough to hide prefill work for free.
-- __E2_SUMMARY__
+- **Chunked prefill with mixing helps decode-heavy serving and hurts prefill-heavy serving.** Held-out results (seeds
+201–203, Poisson):
+- decode-heavy: mixed (B = 1024) sustains 3.0 rps against 2.5 for whole or separate scheduling;
+- balanced: a tuned small budget (B = 256) ties separate scheduling at 1.5 rps, where stock B = 2048 manages 0.75, and
+  holds 0.91 attainment at 2 rps;
+- prefill-heavy: separate or whole scheduling sustains 0.56 rps, and mixed stays below 0.375.
+
+  Mixing always gives the smallest stall tails (0.10–0.16 s against up to 6 s). Bursty arrivals defeat every policy at
+  these SLOs. The ordering reproduces on MI325X and MI350X.
 - **Fewer CUs do not preserve serving capacity for the 32B model once prefill is in the mix, even after tuning.**
-  - Decode-only steps lose 7–15% at 128 CUs.
-  - Prefill costs ≈1.8× per token.
-  - Sustainable rate at 128 CUs is half to two thirds of full allocation for decode-heavy and balanced traffic, and half
-    or less for prefill-heavy traffic.
-  - Tuning the budget and policy does not recover this.
-  - 192 CUs keeps 67–83% of the full-allocation rate.
-  - The 7B model loses more: half its rate at 128 CUs in every workload.
+  - Decode-only steps lose 0–15% at 128 CUs on MI300X (12–15% at S = 8K, N = 32), and up to 24% on MI325X.
+  - Prefill costs ≈ 1.6–1.9× per token.
+  - Held-out best sustainable rate at 128t ÷ best at full = 0.67 for all three workloads (±1 grid step), after tuning
+    budget and policy.
+  - 192t on the common budget keeps 50–83%.
+  - The 7B model loses half its rate at 128 CUs.
+  - Exception: as a disaggregated **decode** worker, 128 CUs keep the full rate for balanced and prefill-heavy traffic
+    (section 5).
 - **Prefix reuse saves the compute but not the attention service.** For 32B with a warm 8K prefix, the mixed step costs
   104 ms, against 55 ms for the same fresh tokens without history and 1339 ms when cold. The warm-history surcharge is
   about 6 ms per 1K prefix tokens per request (≈1.5 GB/s-equivalent of logical KV per 1K tokens; see section 3).
@@ -47,7 +56,18 @@ Main answers (details and qualifications below):
   - A 2 TB/s streaming competitor slows the decoder 1.13–1.29×.
   - An arithmetic competitor slows it 1.04–1.13×.
   - Light and heavy mixes respond like decode-only steps, within ±0.07.
-- __E5_SUMMARY__
+- **A specialized decode worker improves decode latency and energy, but not capacity, once both GPUs and the KV transfer
+are charged.** All results are 32B, one held-out seed.
+- **Latency:** disaggregation cuts p99 ITL to 27–47 ms (colocated-tuned: 79–121 ms for decode-heavy and balanced
+  traffic; colocated-stock: up to 472 ms). The handoff
+  adds ≈ 40–60 ms to TTFT.
+- **Energy:** joules per token over both boards drop by 9–31% for decode-heavy and balanced traffic.
+- **Capacity against colocated-tuned:**
+  - balanced: a tie at the top of the grid (≥ 4 rps);
+  - prefill-heavy: a loss (1.12 vs 1.88 rps), with the single prefill GPU saturating;
+  - decode-heavy: a loss (3 vs ≥ 8 rps) with the shared 64-seat limit; a tie (≥ 8) with 128 decode seats (exploratory).
+- **Decode worker on 128 CUs:** keeps the full-allocation rate for balanced and prefill-heavy traffic, and costs one grid
+  step for decode-heavy traffic.
 
 ## Deviations and platform adaptations (consequential)
 
@@ -111,6 +131,27 @@ Main answers (details and qualifications below):
      forgives those stalls when a request generates many tokens.
    - Every serving table therefore also reports two exploratory stall metrics, which were not used for selection:
      the p99 over requests of the longest inter-token gap (`req_itl_max_p99_ms`) and the mean ITL.
+10. **Held-out stock reference added late.** The s3 plan omitted the pre-registered held-out stock arm (mixed, B = 2048,
+    full). It ran afterwards as plan s3r (job 530904), with the same seeds, traces and SLOs, and with
+    `family = stock` in the tables. No other held-out arm was rerun or changed.
+11. **P2pNcclConnector crash on chunked prompts** (vLLM 0.23 bug).
+    - When a continuation chunk needs no new KV block, the scheduler passes `None` in
+      `scheduled_cached_reqs.new_block_ids`. `P2pNcclConnector.build_connector_meta` then fails with
+      `assert new_block_ids is not None`, killing the prefill worker.
+    - In s3 this happened for balanced traffic at ≥ 2 rps and prefill-heavy traffic at ≥ 1.5 rps. Every later request
+      failed, and those traces are kept.
+    - Fix: `cp_sched._p2p_none_blocks` (enabled by `CP_P2P_NONE_BLOCKS=1`, via `cp_disagg.py --p2p-none-blocks-fix`).
+      It substitutes an empty block list for `None` for the duration of that one call and restores the original. KV
+      contents and transfer are unchanged.
+    - It was unit-tested on the real class, then the four affected cases were rerun in full under new step ids (s3d, job
+      530958).
+12. **Inductor/Triton cache race.** The colocated-tuned balanced step first failed ("Cubin file saved by TritonBundler
+    not found") because two servers compiled into a shared cache at once. The automatic second attempt completed, and
+    the failure is kept in the journal.
+13. **Decode-seat limit in experiment 5.** All deployments used `max_num_seqs = 64` per engine, as pre-registered. That
+    cap, not compute or the KV link, limited the decode-heavy disaggregated runs. The 128-seat runs (disagg
+    `--decode-max-seqs 128`, colocated `--max-seqs 128`) are exploratory, added after the data, and are labelled as
+    such.
 
 ## 1. Prefill headroom (replayed steps)
 
@@ -264,7 +305,7 @@ Effects of tuning:
 Each policy family runs with its tuned budget from 2b, at full and 128t, on held-out seeds 201, 202 and 203.
 Arrivals are Poisson and bursty, with 150 requests per trace (648 traces, all complete). Data:
 `results_published/amd_20261118_mi300x_cp_s3/serve_tables.json` (`experiment = e2h`). The stock reference (mixed,
-B = 2048, full) is in `..._mi300x_cp_s3r` (see the note below).
+B = 2048, full) is in `..._mi300x_cp_s3r` (job 530904; deviation 10).
 
 Sustainable rate (rps) requires attainment ≥ 0.9 and no incomplete requests in **every** held-out seed at that rate and
 every lower rate (Poisson). Per-seed values are in brackets. "@λ_q" gives goodput (rps), p99 TTFT (s) and p99 of the
@@ -278,6 +319,16 @@ per-request maximum stall (s) at λ_q.
 |  | 128t | **1.0** [1, 1.5, 1]; 1.01 / 1.32 / 2.2 | sep512 **1.0** [1, 1.5, 1]; 1.01 / 1.41 / 2.7 | mix256 0.5 [0.75, 1, 0.5]; 0.86 / 2.27 / 0.18 |
 | pheavy (0.75) | full | **0.56** [0.56, 0.75, 0.94]; 0.70 / 2.8 / 4.1 | sep4096 **0.56** [0.56, 0.75, 0.75]; 0.69 / 3.4 / 6.1 | mix256 < 0.375 (attainment 0.85 at 0.375); 0.30 / 10.0 / 0.14 |
 |  | 128t | **0.375** [0.56, 0.375, 0.56] | sep512 < 0.375 [0.375, 0.375, 0] | mix256 < 0.375 (0.24) |
+
+**Held-out stock reference** (mixed, B = 2048, full; `..._cp_s3r`, 108 traces, all complete). Sustainable rate (Poisson,
+every seed):
+- dheavy: 3.0 [3, 3, 3], the same as tuned mixed B = 1024;
+- balanced: **0.75** [1.0, 0.75, 1.25], against 1.5 for tuned mixed B = 256 (attainment at 1.5 rps: 0.60 / 0.33 / 0.83);
+- pheavy: < 0.375 (0.73–0.84 at 0.375), the same as tuned mixed and below separate (0.56).
+
+Tuning therefore matters most for balanced traffic, where it doubles the mixed rate. For prefill-heavy traffic the gain
+comes from switching to separate scheduling (B = 4096). For decode-heavy traffic the stock setting is already as good as
+the tuned one. Bursty stock attainment is 0.0–0.99, which is no better than the tuned arms.
 
 **Bursty arrivals** (same request sets and mean rates): no configuration sustains 0.9 attainment in every seed at any
 grid rate. The best attainment at 0.5 λ_q:
@@ -410,15 +461,152 @@ at N = 32:
 
 ## 5. Colocated replicas vs disaggregated workers (two GPUs)
 
-__E5__
+Data:
+- `results_published/amd_20261118_mi300x_cp_s3/e5_tables.json` (pre-registered run, job 530467);
+- `..._mi300x_cp_s3d/e5_tables.json` (job 530958): reruns of the four disaggregated cases that crashed, plus exploratory
+  cases.
+
+Setup: MI300X, Qwen2.5-32B, held-out seed 201, Poisson arrivals, 150 requests per trace (135 measured), SLOs as in
+experiment 2.
+- Two-GPU deployments are offered the aggregate grid {0.5 … 2}×2λ_q.
+- The single-GPU reference is offered {0.5 … 2}×λ_q. Its second board is metered idle.
+- Energy is joules per output token over **both** boards for the whole trace, so idle capacity on either worker is
+  charged.
+- KV transfer: P2pNcclConnector over RCCL (PUT_ASYNC) between the two GPUs of a lane pair.
+
+**Sustainable rate** (requests/s, whole two-GPU deployment; attainment ≥ 0.9 and 0 incomplete at that rate and every
+lower rate; "≥" means the top of the grid):
+
+| deployment | dheavy (grid 2–8) | balanced (grid 1–4) | pheavy (grid 0.75–3) |
+|---|---|---|---|
+| single GPU (×2 for two GPUs) | 2.5 (5.0) | 1.25 (2.5) | < 0.375 (attainment 0.73) |
+| colocated-stock (mixed, B = 2048) | **≥ 8** | 2.5 | 0.75 |
+| colocated-tuned (from 2b) | **≥ 8** (0.97 at 8) | **≥ 4** (0.90 at 4) | **1.88** |
+| disagg-full | 3.0 † | **≥ 4** ‡ | 1.12 ‡ |
+| disagg-restricted (decode worker on 128t) | 2.0 † | **≥ 4** ‡ | 1.12 ‡ |
+| *exploratory:* disagg-full, decode worker 128 seats | ≥ 8 (0.96 at 8) | — | — |
+| *exploratory:* disagg-restricted, decode worker 128 seats | 6.0 (0.85 at 8) | — | — |
+| *exploratory:* colocated-stock, 128 seats | ≥ 8 (1.00 at 8) | — | — |
+
+† The decode worker hits `max_num_seqs = 64` (64 running) at ≥ 4 rps (full) or ≥ 3 rps (128t). The KV handoff then
+queues: the median time from prefill response to first decode token rises from 0.05 s to 1.2–12 s. The setting is
+identical in every deployment, but colocated replicas split the load over two engines and 128 seats. The exploratory
+128-seat rows remove this limit. They were added after the data and are not pre-registered.
+
+‡ From the s3d rerun with the connector fix (deviation 11). In the pre-registered run, the prefill worker crashed at
+balanced ≥ 2 rps and pheavy ≥ 1.5 rps. Those traces are kept in `..._cp_s3` (status complete, requests incomplete). At
+the rates valid in both runs, the rerun reproduces s3 to within 0.01 attainment and ±0.03 s p50 TTFT.
+
+**Latency and energy at a common rate** (p50 / p99 TTFT in s; p99 ITL in ms; J per output token over two boards):
+
+| workload, rate | colocated-stock | colocated-tuned | disagg-full | disagg-restricted |
+|---|---|---|---|---|
+| dheavy, 3 rps | 0.08 / 0.16; 79; 1.20 | 0.10 / 0.15; 90; 1.21 | 0.12 / 0.22; 35; **0.83** | 0.73 / 4.05; 49; 0.93 (seat-capped) |
+| dheavy, 8 rps (128 seats where noted) | 0.09 / 0.16; 91; 0.71 | 0.11 / 1.19; 121; 0.76 | 128 seats: 0.15 / 0.63; 47; **0.58** | 128 seats: 0.18 / 7.07; 65; 0.72 |
+| balanced, 2 rps | 0.22 / 0.49; 210; 3.41 | 0.41 / 0.95; 82; 3.35 | 0.28 / 0.65; 33; **2.58** | 0.30 / 0.65; 43; 2.59 |
+| balanced, 4 rps | 0.29 / 0.73; 280; 1.62 | 0.80 / 1.66; 110; 1.61 | 0.57 / 1.29; 41; **1.47** | 0.63 / 1.35; 62; 1.54 |
+| pheavy, 1.12 rps | 0.72 / 1.66; 314; 14.76 | 0.66 / 1.60; 27; **14.50** | 1.34 / 3.66; 28; 14.79 | 1.38 / 3.81; 33; 15.01 |
+| pheavy, 1.88 rps | 1.16 / 3.64; 472; 9.86 | 1.09 / 3.16; 964; **9.93** | 16.9 / 25.6; 29; 12.93 | 17.4 / 26.4; 36; 13.04 |
+
+**KV handoff** (disaggregated runs below saturation):
+
+| workload | logical KV per request | prefill-worker response p50 | handoff p50, full / 128t decode |
+|---|---|---|---|
+| dheavy | 84 MB | 0.07–0.08 s | 0.046–0.063 / 0.060–0.089 s |
+| balanced | 345 MB | 0.22–0.52 s | 0.040–0.061 / 0.051–0.089 s |
+| pheavy | 1057 MB | 1.0–1.6 s | 0.037–0.043 / 0.044–0.052 s |
+
+The handoff time is the prefill response to the first decode token, so it includes transfer, decode admission and the
+first decode step. It barely depends on KV size (84 MB to 1.06 GB): the PUT_ASYNC transfer overlaps the prefill
+response, and the remainder is decode-side admission and one step. The 1.06 GB pheavy handoff at ≈ 40 ms is consistent
+with the 41–50 GB/s RCCL rate for KV-sized buffers (design section 7) only because the transfer overlaps the prefill
+response.
+
+**Interpretation.**
+- **Decode quality.** The specialized decode worker gives 2–3× lower p99 ITL than colocated-tuned for decode-heavy and
+  balanced traffic (27–47 ms against 79–121 ms), and 6–15× lower than colocated-stock for balanced and prefill-heavy
+  traffic (210–472 ms). For prefill-heavy traffic, colocated-tuned (separate scheduling) matches it at low rate (27 ms)
+  but its p99 ITL reaches 0.5–1.8 s from 1.5 rps. No prefill ever runs on the decode worker's GPU. It also lowers energy per token by 9–31% for decode-heavy and balanced
+  traffic, mostly because the prefill GPU idles cheaply while the decode GPU batches deeper.
+- **Capacity after charging both GPUs:**
+  - Disaggregation never beats colocated-tuned.
+  - dheavy: both reach the top of the grid only with 128 decode seats (exploratory). With the pre-registered 64 seats,
+    disaggregation sustains 3 rps against ≥ 8.
+  - balanced: both reach the top of the grid (≥ 4 rps), and disaggregation keeps much lower ITL.
+  - pheavy: disaggregation loses (1.12 vs 1.88 rps). A single prefill GPU saturates (prefill response grows from 1.3 s
+    to 17 s at 1.88 rps) while the decode GPU runs 5 requests. That is a 1:1 pool imbalance, and a P:D worker ratio
+    greater than 1 would be needed.
+- **Disaggregation beats colocated-stock** for balanced (≥ 4 vs 2.5) and pheavy (1.12 vs 0.75), and beats the
+  single-GPU reference ×2 except for decode-heavy traffic.
+- **TTFT.** Disaggregation adds ≈ 40–60 ms of handoff to TTFT. That is harmless against the 32B limits for balanced
+  and prefill-heavy traffic, and costs part of the 0.48 s decode-heavy margin.
+- **Decode worker on 128 CUs.** It costs nothing in sustainable rate for balanced or prefill-heavy traffic. ITL p99
+  rises by 5–21 ms and energy by 0–2%. For decode-heavy traffic, it costs one grid step (2 vs 3 with 64 seats; 6 vs ≥ 8
+  with 128 seats), because the per-step time rises with batch width at 128 CUs (ITL p50 59 vs 41 ms at 8 rps).
 
 ## What wins, loses or stays uncertain
 
-__WLU__
+**Wins (design better than its baseline, beyond grid quantization):**
+- Mixed chunked prefill with a tuned budget for **decode-heavy** traffic: +1 grid step held-out at full (3.0 vs 2.5 rps)
+  and at 128t (2.0 vs 1.5), with the smallest stall tails.
+- Tuning the mixed budget for **balanced** traffic: B = 256 doubles the stock B = 2048 held-out rate (1.5 vs 0.75 rps),
+  ties separate scheduling, and degrades most gracefully past saturation (0.91 vs 0.37–0.47 attainment at 2 rps).
+- **Separate or whole scheduling for prefill-heavy traffic** at every allocation and on all three GPU generations (mixed
+  never reaches 0.9 attainment).
+- **Disaggregated decode** for decode latency and energy: p99 ITL 2–3× lower than colocated-tuned and up to 15× lower than colocated-stock, and 9–31% fewer joules per token for
+  dheavy and balanced at equal rate, with both boards charged.
+- **Decode worker at 128 CUs** for balanced and prefill-heavy traffic: same sustainable rate as full.
+
+**Loses:**
+- Free prefill piggybacking: headroom is 0–16 tokens in every cohort, model and allocation.
+- Mixed scheduling for prefill-heavy traffic: < 0.375 rps against 0.56 held-out (MI300X), and against 0.94–1.5 on
+  MI325X and MI350X.
+- Fewer CUs in colocated serving: 128t keeps only two thirds of the held-out rate in every workload, even after tuning.
+- Disaggregation for prefill-heavy traffic at a 1:1 worker ratio: 1.12 vs 1.88 rps for colocated-tuned.
+- Disaggregation with the shared 64-seat limit for decode-heavy traffic: 3 vs ≥ 8 rps.
+- Every policy under bursty arrivals (CV 4) at these SLOs.
+
+**Uncertain:**
+- Disagg vs colocated-tuned capacity for **balanced** traffic: both are at or above the top of the grid (≥ 4 rps).
+- Decode-heavy disaggregation with 128 seats: it reaches the top of the grid, but the result is exploratory, from one
+  seed, and not pre-registered.
+- Ratios of reduced-CU to full capacity: ±1 grid step, about ±0.17.
+- Any P:D worker ratio other than 1:1, and more than two GPUs: not tested.
+- Physical HBM traffic: unavailable. Energy figures come from board counters, with no external calibration.
+- Experiment 5 used one held-out seed, so its rate differences of one grid step are not significant.
 
 ## Implications for the area model
 
-__AREA__
+These are model inputs, not architectural results. CU masks do not reclaim area, and HBM stacks are not compute-die area
+(see the fixed-area model V0).
+- **Decode vs prefill sensitivity to compute.**
+  - Decode-only steps lose 12–15% at 128 of 304 CUs on MI300X (S 8K, N 32) and up to 24% on MI325X (41 → 51 ms).
+  - Marginal prefill cost per token rises ≈ 1.6–1.9× (MI300X 140–218 → 250–299 µs per token; MI325X 106–116 →
+    263–278).
+  - So a decode-only (D) part tolerates a large compute cut, but a prefill-plus-decode (PD) part pays almost
+    proportionally on the prefill share.
+- **Step-time model for PD.**
+  - Use T_mix(C) ≈ T_dec + c_p(CUs)·C for C ≥ 64 with H ≈ 0. The c_p values are in the experiment 1 tables.
+  - Do not assume free piggybacking. Mixing does save the second weight read (one 80 ms step against 48 + 47 ms for two
+    separate steps).
+- **Serving-level calibration.** Best held-out capacity at 128t ÷ full = 0.67 for every workload (±0.17). With 192t on
+  the common budget it is 0.50–0.83. The serving loss exceeds the decode-step loss, because prefill sets the queueing.
+- **Disaggregated D pool.**
+  - A 128-CU decode worker loses no sustainable rate for balanced or prefill-heavy traffic, and one grid step for
+    decode-heavy.
+  - A specialized decode die with reduced compute is therefore viable when the prefill pool keeps full compute and the
+    decode pool has enough KV seats.
+  - KV capacity (seats), not compute, limited the decode worker first.
+- **Transfer term.**
+  - KV handoff costs ≈ 40–90 ms per request for 84 MB to 1.06 GB of logical KV over the intra-node link (41–50 GB/s).
+  - It overlaps the prefill response, so it adds latency, not a throughput limit, at ≤ 4 rps.
+  - Charge it as TTFT, plus link bandwidth of KV bytes per request × request rate (≤ 2 GB/s here).
+- **Shared-service term.**
+  - Mixed steps respond to memory competition like decode steps: ≈ +0.11 slowdown per TB/s of competitor traffic.
+  - Resident-history attention costs ≈ 6 ms per 1K tokens (32B), independent of CU count.
+  - Both are memory-side demands that do not shrink with compute area.
+- **Energy.** At equal rate, a 128t allocation costs 0–4% more energy per token for decode-heavy and balanced traffic, and
+  10–30% more for prefill-heavy traffic. Disaggregation saves 9–31% at equal rate for decode-heavy and balanced traffic.
 
 ## Reproduction
 
@@ -432,6 +620,9 @@ scripts/amd/cp/cp_submit.sh s1 mi300x 03:00:00
 scripts/amd/cp/cp_submit.sh s2 mi300x 10:00:00 --params scripts/amd/cp/params/mi300x_s2.json
 # stage 3: experiment 2 held-out + experiment 5 (job 530467)
 scripts/amd/cp/cp_submit.sh s3 mi300x 09:30:00 --params scripts/amd/cp/params/mi300x_s3.json
+# held-out stock reference (job 530904) and experiment-5 reruns with the connector fix + exploratory seats (job 530958)
+scripts/amd/cp/cp_submit.sh s3r mi300x 02:30:00 --params scripts/amd/cp/params/mi300x_s3.json
+scripts/amd/cp/cp_submit.sh s3d mi300x 01:45:00 --params scripts/amd/cp/params/mi300x_s3.json
 # cross-cohort: MI325X (529875), MI350X at 192 CUs (530192)
 scripts/amd/cp/cp_submit.sh x1 mi325x 02:30:00 --params scripts/amd/cp/params/mi300x_s2.json
 scripts/amd/cp/cp_submit.sh x1 mi350x 02:30:00 --params scripts/amd/cp/params/mi300x_s2.json --low 192

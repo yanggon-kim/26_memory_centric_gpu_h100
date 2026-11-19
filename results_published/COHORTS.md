@@ -34,8 +34,13 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261107_mi300x_goal_g5x_g5x_smoke_job507394` | 507394 | 20261107 | g5x_smoke goal_g5x | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
 | `amd_20261107_mi300x_goal_v1_auto_job502425` | 502425 | 20261107 | auto goal_v1 | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
 | `amd_20261108_mi300x_goal_g5x_g5x_job507396` | 507396 | 20261108 | g5x goal_g5x | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
-| `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190` | 511190 | 20261109 | g5y_smoke goal_g5y | - |
-| `amd_20261110_mi300x_goal_g5y_g5y_job511191` | 511191 | 20261110 | g5y goal_g5y | - |
+| `amd_20261109_mi300x_goal_g5y_g5y_smoke_job511190` | 511190 | 20261109 | g5y_smoke goal_g5y | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
+| `amd_20261110_mi300x_goal_g5y_g5y_job511191` | 511191 | 20261110 | g5y goal_g5y | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
+| `amd_20261118_mi300x_cp_s1` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261118_mi300x_cp_s2` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261118_mi300x_cp_s3` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md) |
+| `amd_20261118_mi300x_cp_s3d` | - | 20261118 | - | - |
+| `amd_20261118_mi300x_cp_s3r` | - | 20261118 | - | - |
 
 ## MI325X
 
@@ -50,7 +55,8 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261102_mi325x_cubw_v1_3_auto_job492957` | 492957 | 20261102 | auto cubw_v1.3 | [cubw_mi325x_extension_review_20261102](../docs/amd/cubw_mi325x_extension_review_20261102.md) |
 | `amd_20261106_mi325x_goal_v1_auto_job502426` | 502426 | 20261106 | auto goal_v1 | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
 | `amd_20261109_mi325x_goal_g5x_g5x_job507397` | 507397 | 20261109 | g5x goal_g5x | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
-| `amd_20261111_mi325x_goal_g5y_g5y_job511192` | 511192 | 20261111 | g5y goal_g5y | - |
+| `amd_20261111_mi325x_goal_g5y_g5y_job511192` | 511192 | 20261111 | g5y goal_g5y | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
+| `amd_20261118_mi325x_cp_x1` | - | 20261118 | - | [experiment_log](../docs/amd/experiment_log.md) |
 
 ## MI350X
 
@@ -67,6 +73,9 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261105_mi350x_oc_v0_dev_job502806` | 502806 | 20261105 | dev oc_v0 | - |
 | `amd_20261105_mi350x_oc_v0_heldout_job502899` | 502899 | 20261105 | heldout oc_v0 | - |
 | `amd_20261105_mi350x_oc_v0_pilot_job502625` | 502625 | 20261105 | pilot oc_v0 | [oc_pilot_review_20261105](../docs/amd/oc_pilot_review_20261105.md) |
+| `amd_20261118_mi350x_cp_x1` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261118_mi350x_cp_x1_cap32` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md) |
+| `amd_20261118_mi350x_cp_x1_low192` | - | 20261118 | - | - |
 
 ## Cross-cohort analyses
 
