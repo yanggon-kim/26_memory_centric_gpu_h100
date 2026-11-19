@@ -43,8 +43,32 @@ def _p2p_without_cumem():
     eng.set_p2p_nccl_context = ctx
 
 
+def _p2p_none_blocks():
+    """Fix for vLLM 0.23's P2pNcclConnector producer (s3 job 530467, 2026-11-18): when a chunked prompt's continuation
+    chunk fits in blocks already allocated, the scheduler passes new_block_ids = None for that cached request and
+    build_connector_meta hits `assert new_block_ids is not None`, killing the prefill worker (balanced at >= 2 rps and
+    pheavy at >= 1.5 rps). None means 'no new blocks', so for this call only each None entry is replaced by one empty
+    block list per KV-cache group (Qwen2.5 has one) and restored afterwards; the scheduler output is otherwise
+    untouched."""
+    from vllm.distributed.kv_transfer.kv_connector.v1.p2p.p2p_nccl_connector import P2pNcclConnector
+    orig = P2pNcclConnector.build_connector_meta
+
+    def build_connector_meta(self, scheduler_output):
+        c = scheduler_output.scheduled_cached_reqs
+        saved = c.new_block_ids
+        if any(b is None for b in saved):
+            c.new_block_ids = [([],) if b is None else b for b in saved]
+        try:
+            return orig(self, scheduler_output)
+        finally:
+            c.new_block_ids = saved
+    P2pNcclConnector.build_connector_meta = build_connector_meta
+
+
 if os.environ.get('CP_P2P_CUMEM') == '0':
     _p2p_without_cumem()
+if os.environ.get('CP_P2P_NONE_BLOCKS') == '1':
+    _p2p_none_blocks()
 
 
 class PolicyScheduler(Scheduler):

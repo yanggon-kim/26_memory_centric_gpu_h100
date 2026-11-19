@@ -265,6 +265,37 @@ def s3r(cohort, params):
     return p, lanes, load
 
 
+def s3d(cohort, params):
+    """Experiment 5 reruns after s3 (530467). (i) Pre-registered disagg cases whose prefill worker died on vLLM 0.23's
+    P2pNcclConnector assertion (balanced and pheavy, full and restricted decode), rerun with the connector fix
+    (cp_sched._p2p_none_blocks) on the same trace and rates. (ii) Exploratory, not pre-registered: the decode worker
+    capped at max_num_seqs = 64 limited dheavy disagg; disagg with a 128-seat decode worker and colocated-stock with 128
+    seats per server, same trace."""
+    p = Plan('s3d', cohort)
+    c = p.c
+    lam = params['lambda_star']
+    D = 'scripts/amd/cp/cp_disagg.py'
+    cases = [(wl, dn, extra) for wl in ('balanced', 'pheavy') for dn, extra in
+             (('disagg_full', []), ('disagg_r128', ['--decode-cus', c['low'], '--decode-grid', c['low']]))]
+    cases += [('dheavy', 'disagg_full_ds128', ['--decode-max-seqs', 128]),
+              ('dheavy', 'disagg_r128_ds128', ['--decode-max-seqs', 128, '--decode-cus', c['low'], '--decode-grid', c['low']])]
+    for wl, dn, extra in cases:
+        L2 = 2 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L2:.3g}' for x in GRID)
+        est = int(sum(150 / (x * L2) + 40 for x in GRID) + 600)
+        p.add('a', 'e5', f'e5_q32_{wl}_{dn}', D, ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX',
+              '--workload', wl, '--seeds', 201, '--requests', 150, '--drain-s', 60, '--deployment', 'disagg', '--rates', rs,
+              '--p2p-none-blocks-fix'] + extra, est=est, model='q32', workload=wl, deployment=dn)
+    L2 = 2 * lam['q32_dheavy']
+    p.add('a', 'e5', 'e5_q32_dheavy_colo_stock_s128', D, ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices',
+          '@IDX', '--workload', 'dheavy', '--seeds', 201, '--requests', 150, '--drain-s', 60, '--deployment', 'colocated',
+          '--rates', ','.join(f'{x * L2:.3g}' for x in GRID), '--max-seqs', 128],
+          est=int(sum(150 / (x * L2) + 40 for x in GRID) + 600), model='q32', workload='dheavy', deployment='colo_stock_s128')
+    lanes = {'a': {'P01': [0, 1], 'P23': [2, 3], 'P45': [4, 5], 'P67': [6, 7]}}
+    load = {'a': p.assign('a', list(lanes['a']))}
+    return p, lanes, load
+
+
 def x1(cohort, params, max_capture=None, low=None):
     """Cross-cohort reproduction (design section 8): experiment 1 (both models, full and reduced stock/tuned) and
     experiment-2 common-budget points around the MI300X transitions (balanced, pheavy; rates = MI300X lambda_q x GRID;
@@ -312,7 +343,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 'x1'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -325,7 +356,7 @@ if __name__ == '__main__':
     else:
         prm = json.loads(a.params.read_text())
         p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
-                          else {'s2': s2, 's3': s3, 's3r': s3r}[a.which](a.cohort, prm))
+                          else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "

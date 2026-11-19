@@ -261,7 +261,52 @@ Effects of tuning:
 
 ### 2c. Held-out judging (seeds 201–203, Poisson and bursty)
 
-__E2H__
+Each policy family runs with its tuned budget from 2b, at full and 128t, on held-out seeds 201, 202 and 203.
+Arrivals are Poisson and bursty, with 150 requests per trace (648 traces, all complete). Data:
+`results_published/amd_20261118_mi300x_cp_s3/serve_tables.json` (`experiment = e2h`). The stock reference (mixed,
+B = 2048, full) is in `..._mi300x_cp_s3r` (see the note below).
+
+Sustainable rate (rps) requires attainment ≥ 0.9 and no incomplete requests in **every** held-out seed at that rate and
+every lower rate (Poisson). Per-seed values are in brackets. "@λ_q" gives goodput (rps), p99 TTFT (s) and p99 of the
+per-request maximum stall (s) at λ_q.
+
+| workload (λ_q) | alloc | whole | chunked-separate (tuned) | mixed (tuned) |
+|---|---|---|---|---|
+| dheavy (2.0) | full | 2.5 [2.5, 3, 3]; @λ_q 2.09 / 0.14 / 0.23 | sep4096 2.5 [2.5, 3, 3]; 2.09 / 0.14 / 0.23 | **mix1024 3.0** [3, 3, 3]; 2.09 / 0.16 / 0.12 |
+|  | 128t | 1.5 [2, 1.5, 1.5]; 1.41 / 0.27 / 0.45 | sep2048 1.5 [2, 1.5, 1.5]; 1.30 / 0.27 / 0.48 | **mix256 2.0** [2, 2, 2]; 2.09 / 0.41 / 0.12 |
+| balanced (1.0) | full | 1.25 [1.5, 1.5, 1.25]; 1.04 / 0.50 / 1.06 | sep4096 1.5 [1.5, 1.5, 1.5]; 1.05 / 0.42 / 0.84 | **mix256 1.5** [2, 1.5, 1.5]; 1.05 / 1.10 / 0.10; attainment 0.91 at 2.0 vs 0.37–0.47 |
+|  | 128t | **1.0** [1, 1.5, 1]; 1.01 / 1.32 / 2.2 | sep512 **1.0** [1, 1.5, 1]; 1.01 / 1.41 / 2.7 | mix256 0.5 [0.75, 1, 0.5]; 0.86 / 2.27 / 0.18 |
+| pheavy (0.75) | full | **0.56** [0.56, 0.75, 0.94]; 0.70 / 2.8 / 4.1 | sep4096 **0.56** [0.56, 0.75, 0.75]; 0.69 / 3.4 / 6.1 | mix256 < 0.375 (attainment 0.85 at 0.375); 0.30 / 10.0 / 0.14 |
+|  | 128t | **0.375** [0.56, 0.375, 0.56] | sep512 < 0.375 [0.375, 0.375, 0] | mix256 < 0.375 (0.24) |
+
+**Bursty arrivals** (same request sets and mean rates): no configuration sustains 0.9 attainment in every seed at any
+grid rate. The best attainment at 0.5 λ_q:
+- dheavy full: mixed 0.89, separate 0.87;
+- balanced full: separate 0.82, whole 0.79, mixed 0.50;
+- pheavy full: whole 0.59, separate 0.55, mixed 0.16.
+
+Burst-induced queueing breaks the TTFT limits, which were set from a low-load Poisson pilot, for every policy. Mixing
+keeps the smallest stall tail under bursts too: 0.11–0.16 s, against 0.9–22 s for the separate policies.
+
+**Energy per output token at λ_q** is within ±3% across policies for each workload and allocation:
+- dheavy: 0.85 J (full) and 0.88–0.89 J (128t);
+- balanced: 3.0 J;
+- pheavy: 10.9–11.5 J (full) and 11.9–15.0 J (128t).
+
+At equal rate and policy, 128t costs 0–4% more energy per token for dheavy and balanced. For pheavy it costs 10–30%
+more, because prefill dominates there and each prefill token takes ≈1.8× longer.
+
+**Held-out vs development.** The held-out ranking agrees with development, with two changes:
+- At full allocation, decode-heavy mixed (B = 1024) now beats separate by one grid step (3.0 vs 2.5): separate dropped on
+  seed 201.
+- At 128t, decode-heavy mixed (B = 256) beats separate by one step (2.0 vs 1.5).
+
+**Reduced CUs after tuning** (best family at 128t ÷ best at full):
+- dheavy: 2.0 / 3.0 = 0.67;
+- balanced: 1.0 / 1.5 = 0.67;
+- pheavy: 0.375 / 0.56 = 0.67.
+
+Sustainable rates are grid-quantized, so these ratios are uncertain by ±1 grid step (about ±0.17).
 
 ### 2d. Cross-cohort reproduction (common budget, MI300X SLOs and rates)
 

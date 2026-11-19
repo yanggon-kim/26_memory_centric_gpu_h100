@@ -50,7 +50,8 @@ def mask_range(n):
 
 
 def server_cmd(a, cfg, port, role=None):
-    s = C.engine_settings(cfg, dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=a.max_seqs,
+    seqs = a.decode_max_seqs if (role == 'kv_consumer' and a.decode_max_seqs) else a.max_seqs
+    s = C.engine_settings(cfg, dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=seqs,
                                     max_model_len=min(a.max_model_len, a.budget) if a.no_chunk else a.max_model_len,
                                     gpu_memory_utilization=a.gpu_mem))
     cmd = [sys.executable, '-m', 'vllm.entrypoints.cli.main', 'serve', s['model'], '--port', str(port), '--host', '127.0.0.1',
@@ -78,6 +79,8 @@ def start_servers(a, cfg, out, uuids, idx):
         # decode worker waited forever for KV under a different id (dev run 2026-11-18). The client makes every request id
         # unique (uuid4 in X-Request-Id), so vLLM's documented switch is safe here.
         env0['VLLM_DISABLE_REQUEST_ID_RANDOMIZATION'] = '1'
+        if a.p2p_none_blocks_fix:
+            env0['CP_P2P_NONE_BLOCKS'] = '1'  # cp_sched._p2p_none_blocks (connector assertion on chunked prompts)
     env0.pop('HSA_CU_MASK', None)
     env0.pop('CUBW_CU_COUNT_OVERRIDE', None)
     plan = {'single': [(0, None)], 'colocated': [(0, None), (1, None)], 'disagg': [(0, 'kv_producer'), (1, 'kv_consumer')]}[a.deployment]
@@ -331,6 +334,8 @@ if __name__ == '__main__':
     p.add_argument('--requests', type=int, default=200)
     p.add_argument('--drain-s', type=float, default=60.0)
     p.add_argument('--max-seqs', type=int, default=64)
+    p.add_argument('--decode-max-seqs', type=int, default=None, help='disagg: max_num_seqs of the decode worker only')
+    p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)
     p.add_argument('--gpu-mem', type=float, default=0.85)
     p.add_argument('--cus', type=int, default=None, help='CU mask 0..n-1 for colocated/single workers')
