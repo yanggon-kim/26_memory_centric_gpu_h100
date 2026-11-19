@@ -488,3 +488,22 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   attempt 2 was started automatically. Record: `<root>/ras_ecc_after_1424.txt`.
 - MI350X x1 529874: every Qwen2.5-32B engine at 128 CUs hung in piecewise graph capture; diagnosed on single-GPU MI350X
   slices (530032, 530036); fallback capture limit 32 (design amendment 13), rerun as x1_cap32 530065.
+- 530065 (cap 32) also hung, this time on a 64-token iteration run eagerly. Qwen2.5-32B at 128 CUs on MI350X is
+  blocked (design amendment 13, updated). The MI350X reproduction was rerun at 192 CUs as x1_low192 530192 and
+  completed. Published: `amd_20261118_mi350x_cp_x1{,_cap32,_low192}`.
+
+## 2026-11-18 — Chunked-prefill campaign: s2, MI325X x1, s3 and follow-ups
+
+- s2 529873 (6 h 3 min): 95/95 steps. The 8 steps hit by the RAS event completed on attempt 2. MI325X x1 529875
+  (42 min): 17/17 steps. Published: `amd_20261118_mi300x_cp_s2`, `amd_20261118_mi325x_cp_x1`. Tuned selection:
+  `scripts/amd/cp/params/mi300x_s3.json`.
+- s3 530467 (5 h 18 min, node k002-002): 33/33 steps.
+  - `e5_q32_balanced_colo_tuned` attempt 1 failed: two servers raced on the Inductor/Triton cache ("Cubin file saved by
+    TritonBundler not found"). Attempt 2 completed.
+  - Every disaggregated prefill worker on balanced (≥ 2 rps) and pheavy (≥ 1.5 rps) died on vLLM 0.23
+    P2pNcclConnector `assert new_block_ids is not None`: a continuation chunk of a chunked prompt needed no new block.
+    All later requests in those traces failed (counted as incomplete).
+  - Fix: `cp_sched._p2p_none_blocks`, unit-tested against the real class on devel.
+  - Rerun of the four affected cases plus exploratory 128-seat decode cases: plan s3d (530958).
+  - Disaggregated decode-heavy traffic was capped by the common `max_num_seqs` = 64 on the single decode worker.
+- s3 left out the pre-registered held-out stock reference (mixed, B = 2048, full). It was added as plan s3r (530904).
