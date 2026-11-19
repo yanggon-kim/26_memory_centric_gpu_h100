@@ -325,6 +325,89 @@ def x1(cohort, params, max_capture=None, low=None):
     return p, lanes, load
 
 
+GIB = 1 << 30
+
+
+def s4(cohort, params, smoke=False):
+    """Follow-up tests after the five-experiment campaign (design section 14, pre-registered before any s4 data).
+    e6  prefill:decode worker ratio on four GPUs (Q0123, Q4567): colocated-tuned x4 vs disagg 1P3D / 2P2D / 3P1D, every
+        engine max_num_seqs 128, connector fix on, 300 requests, rates GRID x 4 lambda_q, held-out seeds 201 and 202.
+    e5s more held-out seeds for experiment 5 (two-GPU lanes): seeds 202 and 203 for the four pre-registered deployments
+        (64 seats) and the three 128-seat decode-heavy deployments (now pre-registered), same rates as s3.
+    e7  decode KV capacity: 1P1D, decode worker --kv-cache-memory-bytes 4/8/16/32 GiB or default, 256 decode seats, decode
+        on full or 128t, dheavy and balanced, seed 201.
+    smoke: two short four-GPU disagg steps (2P2D balanced; 3P1D pheavy with 128t decode and 8 GiB decode KV)."""
+    p = Plan('s4' + ('_smoke' if smoke else ''), cohort)
+    c = p.c
+    lam = params['lambda_star']
+    D = 'scripts/amd/cp/cp_disagg.py'
+    base = ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX', '--drain-s', 60]
+    low = ['--decode-cus', c['low'], '--decode-grid', c['low']]
+    fix = ['--p2p-none-blocks-fix']
+    est_of = lambda L, n: int(sum(n / (x * L) + 40 for x in GRID) + 600)  # noqa: E731
+    Q = {'Q0123': [0, 1, 2, 3], 'Q4567': [4, 5, 6, 7]}
+    PAIRS = {'P01': [0, 1], 'P23': [2, 3], 'P45': [4, 5], 'P67': [6, 7]}
+    if smoke:
+        p.add('a', 'e6', 'e6s_q32_balanced_d2p2', D, base + ['--workload', 'balanced', '--seeds', 201, '--requests', 40,
+              '--deployment', 'disagg', '--prefill-workers', 2, '--rates', 2, '--max-seqs', 128] + fix, est=900,
+              model='q32', workload='balanced', deployment='d2p2', prefill_workers=2)
+        p.add('a', 'e6', 'e6s_q32_pheavy_d3p1_r128_kv8', D, base + ['--workload', 'pheavy', '--seeds', 201, '--requests', 40,
+              '--deployment', 'disagg', '--prefill-workers', 3, '--rates', 1.5, '--max-seqs', 128, '--decode-kv-bytes',
+              8 * GIB] + low + fix, est=900, model='q32', workload='pheavy', deployment='d3p1_r128_kv8', prefill_workers=3,
+              decode_kv_gib=8, decode_alloc=f"{c['low']}t")
+        lanes = {'a': Q}
+        return p, lanes, {'a': p.assign('a', list(Q))}
+    # e6: worker ratio on four GPUs
+    e6 = {'dheavy': ('colo4_tuned', 'd1p3', 'd2p2'), 'balanced': ('colo4_tuned', 'd1p3', 'd2p2', 'd3p1'),
+          'pheavy': ('colo4_tuned', 'd2p2', 'd3p1')}
+    for wl, deps in e6.items():
+        L4 = 4 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L4:.3g}' for x in GRID)
+        best = params['best_colocated'][wl]
+        for dn in deps:
+            if dn == 'colo4_tuned':
+                extra, npf = ['--deployment', 'colocated', '--policy', best['policy'], '--budget', best['budget']] + \
+                    (['--no-chunk'] if best.get('whole') else []), None
+            else:
+                npf = int(dn[1])
+                extra = ['--deployment', 'disagg', '--prefill-workers', npf] + fix
+            for seed in (201, 202):
+                p.add('a', 'e6', f'e6_q32_{wl}_{dn}_s{seed}', D, base + ['--workload', wl, '--seeds', seed, '--requests', 300,
+                      '--rates', rs, '--max-seqs', 128] + extra, est=est_of(L4, 300), model='q32', workload=wl,
+                      deployment=dn, prefill_workers=npf, seed=seed)
+    # e5s: more seeds for the two-GPU comparison
+    for wl in ('dheavy', 'balanced', 'pheavy'):
+        L2 = 2 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L2:.3g}' for x in GRID)
+        best = params['best_colocated'][wl]
+        deps = {'colo_stock': ['--deployment', 'colocated'],
+                'colo_tuned': ['--deployment', 'colocated', '--policy', best['policy'], '--budget', best['budget']]
+                + (['--no-chunk'] if best.get('whole') else []),
+                'disagg_full': ['--deployment', 'disagg'] + fix,
+                'disagg_r128': ['--deployment', 'disagg'] + low + fix}
+        if wl == 'dheavy':
+            deps.update({'disagg_full_ds128': ['--deployment', 'disagg', '--decode-max-seqs', 128] + fix,
+                         'disagg_r128_ds128': ['--deployment', 'disagg', '--decode-max-seqs', 128] + low + fix,
+                         'colo_stock_s128': ['--deployment', 'colocated', '--max-seqs', 128]})
+        for dn, extra in deps.items():
+            for seed in (202, 203):
+                p.add('b', 'e5s', f'e5s_q32_{wl}_{dn}_s{seed}', D, base + ['--workload', wl, '--seeds', seed, '--requests', 150,
+                      '--rates', rs] + extra, est=est_of(L2, 150), model='q32', workload=wl, deployment=dn, seed=seed)
+    # e7: decode KV capacity
+    for wl in ('dheavy', 'balanced'):
+        L2 = 2 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L2:.3g}' for x in GRID)
+        for an, ex in (('full', []), (f"{c['low']}t", low)):
+            for kv in (4, 8, 16, 32, None):
+                dn = f"d1p1_{an}_kv{kv or 'def'}"
+                p.add('b', 'e7', f'e7_q32_{wl}_{dn}', D, base + ['--workload', wl, '--seeds', 201, '--requests', 150, '--rates',
+                      rs, '--deployment', 'disagg', '--decode-max-seqs', 256] + (['--decode-kv-bytes', kv * GIB] if kv else [])
+                      + ex + fix, est=est_of(L2, 150), model='q32', workload=wl, deployment=dn, decode_kv_gib=kv,
+                      decode_alloc=an)
+    lanes = {'a': Q, 'b': PAIRS}
+    return p, lanes, {st: p.assign(st, list(lanes[st])) for st in lanes}
+
+
 def finalize(p, lanes, load):
     c = p.c
     plan = {'campaign': 'cp_20261118', 'plan': p.name, 'cohort': p.cohort, 'arch': c['arch'], 'full_cus': c['full'],
@@ -343,7 +426,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 'x1'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 's4', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -356,6 +439,7 @@ if __name__ == '__main__':
     else:
         prm = json.loads(a.params.read_text())
         p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
+                          else s4(a.cohort, prm, a.smoke) if a.which == 's4'
                           else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')

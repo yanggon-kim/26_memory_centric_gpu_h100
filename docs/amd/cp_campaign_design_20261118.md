@@ -254,3 +254,56 @@ the 128-CU mask on MI350X, graph or eager (Qwen2.5-7B at 128 CUs and Qwen2.5-32B
 --params scripts/amd/cp/params/mi300x_s2.json` after a ROCm/vLLM change). The MI350X reproduction uses **192 CUs** as its
 reduced allocation (stock 512 capture limit; plan x1_low192). Completed steps of 529874 and 530065 are kept and labelled
 by their capture limit.
+
+## 14. Follow-up tests (pre-registered 2026-11-19, before any s4 data)
+
+Motivation: results report `docs/amd/cp_campaign_results_20261118.md`, "uncertain" list. Plan `s4`
+(`scripts/amd/cp/cp_plan.py s4`); smoke plan `s4 --smoke` runs first. Model Qwen2.5-32B on MI300X, the SLOs in
+`scripts/amd/cp/params/mi300x_slo.json`, λ_q and tuned colocated settings from `scripts/amd/cp/params/mi300x_s3.json`,
+and the sustainable-rate rule of section 11 all apply unchanged. Every disaggregated worker uses the
+connector fix (`--p2p-none-blocks-fix`, results deviation 11). Energy is counted on every board of the deployment.
+
+**e6: prefill:decode worker ratio on four GPUs** (4-GPU lanes 0–3 and 4–7; every worker sees all four lane GPUs, own GPU
+first).
+- Deployments:
+  - `colo4_tuned`: four colocated servers with the tuned policy and budget (dheavy mixed 1024, balanced mixed 256,
+    pheavy separate 4096) and least-outstanding-work routing.
+  - `dXpY`: X prefill and Y decode workers, all at full allocation. For each request, the client picks the prefill
+    worker with the fewest outstanding prompt tokens and the decode worker with the fewest outstanding output tokens.
+- Ratios: 1P3D and 2P2D for dheavy; 1P3D, 2P2D and 3P1D for balanced; 2P2D and 3P1D for pheavy.
+- Settings: every engine runs `max_num_seqs = 128`. Each trace has 300 requests (30 warmup). Rates are GRID × 4λ_q.
+  Held-out seeds are 201 and 202, each in its own step.
+- Hypothesis: the best disaggregated ratio matches colo4_tuned on sustainable rate for every workload. In particular,
+  3P1D does so for pheavy, where 1P1D lost at 1.12 vs 1.88 rps.
+- Decision: per workload, compare the best disaggregated ratio with colo4_tuned. It is a **win** if it is at least one
+  grid step higher on both seeds, a **loss** if it is at least one step lower on both, and otherwise **uncertain**. The
+  "all-seed" rate is the minimum over seeds. ITL p99, TTFT and joules per token at a common rate are reported as
+  secondary outcomes.
+
+**e5s: replication of experiment 5 on more seeds** (2-GPU lanes).
+- Seeds 202 and 203, with the s3 rates and 150 requests.
+- Deployments: colo_stock, colo_tuned, disagg_full and disagg_r128, all at 64 seats as pre-registered in section 7.
+- The three 128-seat decode-heavy deployments (disagg_full_ds128, disagg_r128_ds128, colo_stock_s128) are now
+  pre-registered. Their seed-201 values (s3d) stay exploratory.
+- Outcome: the all-seed sustainable rate (minimum over seeds 201–203) per deployment.
+- A seed-201 conclusion in results section 5 is **confirmed** if the all-seed ranking between that deployment and
+  colo_tuned matches seed 201's. Otherwise it is **revised**, and the report will state so.
+
+**e7: decode KV capacity** (2-GPU lanes, 1P1D).
+- The decode worker runs `--kv-cache-memory-bytes` of 4, 8, 16 or 32 GiB, or the default (gpu_memory_utilization
+  0.85). That is about 16K / 33K / 66K / 131K tokens at 256 KiB per token.
+- `max_num_seqs = 256` on the decode worker, so seats do not bind before KV.
+- Decode allocation is full or 128t. Workloads are dheavy and balanced, seed 201, 150 requests, at the s3 rates.
+- Outcomes:
+  - sustainable rate as a function of decode KV GiB × decode CUs;
+  - decode-worker preemptions per trace;
+  - peak KV usage and running requests.
+- Hypothesis: below the knee, sustainable rate is limited by KV capacity and is the same at full and 128t. Above it,
+  the curve flattens at the default-KV rate.
+- Knee: the smallest KV level whose all-rate sustainable rate is within one grid step of the default-KV rate, at each
+  allocation.
+- Reported as an input to the decode-only area model: KV bytes needed per unit of decode rate, with masks still not
+  standing for area.
+
+Failure handling as before: at most two attempts per step, and failures are kept. If the four-GPU connector path fails
+in the smoke plan, e6 is replaced by a labelled 3-GPU or modelled comparison, and the blocker is recorded.

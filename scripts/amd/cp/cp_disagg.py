@@ -22,6 +22,12 @@ chunks), completion, output digest. Per trace: both workers' queue depth (/metri
 vs completed. Logical KV bytes per transferred request = prompt tokens x kv_bytes_per_token (block-granular bytes are
 rounded up to the block size in the analysis).
 
+Multi-GPU generalization (design section 14, plan s4): with k GPUs in --gpu-indices, colocated runs k servers (same
+least-outstanding-work router) and disagg runs --prefill-workers P producers on the first P GPUs and the remaining k - P
+GPUs as consumers. Per request the client picks the producer with the fewest outstanding prompt tokens and the consumer
+with the least outstanding work (output tokens not yet generated), both at send time, because the connector's request id
+names both KV addresses. --decode-kv-bytes sets --kv-cache-memory-bytes on consumers (explicit decode KV capacity).
+
   cp_disagg.py --config cfg.json --gpu-uuids UA,UB --gpu-indices 0,1 --output DIR --deployment disagg
                --workload balanced --arrivals poisson --rates 1,2 --seeds 201 --requests 200 [--decode-cus 128 --decode-grid 128]
 """
@@ -41,8 +47,8 @@ import cp_common as C  # noqa: E402
 import cp_trace as T  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
-HTTP = [18101, 18102]  # offset per lane by 10 x first GPU index (concurrent lanes on one node, set in main)
-KV_PORT = [21101, 22101]
+HTTP = [18101, 18102]  # worker k: 18101 + k + 10 x first GPU index (concurrent lanes on one node, set in main)
+KV_PORT = [21101, 22101]  # worker k: 21101 + 1000 k + 10 x first GPU index
 
 
 def mask_range(n):
@@ -51,6 +57,7 @@ def mask_range(n):
 
 def server_cmd(a, cfg, port, role=None):
     seqs = a.decode_max_seqs if (role == 'kv_consumer' and a.decode_max_seqs) else a.max_seqs
+    k = HTTP.index(port)
     s = C.engine_settings(cfg, dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=seqs,
                                     max_model_len=min(a.max_model_len, a.budget) if a.no_chunk else a.max_model_len,
                                     gpu_memory_utilization=a.gpu_mem))
@@ -62,10 +69,12 @@ def server_cmd(a, cfg, port, role=None):
            '--disable-uvicorn-access-log', '--tensor-parallel-size', '1', '--no-async-scheduling',
            '--compilation-config', json.dumps(C.COMPILATION)]
     if role:
-        kv = {'kv_connector': 'P2pNcclConnector', 'kv_role': role, 'kv_port': str(KV_PORT[0] if role == 'kv_producer' else KV_PORT[1]),
+        kv = {'kv_connector': 'P2pNcclConnector', 'kv_role': role, 'kv_port': str(KV_PORT[k]),
               'kv_buffer_size': '1e1' if role == 'kv_producer' else '8e9',
               'kv_connector_extra_config': {'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16', 'http_port': str(port)}}
         cmd += ['--kv-transfer-config', json.dumps(kv)]
+        if role == 'kv_consumer' and a.decode_kv_bytes:
+            cmd += ['--kv-cache-memory-bytes', str(a.decode_kv_bytes)]
     return cmd
 
 
@@ -83,15 +92,17 @@ def start_servers(a, cfg, out, uuids, idx):
             env0['CP_P2P_NONE_BLOCKS'] = '1'  # cp_sched._p2p_none_blocks (connector assertion on chunked prompts)
     env0.pop('HSA_CU_MASK', None)
     env0.pop('CUBW_CU_COUNT_OVERRIDE', None)
-    plan = {'single': [(0, None)], 'colocated': [(0, None), (1, None)], 'disagg': [(0, 'kv_producer'), (1, 'kv_consumer')]}[a.deployment]
+    n = len(idx)
+    plan = {'single': [(0, None)], 'colocated': [(k, None) for k in range(n)],
+            'disagg': [(k, 'kv_producer' if k < a.prefill_workers else 'kv_consumer') for k in range(n)]}[a.deployment]
     for k, role in plan:
-        # disagg: both GPUs visible, own GPU first (vLLM uses device 0), so RCCL can open the peer for the KV transfer
+        # disagg: all lane GPUs visible, own GPU first (vLLM uses device 0), so RCCL can open the peers for the KV transfer
         # (with only its own GPU visible, ncclCommInitRank failed with 'unhandled cuda error', dev run 2026-11-18)
-        vis = [idx[k], idx[1 - k]] if a.deployment == 'disagg' else [idx[k]]
+        vis = [idx[k]] + [g for g in idx if g != idx[k]] if a.deployment == 'disagg' else [idx[k]]
         env = dict(env0, HIP_VISIBLE_DEVICES=','.join(map(str, vis)), CP_STEPLOG=str(out / f'steplog_w{k}.jsonl'))
         if a.nccl_debug:
             env['NCCL_DEBUG'] = 'INFO'
-        cus, grid = (a.decode_cus, a.decode_grid) if (a.deployment == 'disagg' and k == 1) else (a.cus, a.grid)
+        cus, grid = (a.decode_cus, a.decode_grid) if role == 'kv_consumer' else (a.cus, a.grid)
         if cus:
             env['HSA_CU_MASK'] = f'{idx[k]}:{mask_range(cus)}'
         if grid:
@@ -157,18 +168,28 @@ async def one(session, a, q, t0, route, rec, out_load):
     rec['send_s'] = time.perf_counter() - t0
     try:
         if a.deployment == 'disagg':
-            rid = f"___prefill_addr_{a.kv_ip}:{KV_PORT[0]}___decode_addr_{a.kv_ip}:{KV_PORT[1]}_{uuid.uuid4().hex}"
+            i, j = route(q)
+            rec['route'] = f'p{i}->d{j}'
+            rid = f"___prefill_addr_{a.kv_ip}:{KV_PORT[i]}___decode_addr_{a.kv_ip}:{KV_PORT[j]}_{uuid.uuid4().hex}"
             hdr = {'X-Request-Id': rid}
             pb = dict(body, max_tokens=1, stream=False)
-            tp = time.perf_counter()
-            async with session.post(f'http://127.0.0.1:{HTTP[0]}/v1/completions', json=pb, headers=hdr) as r:
-                txt = await r.text()
-                if r.status != 200:
-                    rec['prefill_error'] = f'HTTP {r.status}: {txt[:300]}'
-            rec['prefill_done_s'] = time.perf_counter() - t0
-            rec['prefill_s'] = time.perf_counter() - tp
-            times, toks = await stream(session, HTTP[1], body, hdr, rec, 'decode')
-            rec['route'] = 'p0->d1'
+            P, O = len(q['prompt_ids']), q['max_tokens']
+            out_load[i] += P
+            out_load[j] += O
+            try:
+                tp = time.perf_counter()
+                try:
+                    async with session.post(f'http://127.0.0.1:{HTTP[i]}/v1/completions', json=pb, headers=hdr) as r:
+                        txt = await r.text()
+                        if r.status != 200:
+                            rec['prefill_error'] = f'HTTP {r.status}: {txt[:300]}'
+                finally:
+                    out_load[i] -= P
+                rec['prefill_done_s'] = time.perf_counter() - t0
+                rec['prefill_s'] = time.perf_counter() - tp
+                times, toks = await stream(session, HTTP[j], body, hdr, rec, 'decode')
+            finally:
+                out_load[j] -= O
         else:
             k = route(q)
             rec['route'] = f'w{k}'
@@ -186,7 +207,8 @@ async def one(session, a, q, t0, route, rec, out_load):
 
 
 async def poll_metrics(session, procs, t0, stop, sink):
-    names = (b'vllm:num_requests_running', b'vllm:num_requests_waiting', b'vllm:kv_cache_usage_perc')
+    names = (b'vllm:num_requests_running', b'vllm:num_requests_waiting', b'vllm:kv_cache_usage_perc',
+             b'vllm:num_preemptions_total')
     while not stop.is_set():
         row = {'t': time.perf_counter() - t0}
         for p in procs:
@@ -207,10 +229,14 @@ async def poll_metrics(session, procs, t0, stop, sink):
 
 
 async def run_trace(session, a, reqs, procs, deadline_s):
-    out_load = [0, 0]
+    n = len(procs)
+    out_load = [0] * n
+    npf = a.prefill_workers
 
     def route(q):
-        return min(range(2), key=lambda k: (out_load[k], k)) if a.deployment == 'colocated' else 0
+        if a.deployment == 'disagg':  # (producer, consumer)
+            return (min(range(npf), key=lambda k: (out_load[k], k)), min(range(npf, n), key=lambda k: (out_load[k], k)))
+        return min(range(n), key=lambda k: (out_load[k], k)) if a.deployment == 'colocated' else 0
     recs = [{'id': q['id'], 'arrival_s': q['arrival_s'], 'prompt_len': len(q['prompt_ids']), 'max_tokens': q['max_tokens'],
              'tokens': 0}
             for q in reqs]
@@ -236,8 +262,10 @@ def main(a):
     uuids, idx = a.gpu_uuids.split(','), [int(x) for x in a.gpu_indices.split(',')]
     from vllm.utils.network_utils import get_ip
     off = 10 * idx[0]
-    HTTP[:] = [18101 + off, 18102 + off]
-    KV_PORT[:] = [21101 + off, 22101 + off]
+    HTTP[:] = [18101 + k + off for k in range(len(idx))]
+    KV_PORT[:] = [21101 + 1000 * k + off for k in range(len(idx))]
+    if a.deployment == 'disagg' and not 1 <= a.prefill_workers < len(idx):
+        raise SystemExit('disagg needs 1 <= --prefill-workers < number of GPUs')
     a.kv_ip = get_ip()  # the P2pNccl engine binds its ZMQ router to this address (kv_ip is not used for binding)
     from gpu_target import load_nvml
     nvml = load_nvml()
@@ -335,6 +363,8 @@ if __name__ == '__main__':
     p.add_argument('--drain-s', type=float, default=60.0)
     p.add_argument('--max-seqs', type=int, default=64)
     p.add_argument('--decode-max-seqs', type=int, default=None, help='disagg: max_num_seqs of the decode worker only')
+    p.add_argument('--prefill-workers', type=int, default=1, help='disagg: producers on the first P GPUs, consumers on the rest')
+    p.add_argument('--decode-kv-bytes', type=int, default=None, help='disagg: --kv-cache-memory-bytes of every consumer')
     p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)
     p.add_argument('--gpu-mem', type=float, default=0.85)

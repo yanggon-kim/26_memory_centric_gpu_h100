@@ -398,10 +398,15 @@ def disagg_trace(t, slo, kv_per_tok):
         out['joules_per_output_token_two_boards'] = sum(js) / tok
         out['joules_by_board'] = js
     m = t.get('metrics') or []
-    for k in ('w0_num_requests_waiting', 'w1_num_requests_waiting', 'w0_num_requests_running', 'w1_num_requests_running'):
+    for k in sorted({k for x in m for k in x if k != 't'}):
         v = [x[k] for x in m if k in x]
-        if v:
+        if not v:
+            continue
+        if k.endswith('num_preemptions_total'):  # counter: preemptions during this trace
+            out[k.replace('_total', '_trace')] = v[-1] - v[0]
+        else:
             out[k + '_max'] = max(v)
+    out['routes'] = sorted({r.get('route') for r in reqs if r.get('route')})
     return out
 
 
@@ -414,7 +419,7 @@ def disagg(a):
     jr = journal(root)
     rows = []
     for s in plan['steps']:
-        if s['experiment'] != 'e5':
+        if s['experiment'] not in ('e5', 'e5s', 'e6', 'e7'):
             continue
         rec = final(jr.get(s['id'], []))
         if not rec or not rec.get('command_completed'):
@@ -427,7 +432,9 @@ def disagg(a):
         lim = slo[f"{s['model']}_{s['workload']}"]
         for tr in meta['traces']:
             t = json.loads((run / tr['file']).read_text())
-            rows.append({'id': s['id'], 'deployment': s['deployment'], 'workload': s['workload'], 'rate': t['rate'],
+            rows.append({'id': s['id'], 'experiment': s['experiment'], 'deployment': s['deployment'], 'workload': s['workload'],
+                         'rate': t['rate'], 'seed': t.get('seed'), 'gpus': len(meta['gpus']), 'prefill_workers':
+                         s.get('prefill_workers'), 'decode_kv_gib': s.get('decode_kv_gib'), 'decode_alloc': s.get('decode_alloc'),
                          'trace_sha256': t['trace_sha256'], **disagg_trace(t, lim, kv)})
     (out / 'e5_tables.json').write_text(json.dumps(rows, indent=1, default=str) + '\n')
     print(f'e5 rows {len(rows)} -> {out}')
