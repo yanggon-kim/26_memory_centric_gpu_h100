@@ -18,7 +18,7 @@ grid tuned to n CUs. No clocks, power limits, drivers or firmware were changed.
 | 2 | Three scheduling policies under identical open-loop traffic | **completed** (development, tuning, held-out, stock reference, cross-cohort) | MI300X (dev: 32B and 7B; held-out: 32B); MI325X and MI350X common-budget reproduction |
 | 3 | Resident history vs fresh prefill | **completed** (step and serving level; physical HBM bytes unavailable) | MI300X, both models (step), 32B (serving) |
 | 4 | Disjoint-CU competition on mixed steps | **completed** | MI300X 32B, masks 128/192/256 |
-| 5 | Colocated replicas vs disaggregated workers | **completed** (all four pre-registered deployments; replicated on seeds 202–203 and extended to four GPUs and decode KV limits in section 6 and the single-GPU reference on three workloads; two disaggregated cases completed in a rerun after a connector fix; exploratory 128-seat cases labelled) | MI300X 32B, four GPU pairs |
+| 5 | Colocated replicas vs disaggregated workers | **completed** (all four pre-registered deployments and the single-GPU reference on three workloads; two disaggregated cases completed in a rerun after a connector fix; replicated on seeds 202–203, and extended to four-GPU worker ratios and decode KV limits in section 6) | MI300X 32B, GPU pairs and quads |
 
 Main answers (details and qualifications below):
 
