@@ -524,3 +524,13 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   four workers. 3P1D pheavy at 1.5 rps with 128t decode and 8 GiB decode KV (32,768 tokens, confirmed in the server log):
   40/40, no errors, 0 preemptions. Published `results_published/amd_20261119_mi300x_cp_s4_smoke`.
 - Full s4 (job 531381, 70 steps, pre-registered in design section 14) released from hold.
+
+### 2026-11-19 — cp s4 and s4r complete
+
+- s4 (job 531381, 4:25:13): 70/70 steps, 420 traces. Published `results_published/amd_20261119_mi300x_cp_s4`.
+  e6: pheavy 3P1D 4.5/4.5 vs colo4_tuned 3.75/3.0 rps (pre-registered win); dheavy and balanced tie at the top of the
+  grid. e5s: seed-201 rankings confirmed on seeds 202/203. e7: KV-limited below 16 GiB (full) or 32 GiB (128t, dheavy);
+  128t needs ≈ 11–50% more decode KV at equal rate.
+- e6 balanced 3P1D: the decode worker aborted with HSA_STATUS_ERROR_OUT_OF_RESOURCES at the top rate in both seeds.
+  The second attempt s4r (job 531813, decode gpu_memory_utilization 0.80) sustained 6 rps on both seeds and aborted
+  again at 8. Both attempts are used; the row is reported as a lower bound (results deviation 14).

@@ -38,9 +38,12 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261110_mi300x_goal_g5y_g5y_job511191` | 511191 | 20261110 | g5y goal_g5y | [experiment_log](../docs/amd/experiment_log.md), [goal_followup_results_20261107](../docs/amd/goal_followup_results_20261107.md) |
 | `amd_20261118_mi300x_cp_s1` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
 | `amd_20261118_mi300x_cp_s2` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
-| `amd_20261118_mi300x_cp_s3` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md) |
-| `amd_20261118_mi300x_cp_s3d` | - | 20261118 | - | - |
-| `amd_20261118_mi300x_cp_s3r` | - | 20261118 | - | - |
+| `amd_20261118_mi300x_cp_s3` | - | 20261118 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261118_mi300x_cp_s3d` | - | 20261118 | - | [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261118_mi300x_cp_s3r` | - | 20261118 | - | [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261119_mi300x_cp_s4` | - | 20261119 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261119_mi300x_cp_s4_smoke` | - | 20261119 | - | [experiment_log](../docs/amd/experiment_log.md) |
+| `amd_20261119_mi300x_cp_s4r` | - | 20261119 | - | - |
 
 ## MI325X
 

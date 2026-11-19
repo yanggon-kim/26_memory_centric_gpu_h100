@@ -1,0 +1,146 @@
+{
+ "campaign": "cp_20261118",
+ "plan": "s4r",
+ "cohort": "mi300x",
+ "arch": "gfx942",
+ "full_cus": 304,
+ "gpu_name": "MI300X",
+ "gpus": 8,
+ "partition": "mi3008x",
+ "charge_rate": 1.0,
+ "competitor_mask": "256-303",
+ "stages": [
+  "a"
+ ],
+ "lanes": {
+  "a": {
+   "Q0123": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "Q4567": [
+    4,
+    5,
+    6,
+    7
+   ]
+  }
+ },
+ "reserve_s": 900,
+ "design": "docs/amd/cp_campaign_design_20261118.md",
+ "handoff": "docs/amd/chunked_prefill_campaign_20261118.md",
+ "steps": [
+  {
+   "id": "e6_q32_balanced_d3p1_s201_a2",
+   "stage": "a",
+   "experiment": "e6",
+   "kind": "engine",
+   "script": "scripts/amd/cp/cp_disagg.py",
+   "args": [
+    "--config",
+    "scripts/amd/cp/configs/qwen32b.json",
+    "--gpu-uuids",
+    "@UUIDS",
+    "--gpu-indices",
+    "@IDX",
+    "--drain-s",
+    "60",
+    "--workload",
+    "balanced",
+    "--seeds",
+    "201",
+    "--requests",
+    "300",
+    "--rates",
+    "2,3,4,5,6,8",
+    "--max-seqs",
+    "128",
+    "--deployment",
+    "disagg",
+    "--prefill-workers",
+    "3",
+    "--p2p-none-blocks-fix",
+    "--decode-gpu-mem",
+    "0.8"
+   ],
+   "cus": null,
+   "grid": null,
+   "treatment": "absent",
+   "est_s": 1312,
+   "timeout_s": 4836,
+   "pin": null,
+   "model": "q32",
+   "workload": "balanced",
+   "deployment": "d3p1",
+   "prefill_workers": 3,
+   "seed": 201,
+   "attempt_of": "e6_q32_balanced_d3p1_s201",
+   "lane": "Q0123",
+   "order": 0
+  },
+  {
+   "id": "e6_q32_balanced_d3p1_s202_a2",
+   "stage": "a",
+   "experiment": "e6",
+   "kind": "engine",
+   "script": "scripts/amd/cp/cp_disagg.py",
+   "args": [
+    "--config",
+    "scripts/amd/cp/configs/qwen32b.json",
+    "--gpu-uuids",
+    "@UUIDS",
+    "--gpu-indices",
+    "@IDX",
+    "--drain-s",
+    "60",
+    "--workload",
+    "balanced",
+    "--seeds",
+    "202",
+    "--requests",
+    "300",
+    "--rates",
+    "2,3,4,5,6,8",
+    "--max-seqs",
+    "128",
+    "--deployment",
+    "disagg",
+    "--prefill-workers",
+    "3",
+    "--p2p-none-blocks-fix",
+    "--decode-gpu-mem",
+    "0.8"
+   ],
+   "cus": null,
+   "grid": null,
+   "treatment": "absent",
+   "est_s": 1312,
+   "timeout_s": 4836,
+   "pin": null,
+   "model": "q32",
+   "workload": "balanced",
+   "deployment": "d3p1",
+   "prefill_workers": 3,
+   "seed": 202,
+   "attempt_of": "e6_q32_balanced_d3p1_s202",
+   "lane": "Q4567",
+   "order": 0
+  }
+ ],
+ "budget": {
+  "lane_seconds": {
+   "a": {
+    "Q0123": 1312,
+    "Q4567": 1312
+   }
+  },
+  "longest_lane_s": {
+   "a": 1312
+  },
+  "node_hours_est": 0.66,
+  "allocation_units_est": 0.66
+ },
+ "plan_sha256": "9022c166912e615cc0fe4e49d8319b46dac4ceddf716202fb37728d42d063913"
+}
