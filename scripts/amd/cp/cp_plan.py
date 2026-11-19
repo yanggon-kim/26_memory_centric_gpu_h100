@@ -248,6 +248,23 @@ def s3(cohort, params):
     return p, lanes, load
 
 
+def s3r(cohort, params):
+    """Experiment 2 held-out stock reference (design section 4 stage iii: mixed, B = 2048, full allocation) on held-out
+    seeds 201-203, Poisson and bursty; omitted from s3 and added afterwards (results report, deviations). One step per
+    (workload, seed, arrival) so the eight lanes share the work."""
+    p = Plan('s3r', cohort)
+    al = p.allocs(('full',))
+    lam = params['lambda_star']
+    for wl in ('dheavy', 'balanced', 'pheavy'):
+        for seed in (201, 202, 203):
+            for arr in ('poisson', 'bursty'):
+                serve_step(p, 'a', 'e2h', f'e2h_q32_{wl}_full_stock_mix2048_s{seed}_{arr}', 'q32', wl, POLICIES['mix2048'],
+                           al['full'], lam[f'q32_{wl}'], [seed], [arr], 150, alloc='full', pname='mix2048', family='stock')
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    load = {'a': p.assign('a', list(lanes['a']))}
+    return p, lanes, load
+
+
 def x1(cohort, params, max_capture=None, low=None):
     """Cross-cohort reproduction (design section 8): experiment 1 (both models, full and reduced stock/tuned) and
     experiment-2 common-budget points around the MI300X transitions (balanced, pheavy; rates = MI300X lambda_q x GRID;
@@ -295,7 +312,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3', 'x1'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -308,7 +325,7 @@ if __name__ == '__main__':
     else:
         prm = json.loads(a.params.read_text())
         p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
-                          else {'s2': s2, 's3': s3}[a.which](a.cohort, prm))
+                          else {'s2': s2, 's3': s3, 's3r': s3r}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "
