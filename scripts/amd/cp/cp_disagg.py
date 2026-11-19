@@ -60,7 +60,8 @@ def server_cmd(a, cfg, port, role=None):
     k = HTTP.index(port)
     s = C.engine_settings(cfg, dict(cfg.get('engine', {}), max_num_batched_tokens=a.budget, max_num_seqs=seqs,
                                     max_model_len=min(a.max_model_len, a.budget) if a.no_chunk else a.max_model_len,
-                                    gpu_memory_utilization=a.gpu_mem))
+                                    gpu_memory_utilization=a.decode_gpu_mem if (role == 'kv_consumer' and a.decode_gpu_mem)
+                                    else a.gpu_mem))
     cmd = [sys.executable, '-m', 'vllm.entrypoints.cli.main', 'serve', s['model'], '--port', str(port), '--host', '127.0.0.1',
            '--dtype', 'bfloat16', '--seed', str(s['seed']), '--generation-config', 'vllm', '--max-model-len', str(s['max_model_len']),
            '--max-num-seqs', str(s['max_num_seqs']), '--max-num-batched-tokens', str(s['max_num_batched_tokens']),
@@ -364,6 +365,7 @@ if __name__ == '__main__':
     p.add_argument('--max-seqs', type=int, default=64)
     p.add_argument('--decode-max-seqs', type=int, default=None, help='disagg: max_num_seqs of the decode worker only')
     p.add_argument('--prefill-workers', type=int, default=1, help='disagg: producers on the first P GPUs, consumers on the rest')
+    p.add_argument('--decode-gpu-mem', type=float, default=None, help='disagg: gpu_memory_utilization of consumers only')
     p.add_argument('--decode-kv-bytes', type=int, default=None, help='disagg: --kv-cache-memory-bytes of every consumer')
     p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)

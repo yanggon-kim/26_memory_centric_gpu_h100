@@ -408,6 +408,24 @@ def s4(cohort, params, smoke=False):
     return p, lanes, {st: p.assign(st, list(lanes[st])) for st in lanes}
 
 
+def s4r(cohort, params):
+    """Second attempt of e6 balanced 3P1D (s4 job 531381): in both seeds the single decode worker (three RCCL peers, ~75
+    running) aborted with HSA_STATUS_ERROR_OUT_OF_RESOURCES at the top rates. Same trace, rates and settings, except the
+    decode worker's gpu_memory_utilization 0.80 (was 0.85) for device-memory headroom; KV usage had peaked at 25%."""
+    p = Plan('s4r', cohort)
+    lam = params['lambda_star']
+    L4 = 4 * lam['q32_balanced']
+    rs = ','.join(f'{x * L4:.3g}' for x in GRID)
+    for seed in (201, 202):
+        p.add('a', 'e6', f'e6_q32_balanced_d3p1_s{seed}_a2', 'scripts/amd/cp/cp_disagg.py',
+              ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX', '--drain-s', 60, '--workload', 'balanced',
+               '--seeds', seed, '--requests', 300, '--rates', rs, '--max-seqs', 128, '--deployment', 'disagg', '--prefill-workers', 3,
+               '--p2p-none-blocks-fix', '--decode-gpu-mem', 0.80], est=int(sum(300 / (x * L4) + 40 for x in GRID) + 600),
+              model='q32', workload='balanced', deployment='d3p1', prefill_workers=3, seed=seed, attempt_of=f'e6_q32_balanced_d3p1_s{seed}')
+    lanes = {'a': {'Q0123': [0, 1, 2, 3], 'Q4567': [4, 5, 6, 7]}}
+    return p, lanes, {'a': p.assign('a', ['Q0123', 'Q4567'])}
+
+
 def finalize(p, lanes, load):
     c = p.c
     plan = {'campaign': 'cp_20261118', 'plan': p.name, 'cohort': p.cohort, 'arch': c['arch'], 'full_cus': c['full'],
@@ -426,7 +444,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 's4', 'x1'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 's4', 's4r', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -440,7 +458,7 @@ if __name__ == '__main__':
         prm = json.loads(a.params.read_text())
         p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
                           else s4(a.cohort, prm, a.smoke) if a.which == 's4'
-                          else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d}[a.which](a.cohort, prm))
+                          else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d, 's4r': s4r}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "
