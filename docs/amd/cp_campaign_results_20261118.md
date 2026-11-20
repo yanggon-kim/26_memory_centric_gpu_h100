@@ -55,6 +55,10 @@ Main answers (details and qualifications below):
   - The experiment 5 conclusions hold on seeds 202 and 203.
   - Below about 16–32 GiB the decode worker becomes KV-limited, and a 128-CU decode worker needs about 11–50% more KV for
     the same rate, because each request stays resident longer.
+- **Decode-only CU sweep (section 7).** A decode worker loses ≤ 1.21× per-token speed down to 224 of 304 CUs, 1.3–1.8×
+  at 128–192 and 2–3× below 128. With 256 seats and unconstrained KV, its sustainable rate holds down to 96 CUs
+  (decode-heavy) and 128 CUs (balanced). The earlier decode-heavy loss at 128 CUs was a seat limit. With KV fixed at 16
+  GiB, the rate falls with every CU step below 256.
 - **Prefix reuse saves the compute but not the attention service.** For 32B with a warm 8K prefix, the mixed step costs
   104 ms, against 55 ms for the same fresh tokens without history and 1339 ms when cold. The warm-history surcharge is
   about 6 ms per 1K prefix tokens per request (≈1.5 GB/s-equivalent of logical KV per 1K tokens; see section 3).
@@ -163,6 +167,12 @@ are charged.** All results are 32B, one held-out seed.
     was ≤ 38% and no other e6, e5s or e7 step was affected. The row is reported as a lower bound. The likely cause is
     per-peer RCCL resources (three communicators × 16 channels) combined with deep decode batches, but this is not
     isolated further.
+15. **Decode-worker abort in the CU sweep** (e8 balanced, ≤ 192 CUs). The same
+    `HSA_STATUS_ERROR_OUT_OF_RESOURCES` abort as deviation 14 ("Available Free mem: 0 MB", in an RCCL kernel) hit the
+    single decode worker in 10 of 16 balanced runs at 64–192 CUs. It came at 4–6 rps, always above that run's
+    sustainable rate (attainment had already dropped below 0.9), with 74–80 requests running and ≤ 27% KV in use.
+    Later traces in those steps record 0 completions. No dheavy run and no run at 224–304 CUs aborted. No second
+    attempt was made, because no sustainable rate or knee depends on the affected traces.
 
 ## 1. Prefill headroom (replayed steps)
 
@@ -669,6 +679,77 @@ Peak decode-worker KV in use when not limited (default or 32 GiB budget, top rat
   - These rise to ≈ 20 GiB and ≈ 22 GiB at 128t.
   - A decode-specialized part that gives up compute must therefore budget more KV bytes per unit of rate, not fewer.
 
+## 7. Decode-only CU sweep (e8; pre-registered in design section 15)
+
+Plan `s5`, job 534996 (2:22 on one mi3008x node; 40/40 steps completed). 1P1D on GPU pairs: the prefill worker at full
+allocation, the decode worker at n CUs with the matching grid (nt), 256 decode seats, 150 requests, held-out seeds 201
+and 202 (main arm) or 201 (kv16 arm). Published: `results_published/amd_20261120_mi300x_cp_s5` (`e5_tables.json`, 320
+rows). SLOs as before: dheavy TTFT 0.48 s and per-request ITL p95 120 ms, balanced 1.4 s and 110 ms.
+
+**Sustainable rate (two-GPU deployment, all-seed minimum) by decode CUs**
+
+| arm (grid) | 64 | 96 | 128 | 160 | 192 | 224 | 256 | 304 (full) |
+|---|---|---|---|---|---|---|---|---|
+| dheavy, default KV (2–12) | 3 | ≥ 12 | ≥ 12 | ≥ 12 | ≥ 12 | ≥ 12 | ≥ 12 | ≥ 12 |
+| balanced, default KV (1–6) | 2.5 | 3 | 4 | 4 | 4 | 4 | 4 (5 on s202) | 4 |
+| dheavy, KV fixed 16 GiB (2–12, s201) | 2 | 3 | 4 | 4 | 4 | 5 | 6 | 6 |
+
+**Decode ITL p50 in ms (mean of seeds) at fixed rates, and ratio to full allocation**
+
+| arm, rate | 64 | 96 | 128 | 160 | 192 | 224 | 256 | 304 |
+|---|---|---|---|---|---|---|---|---|
+| dheavy, 3 rps | 94 (3.2×) | 64 (2.2×) | 51 (1.8×) | 44 (1.5×) | 46 (1.6×) | 35 (1.21×) | 32 (1.10×) | 29 |
+| dheavy, 12 rps | 118 (2.7×) | 84 (2.0×) | 64 (1.5×) | 62 (1.4×) | 62 (1.4×) | 52 (1.21×) | 45 (1.05×) | 43 |
+| balanced, 2.5 rps | 67 (2.2×) | 49 (1.6×) | 40 (1.3×) | 39 (1.26×) | 37 (1.19×) | 35 (1.13×) | 33 (1.06×) | 31 |
+| balanced, 4 rps | — | — | 53 (1.6×) | 46 (1.4×) | 41 (1.24×) | 39 (1.18×) | 36 (1.09×) | 33 |
+
+**Knee (pre-registered definition: within one grid step of the full-allocation rate and ITL p50 ≤ 1.25× full at the
+highest rate every level sustains)**
+
+| arm | rate-only knee | ITL criterion (rate used) | knee |
+|---|---|---|---|
+| dheavy, default KV | 96 (top of grid; lower bound on rate) | 224 (3 rps) | **224** |
+| balanced, default KV | 96 | 192 (2.5 rps) | **192** |
+| dheavy, KV 16 GiB | 224 | 192 (2 rps) | **224** |
+
+**Hypotheses**
+- **H1 rejected for dheavy, confirmed for balanced.** With 256 decode seats and unconstrained KV, the dheavy sustainable
+  rate does not fall until 64 CUs. It stays at the top of the extended grid (12 rps, 1.5× the old ceiling) at 96 CUs.
+  The one-step dheavy loss at 128t in experiment 5 and e5s was therefore a seat limit (64 or 128 seats), not a compute
+  limit: slower decode keeps more requests running. Balanced holds the full-allocation rate down to 128 CUs and loses
+  one step at 96. At 4–5 rps the balanced runs are limited by the single prefill worker at every CU level (TTFT p99
+  1.8–3.7 s), so the top of that curve is not decode-limited.
+- **H2 rejected for dheavy, confirmed for balanced.** ITL p50 rises as CUs fall at every rate (160 and 192 CUs are
+  within ±2 ms of each other, the only non-monotone pair). 304 → 192 costs 1.4–1.6× for dheavy (above the 1.25× bound)
+  and 1.09–1.24× for balanced. The cost is small down to 224–256 CUs (≤ 1.21×), moderate at 128–192 (1.3–1.8×) and
+  steep below 128 (2–3×).
+- **H3 rejected on the stated criterion, but the effect is large.** The kv16 knee (224) equals the main-arm knee (224)
+  because the ITL criterion already places the main knee at 224. On rate alone, the two arms diverge sharply. With
+  unconstrained KV, dheavy holds ≥ 12 rps down to 96 CUs. With 16 GiB, the rate falls almost monotonically with CUs: 6
+  at 256–304, 5 at 224, 4 at 128–192, 3 at 96 and 2 at 64. Preemptions start at 8 rps on full, 6 at 224–256, 5 at
+  160–192, 4 at 96–128 and 3 at 64, which matches the rise in residency (Little's law). This comparison is a reading
+  added after the data, not the pre-registered test.
+
+**Other outcomes**
+- **Energy.** Joules per output token over both boards rise as decode CUs fall, because the run is longer and masked CUs
+  do not stop the board's power draw. At dheavy 12 rps: 0.50 J at 304 CUs, 0.53 at 256, 0.58 at 224, 0.61 at 192, 0.65 at
+  128, 0.75 at 96 and 1.46 at 64. Balanced varies by at most 5% from 128 to 304 CUs at sustained rates. Masks do not
+  stand for the power or area of a part designed with fewer CUs.
+- **KV and running requests.** Unconstrained, the decode worker never exceeded 22% of its default KV (≈ 21–22 GiB), with
+  0 preemptions. At dheavy ≥ 8 rps, peak running reaches 150, i.e. every request in the trace is resident at once. The
+  top dheavy rates therefore test absorption of a 150-request burst, not steady state.
+- **SLO dependence.** The dheavy rate holds down to 96 CUs because 84 ms ITL p50 still passes the 120 ms SLO. With a
+  tighter ITL target, the rate knee would move toward the ITL knee. The ITL curve is the SLO-independent result.
+- **Crash.** In 10 of the 16 balanced runs at ≤ 192 CUs, the decode worker aborted with the deviation 14 error once the
+  rate was already past its sustainable point (deviation 15). No dheavy run and no run at 224–304 CUs aborted.
+
+**What this means for the decode-specialized part.**
+- On MI300X with this model, a decode worker keeps ≥ 0.8× of its per-token speed down to about 224 CUs (74%), and it
+  keeps its sustainable rate at the stated SLOs down to 96–128 CUs if it has enough seats and KV.
+- Between 224 and 128 CUs the cost is per-token latency (1.3–1.8×), which converts into more resident requests and more
+  KV. Below 96 CUs both latency and rate collapse.
+- With KV fixed, every CU removed below about 256 costs rate. A design that removes compute must add capacity in step.
+
 ## What wins, loses or stays uncertain
 
 **Wins (design better than its baseline, beyond grid quantization):**
@@ -680,7 +761,8 @@ Peak decode-worker KV in use when not limited (default or 32 GiB budget, top rat
   never reaches 0.9 attainment).
 - **Disaggregated decode** for decode latency and energy: p99 ITL 2–3× lower than colocated-tuned and up to 15× lower than colocated-stock, and 9–31% fewer joules per token for
   dheavy and balanced at equal rate, with both boards charged.
-- **Decode worker at 128 CUs** for balanced and prefill-heavy traffic: same sustainable rate as full.
+- **Decode worker at 128 CUs** for balanced and prefill-heavy traffic: same sustainable rate as full. With 256 decode
+  seats and unconstrained KV, decode-heavy traffic also keeps its rate, down to 96 CUs (section 7).
 
 - **Disaggregation with a prefill-weighted ratio for prefill-heavy traffic** (section 6a): 3P1D sustains 4.5 rps on four
   GPUs, against 3.0–3.75 for colo4_tuned, on both seeds.
@@ -704,6 +786,8 @@ Peak decode-worker KV in use when not limited (default or 32 GiB budget, top rat
 - Worker ratios beyond four GPUs and across nodes: not tested.
 - Physical HBM traffic: unavailable. Energy figures come from board counters, with no external calibration.
 - The four-GPU ratio test used two seeds, and the KV-capacity test used one.
+- The decode CU knee depends on the ITL SLO and was measured for one model; at dheavy ≥ 8 rps the 150-request traces
+  are fully resident, so the top rates measure burst absorption (section 7).
 
 ## Implications for the area model
 
@@ -732,6 +816,10 @@ These are model inputs, not architectural results. CU masks do not reclaim area,
   - Below that, the rate collapses with preemptions.
   - A decode part that gives up compute must budget more KV bytes per unit of rate. The memory-side term therefore grows
     when the compute area shrinks.
+- **Decode compute curve** (section 7). Per-token decode time at 224 / 192 / 128 / 96 / 64 CUs ≈ 1.13–1.21 / 1.2–1.6 /
+  1.3–1.8 / 1.6–2.2 / 2.2–3.2 × full (MI300X, 32B, 256 seats). Use this curve, not a linear interpolation between 128 and
+  304, for the decode-only part. Rate is preserved to 96–128 CUs only when seats and KV grow with the residency the slower
+  step creates.
 - **Worker ratio** (section 6a). The prefill pool must match the offered prompt work: 3P1D for P:D ≈ 50, 2P2D for
   P:D ≈ 5, and 1P3D–2P2D for P:D ≈ 0.6. With the right ratio, a full-compute prefill pool and a decode pool beat
   colocated serving on prefill-heavy traffic and tie elsewhere.
@@ -765,6 +853,8 @@ scripts/amd/cp/cp_submit.sh s3d mi300x 01:45:00 --params scripts/amd/cp/params/m
 scripts/amd/cp/cp_submit.sh s4 mi300x 01:00:00 --smoke --params scripts/amd/cp/params/mi300x_s3.json
 scripts/amd/cp/cp_submit.sh s4 mi300x 10:00:00 --params scripts/amd/cp/params/mi300x_s3.json
 scripts/amd/cp/cp_submit.sh s4r mi300x 01:30:00 --params scripts/amd/cp/params/mi300x_s3.json
+# decode-only CU sweep (design section 15; job 534996)
+scripts/amd/cp/cp_submit.sh s5 mi300x 06:00:00 --params scripts/amd/cp/params/mi300x_s3.json
 # cross-cohort: MI325X (529875), MI350X at 192 CUs (530192)
 scripts/amd/cp/cp_submit.sh x1 mi325x 02:30:00 --params scripts/amd/cp/params/mi300x_s2.json
 scripts/amd/cp/cp_submit.sh x1 mi350x 02:30:00 --params scripts/amd/cp/params/mi300x_s2.json --low 192

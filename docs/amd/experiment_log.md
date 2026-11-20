@@ -534,3 +534,14 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
 - e6 balanced 3P1D: the decode worker aborted with HSA_STATUS_ERROR_OUT_OF_RESOURCES at the top rate in both seeds.
   The second attempt s4r (job 531813, decode gpu_memory_utilization 0.80) sustained 6 rps on both seeds and aborted
   again at 8. Both attempts are used; the row is reported as a lower bound (results deviation 14).
+
+### 2026-11-20 — cp s5 decode-only CU sweep (e8)
+
+- Pre-registered in design section 15 (commit ee580682) before submission. Job 534996, mi3008x, 2:22:09, 40/40 steps,
+  320 traces. Published `results_published/amd_20261120_mi300x_cp_s5`; results in report section 7.
+- Knees (pre-registered definition): dheavy 224 CUs, balanced 192, dheavy with 16 GiB KV 224. With 256 seats and
+  unconstrained KV, the sustainable rate holds to 96 CUs (dheavy, ≥ 12 rps) and 128 (balanced); per-token ITL rises
+  ≤ 1.21× to 224 CUs, 1.3–1.8× at 128–192 and 2–3× below. H1 and H2 rejected for dheavy and confirmed for balanced;
+  H3 rejected on its criterion, though rate under 16 GiB falls with every CU step below 256.
+- Deviation 15: decode-worker HSA out-of-resources abort in 10 of 16 balanced runs at ≤ 192 CUs, all above the
+  sustainable rate; no second attempt.
