@@ -426,6 +426,38 @@ def s4r(cohort, params):
     return p, lanes, {'a': p.assign('a', ['Q0123', 'Q4567'])}
 
 
+S5_CUS = (64, 96, 128, 160, 192, 224, 256)  # plus full; multiples of 8 so the HSA_CU_MASK 0..n-1 spreads over all 8 XCDs
+S5_GRID = GRID + (2.5, 3.0)
+
+
+def s5(cohort, params):
+    """e8 decode-only CU sweep (design section 15, pre-registered before any s5 data). 1P1D on the two-GPU lanes; the
+    prefill worker stays at full allocation, the decode worker runs at n CUs with the matching grid override (nt) for
+    n in S5_CUS, or full. Decode max_num_seqs 256, connector fix on, 150 requests, rates S5_GRID x 2 lambda_q.
+      main: dheavy and balanced, default decode KV (unconstrained), held-out seeds 201 and 202 (each its own step).
+      kv16: dheavy, decode KV fixed at 16 GiB (the full-allocation knee of e7), seed 201."""
+    p = Plan('s5', cohort)
+    c = p.c
+    lam = params['lambda_star']
+    D = 'scripts/amd/cp/cp_disagg.py'
+    base = ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX', '--drain-s', 60, '--deployment', 'disagg',
+            '--decode-max-seqs', 256, '--p2p-none-blocks-fix', '--requests', 150]
+    est_of = lambda L, n: int(sum(n / (x * L) + 40 for x in S5_GRID) + 600)  # noqa: E731
+    levels = [(f'{n}t', ['--decode-cus', n, '--decode-grid', n]) for n in S5_CUS] + [('full', [])]
+    arms = [(wl, seed, None) for wl in ('dheavy', 'balanced') for seed in (201, 202)] + [('dheavy', 201, 16)]
+    for wl, seed, kv in arms:
+        L2 = 2 * lam[f'q32_{wl}']
+        rs = ','.join(f'{x * L2:.3g}' for x in S5_GRID)
+        for an, ex in levels:
+            dn = f"d1p1_{an}_kv{kv or 'def'}"
+            p.add('a', 'e8', f'e8_q32_{wl}_{dn}_s{seed}', D, base + ['--workload', wl, '--seeds', seed, '--rates', rs] + ex
+                  + (['--decode-kv-bytes', kv * GIB] if kv else []), est=est_of(L2, 150), model='q32', workload=wl,
+                  deployment=dn, seed=seed, decode_kv_gib=kv, decode_alloc=an,
+                  decode_cus=int(an[:-1]) if an != 'full' else c['full'])
+    lanes = {'a': {'P01': [0, 1], 'P23': [2, 3], 'P45': [4, 5], 'P67': [6, 7]}}
+    return p, lanes, {'a': p.assign('a', list(lanes['a']))}
+
+
 def finalize(p, lanes, load):
     c = p.c
     plan = {'campaign': 'cp_20261118', 'plan': p.name, 'cohort': p.cohort, 'arch': c['arch'], 'full_cus': c['full'],
@@ -444,7 +476,7 @@ def finalize(p, lanes, load):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 's4', 's4r', 'x1'))
+    q.add_argument('which', choices=('s1', 's2', 's3', 's3r', 's3d', 's4', 's4r', 's5', 'x1'))
     q.add_argument('--params', type=Path, help='stage parameters from the s1 analysis')
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--smoke', action='store_true')
@@ -458,7 +490,7 @@ if __name__ == '__main__':
         prm = json.loads(a.params.read_text())
         p, lanes, load = (x1(a.cohort, prm, a.max_capture, a.low) if a.which == 'x1'
                           else s4(a.cohort, prm, a.smoke) if a.which == 's4'
-                          else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d, 's4r': s4r}[a.which](a.cohort, prm))
+                          else {'s2': s2, 's3': s3, 's3r': s3r, 's3d': s3d, 's4r': s4r, 's5': s5}[a.which](a.cohort, prm))
     plan = finalize(p, lanes, load)
     a.out.write_text(json.dumps(plan, indent=1) + '\n')
     print(f"{plan['plan']}/{a.cohort}: {len(plan['steps'])} steps; longest lane per stage {plan['budget']['longest_lane_s']}; "

@@ -419,7 +419,7 @@ def disagg(a):
     jr = journal(root)
     rows = []
     for s in plan['steps']:
-        if s['experiment'] not in ('e5', 'e5s', 'e6', 'e7'):
+        if s['experiment'] not in ('e5', 'e5s', 'e6', 'e7', 'e8'):
             continue
         rec = final(jr.get(s['id'], []))
         if not rec or not rec.get('command_completed'):
@@ -434,7 +434,7 @@ def disagg(a):
             t = json.loads((run / tr['file']).read_text())
             rows.append({'id': s['id'], 'experiment': s['experiment'], 'deployment': s['deployment'], 'workload': s['workload'],
                          'rate': t['rate'], 'seed': t.get('seed'), 'gpus': len(meta['gpus']), 'prefill_workers':
-                         s.get('prefill_workers'), 'decode_kv_gib': s.get('decode_kv_gib'), 'decode_alloc': s.get('decode_alloc'),
+                         s.get('prefill_workers'), 'decode_kv_gib': s.get('decode_kv_gib'), 'decode_alloc': s.get('decode_alloc'), 'decode_cus': s.get('decode_cus'),
                          'trace_sha256': t['trace_sha256'], **disagg_trace(t, lim, kv)})
     (out / 'e5_tables.json').write_text(json.dumps(rows, indent=1, default=str) + '\n')
     print(f'e5 rows {len(rows)} -> {out}')

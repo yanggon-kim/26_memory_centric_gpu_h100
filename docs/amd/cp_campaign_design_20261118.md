@@ -307,3 +307,45 @@ first).
 
 Failure handling as before: at most two attempts per step, and failures are kept. If the four-GPU connector path fails
 in the smoke plan, e6 is replaced by a labelled 3-GPU or modelled comparison, and the blocker is recorded.
+
+## 15. e8: decode-only CU sweep (pre-registered 2026-11-20, before any s5 data)
+
+Motivation: the 304 → 128 CU comparison (results section 6) gives two points on the decode-only compute-sensitivity
+curve. The decode-specialized design point and the area model need the curve in between. Plan `s5`
+(`scripts/amd/cp/cp_plan.py s5`). Model, SLOs, λ_q, the sustainable-rate rule of section 11 and the connector fix are
+unchanged from section 14. No smoke plan: the same code path ran 40 e7 steps at 128t, and only the mask width changes.
+
+- Deployment: 1P1D on the two-GPU lanes (0–1, 2–3, 4–5, 6–7). The prefill worker is at full allocation. The decode
+  worker runs at n CUs with the matching grid override (`nt`; HSA_CU_MASK 0..n−1, CUBW_CU_COUNT_OVERRIDE n) for
+  n ∈ {64, 96, 128, 160, 192, 224, 256}, or full (304). Decode `max_num_seqs = 256`.
+- Rates: (GRID + {2.5, 3.0}) × 2λ_q, i.e. dheavy 2–12 rps and balanced 1–6 rps. The two extra steps lift the ceiling
+  that hid the full-allocation rate in experiment 5. 150 requests (15 warmup).
+- Arms:
+  - **main**: dheavy and balanced, default decode KV (gpu_memory_utilization 0.85), held-out seeds 201 and 202, each
+    its own step (32 steps).
+  - **kv16**: dheavy, decode KV fixed at 16 GiB (the e7 full-allocation knee), seed 201 (8 steps).
+- Outcomes:
+  - sustainable rate vs decode CUs (all-seed = minimum over seeds);
+  - ITL p50 and p99 at each common rate, reported against CUs. This is the continuous measure of decode compute
+    sensitivity; the rate grid is coarse;
+  - peak decode KV in use, peak running requests, and decode preemptions per trace;
+  - joules per output token on both boards at common rates. Masks still do not stand for silicon area or power.
+- Definitions:
+  - **Knee CU count** (per workload, main arm): the smallest n whose all-seed sustainable rate is within one grid step
+    of the full-allocation rate *and* whose ITL p50 at the highest rate sustained by every level is at most 1.25× the
+    full-allocation value. If no tested n qualifies above 64, the knee is reported as "> 256" or "≤ 64" accordingly.
+  - If the full-allocation rate is at the top of the grid (≥ 12 or ≥ 6), the sustainable-rate part of the knee is a
+    lower bound and the ITL criterion decides.
+- Hypotheses:
+  - **H1**: sustainable rate is flat from full down to some knee between 128 and 304 CUs for dheavy, and at or below
+    128 for balanced (consistent with the e5s one-step dheavy loss at 128t and the balanced tie).
+  - **H2**: ITL p50 at a fixed rate rises monotonically as CUs fall, and by at most 1.25× from 304 to 192.
+  - **H3** (kv16 arm): with KV fixed at 16 GiB, the sustainable rate falls at higher CU counts than in the main arm,
+    because longer residency raises KV demand (Little's law). This is confirmed if the kv16 knee is at least one tested
+    level above the main-arm dheavy knee.
+- Interpretation limits:
+  - 1P1D: at high rates the single prefill worker, not the decode worker, may cap the rate. A tie between CU levels at
+    the grid top is reported as "not decode-limited".
+  - Each H is confirmed or rejected on the stated criterion; mixed outcomes are reported as such.
+- Failure handling: as before. At most two attempts per step, failures are kept, and a crash is reported as a lower
+  bound at the last completed rate.
