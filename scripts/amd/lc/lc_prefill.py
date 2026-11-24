@@ -98,7 +98,7 @@ def main(a):
             torch.cuda.synchronize()
             steps = [{'kind': r['kind'], 'exec_s': r.get('exec_s'), 'sched_s': r.get('sched_s'), 'prefill': r['prefill'],
                       'total_tokens': r['total_tokens'], 'n_decode': r['n_decode']} for r in recs]
-            chunks = [c for s in steps for c in s['prefill'] if c[0] == rid]
+            chunks = [c for s in steps for c in s['prefill'] if c[0] == rid or c[0].startswith(rid + '-')]  # engine-internal ids carry a suffix
             ok = sum(c[2] for c in chunks) == L and all(s['n_decode'] == 0 for s in steps)
             if whole:
                 ok = ok and len(chunks) == 1

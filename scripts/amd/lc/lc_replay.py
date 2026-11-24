@@ -41,7 +41,7 @@ def build_prefix(run, tag, ids):
     run.add(f'{tag}_pfx', ids, 1)
     t = time.perf_counter()
     n = 0
-    while f'{tag}_pfx' in run.sched.requests:
+    while any(k == f'{tag}_pfx' or k.startswith(f'{tag}_pfx-') for k in run.sched.requests):  # internal ids carry a suffix
         run.step()
         n += 1
         assert n < 1000
