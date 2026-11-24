@@ -24,7 +24,8 @@ from software_decode_experiments import Sensor, digest, dump  # noqa: E402,F401
 # a custom list up to 2048 padded a 1032-token step to 1280 and made it slower than eager (43.8 vs 35.7 ms, Qwen2.5-7B).
 COMPILATION = {'max_cudagraph_capture_size': 512}
 ENGINE_KEYS = ('max_model_len', 'max_num_seqs', 'max_num_batched_tokens', 'gpu_memory_utilization',
-               'enable_chunked_prefill', 'enable_prefix_caching', 'long_prefill_token_threshold', 'enforce_eager')
+               'enable_chunked_prefill', 'enable_prefix_caching', 'long_prefill_token_threshold', 'enforce_eager',
+               'kv_cache_memory_bytes')  # kv_cache_memory_bytes: lc campaign (2026-11-24), absent from earlier runs
 
 
 def setup_env():

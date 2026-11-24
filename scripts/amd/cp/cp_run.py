@@ -73,8 +73,9 @@ def run_engine(step, plan, root, lane, gpus, uuids, adir):
     env = dict(os.environ, AMD_EXTRA_ENV=','.join(extra), APPTAINERENV_HIP_VISIBLE_DEVICES=','.join(map(str, gpus)))
     if step.get('profile'):
         env['AMD_ENTRY'] = 'rocprofv3'
-        argv = argv[:1] + ['--kernel-trace', '--marker-trace', '--output-format', 'csv', '-d', str(adir / 'rocprof'), '-o', 'p',
-                           '--', 'python3'] + argv[1:]
+        pmc = (['--pmc'] + list(step['pmc'])) if step.get('pmc') else []  # lc campaign: counter runs (eager)
+        argv = argv[:1] + ['--kernel-trace', '--marker-trace'] + pmc + ['--output-format', 'csv', '-d', str(adir / 'rocprof'),
+                                                                        '-o', 'p', '--', 'python3'] + argv[1:]
     rec.update(argv=argv, amd_extra_env=env['AMD_EXTRA_ENV'], gpus=gpus, uuids=uuids, t_start=time.time())
     with open(adir / 'runner.log', 'w') as log:
         proc = subprocess.Popen(argv, env=env, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
@@ -103,6 +104,29 @@ def run_engine(step, plan, root, lane, gpus, uuids, adir):
     return rec
 
 
+def run_host(step, gpus, uuids, adir):
+    """lc campaign: a host-side tool (e.g. scripts/amd/goal/counter_audit.py under host rocprofv3) on the lane's first GPU.
+    Completed = return code 0 within the timeout."""
+    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpus[0]), ROCR_VISIBLE_DEVICES=str(gpus[0]))
+    env.pop('HSA_CU_MASK', None)
+    argv = ['python3', str(REPO / step['script'])] + [str(x) for x in step['args']] + ['--out-dir', str(adir / 'run')]
+    rec = {'step': step['id'], 'kind': 'host', 'argv': argv, 'attempt_dir': str(adir), 'gpus': gpus, 'uuids': uuids,
+           't_start': time.time()}
+    with open(adir / 'runner.log', 'w') as log:
+        proc = subprocess.Popen(argv, env=env, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            proc.wait(step['timeout_s'])
+            rec['timed_out'] = False
+        except subprocess.TimeoutExpired:
+            rec['timed_out'] = True
+            rec['runner_stop'] = B.stop_group(proc, grace=10)
+    rec.update(t_end=time.time(), returncode=proc.returncode)
+    rec['command_completed'] = proc.returncode == 0 and not rec['timed_out']
+    if not rec['command_completed']:
+        rec['failure_class'] = 'execution:timeout' if rec['timed_out'] else 'execution'
+    return rec
+
+
 def lane(a):
     plan = json.loads(Path(a.plan).read_text())
     root = Path(a.root)
@@ -127,7 +151,9 @@ def lane(a):
             k = len(prev) + 1
             adir = root / step['experiment'] / step['id'] / f'attempt{k}'
             adir.mkdir(parents=True, exist_ok=True)
-            if step['kind'] == 'native':
+            if step['kind'] == 'host':
+                rec = run_host(step, gpus, uuids, adir)
+            elif step['kind'] == 'native':
                 rec = B.run_native(dict(step, args=step['args']), {'index': gpus[0], 'uuid': uuids[0]}, adir)
                 rec['step'] = step['id']
             else:

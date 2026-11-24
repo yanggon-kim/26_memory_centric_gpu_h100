@@ -9,6 +9,9 @@ Workloads (lengths uniform over the closed ranges; P:D = mean prompt / mean outp
   dheavy    prompt 128-512,   output 256-768   P:D ~ 0.6   (decode-heavy: under one prompt token per decode tick)
   balanced  prompt 512-2048,  output 128-384   P:D ~ 5
   pheavy    prompt 2048-6144, output 32-128    P:D ~ 51    (prefill-heavy)
+  lo512 / lo2048 / lo4096   prompt 128-512, output 384-640 / 1536-2560 / 3072-5120   P:D ~ 0.62 / 0.16 / 0.08 (long output)
+  lctx      prompt 8192-16384, output 512-1536 P:D ~ 12   (long resident context)
+  lprompt   prompt 16384-30720, output 32-256  P:D ~ 163  (long uncached prompt)
   prefix    shared-structure workload of experiment 3: every request = its own prefix (prefix_len) + fixed suffix,
             fixed output
 Arrivals: 'poisson' (exponential gaps) or 'bursty' (gamma gaps, coefficient of variation 4, same mean).
@@ -18,7 +21,11 @@ import json
 import random
 
 WORKLOADS = {'dheavy': ((128, 512), (256, 768)), 'balanced': ((512, 2048), (128, 384)),
-             'pheavy': ((2048, 6144), (32, 128))}
+             'pheavy': ((2048, 6144), (32, 128)),
+             # long-context campaign (docs/amd/lc_campaign_design_20261124.md section 7); added 2026-11-24, earlier
+             # workloads and their traces are unchanged
+             'lo512': ((128, 512), (384, 640)), 'lo2048': ((128, 512), (1536, 2560)), 'lo4096': ((128, 512), (3072, 5120)),
+             'lctx': ((8192, 16384), (512, 1536)), 'lprompt': ((16384, 30720), (32, 256))}
 DEV_SEEDS = (101, 102)
 HELDOUT_SEEDS = (201, 202, 203)
 BURST_CV = 4.0
