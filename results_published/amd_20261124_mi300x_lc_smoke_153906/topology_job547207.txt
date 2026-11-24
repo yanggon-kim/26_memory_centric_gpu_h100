@@ -1,0 +1,51 @@
+Permission needed to access required GPU device node(s):
+  - /dev/dri/card0: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card1: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card2: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card3: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card4: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card5: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card6: Permission denied; owner=root(0):video(39);
+  - /dev/dri/card7: Permission denied; owner=root(0):video(39);
+
+You can try:
+  • Add your user to the group that owns these devices:
+      sudo usermod -aG <group> "$USER"
+
+ACCESS TABLE:
+             0000:0e:00.0
+0000:0e:00.0 ENABLED
+WEIGHT TABLE:
+             0000:0e:00.0
+0000:0e:00.0 0
+HOPS TABLE:
+             0000:0e:00.0
+0000:0e:00.0 0
+LINK TYPE TABLE:
+             0000:0e:00.0
+0000:0e:00.0 SELF
+NUMA BW TABLE:
+             0000:0e:00.0
+0000:0e:00.0 N/A
+CACHE COHERANCY TABLE:
+             0000:0e:00.0
+0000:0e:00.0 SELF
+ATOMICS TABLE:
+             0000:0e:00.0
+0000:0e:00.0 SELF
+DMA TABLE:
+             0000:0e:00.0
+0000:0e:00.0 SELF
+BI-DIRECTIONAL TABLE:
+             0000:0e:00.0
+0000:0e:00.0 SELF
+
+
+Legend:
+  SELF = Current GPU
+  ENABLED / DISABLED = Link is enabled or disabled
+  N/A = Not supported
+  T/F = True / False
+  C/NC = Coherant / Non-Coherant io links
+  64,32 = 64 bit and 32 bit atomic support
+  <BW from>-<BW to>

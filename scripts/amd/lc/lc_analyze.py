@@ -167,7 +167,7 @@ def l1(plan, jr):
     for s in steps_of(plan, 'lc1'):
         d = done_dir(jr, s['id'])
         if d:
-            arms[s['arm']] = [r for r in A.jl(d / 'run' / 'prompts.jsonl') if r['rep'] >= 0]
+            arms[s.get('arm', s['id'])] = [r for r in A.jl(d / 'run' / 'prompts.jsonl') if r['rep'] >= 0]
     out = {'timing': [], 'ratios': [], 'agreement': []}
     whole = {(r['L'], r['rep']): r for r in arms.get('whole', [])}
     for an, rows in sorted(arms.items()):
@@ -211,9 +211,9 @@ def l1(plan, jr):
         for (L, rep), c in per.items():
             byL[L].append(c)
         for L, v in sorted(byL.items()):
-            out['ktrace'].append({'arm': s['arm'], 'L': L, **{k: med([c[k] for c in v]) for k in CLASSES + ('busy_ms', 'span_ms',
+            out['ktrace'].append({'arm': s.get('arm', s['id']), 'L': L, **{k: med([c[k] for c in v]) for k in CLASSES + ('busy_ms', 'span_ms',
                                                                                                          'host_gap_ms', 'steps')}})
-        out.setdefault('top_kernels', {})[s['arm']] = prof['top_kernels']
+        out.setdefault('top_kernels', {})[s.get('arm', s['id'])] = prof['top_kernels']
     # eager calibration and counters
     out['eager'] = []
     for s in steps_of(plan, 'lc1e'):
@@ -221,13 +221,13 @@ def l1(plan, jr):
         if d:
             rows = [r for r in A.jl(d / 'run' / 'prompts.jsonl') if r['rep'] >= 0]
             for L in sorted({r['L'] for r in rows}):
-                out['eager'].append({'arm': s['arm'], 'L': L, 'exec_ms': 1e3 * med([r['exec_s_sum'] for r in rows if r['L'] == L])})
+                out['eager'].append({'arm': s.get('arm', s['id']), 'L': L, 'exec_ms': 1e3 * med([r['exec_s_sum'] for r in rows if r['L'] == L])})
     out['counters'] = []
     for s in steps_of(plan, 'lc1c'):
         d = done_dir(jr, s['id'])
         prof = load_profile(d) if d else None
         if not prof:
-            out['counters'].append({'arm': s['arm'], 'counter': s['counter'], 'status': 'missing'})
+            out['counters'].append({'arm': s.get('arm'), 'counter': s.get('counter'), 'status': 'missing'})
             continue
         per = collections.Counter()
         busy = collections.Counter()
@@ -237,7 +237,7 @@ def l1(plan, jr):
                 per[int(m.group(1))] += sum(o['counters'].values())
                 busy[int(m.group(1))] += o['busy_ms']
         for L in sorted(per):
-            out['counters'].append({'arm': s['arm'], 'counter': s['counter'], 'L': L, 'value': per[L], 'busy_ms_profiled': busy[L]})
+            out['counters'].append({'arm': s.get('arm'), 'counter': s.get('counter'), 'L': L, 'value': per[L], 'busy_ms_profiled': busy[L]})
     return out
 
 
@@ -348,7 +348,7 @@ def l3a(plan, jr):
                                           'b_ttft_ms': (x['b_times'][0] - x['inject_at_s']) * 1e3 if x['I'] and x['b_times'] else None,
                                           'span_s': x['span_s']})
         for (O, I), v in sorted(per.items()):
-            out.append({'policy': s['pname'], 'O': O, 'I': I, 'reps': len(v), **{k: med([z[k] for z in v]) for k in v[0]}})
+            out.append({'policy': s.get('pname', s['id']), 'O': O, 'I': I, 'reps': len(v), **{k: med([z[k] for z in v]) for k in v[0]}})
     prof = []
     for s in steps_of(plan, 'lc3p'):
         d = done_dir(jr, s['id'])
@@ -368,7 +368,7 @@ def l3a(plan, jr):
                     busy[z['kind']] += o['busy_ms']
                     aligned += 1
             tot = sum(busy.values()) or 1
-            prof.append({'policy': s['pname'], 'O': x['O'], 'I': x['I'], 'aligned_steps': aligned, 'steps': len(x['steps']),
+            prof.append({'policy': s.get('pname', s['id']), 'O': x['O'], 'I': x['I'], 'aligned_steps': aligned, 'steps': len(x['steps']),
                          'gpu_busy_ms': dict(busy), 'decode_frac_gpu_busy': busy['decode'] / tot})
     return {'cases': out, 'profiled': prof}
 
@@ -399,7 +399,7 @@ def l4(plan, jr):
         if not p:
             continue
         for k, v in profile_cells(p).items():
-            ctr[k][s['counter']] = sum(x for x in v['counters'].values() if x is not None)
+            ctr[k][s.get('counter', (s.get('pmc') or ['?'])[0])] = sum(x for x in v['counters'].values() if x is not None)
             ctr[k].setdefault('busy_ms_profiled', v['busy_ms'])
     rows = []
     for (S, N, P, Cn, role), v in sorted(ctr.items()):

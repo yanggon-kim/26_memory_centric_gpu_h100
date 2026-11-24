@@ -143,3 +143,17 @@ HBM bytes.
 - `cp_run.py` accepts a step `pmc` counter list (rocprofv3 `--pmc`) and a `host` step kind (counter audit).
 - New: `lc_prefill.py` (L1), `lc_replay.py` (L2, L4), `lc_tail.py` (L3 A), `lc_plan.py`, `lc_submit.sh`, and the
   analysis `lc_analyze.py` (written before lc1 data is read).
+
+## 11. Amendment 1 (2026-11-24, after smoke, before lc1 data)
+
+- Smoke 547179 (mi3001x) failed on a harness bug and was cancelled after two steps (kept): vLLM appends a suffix to
+  scheduler-side request ids, so the whole-prompt composition check matched no chunk and the prefix-build wait could
+  return early. Fixed in b7e44302. Smoke 547207 (mi3001x, release b7e44302): 10/10 steps completed; kernel classes
+  resolve as in section 1 (a whole prompt also uses `_fwd_kernel`; "other" < 4% of busy time); cached prefix verified
+  per step; FETCH_SIZE path works in eager.
+- **Clock state differs by node.** The smoke node ran the 8K anchor at median SCLK 1446 MHz against 1131 MHz in the
+  November 18 run (similar board power), and the anchor was 9% faster in decode and 30–35% faster in mixed steps.
+  Software, backend and graph settings were identical. Clocks are not changed (no authorization); every comparison in
+  this campaign is within one node and job, and per-run SCLK/MCLK medians are reported beside the L0 anchor. The L0
+  anchor's pass rule (section 2) stays as written; a failure that tracks a clock difference is reported as such.
+- No hypothesis, grid or decision rule changes.

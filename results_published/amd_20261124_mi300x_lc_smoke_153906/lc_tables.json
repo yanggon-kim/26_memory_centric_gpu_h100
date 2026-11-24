@@ -1,0 +1,258 @@
+{
+ "plan": "lc_smoke",
+ "status": [
+  {
+   "id": "sm_anchor_e1_S8192_N8",
+   "experiment": "lc0",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_prefill_whole",
+   "experiment": "lc1",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_prefill_mix1024",
+   "experiment": "lc1",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_replay_S32000_N8_P4096",
+   "experiment": "lc2",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_ktrace_replay_S16384_N1",
+   "experiment": "lc2p",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_ktrace_prefill_whole_8192",
+   "experiment": "lc1p",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_pmc_replay_FETCH_SIZE",
+   "experiment": "lc4c",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_tail_mix2048",
+   "experiment": "lc3a",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_serve_lctx",
+   "experiment": "lc5",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  },
+  {
+   "id": "sm_counter_audit",
+   "experiment": "lc4a",
+   "attempts": 1,
+   "completed": true,
+   "failure_class": null,
+   "failure_message": ""
+  }
+ ],
+ "anchors": {
+  "step_anchor": [
+   {
+    "C": 0,
+    "t_ref_ms": 28.112116502597928,
+    "t_ref_ms_s1": 30.876547563821077,
+    "marginal_ms": -0.6361749256029725,
+    "marginal_ms_s1": -0.4326215712353587,
+    "pass": false
+   },
+   {
+    "C": 256,
+    "t_ref_ms": 28.360985044855624,
+    "t_ref_ms_s1": 30.89300252031535,
+    "marginal_ms": 31.74642298836261,
+    "marginal_ms_s1": 56.887965416535735,
+    "pass": false
+   },
+   {
+    "C": 1024,
+    "t_ref_ms": 27.328285505063832,
+    "t_ref_ms_s1": 30.708418460562825,
+    "marginal_ms": 129.58832952426746,
+    "marginal_ms_s1": 209.95461801066995,
+    "pass": false
+   }
+  ]
+ },
+ "l1": {
+  "error": "KeyError('arm')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 527, in lc1\n    res[name] = fn()\n                ^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 524, in <lambda>\n    for name, fn in (('anchors', lambda: anchors(plan, jr, s1)), ('l1', lambda: l1(plan, jr)), ('l2', lambda: l2(plan, jr)),\n                                                                                ^^^^^^^^^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 214, in l1\n    out['ktrace'].append({'arm': s['arm'], 'L': L, **{k: med([c[k] for c in v]) for k in CLASSES + ('busy_ms', 'span_ms',\n                                 ~^^^^^^^\nKeyError: 'arm'\n"
+ },
+ "l2": {
+  "cells": [
+   {
+    "S": 32000,
+    "N": 8,
+    "P": 4096,
+    "C": 0,
+    "pairs": 2,
+    "t_ref_ms": 44.90358498878777,
+    "t_mix_ms": 43.919117480982095,
+    "marginal_ms": -0.9844675078056753,
+    "ratio": 0.9780862281753446,
+    "ci95": [
+     0.9747029288295862,
+     0.981469527521103
+    ],
+    "t_chunk_alone_ms": null,
+    "separate_ms": null,
+    "hybrid_saving_frac": null,
+    "tokens": 8
+   },
+   {
+    "S": 32000,
+    "N": 8,
+    "P": 4096,
+    "C": 1024,
+    "pairs": 2,
+    "t_ref_ms": 44.209308514837176,
+    "t_mix_ms": 229.2638925719075,
+    "marginal_ms": 185.05458405707031,
+    "ratio": 5.1873623495453485,
+    "ci95": [
+     5.104670109035952,
+     5.270054590054745
+    ],
+    "t_chunk_alone_ms": 192.6211080281064,
+    "separate_ms": 236.83041654294357,
+    "hybrid_saving_frac": 0.03194912242053194,
+    "tokens": 1032
+   }
+  ],
+  "anchors_ms": {
+   "P4096_C1024": 192.6211080281064
+  },
+  "profile": [
+   {
+    "S": 0,
+    "N": 0,
+    "P": 4096,
+    "C": 1024,
+    "role": "mix",
+    "linear": 121.05506899999997,
+    "decode_attn": 0.6423519999999999,
+    "prefill_attn": 60.552887999999975,
+    "kv_update": 1.3073049999999997,
+    "other": 7.578167,
+    "busy_ms": 191.132403,
+    "span_ms": 197.220952,
+    "host_gap_ms": 6.088549,
+    "coverage": 0.9603512178937027
+   },
+   {
+    "S": 16384,
+    "N": 1,
+    "P": 4096,
+    "C": 0,
+    "role": "mix",
+    "linear": 14.135789999999997,
+    "decode_attn": 2.3109969999999995,
+    "prefill_attn": 0.0,
+    "kv_update": 0.36642399999999997,
+    "other": 1.4540409999999993,
+    "busy_ms": 18.267252,
+    "span_ms": 20.823976,
+    "host_gap_ms": 2.556723999999999,
+    "coverage": 0.9204017659580106
+   },
+   {
+    "S": 16384,
+    "N": 1,
+    "P": 4096,
+    "C": 0,
+    "role": "ref",
+    "linear": 14.148412999999996,
+    "decode_attn": 2.325661000000001,
+    "prefill_attn": 0.0,
+    "kv_update": 0.369262,
+    "other": 1.493293000000001,
+    "busy_ms": 18.336629,
+    "span_ms": 22.393396,
+    "host_gap_ms": 4.056767000000001,
+    "coverage": 0.9185622940836071
+   },
+   {
+    "S": 16384,
+    "N": 1,
+    "P": 4096,
+    "C": 1024,
+    "role": "mix",
+    "linear": 126.90382000000001,
+    "decode_attn": 2.5847970000000005,
+    "prefill_attn": 84.88518599999999,
+    "kv_update": 1.1880829999999996,
+    "other": 7.132237000000001,
+    "busy_ms": 222.694009,
+    "span_ms": 227.548512,
+    "host_gap_ms": 4.854502999999994,
+    "coverage": 0.9679729282703784
+   },
+   {
+    "S": 16384,
+    "N": 1,
+    "P": 4096,
+    "C": 1024,
+    "role": "ref",
+    "linear": 14.148639999999999,
+    "decode_attn": 2.3335100000000004,
+    "prefill_attn": 0.0,
+    "kv_update": 0.36910199999999993,
+    "other": 1.4750850000000006,
+    "busy_ms": 18.326337,
+    "span_ms": 20.549347,
+    "host_gap_ms": 2.223010000000002,
+    "coverage": 0.9195101017732021
+   }
+  ],
+  "decode_attn_fit_vs_NS": null
+ },
+ "l3a": {
+  "error": "KeyError('pname')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 527, in lc1\n    res[name] = fn()\n                ^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 525, in <lambda>\n    ('l3a', lambda: l3a(plan, jr)), ('l4', lambda: l4(plan, jr)), ('pilot', lambda: pilot(plan, jr))):\n                    ^^^^^^^^^^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 351, in l3a\n    out.append({'policy': s['pname'], 'O': O, 'I': I, 'reps': len(v), **{k: med([z[k] for z in v]) for k in v[0]}})\n                          ~^^^^^^^^^\nKeyError: 'pname'\n"
+ },
+ "l4": {
+  "error": "KeyError('counter')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 527, in lc1\n    res[name] = fn()\n                ^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 525, in <lambda>\n    ('l3a', lambda: l3a(plan, jr)), ('l4', lambda: l4(plan, jr)), ('pilot', lambda: pilot(plan, jr))):\n                                                   ^^^^^^^^^^^^\n  File \"/home1/yanggon/00_first_dir/26_memory_centric_gpu_h100/scripts/amd/lc/lc_analyze.py\", line 402, in l4\n    ctr[k][s['counter']] = sum(x for x in v['counters'].values() if x is not None)\n           ~^^^^^^^^^^^\nKeyError: 'counter'\n"
+ },
+ "pilot": {
+  "slo": {},
+  "lambda_star": {},
+  "ladder": {}
+ }
+}
