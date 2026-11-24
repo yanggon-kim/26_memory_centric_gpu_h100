@@ -1,5 +1,9 @@
 # Research contract
 
+## AMD assignment of 24 November 2026
+
+For the long-context and long-output chunked-prefill extension, follow the [new experiment instructions](docs/amd/long_context_chunked_prefill_20261124.md) when the owner gives the execution prompt. Reuse the November 18 campaign as the baseline.
+
 ## AMD assignment of 18 November 2026
 
 For the new scheduler and decode-specialization campaign, read [the five-experiment handoff](docs/amd/chunked_prefill_campaign_20261118.md). The owner’s execution prompt activates all five experiments, including the two-allocated-GPU comparison. Follow the AMD scientific and allocation controls below and publish results on this branch.
