@@ -533,6 +533,92 @@ def lc1(a):
     print(f'-> {out / "lc_tables.json"}')
 
 
+# ------------------------------------------------------------------ serving (lc2 / lc3: L3 part B and L5)
+SERVE_EXP = ('lc5d', 'lc3b', 'lc3s', 'lc5h', 'lc5b', 'lc5r')
+SERVE_KEYS = ('rate', 'arrival', 'seed', 'attainment', 'incomplete', 'complete', 'goodput_rps', 'goodput_tok_s', 'ttft_p50_s',
+              'ttft_p90_s', 'itl_p50_ms', 'itl_p99_ms', 'req_itl_p95_median_ms', 'req_itl_max_p99_ms', 'output_tokens_per_s',
+              'step_fraction_time', 'step_fraction_count', 'effective_p_to_d', 'preemptions', 'max_waiting',
+              'joules_per_output_token')
+
+
+def sustained(rows, att=0.9):
+    """highest ladder rate below which every rate (inclusive) attains >= att with nothing incomplete (pilot rule)"""
+    sus = None
+    for r in sorted(rows, key=lambda r: r['rate']):
+        if (r.get('attainment') or 0) >= att and r['incomplete'] == 0:
+            sus = r['rate']
+        else:
+            break
+    return sus
+
+
+def serving(plan, jr, slo):
+    rows = []
+    for s in plan['steps']:
+        if s['experiment'] not in SERVE_EXP:
+            continue
+        d = done_dir(jr, s['id'])
+        if not d:
+            continue
+        wl = s['workload']
+        _, rs = A.serve_run(d / 'run', slo[wl])
+        for r in rs:
+            rows.append(dict({k: r.get(k) for k in SERVE_KEYS}, experiment=s['experiment'], step=s['id'], workload=wl,
+                             policy=s.get('pname') or f"{s.get('policy')}{s.get('budget')}", budget=s.get('budget'), model=s.get('model', 'q32')))
+    caps = collections.defaultdict(dict)
+    grp = collections.defaultdict(list)
+    for r in rows:
+        grp[(r['experiment'], r['model'], r['workload'], r['policy'], r['seed'], r['arrival'])].append(r)
+    for k, v in grp.items():
+        if len(v) > 1:
+            caps['|'.join(map(str, k))] = {'sustained_rps': sustained(v), 'max_goodput_rps': max(x['goodput_rps'] or 0 for x in v),
+                                           'rates': len(v)}
+    return {'rows': rows, 'capacity': caps}
+
+
+def select(serv, exp='lc5d'):
+    """amendment 2: per workload, the best mixed budget and the better separate policy, by goodput (summed over the dev seeds)
+    at the highest grid rate where any policy reaches attainment >= 0.9; ties to the smaller budget."""
+    by = collections.defaultdict(lambda: collections.defaultdict(list))
+    for r in serv['rows']:
+        if r['experiment'] == exp:
+            by[r['workload']][r['policy']].append(r)
+    out = {}
+    for wl, pols in by.items():
+        ok_rates = sorted({round(r['rate'], 6) for v in pols.values() for r in v if (r['attainment'] or 0) >= 0.9})
+        if not ok_rates:
+            out[wl] = {'note': 'no policy reaches attainment 0.9 at any rate'}
+            continue
+        x = ok_rates[-1]
+        score = {p: sum(r['goodput_rps'] or 0 for r in v if round(r['rate'], 6) == x) for p, v in pols.items()}
+        bud = lambda p: int(p[3:]) if p.startswith('mix') else 0  # noqa: E731
+        mixed = sorted((p for p in score if p.startswith('mix')), key=lambda p: (-round(score[p], 6), bud(p)))
+        sep = sorted((p for p in score if not p.startswith('mix')), key=lambda p: (-round(score[p], 6), p != 'whole'))
+        out[wl] = {'rate': x, 'score': score, 'mixed': mixed[0] if mixed else None, 'separate': sep[0] if sep else None}
+    return out
+
+
+def lc_serve_plan(a):
+    root = Path(a.root)
+    out = Path(a.out or root / 'analysis')
+    out.mkdir(parents=True, exist_ok=True)
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    jr = A.journal(root)
+    prm = json.loads(Path(a.params).read_text())
+    res = {'plan': plan['plan'], 'status': status_rows(plan, jr), 'params': prm}
+    for name, fn in (('serving', lambda: serving(plan, jr, prm['slo'])), ('l4', lambda: l4(plan, jr))):
+        try:
+            res[name] = fn()
+        except Exception as e:  # noqa: BLE001
+            import traceback
+            res[name] = {'error': repr(e), 'traceback': traceback.format_exc()}
+        print(f'{name} done', flush=True)
+    if 'rows' in res.get('serving', {}):
+        res['selection'] = select(res['serving'])
+    (out / 'lc_tables.json').write_text(json.dumps(res, indent=1, default=str) + '\n')
+    print(f'-> {out / "lc_tables.json"}')
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = q.add_subparsers(dest='cmd', required=True)
@@ -542,5 +628,10 @@ if __name__ == '__main__':
         r.add_argument('--out')
         r.add_argument('--s1-tables', default=str(Path(__file__).resolve().parents[3] /
                                                   'results_published/amd_20261118_mi300x_cp_s1/s1_tables.json'))
+    for n in ('lc2', 'lc3'):
+        r = s.add_parser(n)
+        r.add_argument('--root', required=True)
+        r.add_argument('--out')
+        r.add_argument('--params', required=True)
     a = q.parse_args()
-    lc1(a)
+    lc1(a) if a.cmd in ('lc1', 'smoke') else lc_serve_plan(a)

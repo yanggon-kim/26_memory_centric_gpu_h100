@@ -198,15 +198,64 @@ def lc2(cohort, params):
     return p, lanes, {'a': p.assign('a', list(lanes['a']))}
 
 
+def lc3(cohort, params):
+    """Held-out stage (design section 7, amendments 2-3). Policies per L5 workload from the lc2 selection:
+    the selected mixed budget, the selected separate policy and stock mixed B 2048 (if not already selected).
+      lc5h  held-out seeds 201-203, poisson, GRID x lambda*
+      lc5b  bursty repeat (gamma gaps, CV 4), seed 201, GRID x lambda*
+      7B replication (Qwen2.5-7B, same harness): L1 timing (whole, B 256 / 1024 / 4096), L2 timing (S 1K-32K, N 1/8/32),
+      L3 part A tails (whole, mix2048), SLO pilot + stock capacity ladder for lctx and lprompt, and matched ladders of the
+      32B-selected policies on seed 201 (experiment lc5r)"""
+    p = Plan('lc3', cohort)
+    lam, sel = params['lambda_star'], params['selection']
+    for wl in L5_WL:
+        pols = list(dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048']))
+        for pn in pols:
+            rates = [x * lam[wl] for x in GRID]
+            for seed in (201, 202, 203):
+                serve(p, 'a', 'lc5h', f'lc5h_{wl}_{pn}_s{seed}', wl, pn, rates, seed, params['requests'][wl], DRAIN[wl])
+            serve(p, 'a', 'lc5b', f'lc5b_{wl}_{pn}_s201', wl, pn, rates, 201, params['requests'][wl], DRAIN[wl],
+                  arrivals='bursty')
+    b7 = lambda: base('q7')  # noqa: E731
+    for an, (arm, b) in ARMS.items():
+        p.add('a', 'lc1', f'q7_lc1_time_{an}', LP, b7() + ['--arm', arm, '--budget', b, '--lengths', LENGTHS, '--reps', 8],
+              est=600, model='q7', arm=an)
+    for S in CONTEXTS:
+        p.add('a', 'lc2', f'q7_lc2_time_S{S}', LR, b7() + ['--contexts', S, '--widths', '1,8,32', '--max-tokens', 1200000,
+              '--chunks', '0,256,1024', '--prefix', 4096, '--reps', 10], est=900, model='q7', S=S)
+    for pn in ('whole', 'mix2048'):
+        pol, b, whole = TAIL[pn]
+        p.add('a', 'lc3a', f'q7_lc3a_tail_{pn}', LT, b7() + ['--policy', pol, '--budget', b] + (['--no-chunk'] if whole else [])
+              + ['--reps', 2], est=1200, model='q7', pname=pn)
+    q7 = params['q7']
+    for wl in ('lctx', 'lprompt'):
+        lo, n_lo, ladder = q7['pilot'][wl]
+        common = b7() + ['--policy', 'mixed', '--budget', 2048, '--workload', wl, '--max-model-len', 32768]
+        p.add('a', 'pilot', f'q7_pilot_slo_{wl}', SV, common + ['--rates', lo, '--seeds', 101, '--requests', n_lo, '--drain-s',
+              DRAIN[wl]], est=int(n_lo / lo + DRAIN[wl] + 400), model='q7', workload=wl)
+        p.add('a', 'pilot', f'q7_pilot_cap_{wl}', SV, common + ['--rates', ','.join(map(str, ladder)), '--seeds', 102,
+              '--requests', 60, '--drain-s', DRAIN[wl], '--energy'], est=int(sum(60 / r + DRAIN[wl] * 0.6 for r in ladder) + 400),
+              model='q7', workload=wl)
+        for pn in dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048']):
+            pol, b, whole = SERVE_POL[pn]
+            args = b7() + ['--policy', pol, '--budget', b, '--workload', wl, '--rates', ','.join(map(str, ladder)), '--seeds', 201,
+                           '--arrivals', 'poisson', '--requests', 60, '--drain-s', DRAIN[wl], '--max-model-len', 32768,
+                           '--energy'] + (['--no-chunk'] if whole else [])
+            p.add('a', 'lc5r', f'q7_lc5r_{wl}_{pn}_s201', SV, args, est=int(sum(60 / r + DRAIN[wl] * 0.6 for r in ladder) + 400),
+                  model='q7', workload=wl, pname=pn, policy=pol, budget=b, whole=whole, seed=201, rates=list(ladder))
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    return p, lanes, {'a': p.assign('a', list(lanes['a']))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else lc2(a.cohort, json.loads(a.params.read_text())))
+                      else (lc2 if a.which == 'lc2' else lc3)(a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition
         plan.update(partition='mi3001x', gpus=1, charge_rate=0.125)
