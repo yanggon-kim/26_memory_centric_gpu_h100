@@ -1,0 +1,7 @@
+{
+ "source": "lc1 pilot, results_amd/amd_20261124_mi300x_lc_lc1/analysis/lc_tables.json (stock mixed B=2048, seed 101 SLO pilot, seed 102 capacity ladder); balanced from scripts/amd/cp/params/mi300x_slo.json and the s1 lambda*",
+ "lambda_star": {"lo512": 4.0, "lo2048": 1.0, "lo4096": 0.5, "lctx": 0.1, "lprompt": 0.05, "balanced": 1.0},
+ "lambda_note": {"lo512": "censored: attainment 1.0 at every ladder rate, top of ladder used", "lo2048": "censored (top of ladder)", "lo4096": "censored (top of ladder)", "lctx": "highest ladder rate with attainment >= 0.9 (0.93)", "lprompt": "stock attains < 0.9 at every ladder rate (0.87 at 0.03); reference = smallest ladder rate whose goodput is >= 90% of the ladder peak (0.041 of 0.043 rps)", "balanced": "s1 value"},
+ "slo": {"lo512": {"ttft_s": 0.46, "itl_ms": 110}, "lo2048": {"ttft_s": 0.45, "itl_ms": 110}, "lo4096": {"ttft_s": 0.70, "itl_ms": 130}, "lctx": {"ttft_s": 25, "itl_ms": 110}, "lprompt": {"ttft_s": 41, "itl_ms": 110}, "balanced": {"ttft_s": 1.4, "itl_ms": 110}},
+ "requests": {"lo512": 200, "lo2048": 120, "lo4096": 60, "lctx": 40, "lprompt": 30, "balanced": 200}
+}

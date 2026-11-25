@@ -157,3 +157,50 @@ HBM bytes.
   this campaign is within one node and job, and per-run SCLK/MCLK medians are reported beside the L0 anchor. The L0
   anchor's pass rule (section 2) stays as written; a failure that tracks a clock difference is reported as such.
 - No hypothesis, grid or decision rule changes.
+
+## 12. Amendment 2 (2026-11-25, after lc1, before lc2 data)
+
+lc1 (job 547842, mi3008x node k002-002, release c0f3e871): 76 of 77 steps completed. What lc1 changed in the plan:
+
+- **L0 step anchor fails on clock state, as amendment 1 predicted.** The lc0 cell ran at median SCLK 1440 MHz (vs 1131
+  in s1). t_ref was 27.1 ms against 30.9 (0.88×), and the mixed marginals were 32 / 131 ms against 57 / 210 at
+  C = 256 / 1024. The serving anchor passes (decode share 96.0% of steps, 89.6% of exec). Clock medians also differ
+  between GPUs of the same node under different work (1366–1606 MHz across lc1 lanes). Cross-lane comparisons
+  therefore carry a stated clock caveat. A built-in control that runs identical work on two lanes (L1 at L = 1024:
+  mix1024 and mix4096 run one chunk, the same as whole) gives a cross-lane ratio of 0.995.
+- **Failed and kept: lc4_pmc_FETCH_SIZE.** Both attempts hit an illegal memory access in the S = 32000, N = 8 cell
+  under counter collection. The other three counters completed that cell on retry. lc2 re-runs FETCH_SIZE as two new
+  steps: S × N ≤ 131072 (`lc4_pmc_FETCH_SIZE_r2_main`) and the S = 32000, N = 8 cell alone (`_r2_S32000_N8`).
+- **Failed and kept: lc4_counter_audit.** It exited 0, but all 208 runs reported "no ROCm-capable device". The host
+  launcher set HIP_VISIBLE_DEVICES and ROCR_VISIBLE_DEVICES both to the physical index. This works on a one-GPU node
+  and fails on lane 7 of an 8-GPU node. Fixed in `cp_run.run_host` (ROCR = physical index, HIP = 0). A host step that
+  writes an audit with no successful run is now marked failed. lc2 re-runs it as `lc4_counter_audit_r2`. Until then the
+  counter classes are those of the G4 audit (section 6).
+- **SLO and λ\*, frozen rule applied to the lc1 pilot** (`scripts/amd/lc/params/mi300x_lc2.json`):
+
+  | workload | TTFT limit | ITL limit | λ* (rps) | note |
+  |---|---|---|---|---|
+  | lo512 | 0.46 s | 110 ms | 4.0 | censored: attainment 1.0 at every ladder rate |
+  | lo2048 | 0.45 s | 110 ms | 1.0 | censored |
+  | lo4096 | 0.70 s | 130 ms | 0.5 | censored |
+  | lctx | 25 s | 110 ms | 0.1 | attainment 0.93 at 0.1, 0.33 at 0.15 |
+  | lprompt | 41 s | 110 ms | 0.05* | stock never reaches 0.9 (0.87 at 0.03) |
+  | balanced | 1.4 s | 110 ms | 1.0 | s1 values |
+
+  \*The frozen rule gives no λ\* for lprompt. Pre-registered substitute: the smallest ladder rate whose goodput is
+  ≥ 90% of the ladder peak (0.041 of 0.043 rps at 0.05). This is reported as a substitution. Stock B = 2048 already
+  breaks the lprompt ITL target at low load. That failure is itself an L5 finding: long-prompt chunks inflate co-running
+  decode steps. For the censored workloads, GRID × λ\* extends to 2× the ladder top, so the knee falls inside the lc2
+  grid.
+- **lc2 (development, plan `lc2`, 76 steps, ≈ 8.5 h estimated, pilot actuals ≈ 0.7× estimates):**
+  - L5 tuning for lo2048, lctx and lprompt: 8 policies (whole/separate, separate B 2048, mixed B 256 / 512 / 1024 /
+    2048 / 4096 / 8192) × seeds 101 and 102 × GRID × λ\*.
+  - L3 part B for lo512, lo4096 and balanced: 5 policies (whole, sep2048, mix256 / 2048 / 4096), seed 101.
+  - Fixed-rate slice at λ\*(lo4096) = 0.5 rps for lo512 and lo2048.
+  - The two FETCH_SIZE re-runs and the audit re-run.
+  - Requests per rate point: lo512 200, lo2048 120, lo4096 60, lctx 40, lprompt 30, balanced 200.
+- **Selection for lc3 (held-out seeds 201–203):** per workload, the best mixed budget and the better of the two
+  separate policies, by goodput at the highest grid rate where either reaches attainment ≥ 0.9, ties to the smaller
+  budget. Decision rule as in section 7. lc3 also carries the bursty repeat and the 7B replication, written as
+  amendment 3 before its data.
+- No hypothesis changes.

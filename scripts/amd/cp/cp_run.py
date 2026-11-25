@@ -107,7 +107,9 @@ def run_engine(step, plan, root, lane, gpus, uuids, adir):
 def run_host(step, gpus, uuids, adir):
     """lc campaign: a host-side tool (e.g. scripts/amd/goal/counter_audit.py under host rocprofv3) on the lane's first GPU.
     Completed = return code 0 within the timeout."""
-    env = dict(os.environ, HIP_VISIBLE_DEVICES=str(gpus[0]), ROCR_VISIBLE_DEVICES=str(gpus[0]))
+    # ROCR selects the physical GPU, after which HIP sees it as device 0 (setting both to the physical index left no
+    # visible device on 8-GPU nodes: lc1 lc4_counter_audit, all 208 runs 'no ROCm-capable device')
+    env = dict(os.environ, ROCR_VISIBLE_DEVICES=str(gpus[0]), HIP_VISIBLE_DEVICES='0')
     env.pop('HSA_CU_MASK', None)
     argv = ['python3', str(REPO / step['script'])] + [str(x) for x in step['args']] + ['--out-dir', str(adir / 'run')]
     rec = {'step': step['id'], 'kind': 'host', 'argv': argv, 'attempt_dir': str(adir), 'gpus': gpus, 'uuids': uuids,
@@ -122,6 +124,11 @@ def run_host(step, gpus, uuids, adir):
             rec['runner_stop'] = B.stop_group(proc, grace=10)
     rec.update(t_end=time.time(), returncode=proc.returncode)
     rec['command_completed'] = proc.returncode == 0 and not rec['timed_out']
+    audit = adir / 'run' / 'counter_audit.json'
+    if rec['command_completed'] and audit.exists():  # a tool that exits 0 with no successful measurement is a failure
+        runs = json.loads(audit.read_text()).get('runs', [])
+        rec['ok_runs'] = sum(r.get('returncode') == 0 for r in runs)
+        rec['command_completed'] = rec['ok_runs'] > 0
     if not rec['command_completed']:
         rec['failure_class'] = 'execution:timeout' if rec['timed_out'] else 'execution'
     return rec

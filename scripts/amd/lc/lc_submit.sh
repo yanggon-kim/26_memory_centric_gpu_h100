@@ -2,12 +2,12 @@
 # Long-context campaign: freeze a release snapshot of the committed scripts and campaign docs, generate the plan inside it
 # (scripts/amd/lc/lc_plan.py), and submit scripts/amd/cp/cp.sbatch (shared with the November 18 campaign) with a persistent
 # run root. Refuses uncommitted changes under scripts/ or the design. Resubmitting with --root <root> resumes that plan.
-# Usage: scripts/amd/lc/lc_submit.sh <plan> <cohort> <HH:MM:SS> [--root ROOT] [-- sbatch args]
+# Usage: scripts/amd/lc/lc_submit.sh <plan> <cohort> <HH:MM:SS> [--params P.json] [--root ROOT] [-- sbatch args]
 set -euo pipefail
 which=$1; cohort=$2; tlimit=$3; shift 3
-root=; sb=()
+root=; params=; sb=()
 while [ $# -gt 0 ]; do
-  case $1 in --root) root=$2; shift 2;; --) shift; sb=("$@"); break;; *) echo "bad arg $1" >&2; exit 1;; esac
+  case $1 in --root) root=$2; shift 2;; --params) params=$(readlink -f $2); shift 2;; --) shift; sb=("$@"); break;; *) echo "bad arg $1" >&2; exit 1;; esac
 done
 repo="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.." && pwd)"; cd "$repo"
 WORK=${WORK:-/work1/proj_blaisetine/yanggon}
@@ -25,7 +25,7 @@ if [ -n "$root" ]; then
 else
   mkdir -p "$WORK/cp_plans"
   plan=$WORK/cp_plans/lc_${cohort}_${which}_$(date +%Y%m%d_%H%M%S)_${sha:0:8}.json
-  python3.12 "$rel/scripts/amd/lc/lc_plan.py" "$which" --cohort "$cohort" --out "$plan"
+  python3.12 "$rel/scripts/amd/lc/lc_plan.py" "$which" --cohort "$cohort" ${params:+--params "$params"} --out "$plan"
   chmod a-w "$plan"
   root=$WORK/results_amd/amd_$(date +%Y%m%d)_${cohort}_lc_${which}
   [ -e "$root" ] && root=${root}_$(date +%H%M%S)

@@ -38,7 +38,7 @@ L4_TREAT = ('absent', 'arith100', 'mem50', 'mem100')
 PILOT = {'lo512': (0.2, 40, [0.5, 1, 1.5, 2, 3, 4]), 'lo2048': (0.05, 40, [0.15, 0.25, 0.35, 0.5, 0.7, 1.0]),
          'lo4096': (0.03, 30, [0.08, 0.12, 0.18, 0.25, 0.35, 0.5]), 'lctx': (0.03, 30, [0.05, 0.1, 0.15, 0.2, 0.3, 0.4]),
          'lprompt': (0.02, 30, [0.03, 0.05, 0.08, 0.12, 0.16, 0.24])}
-DRAIN = {'lo512': 240, 'lo2048': 300, 'lo4096': 420, 'lctx': 300, 'lprompt': 240}
+DRAIN = {'lo512': 240, 'lo2048': 300, 'lo4096': 420, 'lctx': 300, 'lprompt': 240, 'balanced': 60}
 
 
 def base(m='q32'):
@@ -145,13 +145,68 @@ def lc1(cohort):
     return p, lanes, {'a': p.assign('a', list(lanes['a']))}
 
 
+GRID = (0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
+SERVE_POL = {'whole': ('separate', 32768, True), 'sep2048': ('separate', 2048, False), 'mix256': ('mixed', 256, False),
+             'mix512': ('mixed', 512, False), 'mix1024': ('mixed', 1024, False), 'mix2048': ('mixed', 2048, False),
+             'mix4096': ('mixed', 4096, False), 'mix8192': ('mixed', 8192, False)}
+L3B_POL = ('whole', 'sep2048', 'mix256', 'mix2048', 'mix4096')
+L5_WL = ('lo2048', 'lctx', 'lprompt')
+L3B_WL = ('lo512', 'lo4096', 'balanced')
+
+
+def serve(p, stage, exp, sid, wl, pn, rates, seed, n, drain, **k):
+    pol, b, whole = SERVE_POL[pn]
+    args = base() + ['--policy', pol, '--budget', b, '--workload', wl, '--rates', ','.join(f'{r:.4g}' for r in rates),
+                     '--seeds', seed, '--arrivals', k.pop('arrivals', 'poisson'), '--requests', n, '--drain-s', drain,
+                     '--max-model-len', 32768, '--energy'] + (['--no-chunk'] if whole else [])
+    p.add(stage, exp, sid, SV, args, est=int(sum(n / r + 0.6 * drain + 30 for r in rates) + 400), model='q32', workload=wl,
+          pname=pn, policy=pol, budget=b, whole=whole, seed=seed, rates=list(rates), **k)
+
+
+def lc2(cohort, params):
+    """Development stage (design section 7, amendment 2): L5 tuning on seeds 101 and 102 for lo2048, lctx, lprompt
+    (all eight policies); L3 part B matched-policy traces on seed 101 for lo512, lo4096 and the balanced control (five
+    policies); a fixed-rate slice at lambda*(lo4096) for lo512 and lo2048 (five policies). Rates GRID x lambda*."""
+    p = Plan('lc2', cohort)
+    lam = params['lambda_star']
+    for wl in L5_WL:
+        for pn in SERVE_POL:
+            for seed in (101, 102):
+                serve(p, 'a', 'lc5d', f'lc5d_{wl}_{pn}_s{seed}', wl, pn, [x * lam[wl] for x in GRID], seed,
+                      params['requests'][wl], DRAIN[wl])
+    for wl in L3B_WL:
+        for pn in L3B_POL:
+            serve(p, 'a', 'lc3b', f'lc3b_{wl}_{pn}_s101', wl, pn, [x * lam[wl] for x in GRID], 101, params['requests'][wl],
+                  DRAIN.get(wl, 120))
+    # L4 FETCH_SIZE redo (amendment 2): lc1 lc4_pmc_FETCH_SIZE hit an illegal memory access in the S=32000 N=8 cell on
+    # both attempts (kept as failed); the other cells as one step, the S=32000 N=8 cell alone as another
+    l4 = ['--widths', '1,8', '--chunks', '0,1024', '--prefix', 4096, '--reps', 2, '--eager', '--markers']
+    p.add('a', 'lc4c', 'lc4_pmc_FETCH_SIZE_r2_main', LR, base() + ['--contexts', '1024,16384,32000', '--max-tokens', 131072]
+          + l4, est=2000, model='q32', profile=True, pmc=['FETCH_SIZE'], counter='FETCH_SIZE')
+    p.add('a', 'lc4c', 'lc4_pmc_FETCH_SIZE_r2_S32000_N8', LR, base() + ['--contexts', 32000, '--widths', 8, '--chunks', '0,1024',
+          '--prefix', 4096, '--reps', 2, '--eager', '--markers'], est=900, model='q32', profile=True, pmc=['FETCH_SIZE'],
+          counter='FETCH_SIZE')
+    # known-byte counter audit redo (amendment 2): lc1 lc4_counter_audit saw no device (host launcher set HIP and ROCR
+    # visibility to the same physical index; fixed in cp_run.run_host); kept as a failed acquisition
+    p.add('a', 'lc4a', 'lc4_counter_audit_r2', 'scripts/amd/goal/counter_audit.py', ['--max-counters', 16, '--reps', 2],
+          est=1800, kind='host')
+    rf = lam['lo4096']
+    for wl in ('lo512', 'lo2048'):
+        for pn in L3B_POL:
+            serve(p, 'a', 'lc3s', f'lc3s_{wl}_{pn}_r{rf:.3g}_s101', wl, pn, [rf], 101, params['requests']['lo4096'], DRAIN[wl])
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    return p, lanes, {'a': p.assign('a', list(lanes['a']))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2'))
+    q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
-    p, lanes, load = smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort)
+    p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
+                      else lc2(a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition
         plan.update(partition='mi3001x', gpus=1, charge_rate=0.125)
