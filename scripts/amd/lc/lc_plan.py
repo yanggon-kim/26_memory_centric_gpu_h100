@@ -200,7 +200,7 @@ def lc2(cohort, params):
 
 def lc3(cohort, params):
     """Held-out stage (design section 7, amendments 2-3). Policies per L5 workload from the lc2 selection:
-    the selected mixed budget, the selected separate policy and stock mixed B 2048 (if not already selected).
+    the selected mixed budget, the selected separate policy, stock mixed B 2048 and whole (amendment 3).
       lc5h  held-out seeds 201-203, poisson, GRID x lambda*
       lc5b  bursty repeat (gamma gaps, CV 4), seed 201, GRID x lambda*
       7B replication (Qwen2.5-7B, same harness): L1 timing (whole, B 256 / 1024 / 4096), L2 timing (S 1K-32K, N 1/8/32),
@@ -208,10 +208,11 @@ def lc3(cohort, params):
       32B-selected policies on seed 201 (experiment lc5r)"""
     p = Plan('lc3', cohort)
     lam, sel = params['lambda_star'], params['selection']
+    ext = params.get('grid_ext', {})  # amendment 3: extra multiples of lambda* where lc2 was censored at 2 x lambda*
     for wl in L5_WL:
-        pols = list(dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048']))
+        pols = list(dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048', 'whole']))
         for pn in pols:
-            rates = [x * lam[wl] for x in GRID]
+            rates = [x * lam[wl] for x in GRID + tuple(ext.get(wl, ()))]
             for seed in (201, 202, 203):
                 serve(p, 'a', 'lc5h', f'lc5h_{wl}_{pn}_s{seed}', wl, pn, rates, seed, params['requests'][wl], DRAIN[wl])
             serve(p, 'a', 'lc5b', f'lc5b_{wl}_{pn}_s201', wl, pn, rates, 201, params['requests'][wl], DRAIN[wl],
@@ -236,7 +237,7 @@ def lc3(cohort, params):
         p.add('a', 'pilot', f'q7_pilot_cap_{wl}', SV, common + ['--rates', ','.join(map(str, ladder)), '--seeds', 102,
               '--requests', 60, '--drain-s', DRAIN[wl], '--energy'], est=int(sum(60 / r + DRAIN[wl] * 0.6 for r in ladder) + 400),
               model='q7', workload=wl)
-        for pn in dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048']):
+        for pn in dict.fromkeys([sel[wl]['mixed'], sel[wl]['separate'], 'mix2048', 'whole']):
             pol, b, whole = SERVE_POL[pn]
             args = b7() + ['--policy', pol, '--budget', b, '--workload', wl, '--rates', ','.join(map(str, ladder)), '--seeds', 201,
                            '--arrivals', 'poisson', '--requests', 60, '--drain-s', DRAIN[wl], '--max-model-len', 32768,

@@ -199,6 +199,11 @@ def trace_summary(t, slo=None):
         out['attainment'] = len(ok) / len(reqs)
         out['goodput_rps'] = len(ok) / span
         out['goodput_tok_s'] = sum(r['tokens'] for r in ok) / span
+        # lc amendment 3: stall-aware secondary SLO, the primary SLO plus a cap on each request's worst inter-token gap
+        for lim in slo.get('stall_ms_grid', ()):
+            okm = [r for r in ok if not r['itl_ms'] or max(r['itl_ms']) <= lim]
+            out[f'attainment_stall{int(lim)}'] = len(okm) / len(reqs)
+            out[f'goodput_stall{int(lim)}_rps'] = len(okm) / span
     return out
 
 

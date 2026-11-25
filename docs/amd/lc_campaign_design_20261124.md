@@ -204,3 +204,48 @@ lc1 (job 547842, mi3008x node k002-002, release c0f3e871): 76 of 77 steps comple
   budget. Decision rule as in section 7. lc3 also carries the bursty repeat and the 7B replication, written as
   amendment 3 before its data.
 - No hypothesis changes.
+
+## 13. Amendment 3 (2026-11-25, after lc2, before lc3 data)
+
+**lc2 outcome (job 548920, 76/76 steps).** 8 serving steps hit `hipErrorLaunchFailure` on attempt 1 and completed on
+attempt 2; the failed attempts are kept. Analysis: `results_published/amd_20261125_mi300x_lc_lc2/lc_tables.json`.
+
+**Selection (amendment-2 rule).** The first analysis broke a tie between the two separate policies toward whole, which
+contradicts the written rule (ties to the smaller budget). The code is corrected to the text (whole counts as budget
+32768) before any lc3 data:
+
+| Workload | Rate used | Selected mixed | Selected separate | Note |
+|---|---|---|---|---|
+| lo2048 | 0.75 rps | mix256 | sep2048 | mix256 / 512 / 4096 tie, smallest budget |
+| lctx | 0.20 rps (2 × λ\*) | mix8192 | sep2048 | whole and sep2048 tie exactly (attainment 1.0) |
+| lprompt | 0.10 rps (2 × λ\*) | mix8192 | sep2048 | whole and sep2048 tie exactly (attainment 1.0) |
+
+**Changes for lc3 (all before data).**
+1. **whole is added to every held-out policy set** (selected mixed, selected separate, mix2048, whole). Reason: it ties
+   the selected separate policy on lctx and lprompt and is the no-chunking baseline the question asks about.
+2. **Extended ladder for lctx and lprompt: GRID ∪ {3, 4} × λ\*.** Reason: in lc2 both separate policies held
+   attainment 1.0 at the top grid rate (2 × λ\*), so their capacity is censored and a win/loss could not be resolved.
+   lo2048 is not extended (every policy fell below 0.9 at 1 × λ\*).
+3. **Secondary, stall-aware SLO.** The primary SLO bounds each request's p95 ITL, which by construction ignores up to
+   5% of a request's gaps. In lc2 whole and separate prefill kept attainment 1.0 on lctx and lprompt while the p99 of
+   per-request worst gaps reached 5–50 s. The secondary SLO is the primary SLO **plus** each request's maximum ITL ≤
+   1000 ms (named threshold), with 250 / 500 / 2000 ms reported as sensitivity. The lc3 decision is made under both;
+   the primary SLO stays primary, and a disagreement between the two is reported as a counterexample, not resolved.
+   Applied to lc2 the stall view is exploratory (defined after seeing lc2).
+   Exploratory lc2 result under the stall view (same selection rule): lctx picks mix2048 at 1000 ms (goodput 0.114 vs
+   0.037 for whole / sep2048 at 0.05 rps) and mix256 at 250 / 500 ms; lo2048 is unchanged (mix256 / sep2048); for
+   lprompt no policy reaches attainment 0.9 at any rate with stalls ≤ 1000 ms. The 1000 ms picks are already in the
+   held-out sets below, so no policy is added for them.
+4. Decision per workload, both SLOs: selected mixed vs each of selected separate and whole, on all held-out seeds;
+   **win** if the all-seed sustainable rate (attainment ≥ 0.9, nothing incomplete, at that and every lower rate) is ≥ 1
+   ladder step higher, **loss** if ≥ 1 lower, otherwise **uncertain**, with goodput at λ\* and 2 × λ\* as the tie
+   view. TTFT, ITL tails, stalls and J/token are reported as tradeoffs.
+5. **Bursty repeat**: same four policies, seed 201, gamma gaps (CV 4), same ladder.
+6. **7B replication (Qwen2.5-7B, MI300X, same harness)**: L1 timing (whole, B 256 / 1024 / 4096), L2 timing (S 1K–32K,
+   N 1 / 8 / 32), L3 part A tails (whole, mix2048), its own SLO pilot (stock, seed 101) and capacity ladder for lctx
+   (pilot 0.1 rps, ladder 0.2–1.6) and lprompt (pilot 0.08 rps, ladder 0.12–1.0), and matched ladders of the four
+   32B held-out policies on seed 201 (experiment lc5r). The 7B SLO comes from its own pilot by the frozen rule; the
+   replication question is whether the 32B direction (win / loss / uncertain) holds, not the numbers. 7B KV is
+   56 KiB per token (vs 256 KiB) and is used for any byte arithmetic.
+7. Parameters: `scripts/amd/lc/params/mi300x_lc3.json`. Plan: 71 steps, longest lane ≈ 8.6 h, ≈ 8.9 units.
+- No hypothesis changes.

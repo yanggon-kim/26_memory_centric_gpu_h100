@@ -45,9 +45,10 @@ Measured BW per CU = E4 `seqread4g` at the full device / CUs (jobs 483498, 48349
 | `amd_20261119_mi300x_cp_s4_smoke` | - | 20261119 | - | [experiment_log](../docs/amd/experiment_log.md) |
 | `amd_20261119_mi300x_cp_s4r` | - | 20261119 | - | - |
 | `amd_20261120_mi300x_cp_s5` | - | 20261120 | - | [cp_campaign_results_20261118](../docs/amd/cp_campaign_results_20261118.md), [experiment_log](../docs/amd/experiment_log.md) |
-| `amd_20261124_mi300x_lc_lc1` | - | 20261124 | - | - |
+| `amd_20261124_mi300x_lc_lc1` | - | 20261124 | - | [lc_campaign_results_20261124](../docs/amd/lc_campaign_results_20261124.md) |
 | `amd_20261124_mi300x_lc_smoke` | - | 20261124 | - | - |
 | `amd_20261124_mi300x_lc_smoke_153906` | - | 20261124 | - | - |
+| `amd_20261125_mi300x_lc_lc2` | - | 20261125 | - | [lc_campaign_design_20261124](../docs/amd/lc_campaign_design_20261124.md) |
 
 ## MI325X
 

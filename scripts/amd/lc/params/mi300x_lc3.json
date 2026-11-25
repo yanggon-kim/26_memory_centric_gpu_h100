@@ -1,0 +1,113 @@
+{
+ "source": "lc2 params (lambda*, SLO, requests unchanged) + lc2 selection (amendment-2 rule, ties to the smaller budget) + amendment 3",
+ "lambda_star": {
+  "lo512": 4.0,
+  "lo2048": 1.0,
+  "lo4096": 0.5,
+  "lctx": 0.1,
+  "lprompt": 0.05,
+  "balanced": 1.0
+ },
+ "lambda_note": {
+  "lo512": "censored: attainment 1.0 at every ladder rate, top of ladder used",
+  "lo2048": "censored (top of ladder)",
+  "lo4096": "censored (top of ladder)",
+  "lctx": "highest ladder rate with attainment >= 0.9 (0.93)",
+  "lprompt": "stock attains < 0.9 at every ladder rate (0.87 at 0.03); reference = smallest ladder rate whose goodput is >= 90% of the ladder peak (0.041 of 0.043 rps)",
+  "balanced": "s1 value"
+ },
+ "slo": {
+  "lo512": {
+   "ttft_s": 0.46,
+   "itl_ms": 110
+  },
+  "lo2048": {
+   "ttft_s": 0.45,
+   "itl_ms": 110
+  },
+  "lo4096": {
+   "ttft_s": 0.7,
+   "itl_ms": 130
+  },
+  "lctx": {
+   "ttft_s": 25,
+   "itl_ms": 110
+  },
+  "lprompt": {
+   "ttft_s": 41,
+   "itl_ms": 110
+  },
+  "balanced": {
+   "ttft_s": 1.4,
+   "itl_ms": 110
+  }
+ },
+ "requests": {
+  "lo512": 200,
+  "lo2048": 120,
+  "lo4096": 60,
+  "lctx": 40,
+  "lprompt": 30,
+  "balanced": 200
+ },
+ "selection": {
+  "lo2048": {
+   "mixed": "mix256",
+   "separate": "sep2048"
+  },
+  "lctx": {
+   "mixed": "mix8192",
+   "separate": "sep2048"
+  },
+  "lprompt": {
+   "mixed": "mix8192",
+   "separate": "sep2048"
+  }
+ },
+ "selection_note": "lc2 dev seeds 101+102. lctx and lprompt: whole and sep2048 tie exactly (every request met the SLO at the top grid rate), so the written rule picks the smaller budget, sep2048; whole is added to every held-out set by amendment 3. lo2048: mix256/mix512/mix4096 tie at 0.75 rps, smallest budget mix256.",
+ "grid_ext": {
+  "lctx": [
+   3.0,
+   4.0
+  ],
+  "lprompt": [
+   3.0,
+   4.0
+  ]
+ },
+ "stall_ms_grid": [
+  250,
+  500,
+  1000,
+  2000
+ ],
+ "stall_primary_ms": 1000,
+ "q7": {
+  "pilot": {
+   "lctx": [
+    0.1,
+    30,
+    [
+     0.2,
+     0.4,
+     0.6,
+     0.8,
+     1.2,
+     1.6
+    ]
+   ],
+   "lprompt": [
+    0.08,
+    30,
+    [
+     0.12,
+     0.2,
+     0.3,
+     0.45,
+     0.65,
+     1.0
+    ]
+   ]
+  }
+ }
+}

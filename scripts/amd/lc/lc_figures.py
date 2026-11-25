@@ -91,7 +91,10 @@ def fig_goodput(series, out, name):
     pols = sorted({p for w in wls for p in series[w]}, key=lambda p: (p != 'whole', p != 'sep2048', len(p), p))
     for ax, w in zip(axs[0], wls):
         for p, v in series[w].items():
-            v = sorted(v)
+            by = {}  # mean over seeds at each offered rate
+            for x, y in v:
+                by.setdefault(x, []).append(y)
+            v = sorted((x, sum(ys) / len(ys)) for x, ys in by.items())
             ax.plot([x for x, _ in v], [y for _, y in v], color=SER[pols.index(p) % 8], marker='o', label=p,
                     markeredgecolor='#fcfcfb', markeredgewidth=1.2)
         ax.set_title(w, fontsize=9, loc='left', color=INK)
@@ -115,7 +118,8 @@ def main(a):
         for w, ladder in (t.get('pilot', {}).get('ladder') or {}).items():
             pts += [(f'serving, stock B 2048', r['effective_p_to_d'], r['step_fraction_time'].get('decode', 0))
                     for r in ladder if r.get('effective_p_to_d')]
-        for r in t.get('serving', []):
+        sv = t.get('serving') or {}
+        for r in (sv.get('rows', []) if isinstance(sv, dict) else sv):
             if r.get('effective_p_to_d') and r.get('policy') in ('mix2048', 'whole'):
                 pts.append((f"serving, {r['policy']}", r['effective_p_to_d'], r['step_fraction_time'].get('decode', 0)))
             good.setdefault(r['experiment'], {}).setdefault(r['workload'], {}).setdefault(r['policy'], []).append(

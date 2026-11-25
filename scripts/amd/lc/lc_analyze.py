@@ -552,7 +552,7 @@ def sustained(rows, att=0.9):
     return sus
 
 
-def serving(plan, jr, slo):
+def serving(plan, jr, slo, stall=()):
     rows = []
     for s in plan['steps']:
         if s['experiment'] not in SERVE_EXP:
@@ -561,9 +561,12 @@ def serving(plan, jr, slo):
         if not d:
             continue
         wl = s['workload']
-        _, rs = A.serve_run(d / 'run', slo[wl])
+        sl = slo.get((s.get('model', 'q32'), wl)) or slo.get(wl)  # 7B rows use the 7B pilot SLO (amendment 3)
+        if sl is None:
+            continue
+        _, rs = A.serve_run(d / 'run', dict(sl, stall_ms_grid=stall))
         for r in rs:
-            rows.append(dict({k: r.get(k) for k in SERVE_KEYS}, experiment=s['experiment'], step=s['id'], workload=wl,
+            rows.append(dict({k: r.get(k) for k in SERVE_KEYS + tuple(k for k in r if '_stall' in k)}, experiment=s['experiment'], step=s['id'], workload=wl,
                              policy=s.get('pname') or f"{s.get('policy')}{s.get('budget')}", budget=s.get('budget'), model=s.get('model', 'q32')))
     caps = collections.defaultdict(dict)
     grp = collections.defaultdict(list)
@@ -576,7 +579,7 @@ def serving(plan, jr, slo):
     return {'rows': rows, 'capacity': caps}
 
 
-def select(serv, exp='lc5d'):
+def select(serv, exp='lc5d', att='attainment', gp='goodput_rps'):
     """amendment 2: per workload, the best mixed budget and the better separate policy, by goodput (summed over the dev seeds)
     at the highest grid rate where any policy reaches attainment >= 0.9; ties to the smaller budget."""
     by = collections.defaultdict(lambda: collections.defaultdict(list))
@@ -585,15 +588,16 @@ def select(serv, exp='lc5d'):
             by[r['workload']][r['policy']].append(r)
     out = {}
     for wl, pols in by.items():
-        ok_rates = sorted({round(r['rate'], 6) for v in pols.values() for r in v if (r['attainment'] or 0) >= 0.9})
+        ok_rates = sorted({round(r['rate'], 6) for v in pols.values() for r in v if (r.get(att) or 0) >= 0.9})
         if not ok_rates:
             out[wl] = {'note': 'no policy reaches attainment 0.9 at any rate'}
             continue
         x = ok_rates[-1]
-        score = {p: sum(r['goodput_rps'] or 0 for r in v if round(r['rate'], 6) == x) for p, v in pols.items()}
-        bud = lambda p: int(p[3:]) if p.startswith('mix') else 0  # noqa: E731
+        score = {p: sum(r.get(gp) or 0 for r in v if round(r['rate'], 6) == x) for p, v in pols.items()}
+        # ties to the smaller budget, as written in amendment 2; whole = one 32768-token prefill
+        bud = lambda p: 32768 if p == 'whole' else int(p.lstrip('mixsep'))  # noqa: E731
         mixed = sorted((p for p in score if p.startswith('mix')), key=lambda p: (-round(score[p], 6), bud(p)))
-        sep = sorted((p for p in score if not p.startswith('mix')), key=lambda p: (-round(score[p], 6), p != 'whole'))
+        sep = sorted((p for p in score if not p.startswith('mix')), key=lambda p: (-round(score[p], 6), bud(p)))
         out[wl] = {'rate': x, 'score': score, 'mixed': mixed[0] if mixed else None, 'separate': sep[0] if sep else None}
     return out
 
@@ -606,7 +610,17 @@ def lc_serve_plan(a):
     jr = A.journal(root)
     prm = json.loads(Path(a.params).read_text())
     res = {'plan': plan['plan'], 'status': status_rows(plan, jr), 'params': prm}
-    for name, fn in (('serving', lambda: serving(plan, jr, prm['slo'])), ('l4', lambda: l4(plan, jr))):
+    slo = dict(prm['slo'])
+    q7 = {}
+    for s in steps_of(plan, 'pilot'):  # 7B SLO pilot inside lc3, frozen rule (5 x p90 TTFT, 5 x median per-request p95 ITL)
+        d = done_dir(jr, s['id'])
+        if d and s['id'].startswith('q7_pilot_slo_'):
+            meta = json.loads((d / 'run' / 'run.json').read_text())
+            q7[s['workload']] = A.slo_from_pilot(json.loads((d / 'run' / meta['traces'][0]['file']).read_text()))
+            slo[('q7', s['workload'])] = q7[s['workload']]
+    if q7:
+        res['q7_slo'] = q7
+    for name, fn in (('serving', lambda: serving(plan, jr, slo, prm.get('stall_ms_grid', ()))), ('l4', lambda: l4(plan, jr))):
         try:
             res[name] = fn()
         except Exception as e:  # noqa: BLE001
@@ -615,6 +629,9 @@ def lc_serve_plan(a):
         print(f'{name} done', flush=True)
     if 'rows' in res.get('serving', {}):
         res['selection'] = select(res['serving'])
+        # secondary, stall-aware view (amendment 3): reported beside the primary selection, never replaces it
+        res['selection_stall'] = {int(m): select(res['serving'], att=f'attainment_stall{int(m)}', gp=f'goodput_stall{int(m)}_rps')
+                                  for m in prm.get('stall_ms_grid', ())}
     (out / 'lc_tables.json').write_text(json.dumps(res, indent=1, default=str) + '\n')
     print(f'-> {out / "lc_tables.json"}')
 
