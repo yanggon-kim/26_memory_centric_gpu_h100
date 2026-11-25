@@ -1,6 +1,10 @@
 # Research contract
 
-## Active H200 assignment — updated 2026-10-16
+## Current H200 rental assignment — 2026-11-25
+
+Read [the priority experiment runbook](docs/h200_priority_experiments_20261125.md) first for the new rental. Its queue and explicitly listed multi-GPU comparisons govern this assignment. Maintain [the limitations register](docs/h200_measurement_limitations_20261125.md) and checkpoint results throughout execution.
+
+## Earlier H200 assignment — updated 2026-10-16
 
 For `codex/h200-phase01`, read `docs/h200_shoreline_jobs.md` FIRST, then `docs/shoreline_aware_research_plan_2.0.md` and `docs/shoreline_hopper_measurements.md`. The new direction is joint compute/SRAM/delivered-HBM-bandwidth allocation under area, placeable PHY shoreline and package constraints. Fixed bandwidth is one branch. At a safe case boundary, publish actual local H200 progress, reuse qualified work and prioritize jobs J0–J11; do not automatically finish the old exhaustive portfolio before characterization. New quantitative comparisons need three independent acquisitions/ten timed trials, exact outputs and strict source/clock/isolation gates. H200 seed20261013 and actual queried60MiBL2 remain distinct from H100/RTX. Check the actual allocation/deadline; no new Slurm job/MIG/system change is authorized. Missing adapters require versioned implementation and bounded pilots. The H200 assignment supersedes architecture scope, ordering and new-experiment repetition counts in older text below; stronger correctness/energy gates remain binding. No new measurements are claimed by this documentation update.
 
