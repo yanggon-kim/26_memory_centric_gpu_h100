@@ -84,22 +84,32 @@ def fig_pd(points, out):
     fig.savefig(out / 'l3_decode_share_vs_pd.png', dpi=150)
 
 
-def fig_goodput(series, out, name):
-    """series: {workload: {policy: [(rate, goodput)]}}"""
+POL_ORDER = ['whole', 'sep2048', 'mix256', 'mix512', 'mix1024', 'mix2048', 'mix4096', 'mix8192']
+# separate policies in neutral ink (whole dashed so a tie with sep2048 stays visible); mixed budgets in fixed hue order
+POL_STYLE = {'whole': (INK, '--'), 'sep2048': (INK2, '-'), 'mix256': (SER[0], '-'), 'mix512': (SER[2], '-'),
+             'mix1024': (SER[3], '-'), 'mix2048': (SER[1], '-'), 'mix4096': (SER[6], '-'), 'mix8192': (SER[4], '-')}
+
+
+def fig_goodput(series, out, name, rows=(('goodput_rps', 'SLO goodput (rps)'),)):
+    """series: {workload: {policy: {key: [(rate, value)]}}}; one row of panels per key"""
     wls = list(series)
-    fig, axs = plt.subplots(1, len(wls), figsize=(3.2 * len(wls), 3.0), squeeze=False)
-    pols = sorted({p for w in wls for p in series[w]}, key=lambda p: (p != 'whole', p != 'sep2048', len(p), p))
-    for ax, w in zip(axs[0], wls):
-        for p, v in series[w].items():
-            by = {}  # mean over seeds at each offered rate
-            for x, y in v:
-                by.setdefault(x, []).append(y)
-            v = sorted((x, sum(ys) / len(ys)) for x, ys in by.items())
-            ax.plot([x for x, _ in v], [y for _, y in v], color=SER[pols.index(p) % 8], marker='o', label=p,
-                    markeredgecolor='#fcfcfb', markeredgewidth=1.2)
-        ax.set_title(w, fontsize=9, loc='left', color=INK)
-        ax.set_xlabel('offered load (rps)')
-    axs[0][0].set_ylabel('SLO goodput (rps)')
+    fig, axs = plt.subplots(len(rows), len(wls), figsize=(3.2 * len(wls), 2.8 * len(rows)), squeeze=False)
+    for i, (key, lab) in enumerate(rows):
+        for ax, w in zip(axs[i], wls):
+            for p in sorted(series[w], key=lambda p: POL_ORDER.index(p) if p in POL_ORDER else 99):
+                by = {}  # mean over seeds at each offered rate
+                for x, y in series[w][p].get(key, []):
+                    by.setdefault(x, []).append(y or 0)
+                v = sorted((x, sum(ys) / len(ys)) for x, ys in by.items())
+                if not v:
+                    continue
+                c, ls = POL_STYLE.get(p, (SER[7], '-'))
+                ax.plot([x for x, _ in v], [y for _, y in v], color=c, ls=ls, marker='o', label=p, markeredgecolor='#fcfcfb',
+                        markeredgewidth=1.2, lw=1.6 if ls == '-' else 2.2)
+            ax.set_title(f'{w}' + ('' if i == 0 else ' (max ITL <= 1 s)'), fontsize=9, loc='left', color=INK)
+            if i == len(rows) - 1:
+                ax.set_xlabel('offered load (rps)')
+        axs[i][0].set_ylabel(lab)
     axs[0][-1].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), fontsize=8)
     fig.tight_layout()
     fig.savefig(out / f'{name}.png', dpi=150)
@@ -122,11 +132,14 @@ def main(a):
         for r in (sv.get('rows', []) if isinstance(sv, dict) else sv):
             if r.get('effective_p_to_d') and r.get('policy') in ('mix2048', 'whole'):
                 pts.append((f"serving, {r['policy']}", r['effective_p_to_d'], r['step_fraction_time'].get('decode', 0)))
-            good.setdefault(r['experiment'], {}).setdefault(r['workload'], {}).setdefault(r['policy'], []).append(
-                (r['rate'], r['goodput_rps']))
+            g = good.setdefault(r['experiment'], {}).setdefault(r['workload'], {}).setdefault(r['policy'], {})
+            for k in ('goodput_rps', 'goodput_stall1000_rps'):
+                if k in r:
+                    g.setdefault(k, []).append((r['rate'], r[k]))
     fig_pd(pts, a.out)
     for exp, s in good.items():
-        fig_goodput(s, a.out, f'goodput_{exp}')
+        fig_goodput(s, a.out, f'goodput_{exp}', (('goodput_rps', 'SLO goodput (rps)'),
+                                                  ('goodput_stall1000_rps', 'goodput, stall cap (rps)')))
     print('figures ->', a.out)
 
 

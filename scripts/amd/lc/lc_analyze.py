@@ -464,11 +464,17 @@ def audit_judgment(aud):
     MALL-resident <= 0.25."""
     by = collections.defaultdict(lambda: collections.defaultdict(list))
     for r in aud.get('runs', []):
-        if r.get('returncode') == 0 and r.get('counter_total') is not None:
+        if r.get('returncode') == 0 and r.get('counter_total') is not None and r.get('ratio'):
             by[r['counter']][r['load']].append(r['ratio'])
     out = {}
     for c, loads in by.items():
-        unit = 'KiB' if c.endswith('_SIZE') else 'req64'
+        # unit: KiB for *_SIZE; otherwise the request size whose streaming-read ratio is nearest 1 (stated, not assumed)
+        unit = 'KiB'
+        if not c.endswith('_SIZE'):
+            def dist(u):
+                v = med([x.get(u) for x in loads.get('read1g_x4', [])])
+                return abs(v - 1) if v is not None else 9e9
+            unit = min(('req32', 'req64', 'req128'), key=dist)
         f = lambda ld: med([x.get(unit) for x in loads.get(ld, [])])  # noqa: E731
         s1, s2, m, l2 = f('read1g_x4'), f('read4g_x1'), f('read128m_x16'), f('read8m_x256')
         w = med([x.get(unit) for x in loads.get('write4g', [])])

@@ -1,12 +1,12 @@
 # Long-context and long-output chunked prefill on MI300X — results
 
-Status: **DRAFT (lc1 in; lc2 running; lc3 pending)**. Design and pre-registration: `docs/amd/lc_campaign_design_20261124.md`
-(amendments 1–2). Handoff: `docs/amd/long_context_chunked_prefill_20261124.md`. Baseline: the November 18 campaign.
+Status: **DRAFT (lc1 and lc2 in; lc3 running)**. Design and pre-registration: `docs/amd/lc_campaign_design_20261124.md`
+(amendments 1–3). Handoff: `docs/amd/long_context_chunked_prefill_20261124.md`. Baseline: the November 18 campaign.
 
 All numbers: Qwen2.5-32B, BF16, one MI300X per lane (TP1), vLLM 0.23.0 V1 in process, ROCM_ATTN, CUDA graphs
 FULL_AND_PIECEWISE ≤ 512 tokens unless "eager". 256 KiB of KV per token, 64 GB of weights. Clocks are not controlled.
 Medians, with paired bootstrap 95% CIs where stated. Sources: `results_published/amd_20261124_mi300x_lc_lc1/lc_tables.json`
-(job 547842), lc2 and lc3 to follow.
+(job 547842) and `results_published/amd_20261125_mi300x_lc_lc2/lc_tables.json` (job 548920); lc3 to follow.
 
 ## 0. Answers in one paragraph each (lc1 scope; serving answers pending lc2/lc3)
 
@@ -53,6 +53,8 @@ Failed acquisitions (kept, raw under the run root):
 - `lc4_pmc_{WRITE_SIZE, TCC_EA0_RDREQ_DRAM_sum}` attempt 1: execution failures. Attempt 2 of each completed.
 - `lc4_pmc_FETCH_SIZE`: illegal memory access in the S = 32 000, N = 8 cell on both attempts. Re-run in lc2 (amendment 2).
 - `lc4_counter_audit`: exit 0, but 0 / 208 runs saw a device (launcher bug, fixed). Re-run in lc2.
+- lc2: 8 serving steps (`lc5d_*`) hit `hipErrorLaunchFailure` on attempt 1 and completed on attempt 2; kept. Both
+  re-runs (FETCH_SIZE S 32 000 N 8 split out; counter audit) completed.
 - Smoke 547179 (harness id-suffix bug), kept. The smoke anchor ran on a faster-clocked node (amendment 1).
 
 ## 2. L1 — chunked vs whole prefill
@@ -156,17 +158,55 @@ power-managed clock reduction that a bandwidth-only model does not have.
 
 | counter | unit | observation point | evidence |
 |---|---|---|---|
-| FETCH_SIZE | KiB | TCC (L2) → EA read requests, before MALL / Infinity Cache | G4 audit: streaming ≈ 1×, MALL-resident ≈ 1× (not filtered by MALL). Pure decode N 1, S 8 K: 66.2 GB vs 66.1 GB logical |
-| WRITE_SIZE | KiB | L2 → EA write requests | G4 audit |
+| FETCH_SIZE | KiB | TCC (L2) → EA read requests, before MALL / Infinity Cache | lc2 audit: 1.000× useful bytes for 1 GiB and 4 GiB streaming reads, **0.999× for a 128 MiB MALL-resident read** (not filtered by MALL), 0.004× for an 8 MiB L2-resident read. Long-context re-run, pure decode: 1.00× (N 1, S 1 K) to 1.05× (N 8, S 32 K) of logical bytes |
+| WRITE_SIZE | KiB | L2 → EA write requests | lc2 audit: 1.000× for a 4 GiB streaming write |
+| TCC_EA0_RDREQ(_DRAM), TCC_MISS | 128-byte requests | L2 misses / EA reads, before MALL | lc2 audit: 1.000× streaming, 0.999× MALL-resident |
+| TCC_EA0_WRREQ(_64B, _DRAM) | 64-byte requests | L2 → EA writes | lc2 audit: 1.000× for a 4 GiB write (0.5 per 32 B) |
 | TCC_EA0_RDREQ_DRAM_sum | 128-byte requests (lc1 fit) | L2 → EA reads tagged DRAM-bound, before MALL | × 128 B = 1.00 / 1.04 / 1.05 × logical bytes for pure decode at N·S = 1 K / 131 K / 256 K |
 | SQ_INSTS_VALU_MFMA_MOPS_BF16 | × 512 FLOP | issued MFMA | L1 whole matches analytic linear + attention FLOPs within 4% |
 | HBM bytes | — | **not observable** on this stack (no DF / HBM counters exposed by rocprofv3 here) | — |
 
-Re-audit (lc4_counter_audit_r2) and the FETCH_SIZE long-context cells are pending in lc2.
+Every read counter that passes the streaming test also counts the MALL-resident read at full size, so the audit finds
+**no post-MALL (HBM-side) counter**; 11 candidates tested, 2 reps each. A mixed step with a 1 024-token chunk fetches
+2.3× its logical bytes (C 1024, N 1 / 8, all S: e.g. 153.7 vs 65.6 GB, 191.9 vs 99.7 GB), while the same decoders
+alone fetch 1.00–1.05×. The excess is chunk activation traffic at the request side, and whether it reaches HBM is not
+observable.
 
-## 5. L3 part B and L5 — serving under matched arrivals (pending lc2 / lc3)
+## 5. L3 part B and L5 — serving under matched arrivals
 
-SLO and λ*: amendment 2 table.
+SLO and λ\*: amendment 2 table. Primary SLO: TTFT ≤ 5 × pilot p90 and per-request p95 ITL ≤ 5 × pilot median.
+Secondary (amendment 3) adds each request's **maximum** ITL ≤ 1 000 ms. Sustained rate = highest rate with attainment
+≥ 0.9 and nothing incomplete at it and every lower rate.
+
+### 5.1 Development (lc2, seeds 101 / 102, Poisson): sustained rate under the primary SLO
+
+| workload (P:D) | whole | sep2048 | mix256 | mix512 | mix1024 | mix2048 | mix4096 | mix8192 |
+|---|---|---|---|---|---|---|---|---|
+| lo2048 (0.15) | 0.75 / 0.5 | 0.75 / 0.75 | 0.75 / 0.75 | 0.75 / 0.75 | 0.75 / 0.75 | 0.75 / 0.75 | 0.75 / 0.75 | 0.75 / 0.75 |
+| lctx (12) | ≥ 0.2 / ≥ 0.2 | ≥ 0.2 / ≥ 0.2 | 0.05 / — | — / — | 0.05 / 0.05 | 0.1 / 0.075 | 0.15 / 0.125 | 0.15 / ≥ 0.2 |
+| lprompt (161) | ≥ 0.1 / ≥ 0.1 | ≥ 0.1 / ≥ 0.1 | — | — | — | — | 0.0375 / 0.025 | 0.0375 / 0.025 |
+
+(rps, seed 101 / seed 102; "≥" = censored at the top grid rate; "—" = below 0.9 at the lowest rate.)
+
+L3 part B (seed 101): **lo512 (P:D 0.6)** every mixed budget sustains 3.0 rps vs 2.0 for whole / sep2048 (mixed
+wins one step); **balanced (P:D 5)** whole, sep2048 and mix256 sustain 1.5 vs 1.25 for mix2048 / 4096; **lo4096
+(P:D 0.08)** all five policies are censored at 1.0 rps (2 × λ\*) with identical goodput.
+
+### 5.2 The SLO definition decides the long-prompt answer
+
+Under the primary SLO, separate / whole prefill **beats every chunked budget on long prompts** (lctx, lprompt), and
+the smaller the budget the worse. A chunk co-scheduled with decoders stretches every decode step it shares, so small
+budgets spread a 16–30 K prefill over hundreds of slow steps and push requests' p95 ITL over the limit (mix256 lctx
+p95 ITL 54–230 ms vs 23–38 ms whole). Whole prefill instead stalls decoders once per arriving prompt, which the p95
+metric ignores when the stall is < 5% of a request's gaps. The cost appears in the worst gap: p99 of per-request
+maximum ITL is 3.6–15 s (lctx) and 4.9–28 s (lprompt) for whole, against 0.2–0.4 s for mix256.
+
+With the 1 s stall cap (exploratory on lc2): lctx goodput at 0.05 rps is 0.057 (mix2048) / 0.056 (mix1024) vs 0.019
+for whole and sep2048 (mean of two seeds), and at 0.1 rps 0.088 (mix2048) vs 0.008 (whole, sep2048), so **chunking wins about 3–11×**; lprompt reaches attainment 0.9 at no rate under any policy. The
+short-prompt workloads (lo2048, lo512, lo4096) do not change between the two SLOs. The held-out decision (lc3) is made
+under both and reported side by side.
+
+![goodput lc5d](figs/lc/goodput_lc5d.png)
 
 ## 6. Ranking (pending)
 

@@ -232,7 +232,7 @@ contradicts the written rule (ties to the smaller budget). The code is corrected
    1000 ms (named threshold), with 250 / 500 / 2000 ms reported as sensitivity. The lc3 decision is made under both;
    the primary SLO stays primary, and a disagreement between the two is reported as a counterexample, not resolved.
    Applied to lc2 the stall view is exploratory (defined after seeing lc2).
-   Exploratory lc2 result under the stall view (same selection rule): lctx picks mix2048 at 1000 ms (goodput 0.114 vs
+   Exploratory lc2 result under the stall view (same selection rule): lctx picks mix2048 at 1000 ms (goodput summed over the two seeds 0.114 vs
    0.037 for whole / sep2048 at 0.05 rps) and mix256 at 250 / 500 ms; lo2048 is unchanged (mix256 / sep2048); for
    lprompt no policy reaches attainment 0.9 at any rate with stalls ≤ 1000 ms. The 1000 ms picks are already in the
    held-out sets below, so no policy is added for them.
