@@ -335,6 +335,8 @@ class Worker:
             self.expected=load(target['run'])['cases'][0]['trials'][0]['output_ids']
         physical=self.traffic()
         write(self.root/'results/P2a_disposition.json',physical)
+        if time.time()+1800 < dt.datetime.fromisoformat(self.settings['launch_cutoff']).timestamp():
+            write(self.root/'results/native_service_disposition.json',self.native_controls())
         # Full-GPU long-context fallbacks remain eligible if restriction is blocked.
         # Qwen2.5's declared32768 positions include the generated-token budget.
         for context in (16384,32704):
@@ -356,6 +358,24 @@ class Worker:
         return {'status': 'partial', 'optimized_curve_qualified': graph,
                 'next': 'P2a full-GPU physical traffic and P3a serving; inspect existing adapter compatibility'}
 
+    def native_controls(self):
+        # Same-board service controls; no cross-device timing or service pooling.
+        for acq in range(3):
+            for fraction in FRACTIONS:
+                label = f'native_f{round(fraction*100)}_a{acq}'
+                command = [self.py, self.script/'shoreline_native.py', '--gpu-uuid', self.uuid,
+                           '--output', self.root/'runs'/label, '--fraction', str(fraction),
+                           '--acquisition', str(acq), '--pilot','--rounding','nearest']
+                result = self.execute(label, command, timeout=900)
+                if result['status'] != 'complete':
+                    limitation(self.root, label, 'Independent native service control failed',
+                        str((self.root/'logs'/(label+'.log')).relative_to(PACKAGE)),
+                        'Existing known-value streaming/gather and arithmetic native adapter',
+                        'Inspect native exception; do not infer decoder bandwidth from useful payload')
+                    return {'status': 'partial'}
+            publish(self.root, f'H200 {self.uuid} native service acquisition {acq}; decoder transfer not inferred')
+        return {'status':'native_controls_captured','qualification':'clock/source/physical-counter joins remain separate'}
+
     def secondary(self):
         self.execute('inventory', [self.py, self.script/'inventory.py', '--gpu-uuid', self.uuid,
                     '--check-cuda', '--output', self.root/'environment/inventory.json'], timeout=180)
@@ -372,24 +392,10 @@ class Worker:
                        str((self.root/'logs'/(label+'.log')).relative_to(PACKAGE)),
                        'Native stream control with physical DRAM metrics, no clock/cache modification',
                        'Inspect profiler permissions and raw NCU log; independent unprofiled controls remain eligible')
-        # Independent controls on the spare physical board, never pooled with the decoder GPU.
-        for acq in range(3):
-            for fraction in FRACTIONS:
-                label = f'native_f{round(fraction*100)}_a{acq}'
-                command = [self.py, self.script/'shoreline_native.py', '--gpu-uuid', self.uuid,
-                           '--output', self.root/'runs'/label, '--fraction', str(fraction),
-                           '--acquisition', str(acq), '--pilot','--rounding','nearest']
-                result = self.execute(label, command, timeout=900)
-                if result['status'] != 'complete':
-                    limitation(self.root, label, 'Independent native service control failed',
-                        str((self.root/'logs'/(label+'.log')).relative_to(PACKAGE)),
-                        'Existing known-value streaming/gather and arithmetic native adapter',
-                        'Inspect native exception; do not infer decoder bandwidth from useful payload')
-                    return {'status': 'partial'}
-            publish(self.root, f'H200 spare GPU native service acquisition {acq}; decoder transfer not inferred')
+        native=self.native_controls()
         physical=self.traffic()
         write(self.root/'results/P2a_disposition.json',physical)
-        return {'status': 'native_and_traffic_controls_captured', 'physical':physical,
+        return {'status': 'captures_saved_scientific_gates_separate', 'native':native,'physical':physical,
                 'qualification': 'device-specific results; clock/source/physical-counter joins remain separate'}
 
 
@@ -543,7 +549,7 @@ def coordinator(args):
     query = "import json,torch; assert torch.cuda.device_count()==2; print(json.dumps([{'uuid':'GPU-'+str(torch.cuda.get_device_properties(i).uuid).removeprefix('GPU-'),'name':torch.cuda.get_device_properties(i).name,'sm_count':torch.cuda.get_device_properties(i).multi_processor_count} for i in range(2)]))"
     devices = json.loads(subprocess.check_output([sys.executable, '-c', query], text=True))
     assert all('H200' in d['name'] for d in devices)
-    write(root/'environment/allocated_devices.json', {'devices':devices, 'slurm_visible_devices':os.environ.get('CUDA_VISIBLE_DEVICES'), 'hostname':socket.gethostname()})
+    write(root/'environment/allocated_devices.json', {'devices':devices,'slurm_job_id':os.environ['SLURM_JOB_ID'], 'slurm_visible_devices':os.environ.get('CUDA_VISIBLE_DEVICES'), 'hostname':socket.gethostname()})
     for name, command in [('topology', ['nvidia-smi', 'topo', '-m']), ('runtime', [sys.executable,'-m','pip','freeze'])]:
         (root/'environment'/(name+'.txt')).write_text(subprocess.check_output(command, text=True, stderr=subprocess.STDOUT))
     # Bounded paired smoke precedes isolated measurements; no transfer overlaps a curve.
@@ -589,18 +595,25 @@ def coordinator(args):
     continue_allocation(root,end)
     manifest=load(root/'results/case_manifest.json')
     for row in manifest['rows']:
+        if row.get('reviewed_evidence'):
+            continue
         if row['id']=='P0':
             row.update(status='partial',reason='Inventory, correctness and profiler/placement records require component-level inspection')
         elif row['id']=='P1a':
             curves=[load(p) for p in (root/'gpu0/results').glob('curve_*.json')
                     if load(p).get('batch')==1 and load(p).get('context')==4096]
-            row.update(status='complete' if any(c['complete_qualified_curve'] for c in curves) else 'blocked',
-                       reason='Engine labels and all gates remain explicit in gpu0/results/curve_*.json')
+            graph_ok=any(c['engine']=='graph' and c['complete_qualified_curve'] for c in curves)
+            eager_ok=any(c['engine']=='eager' and c['complete_qualified_curve'] for c in curves)
+            row.update(status='complete' if graph_ok else 'partial' if eager_ok else 'blocked',
+                       optimized_curve_qualified=graph_ok,eager_fallback_qualified=eager_ok,
+                       reason='Eager fallback does not complete a blocked optimized curve; engine-specific evidence remains explicit')
         elif row['id']=='P1b':
-            row.update(status='partial' if list((root/'gpu0/results').glob('curve_*_b*_c*.json')) else 'pending',
+            expanded=[load(p) for p in (root/'gpu0/results').glob('graph_b*_c*.json') if load(p).get('batch',1)>1 or load(p).get('context',0)>4096]
+            row.update(status='partial' if expanded else 'pending',
                        reason='Only source/output/clock/placement-qualified shapes count; unmeasured refinements remain pending')
         elif row['id']=='P2a':
-            row.update(status='partial' if list((root/'gpu0/results').glob('P2a*.json')) else 'pending',
+            captures=[p for i in (0,1) for p in (root/f'gpu{i}/results').glob('P2a*.json')]
+            row.update(status='partial' if captures else 'pending',
                        reason='Physical traffic captures retain replay/range gates; counter-clock joins and kernel retuning are separate')
     write(root/'results/case_manifest.json',manifest)
     write(root/'STATUS.json',{'status':'workers_finished_scientific_gates_separate','worker_exit_codes':[p.returncode for p,s in processes],

@@ -7,16 +7,22 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import subprocess
 import threading
 import time
 from types import SimpleNamespace
 
 
 def main(a):
+    allocation=json.loads(a.devices.read_text())
+    job=os.environ.get('SLURM_JOB_ID','')
+    assert job.isdigit() and allocation['slurm_job_id']==job, 'current allocation required'
+    state=subprocess.check_output(['scontrol','show','job','-o',job],text=True,timeout=20)
+    assert 'JobState=RUNNING' in state, 'allocation must be running'
     import pynvml as nv
     import torch
     from h200_session import ProcessMonitor, dump
-    expected=json.loads(a.devices.read_text())['devices']
+    expected=allocation['devices']
     assert len(expected)==torch.cuda.device_count()==2
     uuids=['GPU-'+str(torch.cuda.get_device_properties(i).uuid).removeprefix('GPU-') for i in range(2)]
     assert uuids==[d['uuid'] for d in expected]
