@@ -1,0 +1,28 @@
+{
+  "status": "running",
+  "classification": "measured-real-GPU-functional-pilot",
+  "real_KV_handoff_verified": false,
+  "engine": "HF dynamic SDPA, BF16, one full model per GPU",
+  "vllm_connector_validated": false,
+  "serving_comparison": false,
+  "physical_link_bytes": null,
+  "physical_link_bytes_reason": "logical transferred tensor payload is recorded; physical link counters are not qualified",
+  "primary_transfer_latency_ms": null,
+  "latency_reason": "functional pilot; raw transfer/rebuild observations are not qualified timing comparisons",
+  "model_id": "Qwen/Qwen2.5-32B-Instruct",
+  "model_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "model_config_sha256": "9c6772f138ef9e5b3d1c18f2c87e451bbc01f5f1a4eabb36f9bf4f53829b903e",
+  "context": 128,
+  "generated_tokens": 64,
+  "seed": 20261013,
+  "warmups": 3,
+  "trials": [],
+  "receiver_prefill_executed": false,
+  "scope": "actual whole-model KV generated on GPU0, copied and reconstructed on GPU1; receiver runs one-token decode only",
+  "source_sha256": {
+    "h200_real_kv_smoke.py": "a64a4b57e2d947054a67ab48057901ed4359c2a76239b9b81478b1e967731146",
+    "h200_p2p_smoke.py": "ea06c0ae7dc8c63d570c9d6b432b10c197ec68f3b19f6dfbbfbb381a44be72e7",
+    "h200_session.py": "838d57971bd7b08d1343f2c34c1e4ed3b503cfc02abcbfc3384dff032127ca2a"
+  },
+  "cache_API_source": "https://raw.githubusercontent.com/huggingface/transformers/v4.57.6/src/transformers/cache_utils.py"
+}
