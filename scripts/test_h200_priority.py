@@ -28,6 +28,32 @@ def main():
         result=campaign.analyze_curve(root,[],'graph')
         assert not result['complete_qualified_curve']
         assert all(x['smallest_tested_demonstrated_sm_count'] is None for x in result['thresholds'].values())
+    # Synthetic positive control plus independent negative provenance/placement gates.
+    records=[]
+    def record(fraction,acq,pilot=False,stock=False):
+        count={1.:132,.85:120,.75:104,.60:80,.45:64,.30:40}[fraction]
+        return {'id':f'{fraction}_{acq}_{pilot}_{stock}','engine':'graph','batch':1,'context':4096,
+                'fraction':fraction,'acquisition':acq,'pilot':pilot,'stock':stock,'suffix':'',
+                'qualified':True,'actual_sm_count':count,'source_identity':'frozenA',
+                'step_ms':[10.]*10,'tokens_s':[100.]*10,
+                'clock':{'clocks':{m:{'minimum':1000.,'maximum':1000.} for m in ('sm_clock_mhz','memory_clock_mhz')}}}
+    records.append(record(1.,0,pilot=True,stock=True))
+    records.extend(record(f,0,pilot=True) for f in campaign.FRACTIONS)
+    for acq in range(3):
+        records.append(record(1.,acq,stock=True))
+        records.extend(record(f,acq) for f in campaign.FRACTIONS)
+    def cheap_interval(*args,**kwargs):return {'value':1.,'ci95':[1.,1.]}
+    with tempfile.TemporaryDirectory() as name, \
+         patch('shoreline_statistics.hierarchical_interval',side_effect=cheap_interval), \
+         patch('shoreline_statistics.paired_ratio',side_effect=cheap_interval):
+        root=Path(name);(root/'results').mkdir();(root/'analysis').mkdir()
+        assert campaign.analyze_curve(root,records,'graph')['complete_qualified_curve']
+        bad=copy.deepcopy(records);bad[2]['actual_sm_count']=128
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
+        bad=copy.deepcopy(records);bad[-1]['source_identity']='different_source'
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
+        bad=copy.deepcopy(records);bad[0]['qualified']=False
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
     requested=[]
     resource=types.SimpleNamespace(sm_count=132,coscheduled_alignment=8,min_partition_size=16)
     class Device:

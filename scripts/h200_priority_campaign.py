@@ -190,11 +190,16 @@ class Worker:
         return passed
 
     def curve(self, engine, batch=1, context=4096):
+        stock_proof=self.case(engine,1.,0,pilot=True,stock=True,batch=batch,context=context)
+        if not stock_proof['qualified']:
+            analyze_curve(self.root,self.records,engine,batch,context)
+            return False
         proofs = []
         for fraction in FRACTIONS:
             proof = self.case(engine, fraction, 0, pilot=True, batch=batch, context=context)
             proofs.append(proof)
             if not proof['qualified']:
+                analyze_curve(self.root,self.records,engine,batch,context)
                 if engine=='graph' and not self.rebind_step and proof.get('allocation'):
                     limitation(self.root,proof['id'],'Optimized placement pilot failed; bounded explicit per-tick rebinding repair follows',
                                str((self.root/'results'/(proof['id']+'.json')).relative_to(PACKAGE)),
@@ -366,7 +371,8 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     clean = [r for r in records if r['engine'] == engine and not r['pilot'] and not r['stock'] and
              r['batch'] == batch and r['context'] == context]
     points = []
-    proofs = {r['fraction']: r for r in records if r['engine'] == engine and r['pilot'] and r.get('qualified') and r['batch']==batch and r['context']==context}
+    proofs = {r['fraction']: r for r in records if r['engine'] == engine and r['pilot'] and not r['stock'] and r.get('qualified') and r['batch']==batch and r['context']==context}
+    stock_proofs=[r for r in records if r['engine']==engine and r['pilot'] and r['stock'] and r.get('qualified') and r['batch']==batch and r['context']==context]
     refs = sorted([r for r in records if r['engine'] == engine and not r['pilot'] and r['stock']
                    and r['batch'] == batch and r['context'] == context and not r.get('suffix')], key=lambda r:r['acquisition'])
     green_refs = sorted([r for r in clean if r['fraction'] == 1. and not r.get('suffix')], key=lambda r:r['acquisition'])
@@ -377,10 +383,17 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                  'actual_sm_count': rows[0].get('actual_sm_count') if rows else None,
                  'raw_acquisition_medians_ms': [statistics.median(r['step_ms']) if r.get('step_ms') else None for r in rows],
                  'raw_scope': 'retained observations, not qualified comparisons until every gate passes'}
-        combined = rows + refs + [r for r in clean if r.get('suffix') in ('_end', '_interleaved')]
+        combined = rows + refs + green_refs + [r for r in clean if r.get('suffix') in ('_end', '_interleaved')]
         clocks = [r.get('clock', {}).get('clocks', {}) for r in combined]
         if (len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
-            fraction in proofs and 1. in proofs and len({r['actual_sm_count'] for r in rows}) == 1):
+            fraction in proofs and 1. in proofs and stock_proofs and
+            len({r['source_identity'] for r in combined})==1 and
+            all(r['source_identity']==rows[0]['source_identity'] for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
+            len({r['actual_sm_count'] for r in rows}) == 1 and
+            proofs[fraction]['actual_sm_count']==rows[0]['actual_sm_count'] and
+            green_refs and proofs[1.]['actual_sm_count']==green_refs[0]['actual_sm_count'] and
+            stock_proofs[-1]['actual_sm_count']==refs[0]['actual_sm_count'] and
+            [r['acquisition'] for r in rows]==[r['acquisition'] for r in refs]==[0,1,2]):
             pooled = {m: max(c[m]['maximum'] for c in clocks)/min(c[m]['minimum'] for c in clocks)
                       for m in ('sm_clock_mhz', 'memory_clock_mhz')}
             point['pooled_clock_ratio'] = pooled
