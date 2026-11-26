@@ -35,6 +35,23 @@ def estimate_curve_seconds(stock_pilot_s, green_pilot_s, idle_s=10):
     return pilot_sum*(13/6)*1.25+27*idle_s+300
 
 
+def staged_curve_budget(pilot_curve_s, observed_acquisition_s, available_s):
+    """Plan one broad acquisition, then all remaining ones from measured cost.
+
+    This is a scheduling estimate only. It changes neither acquisition/trial
+    requirements nor any output, source, clock or placement gate.
+    """
+    assert pilot_curve_s>0 and 0<=len(observed_acquisition_s)<3
+    assert all(v>0 for v in observed_acquisition_s)
+    remaining=3-len(observed_acquisition_s)
+    estimate=(pilot_curve_s/3 if not observed_acquisition_s else
+              remaining*(max(observed_acquisition_s)*1.25+100))
+    return {'next_acquisition':len(observed_acquisition_s),'remaining_acquisitions':remaining,
+            'bundle':'first broad acquisition' if not observed_acquisition_s else 'all remaining acquisitions',
+            'estimated_bundle_s':estimate,'available_before_closeout_s':available_s,
+            'admitted':estimate<=available_s,'observed_acquisition_wall_s':list(observed_acquisition_s)}
+
+
 def load(path):
     return json.loads(Path(path).read_text())
 
@@ -256,24 +273,29 @@ class Worker:
                 return False
         estimate=estimate_curve_seconds(stock_proof['producer_elapsed_s'],
                   {p['fraction']:p['producer_elapsed_s'] for p in proofs},self.settings.get('idle_required_s',10))
-        allocation=self.hs.verify_allocation()
-        remaining=allocation['effective_launch_cutoff_unix_s']-time.time()
         budget_path=self.root/'results'/f'budget_{engine}_b{batch}_c{context}.json'
-        write(budget_path,{'classification':'analytical scheduling estimate from instrumented process runtimes',
-              'estimated_s':estimate,'available_before_closeout_s':remaining,'admitted':estimate<=remaining,
-              'method':'13/6 trial scaling,25percent margin,27idle guards,300s publication/analysis allowance',
-              'pilot_sources':[stock_proof['id']]+[p['id'] for p in proofs]})
-        if estimate>remaining:
-            self.last_curve_stop='budget'
-            limitation(self.root,f'{engine}_b{batch}_c{context}','Complete3x10 curve deferred by measured pilot budget',
-                       str(budget_path.relative_to(PACKAGE)),
-                       'Proved all allocations; conservatively scaled total process time including prefill',
-                       'Resume with sufficient remaining allocation time; no cross-allocation timing pooling')
-            analyze_curve(self.root,self.records,engine,batch,context)
-            publish(self.root,'H200 curve deferred: complete-comparison budget does not fit')
-            return False
+        budget={'classification':'analytical scheduling estimates, never inference-latency results',
+                'initial_full_curve_estimate_s':estimate,'stages':[],
+                'method':'Initial first acquisition: one third of conservative13/6 pilot scaling. Then all remaining acquisitions: maximum observed complete acquisition wall time times1.25 plus100s each for publication/analysis. Recheck actual Slurm cutoff every stage.',
+                'pilot_sources':[stock_proof['id']]+[p['id'] for p in proofs]}
+        observed=[]
         # Broad curve is completed before refinement or additional workloads.
         for acq in range(3):
+            allocation=self.hs.verify_allocation()
+            remaining=allocation['effective_launch_cutoff_unix_s']-time.time()
+            stage=staged_curve_budget(estimate,observed,remaining)
+            budget['stages'].append(stage);write(budget_path,budget)
+            if not stage['admitted']:
+                self.last_curve_stop='budget'
+                limitation(self.root,f'{engine}_b{batch}_c{context}_budget_a{acq}',
+                           'Next comparable curve bundle does not fit before actual closeout cutoff',
+                           str(budget_path.relative_to(PACKAGE)),
+                           'Proved requested placements; staged first broad acquisition and measured-cost refinement; every completed acquisition retained',
+                           'Resume a fresh identified cohort with enough time; no cross-allocation timing pooling or favorable-clock retries')
+                analyze_curve(self.root,self.records,engine,batch,context)
+                publish(self.root,'H200 curve budget boundary: retain completed broad acquisitions')
+                return False
+            acquisition_started=time.monotonic()
             self.case(engine, 1., acq, stock=True, batch=batch, context=context)
             self.case(engine, 1., acq, batch=batch, context=context)
             for index, fraction in enumerate(FRACTIONS[1:]):
@@ -282,6 +304,8 @@ class Worker:
                     self.case(engine, 1., acq, suffix='_interleaved', batch=batch, context=context)
             self.case(engine, 1., acq, suffix='_end', batch=batch, context=context)
             analyze_curve(self.root, self.records, engine, batch, context)
+            observed.append(time.monotonic()-acquisition_started)
+            budget['observed_acquisition_wall_s']=observed;write(budget_path,budget)
             publish(self.root, f'H200 {engine} B{batch}/C{context} broad curve acquisition {acq}: retain all gates')
         result = analyze_curve(self.root, self.records, engine, batch, context)
         if not result['complete_qualified_curve']:
