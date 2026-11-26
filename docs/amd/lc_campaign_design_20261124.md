@@ -263,3 +263,6 @@ contradicts the written rule (ties to the smaller budget). The code is corrected
   attempts are kept; their completed lower-rate traces are reported as partial evidence only and are not used in the
   decision. If a re-run is not possible within the allocation, the affected policy × workload is reported with the
   ladder truncated at the last completed rate, and its sustained rate is marked as a lower bound.
+- **lc3 outcome (job 555664, 63/71).** The 8 steps failing with this assertion are exactly the separate policies on lctx
+  (whole and sep2048 × seeds 201–203, and both bursty repeats); none on lprompt or lo2048. They are re-run unsplit
+  (8 steps on 8 GPUs, original per-step protocol) as `lc3fx`, params `scripts/amd/lc/params/mi300x_lc3fx.json`.
