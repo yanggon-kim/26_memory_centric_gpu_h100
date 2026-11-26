@@ -578,7 +578,9 @@ def coordinator(args):
 
 def bootstrap(args):
     """Heavy installation/download runs only inside the authorized allocation."""
-    root=PACKAGE/'h200'/f'{dt.datetime.now():%Y%m%d}_job{os.environ["SLURM_JOB_ID"]}_bootstrap'
+    root=PACKAGE/'h200'/(f'{dt.datetime.now():%Y%m%d}_job{os.environ["SLURM_JOB_ID"]}_bootstrap'+
+                        (f'_repair{args.bootstrap_attempt}' if args.bootstrap_attempt else ''))
+    root.mkdir(exist_ok=False)
     for folder in ('environment','results','logs','analysis'):
         (root/folder).mkdir(parents=True,exist_ok=True)
     (root/'analysis/report.md').write_text('# Allocated staging and launch\n\nNo model measurement inferred from installation.\n')
@@ -605,18 +607,31 @@ def bootstrap(args):
         write(root/'STATUS.json',{'status':'staging_complete','next':'coordinator'})
         publish(root,'H200 priority: pinned runtime and immutable32B staging complete')
         subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda],check=True)
-    except BaseException as error:
+    except Exception as error:
         write(root/'STATUS.json',{'status':'blocked','error':str(error),'traceback':traceback.format_exc()})
         limitation(root,'bootstrap','Allocated staging/launch failed: '+str(error),str(root.relative_to(PACKAGE)),
                    'Preserved each stage log and pinned requirements; no system changes','Inspect failed stage and use existing allocation if time remains')
-        raise
+        publish(root,'H200 staging failure: preserve logs and hold existing allocation for bounded repair')
+        control=root/'control';control.mkdir(exist_ok=True)
+        fields=dict(x.split('=',1) for x in state.split() if '=' in x)
+        cutoff=dt.datetime.fromisoformat(fields['EndTime']).astimezone().timestamp()-1800
+        print('STAGING_RECOVERY_HOLD',control,flush=True)
+        while time.time()<cutoff and not (control/'finalize').exists():
+            trigger=control/'retry_staging'
+            if trigger.exists() and args.bootstrap_attempt==0:
+                trigger.rename(root/'results/retry_staging.request')
+                subprocess.run([sys.executable,'-u',PACKAGE/'scripts/h200_priority_campaign.py',
+                    '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda],check=True)
+                break
+            time.sleep(15)
     finally:
         publish(root,'H200 priority: durable staging/launch checkpoint')
 
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--bootstrap',action='store_true');p.add_argument('--cuda');p.add_argument('--worker',type=int,choices=(0,1));p.add_argument('--root',type=Path);p.add_argument('--session',type=Path)
+    p.add_argument('--bootstrap',action='store_true');p.add_argument('--bootstrap-attempt',type=int,choices=(0,1),default=0)
+    p.add_argument('--cuda');p.add_argument('--worker',type=int,choices=(0,1));p.add_argument('--root',type=Path);p.add_argument('--session',type=Path)
     a=p.parse_args()
     if a.bootstrap:
         bootstrap(a)
