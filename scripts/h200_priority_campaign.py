@@ -117,7 +117,8 @@ class Worker:
         output = self.root / 'runs' / label
         c = config(self.root, engine, context, 3 if pilot else 10, batch)
         command = [self.py, self.script / 'shoreline_restricted_decode.py', '--config', c,
-                   '--gpu-uuid', self.uuid, '--output', output, '--fraction', str(fraction), '--mode', 'timing']
+                   '--gpu-uuid', self.uuid, '--output', output, '--fraction', str(fraction), '--mode', 'timing',
+                   '--rounding','nearest']
         if not stock:
             command += ['--force-green']
             if self.rebind_step:
@@ -354,7 +355,7 @@ class Worker:
                 label = f'native_f{round(fraction*100)}_a{acq}'
                 command = [self.py, self.script/'shoreline_native.py', '--gpu-uuid', self.uuid,
                            '--output', self.root/'runs'/label, '--fraction', str(fraction),
-                           '--acquisition', str(acq), '--pilot']
+                           '--acquisition', str(acq), '--pilot','--rounding','nearest']
                 result = self.execute(label, command, timeout=900)
                 if result['status'] != 'complete':
                     limitation(self.root, label, 'Independent native service control failed',

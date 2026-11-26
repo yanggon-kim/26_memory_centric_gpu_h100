@@ -75,6 +75,9 @@ def main():
         assert requested==[132,104]
         shoreline_green.create(torch,1.)
         assert requested==[132,104], 'stock path must remain separately available'
+        shoreline_green.create(torch,.85,force_green=True,rounding='nearest')
+        shoreline_green.create(torch,.75,force_green=True,rounding='nearest')
+        assert requested==[132,104,112,96], 'new campaign targets closest supported groups; historical ceiling default is preserved'
     with tempfile.TemporaryDirectory() as name:
         root=Path(name)
         task={'id':'P3a_pilot_v1','gpu':0,'script':'shoreline_native.py','arguments':[],'timeout_s':900}

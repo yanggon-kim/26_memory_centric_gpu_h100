@@ -36,8 +36,9 @@ def stream_proof(stream):
             'proof_source':'CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx'}
 
 
-def create(torch, fraction, make_current=False, force_green=False):
+def create(torch, fraction, make_current=False, force_green=False, rounding='ceil'):
     assert 0 < fraction <= 1
+    assert rounding in ('ceil','nearest')
     if fraction == 1 and not force_green:
         stream = torch.cuda.current_stream()
         return None, stream, stream_proof(stream)
@@ -47,14 +48,16 @@ def create(torch, fraction, make_current=False, force_green=False):
     resources = device.resources.sm
     alignment = resources.coscheduled_alignment
     minimum = resources.min_partition_size
-    requested = (resources.sm_count if fraction == 1 else
-                 max(minimum, math.ceil(resources.sm_count*fraction/alignment)*alignment))
+    groups=resources.sm_count*fraction/alignment
+    rounded=math.ceil(groups) if rounding=='ceil' else math.floor(groups+.5)
+    requested = resources.sm_count if fraction == 1 else max(minimum, rounded*alignment)
     green = torch.cuda.GreenContext.create(requested, 0)
     if make_current:green.set_context()
     stream = green.Stream()
     retain_for_process(green,stream)
     proof = stream_proof(stream)
     proof.update(requested_fraction=fraction,requested_sms=requested,
+                 requested_rounding=rounding,
                  device_sm_count=resources.sm_count,min_partition_size=minimum,alignment=alignment,
                  converted_context_made_current=make_current,
                  lifetime_policy='process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit')

@@ -20,7 +20,7 @@ def main(a):
     from shoreline_green import create,stream_proof
     from software_decode_experiments import dump
     verify_cuda(torch,a.gpu_uuid)
-    green,stream,proof=create(torch,a.fraction)
+    green,stream,proof=create(torch,a.fraction,rounding=getattr(a,'rounding','ceil'))
     data={'status':'running','classification':'measured-real-GPU','acquisition_id':a.acquisition,
           'hardware':describe(nvml,handle,torch),'allocation':proof,'cases':[],
           'versions':{'torch':torch.__version__,'triton':triton.__version__},
@@ -213,6 +213,7 @@ if __name__=='__main__':
     p.add_argument('--gpu-uuid',required=True);p.add_argument('--output',type=Path,required=True)
     p.add_argument('--acquisition',type=int,required=True);p.add_argument('--fraction',type=float,default=1)
     p.add_argument('--pilot',action='store_true');p.add_argument('--profile-case')
+    p.add_argument('--rounding',choices=['ceil','nearest'],default='ceil')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     try:main(a)
     except Exception as error:
