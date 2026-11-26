@@ -48,3 +48,5 @@ sbatch --parsable batch/h200_priority_resume_20261126.sbatch
 The resume launcher must obtain a fresh allocation and fresh UUID inventory. Do not reuse expired job16163464 or claim its partial curve complete.
 
 Resume policy: run the target B1/C4096 bounded optimized smoke and exact HF gate before the main sweep; use the spare GPU for missing physical traffic acquisitions before additional native controls. Prior real-KV adapter evidence is reused only as historical software validation; it does not validate handoff on a fresh physical pair.
+
+Follow-up: the authorized replacement job **16184819** was submitted using the command above. See `../../20261125_priority_preparation/results/resubmission_16184819.json`. Its future measurements belong to a fresh allocation and are not pooled into this report.
