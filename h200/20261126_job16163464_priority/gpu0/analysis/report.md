@@ -17,3 +17,75 @@
 | 0.6 | None | False | NA | NA |
 | 0.45 | None | False | NA | NA |
 | 0.3 | None | False | NA | NA |
+
+## eager B1/C128 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## graph B1/C128 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## graph B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## eager B1/C128 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## graph B1/C128 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## graph B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |

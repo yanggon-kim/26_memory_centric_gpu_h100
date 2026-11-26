@@ -68,8 +68,11 @@ def native(root):
         clocks=[q for p in selected for q in p['clocks']]
         ratios={m:max(q['clocks'][m]['maximum'] for q in clocks)/min(q['clocks'][m]['minimum'] for q in clocks)
                 for m in ('sm_clock_mhz','memory_clock_mhz')} if all('clocks' in q for q in clocks) else {}
-        valid=len(selected)==6 and all(p['qualified_native_timing'] for p in selected) and len(ratios)==2 and max(ratios.values())<=1.05
+        source_consistent=(len({json.dumps(s,sort_keys=True) for p in selected for s in p['producer_sources']})==1
+                           and len({s for p in selected for s in p['freeze_ids']})==1)
+        valid=len(selected)==6 and source_consistent and all(p['qualified_native_timing'] for p in selected) and len(ratios)==2 and max(ratios.values())<=1.05
         curves.append({'condition':condition,'points':selected,'qualified_across_sm_counts':valid,
+                       'source_consistent_across_sm_counts':source_consistent,
                        'pooled_clock_ratios':ratios,'decoder_prediction':None})
         print('Native analyzed',condition,'qualified across counts=',valid,flush=True)
     result={'status':'complete_captures_analyzed','classification':'native single-device measurements',

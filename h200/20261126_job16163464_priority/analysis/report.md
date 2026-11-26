@@ -19,7 +19,7 @@ These are one-acquisition observations, not a qualified3-acquisition latency com
 
 ## Physical service evidence
 
-GPU1 captured all18 native allocations (six SM counts × three acquisitions), ten conditions each and ten timed trials per condition, with exact known-value checks. **10 of 10 native condition curves pass the complete source/clock envelope across counts.** Native allocations are132/112/96/80/56/40SMs. See `../gpu1/results/native_priority_analysis.json`.
+GPU1 captured all18 native allocations (six SM counts × three acquisitions), ten conditions each and ten timed trials per condition, with exact known-value checks. **10 of 10 native condition curves pass the complete source/clock envelope across counts.** Native allocations are132/112/96/80/56/40SMs. See `../gpu1/results/native_priority_analysis.json`. The repeatable closeout review now explicitly checks source identity across SM counts as well as within each point. All ten conditions retain qualification; see `../results/native_cross_count_source_audit.json`.
 
 ![Native useful-payload service controls](native_512mib_controls.png)
 
