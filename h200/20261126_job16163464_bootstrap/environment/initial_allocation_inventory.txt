@@ -1,0 +1,46 @@
+---------------------------------------
+Begin Slurm Prolog: Nov-26-2026 10:32:01
+Job ID:    16163464
+User ID:   jkim4112
+Account:   gts-dmahajan7
+Job name:  bash
+Partition: gpu-h200
+QOS:       
+---------------------------------------
+2026-11-26T10:32:02-05:00
+atl1-1-03-019-14-0.pace.gatech.edu
+1
+2
+uuid, name, pci.bus_id, memory.total [MiB], memory.free [MiB], driver_version
+GPU-b51c6186-ac3b-5149-8b8a-f33943072c47, NVIDIA H200, 00000000:4C:00.0, 143771 MiB, 143201 MiB, 615.71.09
+	[4mGPU0	GPU1	NIC0	NIC1	NIC2	NIC3	NIC4	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 	NV18	PIX	NODE	NODE	NODE	NODE	2	1		N/A
+GPU1	NV18	 X 	NODE	PIX	NODE	NODE	NODE	2	1		N/A
+NIC0	PIX	NODE	 X 	NODE	NODE	NODE	NODE				
+NIC1	NODE	PIX	NODE	 X 	NODE	NODE	NODE				
+NIC2	NODE	NODE	NODE	NODE	 X 	SYS	SYS				
+NIC3	NODE	NODE	NODE	NODE	SYS	 X 	SYS				
+NIC4	NODE	NODE	NODE	NODE	SYS	SYS	 X 				
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+NIC Legend:
+
+  NIC0: mlx5_0
+  NIC1: mlx5_1
+  NIC2: mlx5_2
+  NIC3: mlx5_3
+  NIC4: mlx5_4
+
+RmProfilingAdminOnly: 0
+Filesystem                                                                      Size  Used Avail Use% Mounted on
+/dev/md127                                                                       28T  200G   28T   1% /tmp
+172.27.64.7@o2ib,172.27.64.11@o2ib:172.27.64.9@o2ib,172.27.64.13@o2ib:/scratch  2.7P  1.9P  750T  72% /storage/scratch1
