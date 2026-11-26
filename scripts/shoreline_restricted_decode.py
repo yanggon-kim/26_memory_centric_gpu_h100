@@ -16,7 +16,8 @@ def main(a):
     from shoreline_green import create,stream_proof
     from software_decode_experiments import dump
     verify_cuda(torch,a.gpu_uuid)
-    green,stream,proof=create(torch,a.fraction,make_current=True)
+    green,stream,proof=create(torch,a.fraction,make_current=True,
+                              force_green=getattr(a,'force_green',False))
     assert a.fraction==1 or proof['green_context_handle']
     dump(a.output/'green_allocation.json',{'status':'allocated','allocation':proof,
           'all_kernel_restriction_proof':'pending Nsight Systems greenContextId validation during selected decode ticks'})
@@ -44,6 +45,7 @@ if __name__=='__main__':
     p.add_argument('--config',required=True);p.add_argument('--gpu-uuid',required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--fraction',type=float,required=True)
     p.add_argument('--mode',default='timing');p.add_argument('--external-profiler',action='store_true')
+    p.add_argument('--force-green',action='store_true',help='use a green context even for the full-allocation path control')
     p.add_argument('--collect-worker-metadata',action='store_true');p.add_argument('--batch',type=int)
     p.add_argument('--context',type=int);p.add_argument('--generated-tokens',type=int,default=64)
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)

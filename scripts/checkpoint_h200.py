@@ -46,7 +46,8 @@ def main():
                     'numerical_source_freeze':row.get('source_freeze_identity')})
             data['attempts']=attempts
             manifest.write_text(json.dumps(data,indent=2)+'\n')
-    candidates = list((PACKAGE/'scripts').glob('*.py')) + [PACKAGE/'h200/README.md']
+    candidates = list((PACKAGE/'scripts').glob('*.py')) + [PACKAGE/'h200/README.md',
+        PACKAGE/'docs/h200_measurement_limitations_20261125.md']
     for root in a.root:
         root = root.resolve()
         assert root.is_relative_to(PACKAGE/'h200'), 'H200 root required'

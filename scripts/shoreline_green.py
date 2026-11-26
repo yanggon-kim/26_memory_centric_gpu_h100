@@ -36,9 +36,9 @@ def stream_proof(stream):
             'proof_source':'CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx'}
 
 
-def create(torch, fraction, make_current=False):
+def create(torch, fraction, make_current=False, force_green=False):
     assert 0 < fraction <= 1
-    if fraction == 1:
+    if fraction == 1 and not force_green:
         stream = torch.cuda.current_stream()
         return None, stream, stream_proof(stream)
     from cuda.core import Device
@@ -47,7 +47,8 @@ def create(torch, fraction, make_current=False):
     resources = device.resources.sm
     alignment = resources.coscheduled_alignment
     minimum = resources.min_partition_size
-    requested = max(minimum, math.ceil(resources.sm_count*fraction/alignment)*alignment)
+    requested = (resources.sm_count if fraction == 1 else
+                 max(minimum, math.ceil(resources.sm_count*fraction/alignment)*alignment))
     green = torch.cuda.GreenContext.create(requested, 0)
     if make_current:green.set_context()
     stream = green.Stream()
