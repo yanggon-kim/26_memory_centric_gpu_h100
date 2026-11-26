@@ -30,6 +30,9 @@ def main():
     model=transformers.AutoModelForCausalLM.from_pretrained(str(path),local_files_only=True,
           dtype=torch.bfloat16,attn_implementation='sdpa').eval().to('cuda')
     prompt=torch.tensor(case['prompt_ids'],device='cuda')
+    # Uniform synthetic IDs are active tokens, including an ID whose tokenizer
+    # role is PAD. Inferring padding here would change the vLLM input contract.
+    attention_mask=torch.ones_like(prompt)
     result={'classification':'cross-engine-token-correctness','status':'running',
             'hypothesis':'test whether full-length dynamic-cache model.generate agrees with the existing StaticCache and vLLM routes',
             'model_id':config['model_id'],'revision':config['model_revision'],'gpu_uuid':args.gpu_uuid,
@@ -38,11 +41,12 @@ def main():
             'prompt_ids':case['prompt_ids'],'prompt_sha256':case['prompt_sha256'],
             'batch':case['batch_size'],'context':case['context_length'],'generated_tokens':case['generated_tokens'],
             'precision':'BF16','reference_program':'HF model.generate; dynamic cache; SDPA',
+            'attention_mask_policy':'explicit all-ones; every supplied prompt ID is active',
             'versions':{'torch':torch.__version__,'transformers':transformers.__version__,'cuda':torch.version.cuda},
             'scope':'correctness-only; no timing or energy claims','warmups':[],'trials':[]}
     with torch.inference_mode():
         for i in range(6):
-            generated=model.generate(input_ids=prompt,max_new_tokens=case['generated_tokens'],
+            generated=model.generate(input_ids=prompt,attention_mask=attention_mask,max_new_tokens=case['generated_tokens'],
                   do_sample=False,eos_token_id=None,repetition_penalty=1.0,use_cache=True,
                   cache_implementation='dynamic',logits_to_keep=1)
             ids=generated[:,case['context_length']:].cpu().tolist()
@@ -64,7 +68,7 @@ def main():
     if result['status']=='failed' and comparisons[0]['first_differences']:
         first=comparisons[0]['first_differences'][0]
         with torch.inference_mode():
-            scored=model.generate(input_ids=prompt,max_new_tokens=case['generated_tokens'],do_sample=False,
+            scored=model.generate(input_ids=prompt,attention_mask=attention_mask,max_new_tokens=case['generated_tokens'],do_sample=False,
                    eos_token_id=None,repetition_penalty=1.0,use_cache=True,cache_implementation='dynamic',
                    logits_to_keep=1,return_dict_in_generate=True,output_scores=True)
         score=scored.scores[first['token_index']][first['request']].float().cpu()

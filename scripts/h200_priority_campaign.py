@@ -336,7 +336,8 @@ class Worker:
         physical=self.traffic()
         write(self.root/'results/P2a_disposition.json',physical)
         # Full-GPU long-context fallbacks remain eligible if restriction is blocked.
-        for context in (16384,32768):
+        # Qwen2.5's declared32768 positions include the generated-token budget.
+        for context in (16384,32704):
             if time.time()+2400 >= dt.datetime.fromisoformat(self.settings['launch_cutoff']).timestamp():
                 break
             expected=self.expected;self.expected=None

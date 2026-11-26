@@ -3,6 +3,7 @@
 import copy
 import contextlib
 import json
+import io
 from pathlib import Path
 import sys
 import tempfile
@@ -121,6 +122,52 @@ def main():
         restricted.main(args)
         assert steps==[3,3] and green.depth==1, 'repair must balance both per-trial and per-step contexts'
         assert engine.step is original_step, 'scheduler hook must be restored'
+    # Exercise the real independent-reference harness with a synthetic PAD ID.
+    # All model/CUDA operations are CPU fakes; no numerical GPU evidence is made.
+    import hf_full_reference
+    class Tensor:
+        def __init__(self,rows):self.rows=rows
+        def __getitem__(self,key):
+            rows,columns=key
+            return Tensor([row[columns] for row in self.rows[rows]])
+        def cpu(self):return self
+        def tolist(self):return self.rows
+    calls=[];fail_first=[False]
+    class Model:
+        def __init__(self):self.count=0
+        def eval(self):return self
+        def to(self,device):return self
+        def generate(self,**kwargs):
+            assert kwargs['attention_mask'].rows==[[1,1,1,1]]
+            assert kwargs['input_ids'].rows==[[1,151643,2,3]]
+            calls.append(kwargs);self.count+=1
+            output=[99,12,13] if fail_first[0] and self.count==1 else [11,12,13]
+            return Tensor([[1,151643,2,3]+output])
+    torch=types.SimpleNamespace(__version__='CPU-fake',version=types.SimpleNamespace(cuda='CPU-fake'),
+             manual_seed=lambda seed:None,bfloat16='BF16',tensor=lambda rows,**kw:Tensor(rows),
+             ones_like=lambda t:Tensor([[1]*len(row) for row in t.rows]),inference_mode=contextlib.nullcontext)
+    transformers=types.SimpleNamespace(__version__='CPU-fake',
+             AutoModelForCausalLM=types.SimpleNamespace(from_pretrained=lambda *a,**kw:Model()))
+    nvml=types.SimpleNamespace(nvmlInit=lambda:None,nvmlShutdown=lambda:None)
+    with tempfile.TemporaryDirectory() as name, \
+         patch.dict(sys.modules,{'torch':torch,'transformers':transformers,'pynvml':nvml}), \
+         patch.object(gpu_target,'select',return_value=(None,None)),patch.object(gpu_target,'verify_cuda'):
+        root=Path(name);model=root/('a'*40);model.mkdir()
+        source={'status':'complete','config':{'model_path':str(model),'model_revision':model.name,'seed':20261013,
+                    'model_id':'CPU-synthetic','config_sha256':'CPU-fake'},
+                'cases':[{'prompt_ids':[[1,151643,2,3]],'prompt_sha256':'CPU-fake','batch_size':1,
+                    'context_length':4,'generated_tokens':3,'trials':[{'output_ids':[[11,12,13]]} for _ in range(3)]}]}
+        (root/'source.json').write_text(json.dumps(source))
+        for invalid in (False,True):
+            fail_first[0]=invalid
+            output=root/('failed.json' if invalid else 'passed.json')
+            with patch.object(sys,'argv',['hf_full_reference.py','--source-run',str(root/'source.json'),
+                    '--gpu-uuid','GPU-synthetic','--output',str(output)]),contextlib.redirect_stdout(io.StringIO()):
+                try:hf_full_reference.main()
+                except SystemExit as result:assert result.code==(1 if invalid else 0)
+                else:raise AssertionError('reference harness did not enforce its exit gate')
+            assert json.loads(output.read_text())['status']==('failed' if invalid else 'passed')
+        assert len(calls)==12
     print('H200 priority CPU contracts passed')
 
 
