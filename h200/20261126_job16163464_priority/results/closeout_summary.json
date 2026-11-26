@@ -1,0 +1,78 @@
+{
+  "status": "partial",
+  "termination": "PREEMPTED",
+  "slurm_job_id": "16163464",
+  "elapsed_seconds": 3633,
+  "actual_allocated_gpu_hours": 2.0183333333333335,
+  "model_sm_curve_complete": false,
+  "NVIDIA_thresholds": {
+    "5percent": null,
+    "10percent": null,
+    "25percent": null
+  },
+  "native_analysis": "gpu1/results/native_priority_analysis.json",
+  "physical_counter_review": "gpu1/results/P2a_graph_b1_c4096_a0_reader_review.json",
+  "next_command_requires_new_allocation_authorization": true,
+  "next_command": "sbatch --parsable batch/h200_priority_resume_20261126.sbatch",
+  "stock_controls": [
+    {
+      "gpu": 0,
+      "gpu_uuid": "GPU-951a11c2-40ee-3fcb-f71f-49849e744cb1",
+      "raw_median_wall_ms_per_tick": 19.285834564398677,
+      "trial_count": 10,
+      "qualified": false,
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1290,
+            "maximum": 1980,
+            "max_min_ratio": 1.5348837209302326,
+            "samples": 262
+          },
+          "memory_clock_mhz": {
+            "minimum": 3199,
+            "maximum": 3201,
+            "max_min_ratio": 1.0006251953735543,
+            "samples": 262
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "source": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/gpu0/results/graph_b1_c4096_stock_f100_a0_target_control.json"
+    },
+    {
+      "gpu": 1,
+      "gpu_uuid": "GPU-b51c6186-ac3b-5149-8b8a-f33943072c47",
+      "raw_median_wall_ms_per_tick": 19.322249016517567,
+      "trial_count": 10,
+      "qualified": false,
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1275,
+            "maximum": 1980,
+            "max_min_ratio": 1.5529411764705883,
+            "samples": 263
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 263
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "source": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/gpu1/results/graph_b1_c4096_stock_f100_a0_traffic_reference.json"
+    }
+  ],
+  "interrupted": {
+    "status": "interrupted_by_allocation_preemption",
+    "case": "graph_b1_c4096_green_f100_a0_proof",
+    "allocation_record_present": false,
+    "reason": "Slurm PREEMPTED; no completed decoder restriction proof; not evidence of unsupported optimized restriction",
+    "original_current_process_sha256": "8ab5922153c6f3b68e454e5b5e6f291342e439e989533ddc66ee5eba25670dcb"
+  }
+}

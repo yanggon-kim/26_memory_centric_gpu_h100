@@ -51,6 +51,27 @@ def sha(path):
     return hashlib.file_digest(Path(path).open('rb'), 'sha256').hexdigest() if hasattr(hashlib, 'file_digest') else hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def prior_kv_software_validation(path, model_config):
+    """Reuse only this adapter's prior functional scope, never a new pair's result."""
+    d=load(path)
+    assert d['status']=='complete' and d['real_KV_handoff_verified'] is True
+    assert d['model_revision']==model_config['model_revision']
+    assert d['model_config_sha256']==model_config['config_sha256']
+    assert d['receiver_prefill_executed'] is False and len(d['trials'])==6
+    assert all(t['correctness']=='passed' for t in d['trials'])
+    assert d['versions']=={'torch':'2.11.0+cu130','transformers':'4.57.6','cuda':'13.0'}
+    assert d['warmups']==3 and sum(t['warmup'] for t in d['trials'])==3
+    assert len(d['cache_layouts'])==128
+    assert {(x['layer'],x['role']) for x in d['cache_layouts']}=={(i,r) for i in range(64) for r in ('key','value')}
+    assert all(x['dtype']=='torch.bfloat16' for x in d['cache_layouts'])
+    assert set(d['source_sha256'])=={'h200_real_kv_smoke.py','h200_p2p_smoke.py','h200_session.py'}
+    assert all(sha(PACKAGE/'scripts'/name)==digest for name,digest in d['source_sha256'].items())
+    return {'status':'prior_software_functional_validation_only','prior_result':str(path),
+            'prior_result_sha256':sha(path),'prior_physical_pair':d['devices'],
+            'model_revision':d['model_revision'],'new_pair_handoff_validated':False,
+            'scope':'unchanged all-layer HF adapter validated on the original pair; fresh pair handoff deferred until after core SM sweep'}
+
+
 def limitation(root, case, reason, evidence, tried, resume):
     row = {'utc': dt.datetime.now(dt.timezone.utc).isoformat(), 'case': case,
            'limitation': reason, 'evidence': evidence, 'attempted_remedy': tried,
@@ -203,9 +224,15 @@ class Worker:
                 'Diagnose first differing token without weakening correctness')
         return passed
 
-    def curve(self, engine, batch=1, context=4096):
+    def curve(self, engine, batch=1, context=4096, stock_proof=None):
         self.last_curve_stop=None
-        stock_proof=self.case(engine,1.,0,pilot=True,stock=True,batch=batch,context=context)
+        if stock_proof is None:
+            stock_proof=self.case(engine,1.,0,pilot=True,stock=True,batch=batch,context=context)
+        else:
+            assert stock_proof['pilot'] and stock_proof['stock']
+            assert (stock_proof['engine'],stock_proof['batch'],stock_proof['context'])==(engine,batch,context)
+            assert stock_proof['source_identity']==self.settings['frozen_source_identity']
+            assert stock_proof['gpu_uuid']==self.uuid and Path(stock_proof['run']).is_relative_to(self.root)
         if not stock_proof['qualified']:
             analyze_curve(self.root,self.records,engine,batch,context)
             self.unrestricted_after_block(engine,batch,context)
@@ -277,17 +304,24 @@ class Worker:
             stream.write(f'\nUnrestricted {engine} B{batch}/C{context} after blocked restriction: timing qualified={passed}; see results/unrestricted_{engine}_b{batch}_c{context}.json.\n')
         publish(self.root,f'H200 {engine} B{batch}/C{context}: independent full reference after blocked restriction')
 
-    def traffic(self, engine='graph', context=4096, batch=1):
+    def traffic(self, engine='graph', context=4096, batch=1, acquisitions=None, reference_case=None):
         """Three independent app-range producers; physical bytes never use clean profiler time."""
-        import csv
-        import io
         from shoreline_evidence import qualify_replays
-        reference=self.case(engine,1.,0,stock=True,suffix='_traffic_reference',context=context,batch=batch)
-        if reference['status']!='complete' or not self.reference(reference['run'],f'{engine}_b{batch}_c{context}_traffic'):
-            return {'status':'blocked','reason':'exact traffic reference unavailable'}
-        expected=load(reference['run'])['cases'][0]
+        if reference_case is None:
+            reference=self.case(engine,1.,0,stock=True,suffix='_traffic_reference',context=context,batch=batch)
+            if reference['status']!='complete' or not self.reference(reference['run'],f'{engine}_b{batch}_c{context}_traffic'):
+                return {'status':'blocked','reason':'exact traffic reference unavailable'}
+            expected=load(reference['run'])['cases'][0]
+        else:
+            # The resume collector validates the immutable source/HF artifacts,
+            # physical UUID, exact prompt and every warmup/trial before reuse.
+            expected=reference_case
+            assert expected['batch_size']==batch and expected['context_length']==context
+            assert expected['generated_tokens']==64
+        acquisitions=tuple(range(3)) if acquisitions is None else tuple(acquisitions)
+        assert acquisitions and len(set(acquisitions))==len(acquisitions) and set(acquisitions)<={0,1,2}
         results=[]
-        for acq in range(3):
+        for acq in acquisitions:
             label=f'P2a_{engine}_b{batch}_c{context}_a{acq}'
             c=load(config(self.root,engine,context,3,batch))
             c['shoreline_protocol']={'counter_range_protocol':'ticks_only_v5'}
@@ -334,20 +368,25 @@ class Worker:
         return {'status':'captured' if len(results)==3 and all(x['status']=='complete' for x in results) else 'partial',
                 'scope':'instrumented physical traffic; timing joins remain separate'}
 
-    def primary(self):
+    def primary(self, core_first=False):
         inv = self.execute('inventory', [self.py, self.script/'inventory.py', '--gpu-uuid', self.uuid,
                     '--check-cuda', '--output', self.root/'environment/inventory.json'], timeout=180)
         if inv['status'] != 'complete':
             return {'status': 'blocked', 'reason': 'inventory failed'}
-        for engine in ('graph', 'eager'):
-            smoke = self.case(engine, 1., 0, stock=True, context=128, suffix='_smoke')
-            if smoke['status'] != 'complete' or not self.reference(smoke['run'], engine + '_smoke'):
-                return {'status': 'blocked', 'reason': engine + ' C128 exact smoke/reference gate'}
-        target = self.case('graph', 1., 0, stock=True, suffix='_target_control')
+        if not core_first:
+            for engine in ('graph', 'eager'):
+                smoke = self.case(engine, 1., 0, stock=True, context=128, suffix='_smoke')
+                if smoke['status'] != 'complete' or not self.reference(smoke['run'], engine + '_smoke'):
+                    return {'status': 'blocked', 'reason': engine + ' C128 exact smoke/reference gate'}
+        # The resume uses the target's bounded3+3 NSYS smoke and exact HF gate
+        # before ordinary timing. Reuse its same-allocation stock proof once.
+        target = self.case('graph',1.,0,stock=True,pilot=True) if core_first else self.case('graph', 1., 0, stock=True, suffix='_target_control')
+        if core_first and not target['qualified']:
+            return {'status':'blocked','reason':'target smoke exact graph/placement gate'}
         if target['status'] != 'complete' or not self.reference(target['run'], 'graph_target'):
             return {'status': 'blocked', 'reason': 'C4096 exact HF/graph gate'}
         self.expected = load(target['run'])['cases'][0]['trials'][0]['output_ids']
-        graph = self.curve('graph')
+        graph = self.curve('graph',stock_proof=target if core_first else None)
         if not graph:
             limitation(self.root, 'P1a_graph', 'Complete qualified optimized restricted curve unavailable',
                 'results/curve_graph.json and individual proof/acquisition records',
@@ -411,7 +450,7 @@ class Worker:
             publish(self.root, f'H200 {self.uuid} native service acquisition {acq}; decoder transfer not inferred')
         return {'status':'native_controls_captured','qualification':'clock/source/physical-counter joins remain separate'}
 
-    def secondary(self):
+    def secondary(self, core_first=False):
         self.execute('inventory', [self.py, self.script/'inventory.py', '--gpu-uuid', self.uuid,
                     '--check-cuda', '--output', self.root/'environment/inventory.json'], timeout=180)
         label='P0_native_ncu_stream512'
@@ -427,8 +466,14 @@ class Worker:
                        str((self.root/'logs'/(label+'.log')).relative_to(PACKAGE)),
                        'Native stream control with physical DRAM metrics, no clock/cache modification',
                        'Inspect profiler permissions and raw NCU log; independent unprofiled controls remain eligible')
-        native=self.native_controls()
-        physical=self.traffic()
+        if core_first:
+            physical=self.traffic()
+            write(self.root/'results/P2a_disposition.json',physical)
+            publish(self.root,'H200 resumed physical traffic comparison before additional native controls')
+            native=self.native_controls()
+        else:
+            native=self.native_controls()
+            physical=self.traffic()
         write(self.root/'results/P2a_disposition.json',physical)
         return {'status': 'captures_saved_scientific_gates_separate', 'native':native,'physical':physical,
                 'qualification': 'device-specific results; clock/source/physical-counter joins remain separate'}
@@ -606,14 +651,22 @@ def coordinator(args):
                  '--devices',root/'environment/allocated_devices.json',
                  '--config',PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json',
                  '--output',root/'results/P0_real_hf_kv.json','--profile']
-    try:
-        with (root/'logs/P0_real_hf_kv.log').open('x') as stream:
-            subprocess.run(list(map(str,real_kv_command)),stdout=stream,stderr=subprocess.STDOUT,check=True,timeout=600)
-    except (subprocess.SubprocessError,OSError) as error:
-        limitation(root,'P0_real_hf_kv','Real whole-model HF KV functional handoff pilot failed: '+str(error),
-                   str((root/'logs/P0_real_hf_kv.log').relative_to(PACKAGE)),
-                   'All-layer BF16 transfer and receiver decode compared with source and independent generate; exact gate unchanged',
-                   'Inspect cache layout/position/output diagnostics; serving connector remains unvalidated')
+    if args.core_first:
+        reused=prior_kv_software_validation(args.prior_kv_pilot,load(PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json'))
+        write(root/'results/P0_prior_KV_software_validation.json',reused)
+        limitation(root,'P0_new_pair_KV','Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair',
+                   'results/P0_prior_KV_software_validation.json',
+                   'Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate',
+                   'At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs')
+    else:
+        try:
+            with (root/'logs/P0_real_hf_kv.log').open('x') as stream:
+                subprocess.run(list(map(str,real_kv_command)),stdout=stream,stderr=subprocess.STDOUT,check=True,timeout=600)
+        except (subprocess.SubprocessError,OSError) as error:
+            limitation(root,'P0_real_hf_kv','Real whole-model HF KV functional handoff pilot failed: '+str(error),
+                       str((root/'logs/P0_real_hf_kv.log').relative_to(PACKAGE)),
+                       'All-layer BF16 transfer and receiver decode compared with source and independent generate; exact gate unchanged',
+                       'Inspect cache layout/position/output diagnostics; serving connector remains unvalidated')
     base = {'schema_version':1, 'slurm_job_id':os.environ['SLURM_JOB_ID'], 'expected_hostname':socket.gethostname(),
             'python':sys.executable, 'cuda_home':args.cuda, 'allocation_end':end.isoformat(),
             'launch_cutoff':(end-dt.timedelta(minutes=30)).isoformat(), 'closeout_buffer_s':1800,
@@ -637,6 +690,7 @@ def coordinator(args):
     for i,subroot in jobs:
         stream=(root/'logs'/f'worker{i}.log').open('w')
         command=[sys.executable,Path(__file__).resolve(),'--worker',str(i),'--root',str(subroot),'--session',str(subroot/'session.json')]
+        if args.core_first:command+=['--core-first']
         processes.append((subprocess.Popen(command,stdout=stream,stderr=subprocess.STDOUT),stream))
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
@@ -686,6 +740,11 @@ def bootstrap(args):
     state=subprocess.check_output(['scontrol','show','job','-o',os.environ['SLURM_JOB_ID']],text=True)
     (root/'environment/slurm.txt').write_text(state)
     (root/'environment/host.txt').write_text(socket.gethostname()+'\n')
+    if os.environ.get('H200_VISIBILITY_MANIFEST'):
+        visibility=load(os.environ['H200_VISIBILITY_MANIFEST'])
+        assert visibility['slurm_job_id']==os.environ['SLURM_JOB_ID']
+        assert visibility['selected_cuda_visible_devices']==os.environ['CUDA_VISIBLE_DEVICES']
+        write(root/'environment/allocated_visibility_repair.json',visibility)
     write(root/'STATUS.json',{'status':'allocated_staging','job_id':os.environ['SLURM_JOB_ID']})
     publish(root,'H200 priority: allocated runtime/model staging started')
     runtime=Path('/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python')
@@ -705,7 +764,8 @@ def bootstrap(args):
                 raise RuntimeError(label+' failed with exit '+str(result.returncode))
         write(root/'STATUS.json',{'status':'staging_complete','next':'coordinator'})
         publish(root,'H200 priority: pinned runtime and immutable32B staging complete')
-        subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda],check=True)
+        flags=['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []
+        subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda]+flags,check=True)
     except Exception as error:
         write(root/'STATUS.json',{'status':'blocked','error':str(error),'traceback':traceback.format_exc()})
         limitation(root,'bootstrap','Allocated staging/launch failed: '+str(error),str(root.relative_to(PACKAGE)),
@@ -720,7 +780,8 @@ def bootstrap(args):
             if trigger.exists() and args.bootstrap_attempt==0:
                 trigger.rename(root/'results/retry_staging.request')
                 subprocess.run([sys.executable,'-u',PACKAGE/'scripts/h200_priority_campaign.py',
-                    '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda],check=True)
+                    '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda]+
+                    (['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []),check=True)
                 break
             time.sleep(15)
     finally:
@@ -731,7 +792,10 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bootstrap',action='store_true');p.add_argument('--bootstrap-attempt',type=int,choices=(0,1),default=0)
     p.add_argument('--cuda');p.add_argument('--worker',type=int,choices=(0,1));p.add_argument('--root',type=Path);p.add_argument('--session',type=Path)
+    p.add_argument('--core-first',action='store_true',help='target3+3 graph smoke/HF before SM sweep; defer fresh paired KV handoff')
+    p.add_argument('--prior-kv-pilot',type=Path)
     a=p.parse_args()
+    if a.core_first and a.worker is None and a.prior_kv_pilot is None:p.error('--core-first coordinator/bootstrap requires --prior-kv-pilot')
     if a.bootstrap:
         bootstrap(a)
     elif a.worker is None:
@@ -739,7 +803,7 @@ def main():
     else:
         worker=Worker(a.root,a.session)
         try:
-            outcome=worker.primary() if a.worker==0 else worker.secondary()
+            outcome=worker.primary(core_first=a.core_first) if a.worker==0 else worker.secondary(core_first=a.core_first)
             write(a.root/'results/worker_outcome.json',outcome)
         except BaseException as error:
             write(a.root/'results/worker_outcome.json',{'status':'failed','error':str(error),'traceback':traceback.format_exc()})

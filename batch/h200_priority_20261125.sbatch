@@ -25,9 +25,8 @@ export PATH="$CUDA_HOME/bin:$PATH"
 export PYTHONNOUSERSITE=1 OMP_NUM_THREADS=4 MAX_JOBS=4 TORCHINDUCTOR_COMPILE_THREADS=4
 export HF_HUB_CACHE=/storage/scratch1/6/jkim4112/models/h200_priority_hub
 export HF_HUB_DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 VLLM_NO_USAGE_STATS=1
-unset PYTHONPATH LD_PRELOAD CUDA_INJECTION64_PATH NVBIT_INSTRUMENTATION_ENABLED
+unset PYTHONPATH PYTHONHOME LD_PRELOAD CUDA_INJECTION64_PATH NVBIT_INSTRUMENTATION_ENABLED
 # Remove inherited toolkit search paths; wheel libraries and the explicit CUDA_HOME govern.
 unset LD_LIBRARY_PATH LIBRARY_PATH CPATH
 srun --ntasks=1 --cpus-per-task=16 --gpus-per-task=2 --gpu-bind=none \
-  /usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3 -u \
-  scripts/h200_priority_campaign.py --bootstrap --cuda "$CUDA_HOME"
+  bash batch/h200_priority_allocated_step.sh
