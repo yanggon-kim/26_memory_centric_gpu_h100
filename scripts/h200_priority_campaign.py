@@ -402,6 +402,16 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     refs = sorted([r for r in records if r['engine'] == engine and not r['pilot'] and r['stock']
                    and r['batch'] == batch and r['context'] == context and not r.get('suffix')], key=lambda r:r['acquisition'])
     green_refs = sorted([r for r in clean if r['fraction'] == 1. and not r.get('suffix')], key=lambda r:r['acquisition'])
+    stock={'qualified':False,'scope':'unrestricted stock reference; its normalized self-ratio is exactly1'}
+    if (len(refs)==3 and stock_proofs and all(r.get('qualified') for r in refs) and
+        len({r['source_identity'] for r in refs})==1 and len({r['actual_sm_count'] for r in refs})==1 and
+        stock_proofs[-1]['source_identity']==refs[0]['source_identity'] and
+        stock_proofs[-1]['actual_sm_count']==refs[0]['actual_sm_count']):
+        pooled={m:max(r['clock']['clocks'][m]['maximum'] for r in refs)/min(r['clock']['clocks'][m]['minimum'] for r in refs)
+                for m in ('sm_clock_mhz','memory_clock_mhz')}
+        if all(v<=1.05 for v in pooled.values()):
+            stock.update(qualified=True,actual_sm_count=refs[0]['actual_sm_count'],pooled_clock_ratio=pooled,
+                         latency_ms=hierarchical_interval([r['step_ms'] for r in refs]),sources=[r['id'] for r in refs])
     for fraction in FRACTIONS:
         rows = sorted([r for r in clean if r['fraction'] == fraction and
                        not r.get('suffix')], key=lambda r:r['acquisition'])
@@ -411,7 +421,7 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                  'raw_scope': 'retained observations, not qualified comparisons until every gate passes'}
         combined = rows + refs + green_refs + [r for r in clean if r.get('suffix') in ('_end', '_interleaved')]
         clocks = [r.get('clock', {}).get('clocks', {}) for r in combined]
-        if (len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
+        if (stock['qualified'] and len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
             fraction in proofs and 1. in proofs and stock_proofs and
             len({r['source_identity'] for r in combined})==1 and
             all(r['source_identity']==rows[0]['source_identity'] for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
@@ -432,16 +442,19 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     thresholds = {}
     for margin in (.05, .10, .25):
         candidates = [p for p in points if p['qualified'] and p['ratio']['ci95'][1] <= 1+margin]
-        thresholds[str(margin)] = {'smallest_tested_demonstrated_sm_count': min((p['actual_sm_count'] for p in candidates), default=None),
-                                  'scope': 'tested counts only; unresolved/censored between points, no AMD thresholds imported'}
+        counts=[p['actual_sm_count'] for p in candidates]+([stock['actual_sm_count']] if stock['qualified'] else [])
+        thresholds[str(margin)] = {'smallest_tested_demonstrated_sm_count':min(counts,default=None),
+                                  'restricted_path_smallest_tested_sm_count':min((p['actual_sm_count'] for p in candidates),default=None),
+                                  'scope': 'tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds'}
     result = {'engine': engine, 'batch':batch,'context':context,'classification': 'measured-real-GPU', 'points': points, 'thresholds': thresholds,
-              'complete_qualified_curve': all(p['qualified'] for p in points),
+              'unrestricted_stock':stock,'complete_qualified_curve': stock['qualified'] and all(p['qualified'] for p in points),
               'scope': 'pure decode after verified prefill barrier, wall ms/tick; primary ratios use unrestricted stock; full-green ratios also retained; physical area/HBM capacity unchanged'}
     write(root/'results'/f'curve_{engine}_b{batch}_c{context}.json', result)
     if batch==1 and context==4096:
         write(root/'results'/f'curve_{engine}.json', result)
     lines = [f'\n## {engine} B{batch}/C{context} curve\n', '| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |',
              '|---|---:|---|---:|---|']
+    lines.append(f"| stock | {stock.get('actual_sm_count','NA')} | {stock['qualified']} | {stock.get('latency_ms',{}).get('value','NA')} | 1 (normalization) |")
     for p in points:
         lines.append(f"| {p['fraction']} | {p['actual_sm_count']} | {p['qualified']} | {p.get('latency_ms', {}).get('value', 'NA')} | {p.get('ratio', {}).get('ci95', 'NA')} |")
     with (root/'analysis/report.md').open('a') as stream:
