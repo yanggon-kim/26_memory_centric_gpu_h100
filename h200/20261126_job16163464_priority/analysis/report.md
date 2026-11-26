@@ -15,7 +15,7 @@ The full-green optimized proof was interrupted before an allocation record or de
 | GPU0 `GPU-951a11c2-40ee-3fcb-f71f-49849e744cb1` | 19.2858 | 10 | rejected |
 | GPU1 `GPU-b51c6186-ac3b-5149-8b8a-f33943072c47` | 19.3222 | 10 | rejected |
 
-These are one-acquisition observations, not a qualified3-acquisition latency comparison. All trials are retained. The SM clock envelopes failed where marked; memory clocks and exact extrema are in `../results/closeout_summary.json`. No clock or power setting was changed. Primary J/token remains NA.
+These are one-acquisition observations, not a qualified3-acquisition latency comparison. All trials are retained. The SM clock envelopes failed where marked; memory clocks and exact extrema are in `../results/closeout_summary.json`. No clock or power setting was changed. Primary J/token remains NA. A CPU window audit confirms that all ten GPU0 target trials exceed the5% envelope using interior decode samples alone; prefill is outside the timestamps. See `../results/clock_window_audit_target.json`. The rejection is retained.
 
 ## Physical service evidence
 
