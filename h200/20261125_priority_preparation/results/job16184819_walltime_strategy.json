@@ -1,0 +1,23 @@
+{
+  "recorded_utc": "2026-11-26T17:03:08.030007+00:00",
+  "job_id": "16184819",
+  "original_request": "08:00:00",
+  "updated_request": "03:00:00",
+  "command": "scontrol update JobId=16184819 TimeLimit=03:00:00",
+  "status": "scheduler_update_verified",
+  "classification": "analytical scheduling estimate, not GPU measurement",
+  "observations_s": {
+    "stock_target_clean_process": 77.14,
+    "stock_target_instrumented_pilot_process": 89.12,
+    "HF_target_reference": 50.9,
+    "cold_C128_graph_process_outlier": 640.45
+  },
+  "planning_estimate_s": {
+    "curve_conservative_proxy": 7087,
+    "seven_proofs_plus_HF_proxy": 675,
+    "closeout_reserve": 1800
+  },
+  "assumptions": "Unmeasured green process costs approximated by stock pilot for initial sizing only; real green pilots will determine curve admission. Cached model/runtime and core-first ordering reduce repeated staging. Three hours leaves room for full 3x10 comparison and publication; a one-hour limit is too tight under the conservative admission estimate.",
+  "preemption_exemption_unchanged": "01:00:00",
+  "future_policy": "Choose walltime from measured pilot comparison cost plus checkpoint/closeout; use shorter bounded jobs when they fit. Keep sequential two-H200 replacements and fresh timing cohorts."
+}

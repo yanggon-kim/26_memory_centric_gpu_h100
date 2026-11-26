@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --gres=gpu:H200:2
 #SBATCH --mem-per-gpu=196G
-#SBATCH --time=08:00:00
+#SBATCH --time=03:00:00
 #SBATCH --no-requeue
 #SBATCH --output=h200-priority-%j.out
 set -euo pipefail
