@@ -1,0 +1,18 @@
+{
+  "recorded_utc": "2026-11-26T17:42:23.420063+00:00",
+  "classification": "CPU source/API review, not GPU validation",
+  "local_pinned_sources": {
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/torch/cuda/green_contexts.py": "daa48f2800c8c5cc4903cb26f20778226d4924dafe991030e5831199be7f42c7",
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/worker/gpu_worker.py": "b8abf80efd8698a533ceeee4285a381796582097f4f62fe572090d4e1496d4ad"
+  },
+  "primary_references": [
+    "https://raw.githubusercontent.com/pytorch/pytorch/v2.11.0/aten/src/ATen/cuda/CUDAGreenContext.cpp",
+    "https://docs.nvidia.com/cuda/archive/13.0.1/cuda-driver-api/group__CUDA__GREEN__CONTEXTS.html"
+  ],
+  "findings": [
+    "PyTorch create uses driver SM resource splitting, a resource descriptor, green-context creation and conversion; set_context pushes the converted context and changes the current stream.",
+    "Pinned vLLM init_device selects a device and initializes distributed/runtime state before model-runner construction; compile_or_warm_up_model later captures the model graph. These are inspection points if real decoder placement fails.",
+    "Driver resource requests have minimum/alignment constraints; actual grants and measured decoder context mapping remain mandatory. No new SM grant or placement result is established by this review."
+  ],
+  "repair_policy": "Inspect actual failed proof and apply a bounded versioned repair; do not change numerical source or runtime speculatively while a cohort is running."
+}
