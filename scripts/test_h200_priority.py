@@ -74,6 +74,19 @@ def main():
         assert requested==[132,104]
         shoreline_green.create(torch,1.)
         assert requested==[132,104], 'stock path must remain separately available'
+    with tempfile.TemporaryDirectory() as name:
+        root=Path(name)
+        task={'id':'P3a_pilot_v1','gpu':0,'script':'shoreline_native.py','arguments':[],'timeout_s':900}
+        assert campaign.continuation_task(task,root)==root/'gpu0'
+        for changed in ({'gpu':2},{'script':'../outside.py'},{'arguments':['--gpu-uuid=GPU-unallocated']},{'id':'../escape'}):
+            invalid=dict(task,**changed)
+            try:campaign.continuation_task(invalid,root)
+            except (AssertionError,ValueError):pass
+            else:raise AssertionError('invalid continuation accepted')
+        prior=root/'gpu0/results/processes/P3a_pilot_v1.json';prior.parent.mkdir(parents=True);prior.write_text('{}')
+        try:campaign.continuation_task(task,root)
+        except AssertionError:pass
+        else:raise AssertionError('existing attempt accepted')
     print('H200 priority CPU contracts passed')
 
 

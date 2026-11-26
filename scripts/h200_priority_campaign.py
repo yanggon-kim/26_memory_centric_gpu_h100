@@ -426,6 +426,71 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     return result
 
 
+
+def continuation_task(task, root):
+    """Validate a reviewed single-device task before freezing or launching it."""
+    import re
+    assert re.fullmatch(r'[A-Za-z0-9_]+',task['id']), 'invalid task identity'
+    assert task['gpu'] in (0,1), 'only allocated device slots0/1'
+    name=task['script']
+    assert Path(name).name==name and name.endswith('.py'), 'script basename required'
+    assert (PACKAGE/'scripts'/name).is_file(), 'versioned repository script required'
+    assert isinstance(task['arguments'],list) and all(isinstance(x,str) for x in task['arguments'])
+    assert not any(x=='--gpu-uuid' or x.startswith('--gpu-uuid=') for x in task['arguments']), 'UUID is fixed by the allocation'
+    assert 1 <= task.get('timeout_s',1800) <= 7200
+    subroot=root/f'gpu{task["gpu"]}'
+    assert not (subroot/'results/processes'/(task['id']+'.json')).exists(), 'attempt already exists'
+    return subroot
+
+
+def continue_allocation(root, end):
+    """Keep the same authorized job available for result-driven follow-up work.
+
+    Tasks are explicit versioned script/argument records, never shell strings.
+    GPU producers retain the same allocation/UUID/isolation/deadline supervisor.
+    """
+    queue=root/'control';queue.mkdir(exist_ok=True)
+    write(root/'STATUS.json',{'status':'awaiting_reviewed_continuation','allocation_end':end.isoformat(),
+                             'control_directory':str(queue),'closeout_buffer_s':1800})
+    publish(root,'H200 initial queue checkpoint: retain allocation for reviewed follow-up cases')
+    cutoff=end.timestamp()-1800
+    print('CONTINUATION_QUEUE',queue,flush=True)
+    while time.time()<cutoff and not (queue/'finalize').exists():
+        for source in sorted(queue.glob('*.task.json')):
+            result_path=source.with_name(source.name.replace('.task.json','.result.json'))
+            if result_path.exists():continue
+            try:
+                task=load(source);subroot=continuation_task(task,root)
+                session=load(subroot/'session.json')
+                session['source_commit']=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+                session_path=subroot/('session_'+task['id']+'.json')
+                write(session_path,session)
+                subprocess.run([sys.executable,PACKAGE/'scripts/freeze_shoreline.py','--session',session_path,'--activate'],check=True)
+                session=load(session_path)
+                command=[sys.executable,PACKAGE/'scripts/h200_session.py','--root',subroot,
+                         '--label',task['id'],'--gpu','--timeout',str(task.get('timeout_s',1800)),'--',
+                         session['python'],Path(session['frozen_source_root'])/'scripts'/task['script'],
+                         *task['arguments'],'--gpu-uuid',session['gpu_uuid']]
+                env=os.environ.copy();env['H200_SESSION_CONFIG']=str(session_path)
+                write(result_path,{'status':'running','task_sha256':sha(source),'session':str(session_path)})
+                with (root/'logs'/(task['id']+'_supervisor.log')).open('x') as stream:
+                    result=subprocess.run(list(map(str,command)),env=env,stdout=stream,stderr=subprocess.STDOUT)
+                write(result_path,{'status':'producer_finished' if result.returncode==0 else 'failed',
+                      'exit_code':result.returncode,'task_sha256':sha(source),'scientific_gate':'separate; never inferred from exit0'})
+                if result.returncode:
+                    limitation(root,task['id'],'Continuation producer failed with exit '+str(result.returncode),
+                               str((root/'logs'/(task['id']+'_supervisor.log')).relative_to(PACKAGE)),
+                               'Versioned source and allocation-bound supervisor; all original output retained',
+                               'Inspect exception/output/clock/isolation gates before a new bounded attempt')
+                publish(root,'H200 continuation '+task['id']+': producer disposition')
+            except Exception as error:
+                write(result_path,{'status':'failed','error':str(error),'traceback':traceback.format_exc()})
+                limitation(root,source.name,'Continuation task failed: '+str(error),str(result_path.relative_to(PACKAGE)),
+                           'Validated task identity, frozen source and allocation-bound producer',
+                           'Inspect the failed task; record a new attempt identity')
+        time.sleep(15)
+
+
 def coordinator(args):
     assert os.environ.get('SLURM_JOB_ID', '').isdigit(), 'requires allocated sbatch/srun'
     root = PACKAGE/'h200'/f'{dt.datetime.now():%Y%m%d}_job{os.environ["SLURM_JOB_ID"]}_priority'
@@ -484,6 +549,7 @@ def coordinator(args):
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
     for p,s in processes:s.close()
+    continue_allocation(root,end)
     manifest=load(root/'results/case_manifest.json')
     for row in manifest['rows']:
         if row['id']=='P0':

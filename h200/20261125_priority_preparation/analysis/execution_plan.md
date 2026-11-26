@@ -13,3 +13,9 @@ GPU1: inventory, known-payload NCU permission/control smoke, independent native 
 After the primary curve, prioritize P2a actual traffic and eligible scheduling/long-context cases. Optimized restriction failures receive immediate limitations entries, a bounded diagnosis/repair, and a separately labeled eager fallback. Missing serving/transfer adapters require versioned implementation and a bounded pilot; pending rows are not evidence. Four-device P5b is deferred.
 
 Persist logs, manifests and limitations throughout. Publish small complete comparisons and retain partial/failed captures. Stop new GPU launches 30minutes before the actual Slurm deadline and reserve closeout for evidence, checksums and remote-SHA verification.
+
+## Reviewed continuation within the same allocation
+
+After both initial workers finish, the coordinator keeps the same allocation available until the 30-minute closeout boundary. The active run's `control/*.task.json` accepts explicit single-device script tasks with `id`, `gpu` (0 or1), repository script basename, `arguments` (a JSON string list), and `timeout_s`. The coordinator fixes the UUID, snapshots a fresh immutable numerical source tree, records a new session identity, and uses the existing allocation/isolation supervisor. It never evaluates shell text or submits another Slurm job. Scientific acceptance remains separate from task exit status. Creating `control/finalize` requests closeout at the next completed task boundary.
+
+The early paired peer-copy pilot is a synthetic known-value transfer with sampled process-ancestry monitoring. It is explicitly not real decoder KV handoff or evidence of disaggregated serving. The spare GPU also attempts its own full-GPU32B physical traffic captures after native controls, preserving separate physical-device results.
