@@ -302,22 +302,24 @@ class Worker:
             producer=self.execute(label,command,timeout=1800)
             replay=qualify_replays(output,expected,self.root)
             values={}
-            if report.exists():
-                imp=self.execute(label+'_import',[self.cuda/'bin/ncu','--import',report,'--page','raw',
+            from h200_ncu_read import parse_csv,resolve_report
+            actual_report=None
+            reader_error=None
+            try:actual_report=resolve_report(report)
+            except ValueError as error:reader_error=str(error)
+            if actual_report is not None:
+                imp=self.execute(label+'_import',[self.cuda/'bin/ncu','--import',actual_report,'--page','raw',
                           '--print-units','base','--csv'],gpu=False,timeout=180)
                 text=(self.root/'logs'/(label+'_import.log')).read_text()
-                lines=text.splitlines()
-                header=next((i for i,l in enumerate(lines) if l.startswith('"ID"')),None)
-                if header is not None:
-                    for row in csv.DictReader(io.StringIO('\n'.join(lines[header:]))):
-                        metric=row.get('Metric Name')
-                        if metric in ('dram__bytes_read.sum','dram__bytes_write.sum','gpu__time_duration.sum'):
-                            try:values.setdefault(row['ID'],{})[metric]=float(row['Metric Value'].replace(',',''))
-                            except (ValueError,KeyError):pass
+                if imp['status']=='complete':
+                    try:values=parse_csv(text)
+                    except ValueError as error:reader_error=str(error)
+                else:reader_error='Profiler report import process failed'
             valid=(producer['status']=='complete' and replay['passed'] and len(values)==1 and
                 all(v.get('dram__bytes_read.sum',0)>0 and v.get('dram__bytes_write.sum',-1)>=0 for v in values.values()))
             row={'status':'complete' if valid else 'failed','acquisition':acq,'gpu_uuid':self.uuid,
                 'classification':'measured-real-GPU-instrumented','ranges':values,'replays':replay,
+                'counter_artifact':str(actual_report) if actual_report else None,'counter_reader_error':reader_error,
                 'ticks':[4,5,6],'token_denominator':3*batch,'ordinary_latency':None,
                 'clock_join':'unqualified until pooled replay clock/source/isolation join',
                 'scope':'physical full-range DRAM reads/writes; aggregate counters do not prove address-level exactly-once access'}
