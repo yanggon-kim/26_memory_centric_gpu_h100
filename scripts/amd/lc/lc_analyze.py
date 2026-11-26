@@ -755,8 +755,11 @@ def ld_decide(rows):
             colo = [d for d in deps if d.startswith('colo')]
             dis = [d for d in deps if d.startswith('d')]
             key = lambda d: (cap[d]['step'], d)  # noqa: E731
-            bc, bd = max(colo, key=key), max(dis, key=key)
             dec = {}
+            res[sl]['decision'] = dec
+            if not colo or not dis:  # partial data (e.g. the smoke): capacities only, no comparison
+                continue
+            bc, bd = max(colo, key=key), max(dis, key=key)
             for x in dis + ([f'best:{bd}'] if dis else []):
                 xd = x.split(':')[-1]
                 for y in colo + ([f'best:{bc}'] if x.startswith('best') else []):
@@ -769,7 +772,6 @@ def ld_decide(rows):
                     dec[f'{xd}_vs_{yd}' if not x.startswith('best') else f'best_disagg({xd})_vs_best_colocated({yd})'] = {
                         'steps': d, 'note': '; '.join(note),
                         'decision': 'uncertain' if note and d == 0 else 'win' if d >= 1 else 'loss' if d <= -1 else 'uncertain'}
-            res[sl]['decision'] = dec
         out[wl] = res
     return out
 
