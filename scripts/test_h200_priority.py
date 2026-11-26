@@ -175,6 +175,22 @@ def main():
                 else:raise AssertionError('reference harness did not enforce its exit gate')
             assert json.loads(output.read_text())['status']==('failed' if invalid else 'passed')
         assert len(calls)==12
+    from h200_real_kv_smoke import verify_cache_transfer
+    class KV:
+        ndim=4;shape=(1,2,3,4);dtype='BF16'
+        def __init__(self,device,value=7):self.device=types.SimpleNamespace(type='cuda',index=device);self.value=value
+        def cpu(self):return self
+        def stride(self):return (24,12,4,1)
+        def numel(self):return 24
+        def element_size(self):return 2
+    before=[(KV(0),KV(0))];after=[(KV(1),KV(1))]
+    equal=lambda a,b:a.value==b.value
+    layouts=verify_cache_transfer(before,after,1,'BF16',equal)
+    assert sum(r['payload_bytes'] for r in layouts)==96
+    for invalid in ([(KV(1,8),KV(1))],[(KV(0),KV(1))],[]):
+        try:verify_cache_transfer(before,invalid,1,'BF16',equal)
+        except AssertionError:pass
+        else:raise AssertionError('corrupt, wrong-device or incomplete KV transfer accepted')
     print('H200 priority CPU contracts passed')
 
 

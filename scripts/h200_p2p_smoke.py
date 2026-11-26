@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Two allocated H200s: synthetic known-value peer-copy pilot, not real KV handoff."""
 import argparse
+import contextlib
+import socket
 import fcntl
 import hashlib
 import json
@@ -13,12 +15,14 @@ import time
 from types import SimpleNamespace
 
 
-def main(a):
-    allocation=json.loads(a.devices.read_text())
+@contextlib.contextmanager
+def paired_scope(devices, monitor_path, require_peer=False):
+    allocation=json.loads(Path(devices).read_text())
     job=os.environ.get('SLURM_JOB_ID','')
     assert job.isdigit() and allocation['slurm_job_id']==job, 'current allocation required'
     state=subprocess.check_output(['scontrol','show','job','-o',job],text=True,timeout=20)
     assert 'JobState=RUNNING' in state, 'allocation must be running'
+    assert allocation['hostname']==socket.gethostname(), 'allocation node changed'
     import pynvml as nv
     import torch
     from h200_session import ProcessMonitor, dump
@@ -35,7 +39,7 @@ def main(a):
     handles=[nv.nvmlDeviceGetHandleByUUID(u) for u in uuids]
     guard=object.__new__(ProcessMonitor);guard.process=SimpleNamespace(pid=os.getpid())
     stopped=threading.Event();failures=[]
-    monitor_path=a.output.with_suffix('.monitor.jsonl')
+    monitor_path=Path(monitor_path)
     def sample():
         with monitor_path.open('w') as stream:
             while not stopped.is_set():
@@ -52,51 +56,76 @@ def main(a):
                 stopped.wait(.05)
     for h in handles:
         assert all(guard.owned(p.pid) is True for p in nv.nvmlDeviceGetComputeRunningProcesses(h)), 'GPU busy'
-    assert torch.cuda.can_device_access_peer(0,1) and torch.cuda.can_device_access_peer(1,0), 'bidirectional peer access unavailable'
+    peers=[torch.cuda.can_device_access_peer(0,1),torch.cuda.can_device_access_peer(1,0)]
+    if require_peer:assert all(peers), 'bidirectional peer access unavailable'
     thread=threading.Thread(target=sample,daemon=True);thread.start()
-    data={'status':'running','classification':'measured-real-GPU-pilot','devices':uuids,'trials':[],
-          'external_instrumentation':a.profile,'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-          'versions':{'torch':torch.__version__,'cuda':torch.version.cuda},
-          'payload_bytes':a.mib*1024**2,'warmups':3,'acquisition':a.acquisition,
-          'scope':'synthetic BF16 known-value buffer, single directional peer-copy control; not decoder KV, request migration or serving evidence',
-          'real_KV_handoff':False,'physical_link_bytes':None,'physical_link_bytes_reason':'requires validated link counters',
-          'monitor':str(monitor_path),'peer_access':[True,True]}
-    dump(a.output,data)
+    body_failed=False
     try:
-        n=a.mib*1024**2//2
-        source=(torch.arange(n,device='cuda:0',dtype=torch.int32)%251).to(torch.bfloat16)
-        destination=torch.empty(n,device='cuda:1',dtype=torch.bfloat16)
-        torch.cuda.synchronize(0);torch.cuda.synchronize(1)
-        with torch.cuda.device(1):
-            stream=torch.cuda.Stream(device=1)
-            with torch.cuda.stream(stream):
-                for _ in range(3):destination.copy_(source,non_blocking=True)
-                stream.synchronize()
-                for trial in range(10):
-                    if a.profile and trial==0:torch.cuda.profiler.start()
-                    begin,end=torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True)
-                    torch.cuda.nvtx.range_push('synthetic_p2p_bf16_control')
-                    begin.record();start=time.perf_counter()
-                    destination.copy_(source,non_blocking=True)
-                    end.record();stream.synchronize()
-                    data['trials'].append({'trial':trial,'gpu_event_ms':begin.elapsed_time(end),
-                                           'wall_ms':(time.perf_counter()-start)*1000})
-                    torch.cuda.nvtx.range_pop()
-                    if a.profile and trial==0:torch.cuda.profiler.stop()
-                    dump(a.output,data)
-        actual=destination.cpu()
-        expected_cpu=(torch.arange(n,dtype=torch.int32)%251).to(torch.bfloat16)
-        assert torch.equal(actual,expected_cpu), 'peer-copy independent known-value reference mismatch'
-        assert not failures, failures
-        data.update(status='complete',correctness='passed',isolation='sampled ancestry; arbitrarily short interference cannot be excluded')
+        yield {'torch':torch,'uuids':uuids,'failures':failures,'peer_access':peers}
+    except BaseException:
+        body_failed=True
+        raise
+    finally:
+        stopped.set();thread.join(timeout=5)
+        nv.nvmlShutdown()
+        for lock in locks:lock.close()
+        if failures and not body_failed:raise RuntimeError('paired isolation monitor: '+str(failures))
+
+
+def main(a):
+    from h200_session import dump
+    monitor_path=a.output.with_suffix('.monitor.jsonl')
+    state=None;data={'status':'running'}
+    try:
+        with paired_scope(a.devices,monitor_path,require_peer=True) as state:
+            torch=state['torch'];uuids=state['uuids'];failures=state['failures']
+            data={'status':'running','classification':'measured-real-GPU-pilot','devices':uuids,'trials':[],
+                  'external_instrumentation':a.profile,'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                  'versions':{'torch':torch.__version__,'cuda':torch.version.cuda},
+                  'payload_bytes':a.mib*1024**2,'warmups':3,'acquisition':a.acquisition,
+                  'scope':'synthetic BF16 known-value buffer, single directional peer-copy control; not decoder KV, request migration or serving evidence',
+                  'real_KV_handoff':False,'physical_link_bytes':None,'physical_link_bytes_reason':'requires validated link counters',
+                  'monitor':str(monitor_path),'peer_access':[True,True]}
+            dump(a.output,data)
+            try:
+                n=a.mib*1024**2//2
+                source=(torch.arange(n,device='cuda:0',dtype=torch.int32)%251).to(torch.bfloat16)
+                destination=torch.empty(n,device='cuda:1',dtype=torch.bfloat16)
+                torch.cuda.synchronize(0);torch.cuda.synchronize(1)
+                with torch.cuda.device(1):
+                    stream=torch.cuda.Stream(device=1)
+                    with torch.cuda.stream(stream):
+                        for _ in range(3):destination.copy_(source,non_blocking=True)
+                        stream.synchronize()
+                        for trial in range(10):
+                            if a.profile and trial==0:torch.cuda.profiler.start()
+                            begin,end=torch.cuda.Event(enable_timing=True),torch.cuda.Event(enable_timing=True)
+                            torch.cuda.nvtx.range_push('synthetic_p2p_bf16_control')
+                            begin.record();start=time.perf_counter()
+                            destination.copy_(source,non_blocking=True)
+                            end.record();stream.synchronize()
+                            data['trials'].append({'trial':trial,'gpu_event_ms':begin.elapsed_time(end),
+                                                   'wall_ms':(time.perf_counter()-start)*1000})
+                            torch.cuda.nvtx.range_pop()
+                            if a.profile and trial==0:torch.cuda.profiler.stop()
+                            dump(a.output,data)
+                actual=destination.cpu()
+                expected_cpu=(torch.arange(n,dtype=torch.int32)%251).to(torch.bfloat16)
+                assert torch.equal(actual,expected_cpu), 'peer-copy independent known-value reference mismatch'
+                assert not failures, failures
+                data.update(status='complete',correctness='passed',isolation='sampled ancestry; arbitrarily short interference cannot be excluded')
+            except BaseException as error:
+                data.update(status='failed',error=str(error))
+                raise
+            finally:
+                data['monitor_failures']=failures
+                dump(a.output,data)
     except BaseException as error:
         data.update(status='failed',error=str(error))
         raise
     finally:
-        stopped.set();thread.join(timeout=5)
-        data['monitor_failures']=failures
+        if state is not None:data['monitor_failures']=state['failures']
         dump(a.output,data)
-        nv.nvmlShutdown()
 
 
 if __name__=='__main__':

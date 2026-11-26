@@ -598,6 +598,20 @@ def coordinator(args):
                    str((root/'logs/P0_p2p.log').relative_to(PACKAGE)),
                    'Only the two allocated UUIDs; explicit peer-access and known-value copy checks',
                    'Inspect topology/profiler/runtime diagnostics; single-device cases remain eligible')
+    real_kv_command=[Path(args.cuda)/'bin/nsys','profile','--sample=none','--cpuctxsw=none',
+                 '--trace=cuda,nvtx','--capture-range=cudaProfilerApi','--capture-range-end=stop',
+                 '--output='+str(root/'profiles/P0_real_hf_kv'),sys.executable,PACKAGE/'scripts/h200_real_kv_smoke.py',
+                 '--devices',root/'environment/allocated_devices.json',
+                 '--config',PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json',
+                 '--output',root/'results/P0_real_hf_kv.json','--profile']
+    try:
+        with (root/'logs/P0_real_hf_kv.log').open('x') as stream:
+            subprocess.run(list(map(str,real_kv_command)),stdout=stream,stderr=subprocess.STDOUT,check=True,timeout=600)
+    except (subprocess.SubprocessError,OSError) as error:
+        limitation(root,'P0_real_hf_kv','Real whole-model HF KV functional handoff pilot failed: '+str(error),
+                   str((root/'logs/P0_real_hf_kv.log').relative_to(PACKAGE)),
+                   'All-layer BF16 transfer and receiver decode compared with source and independent generate; exact gate unchanged',
+                   'Inspect cache layout/position/output diagnostics; serving connector remains unvalidated')
     base = {'schema_version':1, 'slurm_job_id':os.environ['SLURM_JOB_ID'], 'expected_hostname':socket.gethostname(),
             'python':sys.executable, 'cuda_home':args.cuda, 'allocation_end':end.isoformat(),
             'launch_cutoff':(end-dt.timedelta(minutes=30)).isoformat(), 'closeout_buffer_s':1800,
