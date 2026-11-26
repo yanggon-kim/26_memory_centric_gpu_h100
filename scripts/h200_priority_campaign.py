@@ -194,6 +194,7 @@ class Worker:
         stock_proof=self.case(engine,1.,0,pilot=True,stock=True,batch=batch,context=context)
         if not stock_proof['qualified']:
             analyze_curve(self.root,self.records,engine,batch,context)
+            self.unrestricted_after_block(engine,batch,context)
             return False
         proofs = []
         for fraction in FRACTIONS:
@@ -208,6 +209,7 @@ class Worker:
                                'Require a fresh proof for every count using the versioned rebind_v1 route')
                     self.rebind_step=True
                     return self.curve(engine,batch,context)
+                self.unrestricted_after_block(engine,batch,context)
                 return False
         # Broad curve is completed before refinement or additional workloads.
         for acq in range(3):
@@ -222,6 +224,26 @@ class Worker:
             publish(self.root, f'H200 {engine} B{batch}/C{context} broad curve acquisition {acq}: retain all gates')
         result = analyze_curve(self.root, self.records, engine, batch, context)
         return result['complete_qualified_curve']
+
+    def unrestricted_after_block(self,engine,batch,context):
+        """Retain a 3x10 optimized stock reference even if restriction is blocked."""
+        from shoreline_statistics import hierarchical_interval
+        rows=[self.case(engine,1.,acq,stock=True,suffix='_unrestricted_fallback',
+                        batch=batch,context=context) for acq in range(3)]
+        passed=all(r.get('qualified') for r in rows)
+        if passed:
+            clocks=[r['clock']['clocks'] for r in rows]
+            passed=all(max(c[m]['maximum'] for c in clocks)/min(c[m]['minimum'] for c in clocks)<=1.05
+                       for m in ('sm_clock_mhz','memory_clock_mhz'))
+        result={'engine':engine,'batch':batch,'context':context,'qualified_timing':passed,
+                'sources':[r['id'] for r in rows],
+                'raw_acquisition_medians_ms':[statistics.median(r['step_ms']) if r.get('step_ms') else None for r in rows],
+                'latency_ms':hierarchical_interval([r['step_ms'] for r in rows]) if passed else None,
+                'scope':'unrestricted stock software timing; restriction proof remains a separate failed gate; never used as eager normalization'}
+        write(self.root/'results'/f'unrestricted_{engine}_b{batch}_c{context}.json',result)
+        with (self.root/'analysis/report.md').open('a') as stream:
+            stream.write(f'\nUnrestricted {engine} B{batch}/C{context} after blocked restriction: timing qualified={passed}; see results/unrestricted_{engine}_b{batch}_c{context}.json.\n')
+        publish(self.root,f'H200 {engine} B{batch}/C{context}: independent full reference after blocked restriction')
 
     def traffic(self, engine='graph', context=4096, batch=1):
         """Three independent app-range producers; physical bytes never use clean profiler time."""
