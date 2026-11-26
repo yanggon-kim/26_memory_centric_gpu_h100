@@ -1,5 +1,5 @@
 {
-  "status": "prepared",
+  "status": "running_runtime_visibility_verified",
   "prerequisite": "original bootstrap staging failure published and STAGING_RECOVERY_HOLD reached; pip installation no longer active",
   "command": [
     "srun",
@@ -13,5 +13,6 @@
     "batch/h200_priority_visibility_repair_16163464.sh"
   ],
   "stdout_path": "h200/20261126_job16163464_bootstrap/logs/visibility_repair_step.log",
-  "parent_lifecycle": "Keep original bootstrap recovery hold alive until repaired step and all measurements/checkpoints finish. Finalizing the parent early would end the batch job and can kill the repair step. Do not create retry_staging: it inherits the incorrect mask. This separate step is the single explicit visibility repair, not a new Slurm job."
+  "parent_lifecycle": "Keep original bootstrap recovery hold alive until repaired step and all measurements/checkpoints finish. Finalizing the parent early would end the batch job and can kill the repair step. Do not create retry_staging: it inherits the incorrect mask. This separate step is the single explicit visibility repair, not a new Slurm job.",
+  "runtime_evidence": "h200/20261126_job16163464_bootstrap_repair1/logs/runtime_check.log"
 }
