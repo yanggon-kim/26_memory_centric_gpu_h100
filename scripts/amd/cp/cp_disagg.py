@@ -71,8 +71,10 @@ def server_cmd(a, cfg, port, role=None):
            '--compilation-config', json.dumps(C.COMPILATION)]
     if role:
         kv = {'kv_connector': 'P2pNcclConnector', 'kv_role': role, 'kv_port': str(KV_PORT[k]),
-              'kv_buffer_size': '1e1' if role == 'kv_producer' else '8e9',
+              'kv_buffer_size': '1e1' if role == 'kv_producer' else f'{a.decode_kv_buffer:g}',
               'kv_connector_extra_config': {'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16', 'http_port': str(port)}}
+        if role == 'kv_consumer' and a.kv_mem_pool_gb:
+            kv['kv_connector_extra_config']['mem_pool_size_gb'] = str(a.kv_mem_pool_gb)
         cmd += ['--kv-transfer-config', json.dumps(kv)]
         if role == 'kv_consumer' and a.decode_kv_bytes:
             cmd += ['--kv-cache-memory-bytes', str(a.decode_kv_bytes)]
@@ -101,6 +103,8 @@ def start_servers(a, cfg, out, uuids, idx):
         # (with only its own GPU visible, ncclCommInitRank failed with 'unhandled cuda error', dev run 2026-11-18)
         vis = [idx[k]] + [g for g in idx if g != idx[k]] if a.deployment == 'disagg' else [idx[k]]
         env = dict(env0, HIP_VISIBLE_DEVICES=','.join(map(str, vis)), CP_STEPLOG=str(out / f'steplog_w{k}.jsonl'))
+        if role == 'kv_consumer' and a.decode_policy:
+            env['CP_POLICY'] = a.decode_policy  # lc amendment 5: decode workers keep stock mixed scheduling
         if a.nccl_debug:
             env['NCCL_DEBUG'] = 'INFO'
         cus, grid = (a.decode_cus, a.decode_grid) if role == 'kv_consumer' else (a.cus, a.grid)
@@ -112,7 +116,7 @@ def start_servers(a, cfg, out, uuids, idx):
         log = open(out / f'server_w{k}.log', 'w')
         p = subprocess.Popen(cmd, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         procs.append({'worker': k, 'role': role or 'colocated', 'gpu_index': idx[k], 'uuid': uuids[k], 'pid': p.pid,
-                      'proc': p, 'port': HTTP[k], 'cmd': cmd, 'hsa_cu_mask': env.get('HSA_CU_MASK'),
+                      'proc': p, 'port': HTTP[k], 'cmd': cmd, 'hsa_cu_mask': env.get('HSA_CU_MASK'), 'cp_policy': env['CP_POLICY'],
                       'cu_override': env.get('CUBW_CU_COUNT_OVERRIDE')})
     return procs
 
@@ -367,6 +371,11 @@ if __name__ == '__main__':
     p.add_argument('--prefill-workers', type=int, default=1, help='disagg: producers on the first P GPUs, consumers on the rest')
     p.add_argument('--decode-gpu-mem', type=float, default=None, help='disagg: gpu_memory_utilization of consumers only')
     p.add_argument('--decode-kv-bytes', type=int, default=None, help='disagg: --kv-cache-memory-bytes of every consumer')
+    p.add_argument('--decode-policy', choices=('mixed', 'separate'), default=None,
+                   help='disagg: CP_POLICY of consumers only (default: --policy for every worker)')
+    p.add_argument('--decode-kv-buffer', type=float, default=8e9,
+                   help='disagg: consumer kv_buffer_size in bytes (GPU receive buffer; overflow goes to the host pool)')
+    p.add_argument('--kv-mem-pool-gb', type=float, default=None, help='disagg: consumer host memory pool (vLLM default 32)')
     p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)
     p.add_argument('--gpu-mem', type=float, default=0.85)

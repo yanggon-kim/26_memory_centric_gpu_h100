@@ -277,15 +277,56 @@ def lc3fx(cohort, params):
     return p, lanes, {'a': p.assign('a', list(lanes['a']))}
 
 
+DG = 'scripts/amd/cp/cp_disagg.py'
+Q4 = {'Q0123': [0, 1, 2, 3], 'Q4567': [4, 5, 6, 7]}
+
+
+def ld(cohort, params, smoke=False):
+    """Amendment 5: prefill/decode disaggregation at long prompts (lctx, lprompt), Qwen2.5-32B, four MI300X per lane.
+    Deployments on four GPUs: colo4_whole and colo4_mix2048 (four colocated engines, least-outstanding-work routing)
+    and two disaggregated ratios per workload (lctx 1P3D / 2P2D, lprompt 2P2D / 3P1D): producers run whole prompts
+    (separate, no chunking, budget 32768), consumers stock mixed scheduling, P2pNccl PUT_ASYNC KV transfer.
+    Rates = per-GPU lc ladder x 4; held-out seeds 201 and 202; every engine 64 seats and max_model_len 32768."""
+    p = Plan('ld' + ('_smoke' if smoke else ''), cohort)
+    lam, n_req = params['lambda_star'], params['ld_requests']
+    base4 = ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX', '--max-model-len', 32768,
+             '--max-seqs', 64]
+    whole = ['--policy', 'separate', '--budget', 32768, '--no-chunk']
+    dis = lambda npf: ['--deployment', 'disagg', '--prefill-workers', npf, '--decode-policy', 'mixed',  # noqa: E731
+                       '--decode-gpu-mem', params['ld_decode_gpu_mem'], '--decode-kv-buffer', params['ld_decode_kv_buffer'],
+                       '--p2p-none-blocks-fix'] + whole
+    deps = {'colo4_whole': ['--deployment', 'colocated'] + whole,
+            'colo4_mix2048': ['--deployment', 'colocated', '--policy', 'mixed', '--budget', 2048]}
+    ratios = params['ld_ratios']
+    est = lambda n, rates, drain: int(sum(n / r + 0.6 * drain + 30 for r in rates) + 600)  # noqa: E731
+    if smoke:
+        for wl, npf, r in (('lprompt', 3, 0.6), ('lctx', 1, 0.8)):
+            p.add('a', 'ld', f'lds_{wl}_d{npf}p{4 - npf}', DG, base4 + dis(npf) + ['--workload', wl, '--rates', r, '--seeds', 201,
+                  '--requests', 24, '--drain-s', DRAIN[wl]], est=est(24, [r], DRAIN[wl]), model='q32', workload=wl,
+                  deployment=f'd{npf}p{4 - npf}', prefill_workers=npf, seed=201, rates=[r])
+        return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
+    for wl in ('lctx', 'lprompt'):
+        rates = [4 * x * lam[wl] for x in GRID + tuple(params['grid_ext'][wl])]
+        dd = dict(deps, **{f'd{k}p{4 - k}': dis(k) for k in ratios[wl]})
+        for dn, extra in dd.items():
+            for seed in (201, 202):
+                p.add('a', 'ld', f'ld_{wl}_{dn}_s{seed}', DG, base4 + extra + ['--workload', wl, '--rates',
+                      ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n_req[wl], '--drain-s', DRAIN[wl]],
+                      est=est(n_req[wl], rates, DRAIN[wl]), model='q32', workload=wl, deployment=dn,
+                      prefill_workers=int(dn[1]) if dn.startswith('d') else None, seed=seed, rates=rates)
+    return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx}[a.which](a.cohort, json.loads(a.params.read_text())))
+                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld,
+                            'ld_smoke': lambda c, prm: ld(c, prm, smoke=True)}[a.which](a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition
         plan.update(partition='mi3001x', gpus=1, charge_rate=0.125)

@@ -1,0 +1,70 @@
+{
+ "lambda_star": {
+  "lo512": 4.0,
+  "lo2048": 1.0,
+  "lo4096": 0.5,
+  "lctx": 0.1,
+  "lprompt": 0.05,
+  "balanced": 1.0
+ },
+ "slo": {
+  "lo512": {
+   "ttft_s": 0.46,
+   "itl_ms": 110
+  },
+  "lo2048": {
+   "ttft_s": 0.45,
+   "itl_ms": 110
+  },
+  "lo4096": {
+   "ttft_s": 0.7,
+   "itl_ms": 130
+  },
+  "lctx": {
+   "ttft_s": 25,
+   "itl_ms": 110
+  },
+  "lprompt": {
+   "ttft_s": 41,
+   "itl_ms": 110
+  },
+  "balanced": {
+   "ttft_s": 1.4,
+   "itl_ms": 110
+  }
+ },
+ "grid_ext": {
+  "lctx": [
+   3.0,
+   4.0
+  ],
+  "lprompt": [
+   3.0,
+   4.0
+  ]
+ },
+ "stall_ms_grid": [
+  250,
+  500,
+  1000,
+  2000
+ ],
+ "stall_primary_ms": 1000,
+ "ld_requests": {
+  "lctx": 100,
+  "lprompt": 80
+ },
+ "ld_ratios": {
+  "lctx": [
+   1,
+   2
+  ],
+  "lprompt": [
+   2,
+   3
+  ]
+ },
+ "ld_decode_gpu_mem": 0.8,
+ "ld_decode_kv_buffer": 20000000000.0,
+ "note": "amendment 5 (design section 15): disaggregation at long prompts; SLO, lambda* and grid_ext from lc3 params"
+}

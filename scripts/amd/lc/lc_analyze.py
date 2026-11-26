@@ -712,6 +712,82 @@ def lc3_decide(a):
     print('->', a.out)
 
 
+def ld_rows(root, prm):
+    """amendment 5 tables: one row per (step, rate) from cp_disagg traces; 10% warm-up excluded (cp_analyze.disagg_trace)"""
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    jr = A.journal(root)
+    rows, status = [], []
+    stall = prm.get('stall_ms_grid', ())
+    for s in plan['steps']:
+        rec = A.final(jr.get(s['id'], []))
+        status.append({'id': s['id'], 'status': 'complete' if rec and rec.get('command_completed') else
+                       ('missing' if not rec else rec.get('failure_class')), 'attempt': (rec or {}).get('attempt'),
+                       'message': (rec or {}).get('failure_message')})
+        if not rec or not rec.get('command_completed'):
+            continue
+        run = A.run_dir(rec)
+        meta = json.loads((run / 'run.json').read_text())
+        kv = meta['layout']['kv_bytes_per_token']
+        for tr in meta['traces']:
+            t = json.loads((run / tr['file']).read_text())
+            r = {'step': s['id'], 'experiment': 'ld', 'workload': s['workload'], 'policy': s['deployment'],
+                 'deployment': s['deployment'], 'prefill_workers': s.get('prefill_workers'), 'rate': t['rate'],
+                 'seed': t['seed'], 'arrival': t['arrival'], 'model': 'q32', 'span_s': t['span_s'],
+                 'unfinished': t['unfinished'], **A.disagg_trace(t, prm['slo'][s['workload']], kv, stall)}
+            pf = [x for x in t['requests'] if x.get('prefill_s') is not None and x['tokens'] == x['max_tokens']]
+            if pf:  # transfer + decode admission: first decode token after the prefill response
+                r['kv_handoff_p50_s'] = A.pct([x['token_s'][0] - x['prefill_done_s'] for x in pf], .5)
+                r['kv_handoff_p99_s'] = A.pct([x['token_s'][0] - x['prefill_done_s'] for x in pf], .99)
+            rows.append(r)
+    return rows, status
+
+
+def ld_decide(rows):
+    """amendment 5 decision: per workload and SLO, all-seed sustained rate per deployment (decide()); the best
+    disaggregated ratio vs the best colocated deployment, plus every disaggregated ratio vs each colocated one."""
+    out = {}
+    for wl in sorted({r['workload'] for r in rows}):
+        sub = [r for r in rows if r['workload'] == wl]
+        deps = sorted({r['policy'] for r in sub})
+        res = decide(sub, {wl: {'mixed': deps[0], 'separate': deps[0]}}, 'ld')[wl]
+        for sl in ('primary', 'stall1000'):
+            cap = res[sl]['capacity']
+            colo = [d for d in deps if d.startswith('colo')]
+            dis = [d for d in deps if d.startswith('d')]
+            key = lambda d: (cap[d]['step'], d)  # noqa: E731
+            bc, bd = max(colo, key=key), max(dis, key=key)
+            dec = {}
+            for x in dis + ([f'best:{bd}'] if dis else []):
+                xd = x.split(':')[-1]
+                for y in colo + ([f'best:{bc}'] if x.startswith('best') else []):
+                    if x.startswith('best') != y.startswith('best'):
+                        continue
+                    yd = y.split(':')[-1]
+                    d = cap[xd]['step'] - cap[yd]['step']
+                    note = [n for n, c in (('both infeasible', cap[xd]['step'] < 0 and cap[yd]['step'] < 0),
+                                           ('both censored', cap[xd]['censored'] and cap[yd]['censored'])) if c]
+                    dec[f'{xd}_vs_{yd}' if not x.startswith('best') else f'best_disagg({xd})_vs_best_colocated({yd})'] = {
+                        'steps': d, 'note': '; '.join(note),
+                        'decision': 'uncertain' if note and d == 0 else 'win' if d >= 1 else 'loss' if d <= -1 else 'uncertain'}
+            res[sl]['decision'] = dec
+        out[wl] = res
+    return out
+
+
+def ld_cmd(a):
+    root, prm = Path(a.root), json.loads(Path(a.params).read_text())
+    out = Path(a.out or root / 'analysis')
+    out.mkdir(parents=True, exist_ok=True)
+    rows, status = ld_rows(root, prm)
+    res = {'status': status, 'rows': rows, 'decision': ld_decide(rows) if rows else {}}
+    (out / 'ld_tables.json').write_text(json.dumps(res, indent=1, default=str) + '\n')
+    for wl, v in res['decision'].items():
+        for sl in ('primary', 'stall1000'):
+            print(wl, sl, {p: c['sustained_rps'] for p, c in v[sl]['capacity'].items()},
+                  {k: d['decision'] + (f" ({d['note']})" if d['note'] else '') for k, d in v[sl]['decision'].items()})
+    print(sum(x['status'] == 'complete' for x in status), '/', len(status), 'steps complete ->', out / 'ld_tables.json')
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = q.add_subparsers(dest='cmd', required=True)
@@ -727,6 +803,10 @@ if __name__ == '__main__':
         r.add_argument('--root', required=True)
         r.add_argument('--out')
         r.add_argument('--params', required=True)
+    r = s.add_parser('ld')  # amendment 5: disaggregation at long prompts
+    r.add_argument('--root', required=True)
+    r.add_argument('--params', required=True)
+    r.add_argument('--out')
     r = s.add_parser('decide')  # held-out decisions from one or more lc3 / lc3fx analysis tables
     r.add_argument('--tables', nargs='+', required=True)
     r.add_argument('--params', required=True)
@@ -734,4 +814,4 @@ if __name__ == '__main__':
     a = q.parse_args()
     if getattr(a, 'model', 'q32') == 'q7':  # Qwen2.5-7B: 28 layers x 4 KV heads x 128 x (K, V) x 2 B; 7.62 B params
         KV_TOK, WEIGHTS, LIN_FLOP_TOK = 57344, 15.23e9, 2 * 7.62e9
-    lc1(a) if a.cmd in ('lc1', 'smoke') else lc3_decide(a) if a.cmd == 'decide' else lc_serve_plan(a)
+    (lc1 if a.cmd in ('lc1', 'smoke') else lc3_decide if a.cmd == 'decide' else ld_cmd if a.cmd == 'ld' else lc_serve_plan)(a)

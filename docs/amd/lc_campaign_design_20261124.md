@@ -269,3 +269,81 @@ contradicts the written rule (ties to the smaller budget). The code is corrected
 - **lc3fx outcome (job 558807, 1:15:29, 8/8 completed on attempt 1).** The re-runs replace the failed steps in the
   held-out and bursty decisions (`results_published/amd_20261125_mi300x_lc_lc3/lc_decisions.json`). Preemptions occur
   only at ≥ 0.3 rps (1–5 per run), where the old code aborted. No truncated ladder was needed.
+
+## 15. Amendment 5 (2026-11-26, after the final lc report, before any ld data): disaggregation at long prompts
+
+Motivation: section 5 of the results report shows that on one GPU, long prompts force a choice between two failure
+modes:
+- mixing chunks with decode costs 1.5–5× in sustained rate under the p95 SLO;
+- whole/separate prefill stalls co-running decoders for 3–28 s, so it fails a 1 s worst-gap cap.
+
+The report's implication that prefill/decode disaggregation resolves this was an inference. This amendment measures it.
+Plan `ld` (`scripts/amd/lc/lc_plan.py ld`, params `scripts/amd/lc/params/mi300x_ld.json`); smoke plan `ld_smoke`
+runs first.
+
+**Setup.** Qwen2.5-32B on MI300X, two 4-GPU lanes per mi3008x node (GPUs 0–3, 4–7). Driver
+`scripts/amd/cp/cp_disagg.py` (s4 harness): HTTP servers, one asyncio client, and open-loop traces from
+`cp_trace.py`.
+- Every engine: 64 seats, max_model_len 32768, no prefix caching.
+- The first 10% of requests are warm-up and are not scored.
+- Energy is measured on all four boards.
+
+**Deployments (four GPUs each).**
+- `colo4_whole`: four colocated engines, separate policy, whole prompts (no chunking, budget 32768). This is the
+  primary-SLO winner on one GPU.
+- `colo4_mix2048`: four colocated engines, mixed B 2048. This is the stall-SLO-feasible policy on one GPU.
+- Colocated routing: least outstanding work.
+- `dXpY`: X producers and Y consumers, P2pNcclConnector with PUT_ASYNC.
+  - Producers run whole prompts (separate, no chunking, budget 32768).
+  - Consumers run stock mixed scheduling (`--decode-policy mixed`).
+  - The connector fix is on.
+  - Consumer receive buffer: 2 × 10¹⁰ B (a 30 K-token prompt is 8.05 × 10⁹ B). Overflow goes to vLLM's 32 GB host
+    pool. Consumers use gpu_memory_utilization 0.80, to leave room for the buffer.
+  - Ratios: lctx 1P3D and 2P2D (decode-heavier); lprompt 2P2D and 3P1D (prefill-heavy).
+
+**Traces.**
+- Workloads and seeds: lctx and lprompt, held-out seeds 201 and 202, Poisson.
+- Rates: 4 × the per-GPU lc3 ladder. lctx 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.2, 1.6 rps; lprompt 0.1, 0.15, 0.2,
+  0.25, 0.3, 0.4, 0.6, 0.8 rps.
+- Requests per rate: lctx 100, lprompt 80. Drain: lctx 300 s, lprompt 240 s.
+- 16 steps; estimated ≤ 10 node-hours.
+
+**SLOs.**
+- Primary: the lc SLOs. lctx TTFT 25 s, ITL 110 ms; lprompt TTFT 41 s, ITL 110 ms; ITL as per-request p95.
+- Stall: the primary SLO plus each request's maximum ITL ≤ 1 000 ms (sensitivity grid 250 / 500 / 1 000 / 2 000).
+- TTFT runs from arrival to the first decode token. For disaggregated deployments, it includes prefill and KV
+  transfer.
+
+**Decision.**
+- Per workload and SLO, compute the all-seed sustained rate per deployment: the highest rate at which both seeds
+  reach attainment ≥ 0.9 with nothing incomplete, at that rate and every lower one.
+- Compare the best disaggregated ratio with the best colocated deployment. Every ratio is also compared with each
+  colocated deployment.
+- Win or loss if ≥ 1 ladder step apart; otherwise uncertain. If both are infeasible at the lowest rate, the result
+  is uncertain.
+- Choosing the best of two ratios on the same data is a stated optimism bias; the per-ratio comparisons are reported
+  beside it.
+- Analysis: `lc_analyze.py ld`.
+
+**Hypotheses.**
+- H1, stall SLO: the best disaggregated ratio wins over the best colocated deployment on lctx and on lprompt, because
+  consumers never run a prompt.
+- H2, primary SLO: on lctx, the best disaggregated ratio is not a loss against colo4_whole. On lprompt, no
+  prediction: total prefill capacity is the same or lower.
+- H3, harness check: colo4_whole's primary sustained rate is within one ladder step of 4 × the single-GPU held-out
+  rate (lctx 1.2, lprompt 0.6).
+
+**Secondary outcomes.**
+- KV hand-off time (first decode token after the prefill response, p50 / p99);
+- consumer and producer queue and KV peaks; preemptions;
+- p99 of each request's maximum ITL;
+- joules per output token over four boards.
+
+**Failure handling.** At most two attempts per step; failures are kept.
+- If the long-prompt connector path fails in the smoke, the blocker is recorded, and the disaggregated arms are
+  replaced by a labelled configuration (for example a smaller consumer buffer with host-pool spill) before `ld`.
+- Code changes for this amendment (additive; defaults unchanged):
+  - `cp_disagg.py`: `--decode-policy`, `--decode-kv-buffer`, `--kv-mem-pool-gb`.
+  - `cp_analyze.disagg_trace`: optional stall grid.
+  - `lc_analyze.py ld`: tested on the s4 e6 pheavy data, where it reproduces the published 3P1D 4.5 vs colo4_tuned
+    3.0 rps.

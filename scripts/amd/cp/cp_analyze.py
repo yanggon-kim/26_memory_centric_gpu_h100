@@ -376,7 +376,7 @@ def s1(a):
 
 
 # ---------------------------------------------------------------- experiment 5
-def disagg_trace(t, slo, kv_per_tok):
+def disagg_trace(t, slo, kv_per_tok, stall=()):
     reqs = t['requests']
     nw = int(len(reqs) * 0.10)
     order = sorted(reqs, key=lambda r: r['arrival_s'])
@@ -392,6 +392,14 @@ def disagg_trace(t, slo, kv_per_tok):
            'goodput_rps': len(ok) / span if span else None, 'goodput_tok_s': sum(r['tokens'] for r in ok) / span if span else None,
            'ttft_p50_s': pct(ttft, .5), 'ttft_p99_s': pct(ttft, .99),
            'itl_p50_ms': pct([x for r in done for x in itl(r)], .5), 'itl_p99_ms': pct([x for r in done for x in itl(r)], .99)}
+    if stall:  # lc amendment 5: the stall SLO (primary SLO and each request's maximum ITL <= cap), additive
+        out['incomplete'] = len(meas) - len(done)
+        mx = [max(itl(r)) for r in done if len(r['token_s']) > 1]
+        out['req_itl_max_p50_ms'], out['req_itl_max_p99_ms'] = pct(mx, .5), pct(mx, .99)
+        for lim in stall:
+            okm = [r for r in ok if len(r['token_s']) < 2 or max(itl(r)) <= lim]
+            out[f'attainment_stall{int(lim)}'] = len(okm) / len(meas) if meas else None
+            out[f'goodput_stall{int(lim)}_rps'] = len(okm) / span if span else None
     pre = [r for r in done if r.get('prefill_s') is not None]
     if pre:
         out['prefill_response_p50_s'] = pct([r['prefill_s'] for r in pre], .5)
