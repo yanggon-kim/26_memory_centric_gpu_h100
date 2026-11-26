@@ -363,7 +363,10 @@ class Worker:
                         'Inspect native exception; do not infer decoder bandwidth from useful payload')
                     return {'status': 'partial'}
             publish(self.root, f'H200 spare GPU native service acquisition {acq}; decoder transfer not inferred')
-        return {'status': 'native_controls_captured', 'qualification': 'clock/source/physical-counter joins remain separate'}
+        physical=self.traffic()
+        write(self.root/'results/P2a_disposition.json',physical)
+        return {'status': 'native_and_traffic_controls_captured', 'physical':physical,
+                'qualification': 'device-specific results; clock/source/physical-counter joins remain separate'}
 
 
 def analyze_curve(root, records, engine, batch=1, context=4096):
@@ -441,6 +444,19 @@ def coordinator(args):
     write(root/'environment/allocated_devices.json', {'devices':devices, 'slurm_visible_devices':os.environ.get('CUDA_VISIBLE_DEVICES'), 'hostname':socket.gethostname()})
     for name, command in [('topology', ['nvidia-smi', 'topo', '-m']), ('runtime', [sys.executable,'-m','pip','freeze'])]:
         (root/'environment'/(name+'.txt')).write_text(subprocess.check_output(command, text=True, stderr=subprocess.STDOUT))
+    # Bounded paired smoke precedes isolated measurements; no transfer overlaps a curve.
+    p2p_command=[Path(args.cuda)/'bin/nsys','profile','--sample=none','--cpuctxsw=none',
+                 '--trace=cuda,nvtx','--capture-range=cudaProfilerApi','--capture-range-end=stop',
+                 '--output='+str(root/'profiles/P0_p2p'),sys.executable,PACKAGE/'scripts/h200_p2p_smoke.py',
+                 '--devices',root/'environment/allocated_devices.json','--output',root/'results/P0_p2p.json','--profile']
+    try:
+        with (root/'logs/P0_p2p.log').open('x') as stream:
+            subprocess.run(list(map(str,p2p_command)),stdout=stream,stderr=subprocess.STDOUT,check=True,timeout=180)
+    except (subprocess.SubprocessError,OSError) as error:
+        limitation(root,'P0_p2p','Paired synthetic peer-copy pilot failed: '+str(error),
+                   str((root/'logs/P0_p2p.log').relative_to(PACKAGE)),
+                   'Only the two allocated UUIDs; explicit peer-access and known-value copy checks',
+                   'Inspect topology/profiler/runtime diagnostics; single-device cases remain eligible')
     base = {'schema_version':1, 'slurm_job_id':os.environ['SLURM_JOB_ID'], 'expected_hostname':socket.gethostname(),
             'python':sys.executable, 'cuda_home':args.cuda, 'allocation_end':end.isoformat(),
             'launch_cutoff':(end-dt.timedelta(minutes=30)).isoformat(), 'closeout_buffer_s':1800,
