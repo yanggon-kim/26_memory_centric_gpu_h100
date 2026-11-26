@@ -234,6 +234,7 @@ class Worker:
             assert stock_proof['source_identity']==self.settings['frozen_source_identity']
             assert stock_proof['gpu_uuid']==self.uuid and Path(stock_proof['run']).is_relative_to(self.root)
         if not stock_proof['qualified']:
+            self.last_curve_stop='proof'
             analyze_curve(self.root,self.records,engine,batch,context)
             self.unrestricted_after_block(engine,batch,context)
             return False
@@ -251,6 +252,7 @@ class Worker:
                     self.rebind_step=True
                     return self.curve(engine,batch,context)
                 self.unrestricted_after_block(engine,batch,context)
+                self.last_curve_stop='proof'
                 return False
         estimate=estimate_curve_seconds(stock_proof['producer_elapsed_s'],
                   {p['fraction']:p['producer_elapsed_s'] for p in proofs},self.settings.get('idle_required_s',10))
@@ -282,6 +284,13 @@ class Worker:
             analyze_curve(self.root, self.records, engine, batch, context)
             publish(self.root, f'H200 {engine} B{batch}/C{context} broad curve acquisition {acq}: retain all gates')
         result = analyze_curve(self.root, self.records, engine, batch, context)
+        if not result['complete_qualified_curve']:
+            self.last_curve_stop='quality'
+            limitation(self.root,f'{engine}_b{batch}_c{context}_quality',
+                       'All requested curve acquisitions attempted; strict scientific gates remain unqualified despite passing placement pilots',
+                       f'results/curve_{engine}_b{batch}_c{context}.json',
+                       'Retained every acquisition, interleaved reference and clock/source gate; no favorable resampling',
+                       'Inspect the specific quality failures; advance eligible traffic/scheduler work rather than treating clock rejection as restriction failure')
         return result['complete_qualified_curve']
 
     def unrestricted_after_block(self,engine,batch,context):
@@ -387,15 +396,14 @@ class Worker:
             return {'status': 'blocked', 'reason': 'C4096 exact HF/graph gate'}
         self.expected = load(target['run'])['cases'][0]['trials'][0]['output_ids']
         graph = self.curve('graph',stock_proof=target if core_first else None)
-        if not graph:
+        if not graph and self.last_curve_stop not in ('budget','quality'):
             limitation(self.root, 'P1a_graph', 'Complete qualified optimized restricted curve unavailable',
                 'results/curve_graph.json and individual proof/acquisition records',
                 'One initial versioned optimized-path proof cycle; preserve all diagnostics for bounded repair',
                 'Repair actual decoder context/graph placement, then re-pilot; eager fallback remains separate')
-            if self.last_curve_stop!='budget':
-                eager = self.case('eager', 1., 0, stock=True, suffix='_target_control')
-                if eager['status'] == 'complete':
-                    self.curve('eager')
+            eager = self.case('eager', 1., 0, stock=True, suffix='_target_control')
+            if eager['status'] == 'complete':
+                self.curve('eager')
         publish(self.root, 'H200 P1a: publish measured curve and explicit blocked gates')
         if graph:
             for batch in (8,32):

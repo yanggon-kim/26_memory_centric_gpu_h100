@@ -4,6 +4,8 @@ import copy
 import json
 from pathlib import Path
 import tempfile
+import types
+from unittest.mock import patch
 import h200_allocated_visibility as visibility
 import h200_priority_campaign as campaign
 
@@ -42,7 +44,32 @@ def main():
                        lambda d:d.update(receiver_prefill_executed=True)]:
             bad=copy.deepcopy(prior);mutate(bad);path.write_text(json.dumps(bad))
             rejected(lambda:campaign.prior_kv_software_validation(path,cfg))
-    print('H200 resume ownership and prior-evidence contracts passed')
+    # A quality-rejected complete graph acquisition set must not trigger an
+    # expensive eager restriction fallback. Failed graph proof may trigger it.
+    for stop,reference_passed in [('quality',True),('proof',True),('quality',False)]:
+        with tempfile.TemporaryDirectory() as tmp, patch.object(campaign,'limitation'), patch.object(campaign,'publish'):
+            root=Path(tmp);(root/'results').mkdir()
+            run=root/'run.json';run.write_text(json.dumps({'cases':[{'trials':[{'output_ids':[[1,2]]}]}]}))
+            calls=[];curves=[]
+            def case(engine,*args,**kwargs):
+                calls.append((engine,kwargs))
+                return {'status':'complete','qualified':True,'run':str(run)}
+            worker=types.SimpleNamespace(root=root,py='CPU-fake',script=root,uuid='GPU-fake',expected=None,
+                settings={'launch_cutoff':'2000-01-01T00:00:00+00:00'},last_curve_stop=None,
+                execute=lambda *a,**kw:{'status':'complete'},case=case,
+                reference=lambda *a,**kw:reference_passed,traffic=lambda:{'status':'CPU-fake'})
+            def curve(engine,**kwargs):
+                curves.append((engine,kwargs));worker.last_curve_stop=stop;return False
+            worker.curve=curve
+            outcome=campaign.Worker.primary(worker,core_first=True)
+            assert calls[0][0]=='graph' and calls[0][1]['pilot'] is True
+            assert all(call[1].get('context',4096)==4096 for call in calls)
+            if not reference_passed:
+                assert outcome['status']=='blocked' and not curves
+            else:
+                assert curves[0][1]['stock_proof']['run']==str(run)
+                assert any(engine=='eager' for engine,kw in calls)==(stop=='proof')
+    print('H200 resume ownership, prior-evidence and core-first fallback contracts passed')
 
 
 if __name__=='__main__':
