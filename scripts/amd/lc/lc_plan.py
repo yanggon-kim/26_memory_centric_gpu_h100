@@ -248,15 +248,44 @@ def lc3(cohort, params):
     return p, lanes, {'a': p.assign('a', list(lanes['a']))}
 
 
+def lc3fx(cohort, params):
+    """Amendment 4 re-run: the lc3 steps listed in params['rerun'], same arguments and seed, id <step>_fx, fixed release.
+    With params['rerun_split'] each ladder is split into one step per rate (<step>_fx_r<i>) so all eight GPUs are used."""
+    src, _, _ = lc3(cohort, params)
+    p = Plan('lc3fx', cohort)
+    want = set(params['rerun'])
+    for st in src.steps:
+        if st['id'] not in want:
+            continue
+        want.discard(st['id'])
+        rates = st.get('rates')
+        if params.get('rerun_split') and rates and len(rates) > 1:
+            a = st['args']
+            i = a.index('--rates')
+            n, drain = int(a[a.index('--requests') + 1]), int(a[a.index('--drain-s') + 1])
+            for j, r in enumerate(rates):
+                q = dict(st, id=f"{st['id']}_fx_r{j}", rates=[r], rerun_of=st['id'],
+                         args=a[:i + 1] + [f'{r:.4g}'] + a[i + 2:], est_s=int(n / r + 0.6 * drain + 430))
+                q['timeout_s'] = int(q['est_s'] * 3 + 900)
+                p.steps.append(q)
+        else:
+            p.steps.append(dict(st, id=f"{st['id']}_fx", rerun_of=st['id']))
+    assert not want, f'not in the lc3 plan: {sorted(want)}'
+    for st in p.steps:
+        st.pop('lane', None), st.pop('order', None)
+    lanes = {'a': {f'L{i}': [i] for i in range(8)}}
+    return p, lanes, {'a': p.assign('a', list(lanes['a']))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else (lc2 if a.which == 'lc2' else lc3)(a.cohort, json.loads(a.params.read_text())))
+                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx}[a.which](a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition
         plan.update(partition='mi3001x', gpus=1, charge_rate=0.125)
