@@ -20,6 +20,7 @@ import time
 import traceback
 
 PACKAGE = Path(__file__).resolve().parents[1]
+SOURCE_AT_IMPORT = Path(__file__).read_bytes()
 FRACTIONS = (1.0, .85, .75, .60, .45, .30)
 ROWS = ('P0', 'P1a', 'P1b', 'P2a', 'P2b', 'P3a', 'P3b', 'P4a', 'P4b', 'P4c', 'P5a', 'P5b', 'P5c', 'P5d')
 

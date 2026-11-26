@@ -50,3 +50,5 @@ The resume launcher must obtain a fresh allocation and fresh UUID inventory. Do 
 Resume policy: run the target B1/C4096 bounded optimized smoke and exact HF gate before the main sweep; use the spare GPU for missing physical traffic acquisitions before additional native controls. Prior real-KV adapter evidence is reused only as historical software validation; it does not validate handoff on a fresh physical pair.
 
 Follow-up: the authorized replacement job **16184819** was submitted using the command above. See `../../20261125_priority_preparation/results/resubmission_16184819.json`. Its future measurements belong to a fresh allocation and are not pooled into this report.
+
+Source persistence audit: all99 frozen Python sources for each device survive on shared storage and match their hash names (`../results/source_persistence_audit.json`). The legacy process records do not explicitly identify an import-time campaign-driver hash. The next launcher exposes its loaded driver bytes to the existing supervisor snapshot mechanism; no legacy field is fabricated.
