@@ -116,7 +116,11 @@ class PolicyScheduler(Scheduler):
                 self.max_num_running_reqs += len(hidden)
             if hidden_q is not None:
                 for q, saved in zip((self.waiting, self.skipped_waiting), hidden_q):
-                    assert not q, 'hidden waiting queue received requests'
+                    # a decode step can preempt a running request under KV pressure; vLLM prepends it to waiting
+                    # (Scheduler._preempt_request). Carry it to the front of the restored queue, as vLLM would.
+                    # (lc amendment 4: before this fix the step aborted with 'hidden waiting queue received requests')
+                    if q:
+                        saved.prepend_requests(q)
                 self.waiting, self.skipped_waiting = hidden_q
         self.cp_stalled = step_mode == 'prefill' and out.total_num_scheduled_tokens == 0
         t1 = time.perf_counter()

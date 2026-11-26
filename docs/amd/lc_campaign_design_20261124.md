@@ -249,3 +249,17 @@ contradicts the written rule (ties to the smaller budget). The code is corrected
    56 KiB per token (vs 256 KiB) and is used for any byte arithmetic.
 7. Parameters: `scripts/amd/lc/params/mi300x_lc3.json`. Plan: 71 steps, longest lane ≈ 8.6 h, ≈ 8.9 units.
 - No hypothesis changes.
+
+## 14. Amendment 4 (2026-11-25, during lc3, before any re-run data)
+
+- **Harness bug.** `lc5h_lctx_whole_s203` failed both attempts at the extended rate 0.3 rps with
+  `AssertionError: hidden waiting queue received requests` (`cp_sched.py`). Under the separate policy, a decode step
+  hides the waiting queue; when KV runs out, vLLM preempts a running request and prepends it to `waiting`
+  (`Scheduler._preempt_request`), which the wrapper treated as impossible. lc1 and lc2 never preempted under the separate
+  policy, so their results are unaffected (the code path is identical when nothing is preempted).
+- **Fix.** Preempted requests are prepended to the restored waiting queue, exactly as vLLM does without the wrapper.
+- **Re-run rule.** Every lc3 step whose final attempt fails with this assertion is re-run once after lc3, with the fixed
+  release, the same arguments and seed, under the id `<step>_fx` (a new step, two attempts as usual). The failed
+  attempts are kept; their completed lower-rate traces are reported as partial evidence only and are not used in the
+  decision. If a re-run is not possible within the allocation, the affected policy × workload is reported with the
+  ladder truncated at the last completed rate, and its sustained rate is marked as a lower bound.
