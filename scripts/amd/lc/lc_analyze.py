@@ -493,7 +493,7 @@ def pilot(plan, jr):
     slo, cap = {}, {}
     for s in steps_of(plan, 'pilot'):
         d = done_dir(jr, s['id'])
-        if not d or not s['id'].startswith('pilot_slo_'):
+        if not d or 'pilot_slo_' not in s['id']:
             continue
         meta = json.loads((d / 'run' / 'run.json').read_text())
         t = json.loads((d / 'run' / meta['traces'][0]['file']).read_text())
@@ -501,7 +501,7 @@ def pilot(plan, jr):
     rows = {}
     for s in steps_of(plan, 'pilot'):
         d = done_dir(jr, s['id'])
-        if not d or not s['id'].startswith('pilot_cap_') or s['workload'] not in slo:
+        if not d or 'pilot_cap_' not in s['id'] or s['workload'] not in slo:
             continue
         _, rs = A.serve_run(d / 'run', slo[s['workload']])
         rows[s['workload']] = [{k: r.get(k) for k in ('rate', 'attainment', 'incomplete', 'complete', 'ttft_p90_s', 'itl_p50_ms',
@@ -642,6 +642,76 @@ def lc_serve_plan(a):
     print(f'-> {out / "lc_tables.json"}')
 
 
+def decide(rows, sel, exp='lc5h', model='q32'):
+    """Design section 7 + amendment 3: per workload and SLO, the selected mixed policy vs each of the selected separate
+    policy and whole. All-seed sustained rate = highest ladder rate at which every seed attains >= 0.9 with nothing
+    incomplete, at that rate and every lower one. win / loss if >= 1 ladder step apart, else uncertain."""
+    slos = {'primary': ('attainment', 'goodput_rps'), 'stall1000': ('attainment_stall1000', 'goodput_stall1000_rps')}
+    by = collections.defaultdict(lambda: collections.defaultdict(list))
+    for r in rows:
+        if r['experiment'] == exp and r.get('model', 'q32') == model:
+            by[r['workload']][r['policy']].append(r)
+    out = {}
+    for wl, pols in by.items():
+        ladder = sorted({round(r['rate'], 6) for v in pols.values() for r in v})
+        seeds = sorted({r['seed'] for v in pols.values() for r in v})
+        res = {'ladder': ladder, 'seeds': seeds}
+        for name, (att, gp) in slos.items():
+            cap, good = {}, {}
+            for p, v in pols.items():
+                cell = {(round(r['rate'], 6), r['seed']): r for r in v}
+                sus, complete = None, True
+                for x in ladder:
+                    rs = [cell.get((x, sd)) for sd in seeds]
+                    if any(r is None for r in rs):
+                        complete = False
+                        break
+                    if all((r.get(att) or 0) >= 0.9 and r['incomplete'] == 0 for r in rs):
+                        sus = x
+                    else:
+                        break
+                cap[p] = {'sustained_rps': sus, 'censored': sus == ladder[-1], 'complete_ladder': complete,
+                          'step': ladder.index(sus) if sus is not None else -1}
+                good[p] = {str(x): st.mean([cell[(x, sd)].get(gp) or 0 for sd in seeds if (x, sd) in cell])
+                           for x in ladder if any((x, sd) in cell for sd in seeds)}
+            m = sel[wl]['mixed']
+            dec = {}
+            for other in dict.fromkeys([sel[wl]['separate'], 'whole', 'mix2048']):
+                if other == m or other not in cap or m not in cap:
+                    continue
+                d = cap[m]['step'] - cap[other]['step']
+                note = []
+                if cap[m]['censored'] and cap[other]['censored']:
+                    note.append('both censored at the ladder top')
+                if cap[m]['sustained_rps'] is None or cap[other]['sustained_rps'] is None:
+                    note.append('below the lowest ladder rate: ' + ', '.join(x for x in (m, other) if cap[x]['sustained_rps'] is None))
+                if not (cap[m]['complete_ladder'] and cap[other]['complete_ladder']):
+                    note.append('incomplete ladder')
+                dec[f'{m}_vs_{other}'] = {'steps': d, 'decision': 'win' if d >= 1 else 'loss' if d <= -1 else 'uncertain',
+                                          'note': '; '.join(note)}
+            res[name] = {'capacity': cap, 'goodput_mean': good, 'decision': dec}
+        out[wl] = res
+    return out
+
+
+def lc3_decide(a):
+    rows, prm = [], json.loads(Path(a.params).read_text())
+    for f in a.tables:
+        t = json.loads(Path(f).read_text())
+        rows += t['serving']['rows']
+    res = {'sources': a.tables, 'selection': prm['selection']}
+    res['heldout'] = decide(rows, prm['selection'], 'lc5h')
+    res['bursty'] = decide(rows, prm['selection'], 'lc5b')
+    res['q7'] = decide(rows, prm['selection'], 'lc5r', 'q7')
+    Path(a.out).write_text(json.dumps(res, indent=1, default=str) + '\n')
+    for k in ('heldout', 'bursty', 'q7'):
+        for wl, v in res[k].items():
+            for sl in ('primary', 'stall1000'):
+                caps = {p: c['sustained_rps'] for p, c in v[sl]['capacity'].items()}
+                print(k, wl, sl, caps, {d: (x['decision'], x['note']) for d, x in v[sl]['decision'].items()})
+    print('->', a.out)
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = q.add_subparsers(dest='cmd', required=True)
@@ -651,10 +721,17 @@ if __name__ == '__main__':
         r.add_argument('--out')
         r.add_argument('--s1-tables', default=str(Path(__file__).resolve().parents[3] /
                                                   'results_published/amd_20261118_mi300x_cp_s1/s1_tables.json'))
+        r.add_argument('--model', choices=('q32', 'q7'), default='q32')
     for n in ('lc2', 'lc3'):
         r = s.add_parser(n)
         r.add_argument('--root', required=True)
         r.add_argument('--out')
         r.add_argument('--params', required=True)
+    r = s.add_parser('decide')  # held-out decisions from one or more lc3 / lc3fx analysis tables
+    r.add_argument('--tables', nargs='+', required=True)
+    r.add_argument('--params', required=True)
+    r.add_argument('--out', required=True)
     a = q.parse_args()
-    lc1(a) if a.cmd in ('lc1', 'smoke') else lc_serve_plan(a)
+    if getattr(a, 'model', 'q32') == 'q7':  # Qwen2.5-7B: 28 layers x 4 KV heads x 128 x (K, V) x 2 B; 7.62 B params
+        KV_TOK, WEIGHTS, LIN_FLOP_TOK = 57344, 15.23e9, 2 * 7.62e9
+    lc1(a) if a.cmd in ('lc1', 'smoke') else lc3_decide(a) if a.cmd == 'decide' else lc_serve_plan(a)
