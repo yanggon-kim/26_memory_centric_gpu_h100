@@ -14,6 +14,13 @@ import shoreline_green
 
 
 def main():
+    pilots={f:10. for f in campaign.FRACTIONS}
+    estimate=campaign.estimate_curve_seconds(10.,pilots)
+    assert abs(estimate-1301.25)<1e-6
+    assert campaign.estimate_curve_seconds(20.,pilots)>estimate
+    try:campaign.estimate_curve_seconds(10.,{1.:10.})
+    except AssertionError:pass
+    else:raise AssertionError("incomplete pilot coverage accepted for scheduling")
     ids=[[3,4,5]]
     data={'status':'complete','cases':[{'generated_tokens':3,'warmup_output_ids':[ids,ids,ids],
           'output_digests_identical':True,'trials':[{'output_ids':ids,'prefill_barrier':{'passed':True},

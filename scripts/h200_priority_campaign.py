@@ -24,6 +24,17 @@ FRACTIONS = (1.0, .85, .75, .60, .45, .30)
 ROWS = ('P0', 'P1a', 'P1b', 'P2a', 'P2b', 'P3a', 'P3b', 'P4a', 'P4b', 'P4c', 'P5a', 'P5b', 'P5c', 'P5d')
 
 
+def estimate_curve_seconds(stock_pilot_s, green_pilot_s, idle_s=10):
+    """Conservative scheduling estimate, never an inference-latency result."""
+    assert set(green_pilot_s)==set(FRACTIONS)
+    assert stock_pilot_s>0 and all(v>0 for v in green_pilot_s.values())
+    # Three stock runs; nine full-green runs including drift references;
+    # three runs at each of five restricted levels. Pilots execute3+3 trials,
+    # ordinary runs3+10. Scaling startup/profiler cost too is conservative.
+    pilot_sum=3*stock_pilot_s+9*green_pilot_s[1.]+3*sum(green_pilot_s[f] for f in FRACTIONS[1:])
+    return pilot_sum*(13/6)*1.25+27*idle_s+300
+
+
 def load(path):
     return json.loads(Path(path).read_text())
 
@@ -108,6 +119,7 @@ class Worker:
         self.expected = None
         self.records = []
         self.rebind_step = False
+        self.last_curve_stop = None
 
     def execute(self, label, command, gpu=True, timeout=1200):
         return self.hs.run(self.root, label, command, timeout, gpu=gpu, env=self.hs.environment())
@@ -133,6 +145,7 @@ class Worker:
                'stock': stock, 'suffix': suffix, 'rebind_step':self.rebind_step,'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
                'status': 'failed', 'process_status': process['status'], 'qualified': False,
                'source_identity': self.settings['frozen_source_identity'], 'run': str(output / 'run.json')}
+        row['producer_elapsed_s']=process.get('elapsed_s')
         allocation = output / 'green_allocation.json'
         if allocation.exists():
             row['allocation'] = load(allocation)['allocation']
@@ -191,6 +204,7 @@ class Worker:
         return passed
 
     def curve(self, engine, batch=1, context=4096):
+        self.last_curve_stop=None
         stock_proof=self.case(engine,1.,0,pilot=True,stock=True,batch=batch,context=context)
         if not stock_proof['qualified']:
             analyze_curve(self.root,self.records,engine,batch,context)
@@ -211,6 +225,24 @@ class Worker:
                     return self.curve(engine,batch,context)
                 self.unrestricted_after_block(engine,batch,context)
                 return False
+        estimate=estimate_curve_seconds(stock_proof['producer_elapsed_s'],
+                  {p['fraction']:p['producer_elapsed_s'] for p in proofs},self.settings.get('idle_required_s',10))
+        allocation=self.hs.verify_allocation()
+        remaining=allocation['effective_launch_cutoff_unix_s']-time.time()
+        budget_path=self.root/'results'/f'budget_{engine}_b{batch}_c{context}.json'
+        write(budget_path,{'classification':'analytical scheduling estimate from instrumented process runtimes',
+              'estimated_s':estimate,'available_before_closeout_s':remaining,'admitted':estimate<=remaining,
+              'method':'13/6 trial scaling,25percent margin,27idle guards,300s publication/analysis allowance',
+              'pilot_sources':[stock_proof['id']]+[p['id'] for p in proofs]})
+        if estimate>remaining:
+            self.last_curve_stop='budget'
+            limitation(self.root,f'{engine}_b{batch}_c{context}','Complete3x10 curve deferred by measured pilot budget',
+                       str(budget_path.relative_to(PACKAGE)),
+                       'Proved all allocations; conservatively scaled total process time including prefill',
+                       'Resume with sufficient remaining allocation time; no cross-allocation timing pooling')
+            analyze_curve(self.root,self.records,engine,batch,context)
+            publish(self.root,'H200 curve deferred: complete-comparison budget does not fit')
+            return False
         # Broad curve is completed before refinement or additional workloads.
         for acq in range(3):
             self.case(engine, 1., acq, stock=True, batch=batch, context=context)
@@ -319,9 +351,10 @@ class Worker:
                 'results/curve_graph.json and individual proof/acquisition records',
                 'One initial versioned optimized-path proof cycle; preserve all diagnostics for bounded repair',
                 'Repair actual decoder context/graph placement, then re-pilot; eager fallback remains separate')
-            eager = self.case('eager', 1., 0, stock=True, suffix='_target_control')
-            if eager['status'] == 'complete':
-                self.curve('eager')
+            if self.last_curve_stop!='budget':
+                eager = self.case('eager', 1., 0, stock=True, suffix='_target_control')
+                if eager['status'] == 'complete':
+                    self.curve('eager')
         publish(self.root, 'H200 P1a: publish measured curve and explicit blocked gates')
         if graph:
             for batch in (8,32):
