@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Figures for docs/amd/lc_campaign_results_20261124.md from the published lc analysis tables.
 
-  lc_figures.py --lc1 results_published/amd_20261124_mi300x_lc_lc1/lc_tables.json [--lc2 ...] [--lc3 ...]
+  lc_figures.py --lc1 results_published/amd_20261124_mi300x_lc_lc1/lc_tables.json [--lc2 ...] [--lc3 lc3/lc_tables.json lc3fx/lc_tables.json]
                 --out docs/amd/figs/lc
 Needs matplotlib (a plotting venv; not the vLLM container). Static PNGs, light surface, fixed categorical order.
 """
@@ -122,7 +122,10 @@ def main(a):
     fig_l2(t1, a.out)
     pts = [('two-request tail (lc1)', (128 + c['I']) / (c['O'] + (256 if c['I'] else 0)), c['decode_frac_exec'])
            for c in t1['l3a']['cases'] if c['policy'] == 'mix2048']
-    extra = [json.loads(p.read_text()) for p in (a.lc2, a.lc3) if p]
+    extra = [json.loads(p.read_text()) for p in [a.lc2] + (a.lc3 or []) if p]
+    # an lc3fx re-run (<step>_fx, amendment 4) replaces the failed original step
+    redone = {r['step'][:-3] for t in extra for r in ((t.get('serving') or {}).get('rows', []) if isinstance(t.get('serving'), dict) else [])
+              if r.get('step', '').endswith('_fx')}
     good = {}
     for t in [t1] + extra:
         for w, ladder in (t.get('pilot', {}).get('ladder') or {}).items():
@@ -130,7 +133,9 @@ def main(a):
                     for r in ladder if r.get('effective_p_to_d')]
         sv = t.get('serving') or {}
         for r in (sv.get('rows', []) if isinstance(sv, dict) else sv):
-            if r.get('effective_p_to_d') and r.get('policy') in ('mix2048', 'whole'):
+            if r.get('step') in redone:
+                continue
+            if r.get('model', 'q32') == 'q32' and r.get('effective_p_to_d') and r.get('policy') in ('mix2048', 'whole'):
                 pts.append((f"serving, {r['policy']}", r['effective_p_to_d'], r['step_fraction_time'].get('decode', 0)))
             g = good.setdefault(r['experiment'], {}).setdefault(r['workload'], {}).setdefault(r['policy'], {})
             for k in ('goodput_rps', 'goodput_stall1000_rps'):
@@ -147,6 +152,6 @@ if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     q.add_argument('--lc1', type=Path, required=True)
     q.add_argument('--lc2', type=Path)
-    q.add_argument('--lc3', type=Path)
+    q.add_argument('--lc3', type=Path, nargs='+', help='lc3 tables, then the lc3fx re-run tables')
     q.add_argument('--out', type=Path, required=True)
     main(q.parse_args())

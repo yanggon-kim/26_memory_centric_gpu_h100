@@ -266,3 +266,6 @@ contradicts the written rule (ties to the smaller budget). The code is corrected
 - **lc3 outcome (job 555664, 63/71).** The 8 steps failing with this assertion are exactly the separate policies on lctx
   (whole and sep2048 × seeds 201–203, and both bursty repeats); none on lprompt or lo2048. They are re-run unsplit
   (8 steps on 8 GPUs, original per-step protocol) as `lc3fx`, params `scripts/amd/lc/params/mi300x_lc3fx.json`.
+- **lc3fx outcome (job 558807, 1:15:29, 8/8 completed on attempt 1).** The re-runs replace the failed steps in the
+  held-out and bursty decisions (`results_published/amd_20261125_mi300x_lc_lc3/lc_decisions.json`). Preemptions occur
+  only at ≥ 0.3 rps (1–5 per run), where the old code aborted. No truncated ladder was needed.

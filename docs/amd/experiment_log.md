@@ -545,3 +545,26 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   H3 rejected on its criterion, though rate under 16 GiB falls with every CU step below 256.
 - Deviation 15: decode-worker HSA out-of-resources abort in 10 of 16 balanced runs at ≤ 192 CUs, all above the
   sustainable rate; no second attempt.
+
+### 2026-11-24 → 2026-11-26 — long-context / long-output chunked-prefill campaign (L1–L5)
+
+- Design `docs/amd/lc_campaign_design_20261124.md`, amendments 1–4, each committed before the data it governs.
+  Report `docs/amd/lc_campaign_results_20261124.md` (final).
+- Jobs:
+  - smoke 547179 (harness bug, kept) and 547207 (mi3001x, 0:30);
+  - lc1 547842 (5:47; L1, L2, L3A, L4, pilot);
+  - lc2 548920 (6:33; development serving, L3B, L4 re-runs, counter audit);
+  - lc3 555664 (8:31; held-out, bursty, 7B replication; 63/71);
+  - lc3fx 558807 (1:15; 8/8 re-runs after the cp_sched preemption fix, amendment 4).
+  All on mi3008x except the second smoke. Allocation after the campaign: 400.2 / 900.
+- Failures kept:
+  - lc1 PMC attempt-1 errors and the FETCH_SIZE illegal access (both re-run in lc2);
+  - the counter-audit launcher bug;
+  - 8 lc2 attempt-1 `hipErrorLaunchFailure`;
+  - 8 lc3 steps aborted with `hidden waiting queue received requests` (vLLM preemption under the separate policy).
+- Headline results:
+  - Chunking wins held-out lo2048 (0.75 vs 0.5 rps). It loses lctx and lprompt under the p95 SLO (0.2 vs 0.3,
+    0.0375 vs 0.15).
+  - Under a 1 s worst-gap cap, only mix2048 is feasible on lctx and no policy on lprompt.
+  - Decode attention runs at ≈ 3 TB/s of KV on both 32B and 7B.
+  - No post-MALL byte counter exists (11 tested).
