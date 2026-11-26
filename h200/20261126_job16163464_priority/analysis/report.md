@@ -2,7 +2,7 @@
 
 **The optimized32B B1/C4096 SM sweep did not complete. No NVIDIA5%,10% or25% SM threshold is established.**
 
-Slurm preempted this Embers allocation at 2026-11-26T11:31:51 Eastern after 3633 seconds: **2.0183 allocated GPU-hours**, including staging and idle time. Requested wall time was8hours. See `../environment/final_slurm_accounting.psv`.
+Slurm preempted this Embers allocation at 2026-11-26T11:31:51 Eastern after 3633 seconds: **2.0183 allocated GPU-hours**, including staging and idle time. Requested wall time was8hours. The first job exited on signal15; no usable grace interval was demonstrated. Subsequent planning uses actual Slurm deadlines and does not assume extra time from configured grace. See `../environment/final_slurm_accounting.psv`.
 
 ## Decoder evidence and affected comparison
 

@@ -1,0 +1,13 @@
+{
+  "recorded_utc": "2026-11-26T19:06:25.739696+00:00",
+  "classification": "read-only policy/source review, not measurement or demonstrated grace behavior",
+  "partition": "PartitionName=gpu-h200\n   AllowGroups=pace-staff,prometheus,pace-phoenix-slurm DenyAccounts=gts-ideas-ci23_amd AllowQos=ALL\n   AllocNodes=ALL Default=NO QoS=N/A\n   DefaultTime=01:00:00 DisableRootJobs=NO Exclusive=NO GraceTime=0 Hidden=NO\n   MaxNodes=UNLIMITED MaxTime=3-00:00:00 MinNodes=0 LLN=NO MaxCPUsPerNode=UNLIMITED MaxCPUsPerSocket=UNLIMITED\n   NodeSets=gpu-h200\n   Nodes=atl1-1-02-012-2-0,atl1-1-02-012-9-0,atl1-1-02-012-16-0,atl1-1-02-012-23-0,atl1-1-02-014-2-0,atl1-1-02-014-9-0,atl1-1-02-014-16-0,atl1-1-03-018-14-0,atl1-1-03-019-2-0,atl1-1-03-019-14-0,atl1-1-03-020-11-0,atl1-1-03-020-18-0\n   PriorityJobFactor=1 PriorityTier=1 RootOnly=NO ReqResv=NO OverSubscribe=NO\n   OverTimeLimit=NONE PreemptMode=CANCEL\n   State=UP TotalCPUs=768 TotalNodes=12 SelectTypeParameters=NONE\n   JobDefaults=DefCpuPerGPU=8\n   DefMemPerCPU=4096 MaxMemPerNode=UNLIMITED\n   TRES=cpu=768,mem=24756000M,node=12,billing=5028576,gres/gpu=96,gres/gpu:h200=96\n   TRESBillingWeights=gres/GPU=52381\n\n",
+  "qos": "Name|PreemptMode|GraceTime|PreemptExemptTime|Flags|MaxWall\nembers|cluster|01:00:00||DenyOnLimit,NoReserve,NoDecay,UsageFactorSafe|08:00:00\n",
+  "primary_reference": "https://slurm.schedmd.com/preempt.html",
+  "findings": [
+    "Configured cluster preemption exemption is1h. QOS GraceTime is1h; partition GraceTime is0. Effective notification/termination behavior on a surviving job remains unvalidated.",
+    "Slurm documents SIGTERM notification and a shortened end time bounded by the original requested limit. A job that exits on notification can end before its configured grace expires.",
+    "First job accounting shows PREEMPTED and task signal15; no claim of a successfully used grace window."
+  ],
+  "strategy": "Do not add grace to available measurement budget. Read actual Slurm state/end time before launches; persist case/bundle evidence; confirm terminal state then close out and submit the next authorized two-H200 job. Preserve current pending job16184819 and its queue age."
+}
