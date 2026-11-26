@@ -24,9 +24,31 @@ def main(a):
     import controlled_vllm_experiments as baseline
     original=baseline.run_trial
     def trial(*args,**kwargs):
+        # Bounded repair route: libraries may restore the primary context during
+        # engine initialization or a scheduler tick. Apply the same explicit
+        # rebinding to every tick in both restricted and full-green controls.
+        engine=args[0]
+        step=engine.step
+        rebound=False
+        if getattr(a,'rebind_step',False):
+            if green is not None:
+                green.set_context()
+                rebound=True
+            torch.cuda.set_stream(stream)
+            def bound_step():
+                if green is not None:green.set_context()
+                torch.cuda.set_stream(stream)
+                try:return step()
+                finally:
+                    if green is not None:green.pop_context()
+            engine.step=bound_step
         before=stream_proof(torch.cuda.current_stream())
-        result=original(*args,**kwargs)
-        after=stream_proof(torch.cuda.current_stream())
+        try:
+            result=original(*args,**kwargs)
+            after=stream_proof(torch.cuda.current_stream())
+        finally:
+            engine.step=step
+            if rebound:green.pop_context()
         assert before['actual_sm_count']==after['actual_sm_count']==proof['actual_sm_count']
         result['green_stream_before']=before;result['green_stream_after']=after
         return result
@@ -46,6 +68,7 @@ if __name__=='__main__':
     p.add_argument('--output',type=Path,required=True);p.add_argument('--fraction',type=float,required=True)
     p.add_argument('--mode',default='timing');p.add_argument('--external-profiler',action='store_true')
     p.add_argument('--force-green',action='store_true',help='use a green context even for the full-allocation path control')
+    p.add_argument('--rebind-step',action='store_true',help='bounded repair: explicitly rebind the green context and stream at each scheduler tick')
     p.add_argument('--collect-worker-metadata',action='store_true');p.add_argument('--batch',type=int)
     p.add_argument('--context',type=int);p.add_argument('--generated-tokens',type=int,default=64)
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)

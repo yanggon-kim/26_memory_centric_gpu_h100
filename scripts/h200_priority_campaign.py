@@ -107,18 +107,21 @@ class Worker:
         self.uuid = self.settings['gpu_uuid']
         self.expected = None
         self.records = []
+        self.rebind_step = False
 
     def execute(self, label, command, gpu=True, timeout=1200):
         return self.hs.run(self.root, label, command, timeout, gpu=gpu, env=self.hs.environment())
 
     def case(self, engine, fraction, acq, pilot=False, stock=False, suffix='', context=4096, batch=1):
-        label = f'{engine}_b{batch}_c{context}_{"stock" if stock else "green"}_f{round(fraction*100)}_a{acq}' + ('_proof' if pilot else '') + suffix
+        label = f'{engine}_b{batch}_c{context}_{"stock" if stock else "green"}_f{round(fraction*100)}_a{acq}' + ('_proof' if pilot else '') + suffix + ('_rebind_v1' if self.rebind_step else '')
         output = self.root / 'runs' / label
         c = config(self.root, engine, context, 3 if pilot else 10, batch)
         command = [self.py, self.script / 'shoreline_restricted_decode.py', '--config', c,
                    '--gpu-uuid', self.uuid, '--output', output, '--fraction', str(fraction), '--mode', 'timing']
         if not stock:
             command += ['--force-green']
+            if self.rebind_step:
+                command += ['--rebind-step']
         report = self.root / 'profiles' / label
         if pilot:
             command = [self.cuda / 'bin/nsys', 'profile', '--sample=none', '--cpuctxsw=none',
@@ -126,7 +129,7 @@ class Worker:
                        '--capture-range-end=stop', '--output=' + str(report)] + command + ['--external-profiler']
         process = self.execute(label, command)
         row = {'id': label, 'engine': engine, 'fraction': fraction, 'acquisition': acq, 'pilot': pilot,
-               'stock': stock, 'suffix': suffix, 'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
+               'stock': stock, 'suffix': suffix, 'rebind_step':self.rebind_step,'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
                'status': 'failed', 'process_status': process['status'], 'qualified': False,
                'source_identity': self.settings['frozen_source_identity'], 'run': str(output / 'run.json')}
         allocation = output / 'green_allocation.json'
@@ -186,25 +189,32 @@ class Worker:
                 'Diagnose first differing token without weakening correctness')
         return passed
 
-    def curve(self, engine):
+    def curve(self, engine, batch=1, context=4096):
         proofs = []
         for fraction in FRACTIONS:
-            proof = self.case(engine, fraction, 0, pilot=True)
+            proof = self.case(engine, fraction, 0, pilot=True, batch=batch, context=context)
             proofs.append(proof)
             if not proof['qualified']:
+                if engine=='graph' and not self.rebind_step and proof.get('allocation'):
+                    limitation(self.root,proof['id'],'Optimized placement pilot failed; bounded explicit per-tick rebinding repair follows',
+                               str((self.root/'results'/(proof['id']+'.json')).relative_to(PACKAGE)),
+                               'Initial context/stream binding and NSYS graph-node placement check',
+                               'Require a fresh proof for every count using the versioned rebind_v1 route')
+                    self.rebind_step=True
+                    return self.curve(engine,batch,context)
                 return False
         # Broad curve is completed before refinement or additional workloads.
         for acq in range(3):
-            self.case(engine, 1., acq, stock=True)
-            self.case(engine, 1., acq)
+            self.case(engine, 1., acq, stock=True, batch=batch, context=context)
+            self.case(engine, 1., acq, batch=batch, context=context)
             for index, fraction in enumerate(FRACTIONS[1:]):
-                self.case(engine, fraction, acq)
+                self.case(engine, fraction, acq, batch=batch, context=context)
                 if index == 1:
-                    self.case(engine, 1., acq, suffix='_interleaved')
-            self.case(engine, 1., acq, suffix='_end')
-            analyze_curve(self.root, self.records, engine)
-            publish(self.root, f'H200 {engine} broad curve acquisition {acq}: retain all gates')
-        result = analyze_curve(self.root, self.records, engine)
+                    self.case(engine, 1., acq, suffix='_interleaved', batch=batch, context=context)
+            self.case(engine, 1., acq, suffix='_end', batch=batch, context=context)
+            analyze_curve(self.root, self.records, engine, batch, context)
+            publish(self.root, f'H200 {engine} B{batch}/C{context} broad curve acquisition {acq}: retain all gates')
+        result = analyze_curve(self.root, self.records, engine, batch, context)
         return result['complete_qualified_curve']
 
     def traffic(self, engine='graph', context=4096, batch=1):
@@ -285,6 +295,16 @@ class Worker:
             if eager['status'] == 'complete':
                 self.curve('eager')
         publish(self.root, 'H200 P1a: publish measured curve and explicit blocked gates')
+        if graph:
+            for batch in (8,32):
+                if time.time()+5400 >= dt.datetime.fromisoformat(self.settings['launch_cutoff']).timestamp():
+                    break
+                self.expected=None
+                control=self.case('graph',1.,0,stock=True,suffix='_width_control',batch=batch)
+                if control['status']=='complete' and self.reference(control['run'],f'graph_b{batch}_c4096'):
+                    self.expected=load(control['run'])['cases'][0]['trials'][0]['output_ids']
+                    self.curve('graph',batch=batch)
+            self.expected=load(target['run'])['cases'][0]['trials'][0]['output_ids']
         physical=self.traffic()
         write(self.root/'results/P2a_disposition.json',physical)
         # Full-GPU long-context fallbacks remain eligible if restriction is blocked.
@@ -297,8 +317,11 @@ class Worker:
                 self.expected=expected
                 continue
             self.expected=load(control['run'])['cases'][0]['trials'][0]['output_ids']
-            for acq in range(3):
-                self.case('graph',1.,acq,stock=True,suffix='_long',context=context)
+            if graph and time.time()+5400 < dt.datetime.fromisoformat(self.settings['launch_cutoff']).timestamp():
+                self.curve('graph',context=context)
+            else:
+                for acq in range(3):
+                    self.case('graph',1.,acq,stock=True,suffix='_long',context=context)
             self.expected=expected
             publish(self.root,f'H200 long-context C{context}: separate full-GPU acquisitions')
         return {'status': 'partial', 'optimized_curve_qualified': graph,
@@ -338,21 +361,23 @@ class Worker:
         return {'status': 'native_controls_captured', 'qualification': 'clock/source/physical-counter joins remain separate'}
 
 
-def analyze_curve(root, records, engine):
+def analyze_curve(root, records, engine, batch=1, context=4096):
     from shoreline_statistics import hierarchical_interval, paired_ratio
     clean = [r for r in records if r['engine'] == engine and not r['pilot'] and not r['stock'] and
-             r['batch'] == 1 and r['context'] == 4096]
+             r['batch'] == batch and r['context'] == context]
     points = []
-    proofs = {r['fraction']: r for r in records if r['engine'] == engine and r['pilot'] and r.get('qualified')}
+    proofs = {r['fraction']: r for r in records if r['engine'] == engine and r['pilot'] and r.get('qualified') and r['batch']==batch and r['context']==context}
     refs = sorted([r for r in records if r['engine'] == engine and not r['pilot'] and r['stock']
-                   and r['batch'] == 1 and r['context'] == 4096 and not r.get('suffix')], key=lambda r:r['acquisition'])
+                   and r['batch'] == batch and r['context'] == context and not r.get('suffix')], key=lambda r:r['acquisition'])
     green_refs = sorted([r for r in clean if r['fraction'] == 1. and not r.get('suffix')], key=lambda r:r['acquisition'])
     for fraction in FRACTIONS:
         rows = sorted([r for r in clean if r['fraction'] == fraction and
-                       not r['id'].endswith(('_end', '_interleaved'))], key=lambda r:r['acquisition'])
+                       not r.get('suffix')], key=lambda r:r['acquisition'])
         point = {'fraction': fraction, 'qualified': False, 'sources': [r['id'] for r in rows],
-                 'actual_sm_count': rows[0].get('actual_sm_count') if rows else None}
-        combined = rows + refs + [r for r in clean if r['id'].endswith(('_end', '_interleaved'))]
+                 'actual_sm_count': rows[0].get('actual_sm_count') if rows else None,
+                 'raw_acquisition_medians_ms': [statistics.median(r['step_ms']) if r.get('step_ms') else None for r in rows],
+                 'raw_scope': 'retained observations, not qualified comparisons until every gate passes'}
+        combined = rows + refs + [r for r in clean if r.get('suffix') in ('_end', '_interleaved')]
         clocks = [r.get('clock', {}).get('clocks', {}) for r in combined]
         if (len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
             fraction in proofs and 1. in proofs and len({r['actual_sm_count'] for r in rows}) == 1):
@@ -370,11 +395,13 @@ def analyze_curve(root, records, engine):
         candidates = [p for p in points if p['qualified'] and p['ratio']['ci95'][1] <= 1+margin]
         thresholds[str(margin)] = {'smallest_tested_demonstrated_sm_count': min((p['actual_sm_count'] for p in candidates), default=None),
                                   'scope': 'tested counts only; unresolved/censored between points, no AMD thresholds imported'}
-    result = {'engine': engine, 'classification': 'measured-real-GPU', 'points': points, 'thresholds': thresholds,
+    result = {'engine': engine, 'batch':batch,'context':context,'classification': 'measured-real-GPU', 'points': points, 'thresholds': thresholds,
               'complete_qualified_curve': all(p['qualified'] for p in points),
               'scope': 'pure decode after verified prefill barrier, wall ms/tick; primary ratios use unrestricted stock; full-green ratios also retained; physical area/HBM capacity unchanged'}
-    write(root/'results'/f'curve_{engine}.json', result)
-    lines = [f'\n## {engine} B1/C4096 curve\n', '| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |',
+    write(root/'results'/f'curve_{engine}_b{batch}_c{context}.json', result)
+    if batch==1 and context==4096:
+        write(root/'results'/f'curve_{engine}.json', result)
+    lines = [f'\n## {engine} B{batch}/C{context} curve\n', '| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |',
              '|---|---:|---|---:|---|']
     for p in points:
         lines.append(f"| {p['fraction']} | {p['actual_sm_count']} | {p['qualified']} | {p.get('latency_ms', {}).get('value', 'NA')} | {p.get('ratio', {}).get('ci95', 'NA')} |")
@@ -428,7 +455,27 @@ def coordinator(args):
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
     for p,s in processes:s.close()
-    write(root/'STATUS.json',{'status':'workers_finished_scientific_gates_separate','worker_exit_codes':[p.returncode for p,s in processes], 'allocation_end':end.isoformat()})
+    manifest=load(root/'results/case_manifest.json')
+    for row in manifest['rows']:
+        if row['id']=='P0':
+            row.update(status='partial',reason='Inventory, correctness and profiler/placement records require component-level inspection')
+        elif row['id']=='P1a':
+            curves=[load(p) for p in (root/'gpu0/results').glob('curve_*.json')
+                    if load(p).get('batch')==1 and load(p).get('context')==4096]
+            row.update(status='complete' if any(c['complete_qualified_curve'] for c in curves) else 'blocked',
+                       reason='Engine labels and all gates remain explicit in gpu0/results/curve_*.json')
+        elif row['id']=='P1b':
+            row.update(status='partial' if list((root/'gpu0/results').glob('curve_*_b*_c*.json')) else 'pending',
+                       reason='Only source/output/clock/placement-qualified shapes count; unmeasured refinements remain pending')
+        elif row['id']=='P2a':
+            row.update(status='partial' if list((root/'gpu0/results').glob('P2a*.json')) else 'pending',
+                       reason='Physical traffic captures retain replay/range gates; counter-clock joins and kernel retuning are separate')
+    write(root/'results/case_manifest.json',manifest)
+    write(root/'STATUS.json',{'status':'workers_finished_scientific_gates_separate','worker_exit_codes':[p.returncode for p,s in processes],
+          'allocation_end':end.isoformat(), 'rows':manifest['rows'],
+          'next_command':f'squeue --start -j {os.environ["SLURM_JOB_ID"]}'})
+    with (root/'analysis/report.md').open('a') as stream:
+        stream.write('\n## Queue disposition\n\n'+'\n'.join('- '+r['id']+': '+r['status']+'; '+str(r.get('reason') or 'not acquired in this allocation') for r in manifest['rows'])+'\n')
     publish(root,'H200 priority: publish worker outcomes and handoff')
     print('CAMPAIGN_ROOT',root,flush=True)
 
@@ -447,7 +494,7 @@ def bootstrap(args):
     publish(root,'H200 priority: allocated runtime/model staging started')
     runtime=Path('/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python')
     stages=[('runtime_install',[runtime,'-m','pip','install','--no-cache-dir','-r',PACKAGE/'configs/runtime.lock.txt'],5400),
-            ('runtime_check',[runtime,'-c',"import torch,vllm,transformers; assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda)"],180),
+            ('runtime_check',[runtime,'-c',"import torch,vllm,transformers; assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda); print([(str(torch.cuda.get_device_properties(i).uuid),torch.cuda.get_device_properties(i).name,torch.cuda.get_device_properties(i).multi_processor_count,torch.cuda.mem_get_info(i)) for i in range(2)])"],180),
             ('model_download',[runtime,PACKAGE/'scripts/materialize_config.py','--model','qwen32b','--stage','smoke','--revision','5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd','--download','--output',PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json'],5400),
             ('cpu_contracts',[runtime,PACKAGE/'scripts/test_cpu_contracts.py'],300),
             ('priority_contracts',[runtime,PACKAGE/'scripts/test_h200_priority.py'],300)]
