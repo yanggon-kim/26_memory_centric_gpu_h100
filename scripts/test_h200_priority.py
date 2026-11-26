@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """CPU contracts for resource rounding, token gates and incomplete-curve rejection."""
 import copy
+import contextlib
 import json
 from pathlib import Path
 import sys
@@ -87,6 +88,36 @@ def main():
         try:campaign.continuation_task(task,root)
         except AssertionError:pass
         else:raise AssertionError('existing attempt accepted')
+    import os
+    import gpu_target
+    import shoreline_restricted_decode as restricted
+    class ScopedGreen:
+        depth=1
+        def set_context(self):self.depth+=1
+        def pop_context(self):self.depth-=1
+    green=ScopedGreen();stream=object();steps=[]
+    def original_step():steps.append(green.depth)
+    engine=types.SimpleNamespace(step=original_step)
+    baseline=types.ModuleType('controlled_vllm_experiments')
+    def original_trial(engine):
+        engine.step();engine.step()
+        return {}
+    baseline.run_trial=original_trial
+    baseline.main=lambda a:baseline.run_trial(engine)
+    torch=types.SimpleNamespace(cuda=types.SimpleNamespace(current_stream=lambda:stream,
+                           set_stream=lambda s:None,stream=lambda s:contextlib.nullcontext(s)))
+    proof={'green_context_handle':7,'actual_sm_count':104}
+    with tempfile.TemporaryDirectory() as name, \
+         patch.dict(os.environ), \
+         patch.dict(sys.modules,{'torch':torch,'controlled_vllm_experiments':baseline}), \
+         patch.object(gpu_target,'verify_cuda'), \
+         patch.object(shoreline_green,'create',return_value=(green,stream,proof)), \
+         patch.object(shoreline_green,'stream_proof',return_value=proof):
+        args=types.SimpleNamespace(gpu_uuid='GPU-synthetic',fraction=.75,force_green=True,rebind_step=True,
+                                   output=Path(name),external_profiler=False)
+        restricted.main(args)
+        assert steps==[3,3] and green.depth==1, 'repair must balance both per-trial and per-step contexts'
+        assert engine.step is original_step, 'scheduler hook must be restored'
     print('H200 priority CPU contracts passed')
 
 
