@@ -33,10 +33,10 @@ def native_overlap(path):
     return {'status':'complete','conditions':rows,'classification':'measured-real-GPU-instrumented'}
 
 
-def read(path,expected_green_id=None):
+def read(path,expected_green_id=None,range_name='shoreline_ticks_4_6'):
     db=sqlite3.connect('file:'+str(Path(path).resolve())+'?mode=ro',uri=True)
     db.row_factory=sqlite3.Row
-    ranges=db.execute("SELECT start,end FROM NVTX_EVENTS WHERE text='shoreline_ticks_4_6' AND end IS NOT NULL").fetchall()
+    ranges=db.execute("SELECT start,end FROM NVTX_EVENTS WHERE text=? AND end IS NOT NULL",(range_name,)).fetchall()
     assert ranges,'selected decode NVTX window missing'
     windows=[]
     for start,end in ranges:

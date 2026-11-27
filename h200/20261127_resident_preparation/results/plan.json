@@ -1,0 +1,42 @@
+{
+  "status": "prepared_not_measured",
+  "protocol": "resident_eager_v1",
+  "allocated_gpu_request": 2,
+  "walltime": "01:30:00",
+  "preemption_assumption": "may be reclaimed immediately after first hour; no guaranteed grace",
+  "phases": [
+    "owned allocation/runtime inventory",
+    "stock/full-Green/40SM resident NSYS proof and independent HF exact output",
+    "all7 stock/Green actual-decoder proofs in one separate producer",
+    "3independent full resident-model acquisitions,9conditions each,3warmups and10timed trials per condition",
+    "publish raw/qualified disposition; thresholds NA for any failed gate",
+    "spare full-GPU4096/16384/32704 context acquisitions after core disposition"
+  ],
+  "unchanged": [
+    "Qwen2.5-32B model revision5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "BF16 weights/KV,TP1,seed20261013",
+    "B1/C4096,N64/63timed decode iterations for core",
+    "full stock/full-Green/interleaved/end controls",
+    "exact output and per-trial barrier checks",
+    "actual decoder kernel context proof",
+    "3process acquisitions,10trials,pooledclock<=5%,sampled isolation"
+  ],
+  "new_scope": [
+    "full model loaded once per acquisition; sequential SM conditions share resident weights and allocator/history",
+    "host GCC12.3 frontend uses native linker via versioned wrapper, in frozen source tree",
+    "15minute CPUcloseout reserve; raw evidence persists on shared storage"
+  ],
+  "not_claimed": [
+    "optimized restricted path repaired",
+    "qualified timing or thresholds before all gates pass",
+    "pooling with prior per-point fresh-model measurements",
+    "loaded serving from observer-only pilot"
+  ],
+  "cpu_tests": {
+    "resident_binding_and_window": 3,
+    "priority": "passed",
+    "eager_first": 3,
+    "allocation_review": 5
+  },
+  "next_command": "sbatch --parsable batch/h200_priority_resident_20261127.sbatch"
+}

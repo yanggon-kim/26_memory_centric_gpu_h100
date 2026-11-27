@@ -42,7 +42,7 @@ def case_records(root):
         if not isinstance(row,dict) or not {'id','engine','fraction','batch','context','pilot','stock'}<=row.keys():
             continue
         row=copy.deepcopy(row);errors=[]
-        process_path=root/'results/processes'/(row['id']+'.json')
+        process_path=root/'results/processes'/(row.get('producer_label',row['id'])+'.json')
         process=campaign.load(process_path) if process_path.exists() else {}
         run=Path(row['run'])
         if row.get('gpu_uuid')!=session['gpu_uuid']:errors.append('case UUID differs from its session')

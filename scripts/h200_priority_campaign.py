@@ -690,7 +690,9 @@ def coordinator(args):
     root.mkdir(exist_ok=False)
     for folder in ('environment', 'results', 'logs', 'configs', 'runs', 'profiles', 'analysis'):
         (root/folder).mkdir()
-    scope=('Separate eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first; optimized restriction remains blocked by prior measured context escape and bounded repair failure. Spare UUID: missing full-target DRAM/L2 evidence, then contexts only after the core disposition.'
+    scope=('New separately labeled resident eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first, one model per independent acquisition. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.'
+           if getattr(args,'resident_first',False) else
+           'Separate eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first; optimized restriction remains blocked by prior measured context escape and bounded repair failure. Spare UUID: missing full-target DRAM/L2 evidence, then contexts only after the core disposition.'
            if getattr(args,'eager_first',False) else
            'Primary: optimized Qwen2.5-32B BF16/TP1 B1/C4096 SM curve. Secondary UUID: independent native controls.')
     (root/'analysis/report.md').write_text('# Two-H200 priority campaign\n\nNo measurements yet. '+scope+'\n')
@@ -740,9 +742,10 @@ def coordinator(args):
                        str((root/'logs/P0_real_hf_kv.log').relative_to(PACKAGE)),
                        'All-layer BF16 transfer and receiver decode compared with source and independent generate; exact gate unchanged',
                        'Inspect cache layout/position/output diagnostics; serving connector remains unvalidated')
+    reserve=900 if getattr(args,'resident_first',False) else 1800
     base = {'schema_version':1, 'slurm_job_id':os.environ['SLURM_JOB_ID'], 'expected_hostname':socket.gethostname(),
             'python':sys.executable, 'cuda_home':args.cuda, 'allocation_end':end.isoformat(),
-            'launch_cutoff':(end-dt.timedelta(minutes=30)).isoformat(), 'closeout_buffer_s':1800,
+            'launch_cutoff':(end-dt.timedelta(seconds=reserve)).isoformat(), 'closeout_buffer_s':reserve,
             'monitor_period_s':.05, 'idle_required_s':10, 'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'seed':20261013, 'acquisitions':3, 'warmups':3, 'trials':10}
     jobs=[]
@@ -765,6 +768,7 @@ def coordinator(args):
         command=[sys.executable,Path(__file__).resolve(),'--worker',str(i),'--root',str(subroot),'--session',str(subroot/'session.json')]
         if args.core_first:command+=['--core-first']
         if getattr(args,'eager_first',False):command+=['--eager-first']
+        if getattr(args,'resident_first',False):command+=['--resident-first']
         processes.append((subprocess.Popen(command,stdout=stream,stderr=subprocess.STDOUT),stream))
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
@@ -831,6 +835,8 @@ def bootstrap(args):
             ('eager_first_contracts',[runtime,PACKAGE/'scripts/test_h200_eager_first.py'],300),
             ('ncu_reader_contracts',[runtime,PACKAGE/'scripts/test_h200_ncu_read.py'],300),
             ('capture_binding_contracts',[runtime,PACKAGE/'scripts/test_h200_vllm_capture_binding.py'],300)]
+    if getattr(args,'resident_first',False):
+        stages.append(('resident_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_sweep.py'],300))
     try:
         for label,command,limit in stages:
             print('STAGING',label,flush=True)
@@ -844,6 +850,7 @@ def bootstrap(args):
         publish(root,'H200 priority: pinned runtime and immutable32B staging complete')
         flags=['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []
         if getattr(args,'eager_first',False):flags+=['--eager-first']
+        if getattr(args,'resident_first',False):flags+=['--resident-first']
         subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda]+flags,check=True)
     except Exception as error:
         write(root/'STATUS.json',{'status':'blocked','error':str(error),'traceback':traceback.format_exc()})
@@ -861,7 +868,8 @@ def bootstrap(args):
                 subprocess.run([sys.executable,'-u',PACKAGE/'scripts/h200_priority_campaign.py',
                     '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda]+
                     (['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else [])+
-                    (['--eager-first'] if getattr(args,'eager_first',False) else []),check=True)
+                    (['--eager-first'] if getattr(args,'eager_first',False) else [])+
+                    (['--resident-first'] if getattr(args,'resident_first',False) else []),check=True)
                 break
             time.sleep(15)
     finally:
@@ -874,9 +882,11 @@ def main():
     p.add_argument('--cuda');p.add_argument('--worker',type=int,choices=(0,1));p.add_argument('--root',type=Path);p.add_argument('--session',type=Path)
     p.add_argument('--core-first',action='store_true',help='target3+3 graph smoke/HF before SM sweep; defer fresh paired KV handoff')
     p.add_argument('--eager-first',action='store_true',help='after recorded graph repair block: separate eager curve first; spare full-GPU L2 then gated contexts')
+    p.add_argument('--resident-first',action='store_true',help='separate resident eager acquisition protocol with bounded placement/HF pilot')
     p.add_argument('--prior-kv-pilot',type=Path)
     a=p.parse_args()
     if a.eager_first and not a.core_first:p.error('--eager-first requires --core-first')
+    if a.resident_first and not a.eager_first:p.error('--resident-first requires --eager-first')
     if a.core_first and a.worker is None and a.prior_kv_pilot is None:p.error('--core-first coordinator/bootstrap requires --prior-kv-pilot')
     if a.bootstrap:
         bootstrap(a)
@@ -885,7 +895,10 @@ def main():
     else:
         worker=Worker(a.root,a.session)
         try:
-            if a.eager_first:
+            if a.resident_first:
+                import h200_resident_campaign
+                outcome=h200_resident_campaign.primary(worker) if a.worker==0 else h200_resident_campaign.secondary(worker)
+            elif a.eager_first:
                 import h200_eager_first
                 outcome=h200_eager_first.primary(worker) if a.worker==0 else h200_eager_first.secondary(worker)
             else:
