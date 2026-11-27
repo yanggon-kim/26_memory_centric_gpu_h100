@@ -347,3 +347,56 @@ runs first.
   - `cp_analyze.disagg_trace`: optional stall grid.
   - `lc_analyze.py ld`: tested on the s4 e6 pheavy data, where it reproduces the published 3P1D 4.5 vs colo4_tuned
     3.0 rps.
+
+## 16. Amendment 6 (2026-11-27, after ld, before any re-run data): decode-engine crashes
+
+**What happened in `ld`** (job 560897, 16 of 16 steps exited normally, all on attempt 1):
+- In four disaggregated steps a consumer engine died with `hipErrorLaunchOutOfResources`
+  (`HSA_STATUS_ERROR_OUT_OF_RESOURCES` on a kernel dispatch). Each death came at light load, 1–3 running requests.
+  After it, every remaining request in that step failed. Affected steps:
+  - `ld_lctx_d2p2_s201`: died during 0.2 rps;
+  - `ld_lctx_d2p2_s202`: died during 0.4 rps;
+  - `ld_lprompt_d3p1_s201`: died during 0.1 rps;
+  - `ld_lprompt_d2p2_s202`: died during 0.8 rps.
+- The same configurations ran clean on the other seed. The receive buffer had not overflowed when the lctx engine
+  died.
+- The colocated steps and `ld_lctx_d1p3` (both seeds) had no errors.
+- Working hypothesis (not established): memory headroom for runtime allocations. Consumers reserve 0.80 of the GPU
+  for vLLM, plus a GPU receive buffer of up to 2 × 10¹⁰ B, plus RCCL buffers.
+
+**Why re-run.** Three of these steps determine a stall-SLO comparison:
+- lprompt d3p1, seed 202 sustained 0.3 rps under the stall SLO; the colo4_whole stall rate is 0.2.
+- lctx d2p2 passed 0.3 rps before its engine died; the colo4_mix2048 stall rate is 0.4.
+
+`ld_lprompt_d2p2_s202` is not re-run: its engine died at the top rate, above both seeds' capacity (0.15), so
+neither the capacity nor any decision changes.
+
+**Re-run `ldfx`** (`lc_plan.py ldfx`, params `mi300x_ld.json` keys `ldfx_steps` and `ldfx_decode_gpu_mem`):
+- Steps `ld_lctx_d2p2_s201_fx`, `ld_lctx_d2p2_s202_fx` and `ld_lprompt_d3p1_s201_fx`.
+- Arguments are identical to the original steps except consumer gpu_memory_utilization 0.70 instead of 0.80 (about
+  19 GB more headroom). This is a labelled configuration change; no code changes in the driver.
+- One mi3008x job, two 4-GPU lanes; estimated 2.5 node-hours.
+- Analysis: `lc_analyze.py ld --root <ld root> <ldfx root>`. Each `_fx` step replaces its original in the tables. The
+  original crashed acquisitions are kept and reported. `engine_dead` flags any step whose server log has
+  `EngineDeadError`.
+- If an `_fx` step's engine dies again, the cell is reported as failed and the comparison it decides as uncertain. No
+  further attempt is made.
+
+**Already observed (not changed by the re-run).**
+- Primary SLO: disaggregation loses to colo4_whole on both workloads at every ratio:
+  - lctx: d1p3 0.2 vs colo4_whole 1.6 rps;
+  - lprompt: d2p2 0.15 and d3p1 at most 0.3 vs colo4_whole 0.8 rps.
+  - H2 fails. No re-run can recover 1.6 rps on lctx with two producers.
+- Mechanism, measured from step logs: a single whole-prompt prefill step takes 1.6–2.0× longer on a producer than on a
+  colocated engine. The connector's per-layer KV send runs inside the forward pass. Examples, ms per 1 K prompt
+  tokens:
+  - lprompt 24–33 K tokens: 399–405 on producers vs 205 colocated;
+  - lctx 8–16 K tokens: 254 vs 163.
+- KV hand-off after the prefill response: p99 0.08–0.12 s.
+- Consumers' p99 of each request's maximum ITL: 48–280 ms. Colocated: 0.65–2.7 s for mix2048 and 0.9–69 s for
+  whole.
+
+**Predictions for the re-run (made before its data).**
+- lprompt d3p1, seed 201 sustains ≥ 0.25 rps under the stall SLO (seed 202: 0.3). If so, d3p1 vs colo4_whole under
+  the stall SLO is a win.
+- lctx d2p2 sustains 0.3–0.4 rps under both SLOs. Vs colo4_mix2048 under the stall SLO (0.4): uncertain or loss.

@@ -726,11 +726,13 @@ def ld_rows(root, prm):
         if not rec or not rec.get('command_completed'):
             continue
         run = A.run_dir(rec)
+        dead = sorted(f.name for f in run.glob('server_w*.log') if 'EngineDeadError' in f.read_text(errors='replace'))
+        status[-1]['engine_dead'] = dead  # a decode/prefill engine died mid-step (amendment 6): rates after it fail
         meta = json.loads((run / 'run.json').read_text())
         kv = meta['layout']['kv_bytes_per_token']
         for tr in meta['traces']:
             t = json.loads((run / tr['file']).read_text())
-            r = {'step': s['id'], 'experiment': 'ld', 'workload': s['workload'], 'policy': s['deployment'],
+            r = {'step': s['id'], 'engine_dead': bool(dead), 'experiment': 'ld', 'workload': s['workload'], 'policy': s['deployment'],
                  'deployment': s['deployment'], 'prefill_workers': s.get('prefill_workers'), 'rate': t['rate'],
                  'seed': t['seed'], 'arrival': t['arrival'], 'model': 'q32', 'span_s': t['span_s'],
                  'unfinished': t['unfinished'], **A.disagg_trace(t, prm['slo'][s['workload']], kv, stall)}
@@ -777,17 +779,26 @@ def ld_decide(rows):
 
 
 def ld_cmd(a):
-    root, prm = Path(a.root), json.loads(Path(a.params).read_text())
-    out = Path(a.out or root / 'analysis')
+    prm = json.loads(Path(a.params).read_text())
+    out = Path(a.out or Path(a.root[-1]) / 'analysis')
     out.mkdir(parents=True, exist_ok=True)
-    rows, status = ld_rows(root, prm)
+    rows, status = [], []
+    for rt in a.root:  # an ldfx re-run root (amendment 6) after the ld root: <step>_fx replaces <step>
+        r1, s1 = ld_rows(Path(rt), prm)
+        rows, status = rows + r1, status + s1
+    redone = {r['step'][:-3] for r in rows if r['step'].endswith('_fx')}
+    for x in status:
+        x['replaced_by_fx'] = x['id'] in redone
+    rows = [r for r in rows if r['step'] not in redone]
     res = {'status': status, 'rows': rows, 'decision': ld_decide(rows) if rows else {}}
     (out / 'ld_tables.json').write_text(json.dumps(res, indent=1, default=str) + '\n')
     for wl, v in res['decision'].items():
         for sl in ('primary', 'stall1000'):
             print(wl, sl, {p: c['sustained_rps'] for p, c in v[sl]['capacity'].items()},
                   {k: d['decision'] + (f" ({d['note']})" if d['note'] else '') for k, d in v[sl]['decision'].items()})
-    print(sum(x['status'] == 'complete' for x in status), '/', len(status), 'steps complete ->', out / 'ld_tables.json')
+    print(sum(x['status'] == 'complete' for x in status), '/', len(status), 'steps complete;',
+          'engine died in:', [x['id'] + (' (replaced)' if x['replaced_by_fx'] else '') for x in status if x.get('engine_dead')],
+          '->', out / 'ld_tables.json')
 
 
 if __name__ == '__main__':
@@ -805,8 +816,8 @@ if __name__ == '__main__':
         r.add_argument('--root', required=True)
         r.add_argument('--out')
         r.add_argument('--params', required=True)
-    r = s.add_parser('ld')  # amendment 5: disaggregation at long prompts
-    r.add_argument('--root', required=True)
+    r = s.add_parser('ld')  # amendment 5: disaggregation at long prompts (amendment 6: --root ld_root ldfx_root)
+    r.add_argument('--root', required=True, nargs='+')
     r.add_argument('--params', required=True)
     r.add_argument('--out')
     r = s.add_parser('decide')  # held-out decisions from one or more lc3 / lc3fx analysis tables

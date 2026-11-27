@@ -317,15 +317,29 @@ def ld(cohort, params, smoke=False):
     return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
 
 
+def ldfx(cohort, params):
+    """Amendment 6: re-run the ld steps whose decode engine died (hipErrorLaunchOutOfResources) as <step>_fx, identical
+    except consumers at gpu_memory_utilization params['ldfx_decode_gpu_mem'] (more runtime headroom)."""
+    full, _, _ = ld(cohort, dict(params, ld_decode_gpu_mem=params['ldfx_decode_gpu_mem']))
+    p = Plan('ldfx', cohort)
+    for st in full.steps:
+        if st['id'] in params['ldfx_steps']:
+            p.steps.append(dict(st, id=st['id'] + '_fx', rerun_of=st['id'], decode_gpu_mem=params['ldfx_decode_gpu_mem']))
+    assert len(p.steps) == len(params['ldfx_steps'])
+    for st in p.steps:
+        st.pop('lane', None), st.pop('order', None)
+    return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke', 'ldfx'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld,
+                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld, 'ldfx': ldfx,
                             'ld_smoke': lambda c, prm: ld(c, prm, smoke=True)}[a.which](a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition
