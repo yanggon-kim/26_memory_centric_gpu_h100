@@ -8,6 +8,35 @@ def request(name,prefill=False):
 
 
 class Mask(unittest.TestCase):
+    def test_decode_preemptions_keep_native_order_and_held_seats(self):
+        class Queue(list):
+            def prepend_request(self,value):self.insert(0,value)
+        p=request('held_prefill',True);d0=request('decode0');d1=request('decode1')
+        pending=request('new',True);skipped_request=request('skip',True)
+        waiting=Queue([pending]);skipped=Queue([skipped_request])
+        scheduler=types.SimpleNamespace(running=[p,d0,d1],waiting=waiting,skipped_waiting=skipped,max_num_running_reqs=3)
+        def original():
+            scheduler.waiting.prepend_request(scheduler.running.pop())
+            scheduler.waiting.prepend_request(scheduler.running.pop())
+            return 'preempted'
+        schedule_phase(scheduler,original,'decode',Queue)
+        self.assertEqual(scheduler.running,[p]);self.assertEqual(waiting,[d0,d1,pending])
+        self.assertIs(scheduler.waiting,waiting);self.assertIs(scheduler.skipped_waiting,skipped)
+        self.assertEqual(skipped,[skipped_request]);self.assertEqual(scheduler.max_num_running_reqs,3)
+
+    def test_preemption_before_native_failure_still_restores_pending_request(self):
+        class Queue(list):
+            def prepend_request(self,value):self.insert(0,value)
+        d=request('decode');p=request('held',True);waiting=Queue()
+        scheduler=types.SimpleNamespace(running=[d,p],waiting=waiting,skipped_waiting=Queue(),max_num_running_reqs=2)
+        def original():
+            scheduler.waiting.prepend_request(scheduler.running.pop())
+            raise RuntimeError('after native preemption')
+        with self.assertRaisesRegex(RuntimeError,'native preemption'):
+            schedule_phase(scheduler,original,'decode',Queue)
+        self.assertEqual(waiting,[d]);self.assertEqual(scheduler.running,[p])
+        self.assertIs(scheduler.waiting,waiting);self.assertEqual(scheduler.max_num_running_reqs,2)
+
     def test_held_decode_keeps_seat_and_order_during_prefill(self):
         d=request('decode');p=request('partial',True);w=request('waiting',True)
         waiting=[w];skipped=[]

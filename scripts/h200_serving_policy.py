@@ -33,6 +33,13 @@ def schedule_phase(scheduler,original,phase,empty_queue):
         scheduler.waiting=empty_queue();scheduler.skipped_waiting=empty_queue()
     try:return original()
     finally:
+        if phase!='prefill':
+            # Native KV preemption may enqueue an eligible decoder even while
+            # admission is masked. Preserve that mutation before restoring the
+            # original queues. Reversed individual prepends preserve FCFS order;
+            # priority queues retain their native comparator semantics.
+            for destination,temporary in ((waiting,scheduler.waiting),(skipped,scheduler.skipped_waiting)):
+                for request in reversed(list(temporary)):destination.prepend_request(request)
         # Preserve legitimate admission/preemption performed by the original
         # scheduler, then put held requests back in their original FCFS order.
         combined=list(scheduler.running)+held
@@ -63,7 +70,7 @@ class Policy:
         assert isinstance(token_budget,int) and 0<token_budget<=self.original_budget
         self.policy=policy;self.budget=token_budget;self.next_prefill=True
         self.rows=[];self.closed=False
-        self.identity={'version':'separate_policy_v1','policy':policy,'token_budget':token_budget,
+        self.identity={'version':'separate_policy_v2','policy':policy,'token_budget':token_budget,
             'scheduler_source_sha256':source_hash,'adapter_source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'clean_timing_eligible':False,
             'scope':'experimental policy with per-step checks; held requests keep seats and KV; internal vLLM running-count statistics during masking are not used as actual queue depth'}
