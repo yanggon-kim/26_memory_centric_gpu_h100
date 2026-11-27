@@ -714,6 +714,17 @@ def lc3_decide(a):
     print('->', a.out)
 
 
+
+def _engine_crashed(log):
+    """True when a vLLM engine died before the harness shut it down. vLLM 0.23 also logs EngineDeadError during a
+    normal SIGTERM shutdown (output_handler fails after teardown), so an EngineDeadError counts only if it appears before
+    the first '[shutdown]' line; a HIP/accelerator abort counts wherever it appears."""
+    t = log.read_text(errors='replace')
+    if 'hipError' in t or 'AcceleratorError' in t:
+        return True
+    i, j = t.find('EngineDeadError'), t.find('[shutdown]')
+    return i >= 0 and (j < 0 or i < j)
+
 def ld_rows(root, prm):
     """amendment 5 tables: one row per (step, rate) from cp_disagg traces; 10% warm-up excluded (cp_analyze.disagg_trace)"""
     plan = json.loads((root / 'launch_plan.json').read_text())
@@ -728,7 +739,7 @@ def ld_rows(root, prm):
         if not rec or not rec.get('command_completed'):
             continue
         run = A.run_dir(rec)
-        dead = sorted(f.name for f in run.glob('server_w*.log') if 'EngineDeadError' in f.read_text(errors='replace'))
+        dead = sorted(f.name for f in run.glob('server_w*.log') if _engine_crashed(f))
         status[-1]['engine_dead'] = dead  # a decode/prefill engine died mid-step (amendment 6): rates after it fail
         meta = json.loads((run / 'run.json').read_text())
         kv = meta['layout']['kv_bytes_per_token']
@@ -807,7 +818,7 @@ def ld2a_cmd(a):
         rq = t['requests']
         done = [r for r in rq if r['tokens'] == r['max_tokens'] and r['token_s']]
         ho = [r['token_s'][0] - r['prefill_done_s'] for r in done if r.get('prefill_done_s') is not None]
-        dead = sorted(f.name for f in run.glob('server_w*.log') if 'EngineDeadError' in f.read_text(errors='replace'))
+        dead = sorted(f.name for f in run.glob('server_w*.log') if _engine_crashed(f))
         res.append({'id': s['id'], 'setting': s.get('setting'), 'status': 'complete', 'requests': len(rq), 'complete': len(done),
                     'prefill_ms_per_1k_p50': st.median(ms) if ms else None, 'prefill_steps': len(ms),
                     'ttft_p50_s': A.pct([r['token_s'][0] - r['arrival_s'] for r in done], .5),

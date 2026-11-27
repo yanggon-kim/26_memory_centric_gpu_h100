@@ -493,3 +493,27 @@ mechanically, written to `ld2c` and committed before ld2c is submitted.
 - A consumer-engine death makes the crashed cell a lower bound. A comparison that is a loss only because of a
   crash-limited cell is reported as uncertain.
 - Total estimate: about 36 node-hours (≈ 36 units of the ≈ 490 remaining).
+
+**Phase A outcome (2026-11-27, job 562877, recorded before ld2b is submitted).**
+- The rule selected **ch16 PUT_ASYNC (the control)**, so `ld2_kv` = [16, "PUT_ASYNC"].
+- Producer single-prompt prefill p50 (ms per 1K tokens, prompts ≥ 16384), lprompt d3p1, 0.1 rps, 30 requests:
+
+  | Setting | Prefill | Complete | Real engine crash |
+  |---|---|---|---|
+  | ch16 PUT_ASYNC | 338 | 18/30 | w3 |
+  | ch16 PUT | 348 | 20/30 | w3 |
+  | ch2 PUT_ASYNC | 342 | 20/30 | w3 |
+  | ch4 PUT_ASYNC | 360 | 30/30 | none |
+  | ch1 PUT_ASYNC | 361 | 30/30 | none |
+  | colo4_whole | 195 | 30/30 | none |
+
+- Hand-off p99 was 0.08–0.09 s for every setting.
+- No eligible setting was ≤ 0.9 × the control. ch4 and ch1 were eligible but 6–7% slower than the control.
+- **HA is refuted.** RCCL channel count and send type do not explain the producer slowdown, which stays at 1.7–1.9×
+  colocated.
+- The crashes (`hipErrorLaunchOutOfResources`, consumer w3) occurred at 16 and 2 channels but not at 4 or 1. With one
+  run per setting this is not evidence of a channel effect, so the rule is applied as written.
+- **Analysis correction.** vLLM 0.23 also logs `EngineDeadError` during a normal SIGTERM shutdown. The engine-death flag
+  (`lc_analyze._engine_crashed`) now counts an `EngineDeadError` only before the first `[shutdown]` line, and counts any
+  HIP/accelerator abort. This removed false flags on colo4_whole. The ld/ldfx engine-death list and all ld decisions are
+  unchanged.
