@@ -77,6 +77,7 @@ def main(a):
     from shoreline_green import create
     original=baseline.run_trial
     cfg=json.loads(Path(a.config).read_text())
+    assert len(cfg['batch_sizes'])==len(cfg['context_lengths'])==1, 'resident producer requires exactly one workload shape'
     assert cfg['engine']['enforce_eager'] and cfg['engine']['compilation_config']=={'mode':0}
     assert cfg['warmup_trials']==3 and cfg['trials']==(3 if a.external_profiler else 10)
     conditioning=cfg.get('decode_conditioning')

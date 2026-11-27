@@ -1,1 +1,3 @@
 # GPU 0: GPU-d6a286c1-f8de-4287-55f5-2ba29b153b9c
+
+- Limitation resident_protocol_scope: Prior optimized graph restriction remains blocked; repeated model initialization prevented a complete fresh-model-per-point curve before preemption.. Evidence: h200/20261127_job16210814_priority/analysis/current_work_20261127.md. Tried: Versioned one-resident-model-per-acquisition eager protocol; bounded stock/full-green/40SM pilot before full proof and3fresh acquisitions. Resume: Never pool prior timings; retain exact outputs, actual decoder placement, all references and clock/isolation gates; optimized restriction remains independently blocked.

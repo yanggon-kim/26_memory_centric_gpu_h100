@@ -92,6 +92,7 @@ def main(a):
     import controlled_vllm_experiments as baseline
     from software_decode_experiments import dump
     original=baseline.run_trial;cfg=json.loads(Path(a.config).read_text())
+    assert cfg['batch_sizes']==[1] and len(cfg['context_lengths'])==1, 'prefill producer requires one batch-one workload shape'
     assert cfg['warmup_trials']==3 and cfg['trials'] in (3,10)
     assert not cfg['engine']['enforce_eager'] and not cfg.get('decode_conditioning')
     records={};initialized=False;expected=None

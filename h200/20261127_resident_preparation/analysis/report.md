@@ -71,3 +71,13 @@ The October consolidated report references treatment aggregate SHA256 `04906c57b
 Recomputation from retained raw inputs using the pinned runtime and existing mathematical reader produced a new versioned copy whose complete bytes exactly match the expected04906c57SHA. All four qualified original contrasts exactly reproduce their reported ratios/intervals;24profile/run/process/source-manifest/monitor provenance checks passed, with no model-output or clock rule relaxed. Evidence: `h200/20261127_resident_preparation/results/retained_treatment_requalification.json` and `results/requalified_historical_treatment_statistics.json`.
 
 This resolves reuse of those original bridge scopes through the reconstructed copy, not by silently modifying the old file. The original canonical-path checksum difference remains documented. No GPU recapture or32B transfer is inferred. The12independent native-service cells have separately verified direct source hashes and are unaffected. Resume through the source-hashed reuse audit and reconstructed copy; never overwrite the historical artifact to hide the discrepancy.
+
+## 2026-11-27: prospective native connector request-ID gate
+
+CPU inspection of pinned vLLM found that `InputProcessor.assign_request_id` appends independent random suffixes on each engine, while P2pNcclConnector transport keys contain the full internal request ID and layer name. Identical external IDs alone therefore do not establish identical producer/consumer tensor keys. Source paths/checksums and evidence are in `h200/20261127_resident_preparation/results/serving_capability_audit.json`. No GPU connector failure or transfer is claimed.
+
+Before the P3b/P5a functional pilot, use the installed compatibility flag `VLLM_DISABLE_REQUEST_ID_RANDOMIZATION=1` prospectively on both isolated workers, assign globally unique paired IDs, and verify actual internal IDs plus per-layer send/receive keys. The flag is deprecated: fail closed if unavailable or keys disagree, then implement a versioned key adapter before loaded comparisons. The current allocation does not run this connector pilot; paired serving results remain pending.
+
+## Prospective resident shape guard
+
+Resident SM producers now reject configurations containing multiple workload shapes; resident prefill producers additionally require batch1. Their cached controlled-run responses are valid for exactly one declared shape per producer. Existing six CPU binding/barrier checks passed. These guards apply to future frozen cohorts; job16228671 keeps its already frozen source and single-shape configuration.

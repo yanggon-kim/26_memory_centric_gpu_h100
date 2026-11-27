@@ -1,6 +1,6 @@
 {
   "status": "CPU_source_audit_only",
-  "updated_utc": "2026-11-27T16:55:26.410705+00:00",
+  "updated_utc": "2026-11-27T18:03:32.078711+00:00",
   "installed_sources": [
     {
       "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/scheduler.py",
@@ -33,6 +33,10 @@
     {
       "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/tensor_memory_pool.py",
       "sha256": "03698c4c5289d73058128d203e17b5ebafa6b354bf80068be19b3db542cc6d37"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/engine/input_processor.py",
+      "sha256": "f3a1c74f59d767a20c9b3eb8f7d2d854b740924b40656e66636f2c9b4ec4764e"
     }
   ],
   "P3a": {
@@ -65,7 +69,13 @@
       "actual payload/send-completion/receiver-load records and conditional physical-link counters",
       "both devices energy,KV seats/backpressure/preemptions and timeouts",
       "versioned source/runtime identity,source/clock/isolation gates and samepair controls"
-    ]
+    ],
+    "request_id_transport_gate": {
+      "status": "CPU source finding; GPU connector smoke pending",
+      "default_hazard": "InputProcessor.assign_request_id independently appends an eight-character random suffix in each engine; native connector uses full internal request_id plus layer name as tensor key. Equal external IDs alone do not establish matched transport keys.",
+      "bounded_prospective_remedy": "For an isolated pilot, set installed VLLM_DISABLE_REQUEST_ID_RANDOMIZATION=1 before engine construction on both workers, generate globally unique identical request IDs across the pair, log and verify actual internal IDs and tensor keys. This compatibility environment flag is deprecated in the pinned runtime; fail closed if absent or keys differ.",
+      "claim_limit": "No connector deadlock or successful GPU transfer has been observed by this CPU inspection."
+    }
   },
   "new_GPU_measurements": false,
   "P4a": {
