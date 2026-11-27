@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import statistics
 import struct
+import tempfile
 import threading
 import time
 import traceback
@@ -19,7 +20,17 @@ def digest(rows):
 
 
 def dump(path, data):
-    path.write_text(json.dumps(data, indent=2) + '\n')
+    path=Path(path)
+    payload=json.dumps(data,indent=2)+'\n'
+    temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w',dir=path.parent,
+                prefix='.'+path.name+'.',suffix='.tmp',delete=False) as stream:
+            temporary=Path(stream.name)
+            stream.write(payload)
+        temporary.replace(path)
+    finally:
+        if temporary is not None:temporary.unlink(missing_ok=True)
 
 
 def validate(path):

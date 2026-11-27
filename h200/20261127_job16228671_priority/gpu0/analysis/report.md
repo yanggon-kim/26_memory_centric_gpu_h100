@@ -35,3 +35,23 @@ The prior fresh-model-per-point cohort showed an output-projection symbol/grid v
 | 0.6 | 80 | False | NA | NA |
 | 0.45 | 56 | False | NA | NA |
 | 0.3 | 40 | False | NA | NA |
+
+## 2026-11-27: transient incremental-manifest read during rewrite
+
+Two CPU progress reads of job16228671's active acquisition2 `gpu0/runs/resident_b1_c4096_a2/resident_sweep.json` encountered an empty JSON payload while the producer was rewriting it; a following filesystem listing showed the manifest present at about1MiB and the producer still running. The shared `software_decode_experiments.dump` writes directly to the destination. This is a live-reader/preemption-preservation limitation, not an observed GPU/output failure. Conclusions must use finalized parseable artifacts; an interrupted in-place rewrite could lose the last manifest snapshot.
+
+Bounded remedy: version the shared dump helper to write a unique sibling temporary file and atomically replace the destination, preserving identical JSON bytes and the previous complete snapshot if a write/rename fails. This applies only to newly frozen cohorts; the current core source stays unchanged. Resume validation after producer completion, preserving partial/invalid artifacts if interrupted, and verify final per-condition outputs/checksums before declaring the acquisition complete.
+
+- Limitation resident_b1_c4096_a2: Resident curve clocks fail the predeclared envelope; all trials retained. Evidence: /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu0/runs/resident_b1_c4096_a2/resident_sweep.json. Tried: New separate protocol; bounded actual-kernel proof, independent HF exact reference, original3x10 clock/source/isolation gates. Resume: Inspect the saved failure; do not pool protocols or resample for favorable clocks. Continue eligible full-GPU cases when the captured curve is quality-limited..
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
