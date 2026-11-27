@@ -84,10 +84,14 @@ def fig_pd(points, out):
     fig.savefig(out / 'l3_decode_share_vs_pd.png', dpi=150)
 
 
-POL_ORDER = ['whole', 'sep2048', 'mix256', 'mix512', 'mix1024', 'mix2048', 'mix4096', 'mix8192']
+POL_ORDER = ['whole', 'sep2048', 'mix256', 'mix512', 'mix1024', 'mix2048', 'mix4096', 'mix8192',
+             'colo4_whole', 'colo4_mix2048', 'd1p3', 'd2p2', 'd3p1']
 # separate policies in neutral ink (whole dashed so a tie with sep2048 stays visible); mixed budgets in fixed hue order
 POL_STYLE = {'whole': (INK, '--'), 'sep2048': (INK2, '-'), 'mix256': (SER[0], '-'), 'mix512': (SER[2], '-'),
-             'mix1024': (SER[3], '-'), 'mix2048': (SER[1], '-'), 'mix4096': (SER[6], '-'), 'mix8192': (SER[4], '-')}
+             'mix1024': (SER[3], '-'), 'mix2048': (SER[1], '-'), 'mix4096': (SER[6], '-'), 'mix8192': (SER[4], '-'),
+             # amendment 5: colocated four-GPU deployments keep their single-GPU policy colour; disaggregated ratios
+             'colo4_whole': (INK, '--'), 'colo4_mix2048': (SER[1], '-'), 'd1p3': (SER[0], '-'), 'd2p2': (SER[2], '-'),
+             'd3p1': (SER[6], '-')}
 
 
 def fig_goodput(series, out, name, rows=(('goodput_rps', 'SLO goodput (rps)'),)):
@@ -110,7 +114,12 @@ def fig_goodput(series, out, name, rows=(('goodput_rps', 'SLO goodput (rps)'),))
             if i == len(rows) - 1:
                 ax.set_xlabel('offered load (rps)')
         axs[i][0].set_ylabel(lab)
-    axs[0][-1].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0), fontsize=8)
+    hl = {}  # union over panels: a series present in one workload only still gets a legend entry
+    for ax in axs.flat:
+        for h, lb in zip(*ax.get_legend_handles_labels()):
+            hl.setdefault(lb, h)
+    order = sorted(hl, key=lambda p: POL_ORDER.index(p) if p in POL_ORDER else 99)
+    axs[0][-1].legend([hl[k] for k in order], order, loc='upper left', bbox_to_anchor=(1.0, 1.0), fontsize=8)
     fig.tight_layout()
     fig.savefig(out / f'{name}.png', dpi=150)
 
@@ -145,6 +154,14 @@ def main(a):
     for exp, s in good.items():
         fig_goodput(s, a.out, f'goodput_{exp}', (('goodput_rps', 'SLO goodput (rps)'),
                                                   ('goodput_stall1000_rps', 'goodput, stall cap (rps)')))
+    if a.ld:  # amendment 5/6: ld tables (crashed steps already replaced by their _fx re-runs)
+        s = {}
+        for r in json.loads(a.ld.read_text())['rows']:
+            g = s.setdefault(r['workload'], {}).setdefault(r['policy'], {})
+            for k in ('goodput_rps', 'goodput_stall1000_rps'):
+                g.setdefault(k, []).append((r['rate'], r[k]))
+        fig_goodput(s, a.out, 'goodput_ld', (('goodput_rps', 'SLO goodput, 4 GPUs (rps)'),
+                                             ('goodput_stall1000_rps', 'goodput, stall cap (rps)')))
     print('figures ->', a.out)
 
 
@@ -153,5 +170,6 @@ if __name__ == '__main__':
     q.add_argument('--lc1', type=Path, required=True)
     q.add_argument('--lc2', type=Path)
     q.add_argument('--lc3', type=Path, nargs='+', help='lc3 tables, then the lc3fx re-run tables')
+    q.add_argument('--ld', type=Path, help='ld_tables.json (lc_analyze.py ld)')
     q.add_argument('--out', type=Path, required=True)
     main(q.parse_args())

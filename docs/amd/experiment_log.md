@@ -568,3 +568,22 @@ All times CDT. Result root: `results/amd_20261018_mi300x/` (large raw files stay
   - Under a 1 s worst-gap cap, only mix2048 is feasible on lctx and no policy on lprompt.
   - Decode attention runs at ≈ 3 TB/s of KV on both 32B and 7B.
   - No post-MALL byte counter exists (11 tested).
+
+### 2026-11-26 → 2026-11-27 — lc follow-on: disaggregation at long prompts (ld, ldfx)
+
+- Design amendments 5 (section 15) and 6 (section 16) of `docs/amd/lc_campaign_design_20261124.md`, each committed
+  before its data. Results: report section 10.
+- Jobs:
+  - smoke 559804 (0:05, 2/2 steps);
+  - ld 560897 (7:26, 16/16 steps exited normally);
+  - ldfx 561983 (1:54, 3/3 re-runs at consumer gpu_mem 0.70).
+  All on mi3008x. Published `results_published/amd_20261126_mi300x_lc_ld` and `results_published/amd_20261127_mi300x_lc_ldfx`.
+- Headline results:
+  - Primary SLO: colo4_whole ≥ 1.6 / ≥ 0.8 rps (lctx / lprompt) beats every disaggregated ratio (best ≥ 0.4 / 0.3).
+  - Producer prefill is 1.6–2.0× slower than colocated (connector cost). KV hand-off p99 ≤ 0.12 s.
+  - Stall SLO: d3p1 wins lprompt (0.3 vs 0.2); lctx d2p2 ties mix2048 (0.4, crash-limited).
+  - H1 partly supported, H2 rejected, H3 passes.
+- Failures kept:
+  - consumer-engine `hipErrorLaunchOutOfResources` in 4 ld steps and again in both lctx d2p2 re-runs (as in s5
+    deviation 15);
+  - lprompt d3p1 seed 202 receive-buffer overflow spilled to the host pool (no failure).

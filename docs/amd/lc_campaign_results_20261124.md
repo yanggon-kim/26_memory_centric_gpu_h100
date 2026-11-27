@@ -1,7 +1,7 @@
 # Long-context and long-output chunked prefill on MI300X — results
 
-Status: **FINAL** (lc1, lc2, lc3 and the lc3fx re-runs in). Design and pre-registration:
-`docs/amd/lc_campaign_design_20261124.md` (amendments 1–4). Handoff: `docs/amd/long_context_chunked_prefill_20261124.md`. Baseline: the November 18 campaign.
+Status: **FINAL** (lc1, lc2, lc3 and the lc3fx re-runs in). Section 10 adds the follow-on disaggregation experiment
+(ld and ldfx, amendments 5–6). Design and pre-registration: `docs/amd/lc_campaign_design_20261124.md` (amendments 1–6). Handoff: `docs/amd/long_context_chunked_prefill_20261124.md`. Baseline: the November 18 campaign.
 
 All numbers unless labelled "7B": Qwen2.5-32B, BF16, one MI300X per lane (TP1), vLLM 0.23.0 V1 in process, ROCM_ATTN, CUDA graphs
 FULL_AND_PIECEWISE ≤ 512 tokens unless "eager". 256 KiB of KV per token, 64 GB of weights. Clocks are not controlled.
@@ -53,6 +53,12 @@ MI300X only (mi3008x, 8 lanes × 1 GPU per job; smoke on mi3001x). Second model:
 
    Chunking trades worst-case gaps for throughput and per-request p95 ITL. The boundary in P:D lies between 0.6 and 5
    for throughput, but no P:D boundary exists for worst-case stalls.
+6. **Disaggregation at long prompts** (section 10; four MI300X, P2pNccl KV transfer). Under the primary SLO, four
+   colocated whole-prompt engines win clearly: lctx ≥ 1.6 vs ≤ 0.4 rps, lprompt ≥ 0.8 vs 0.3. On this stack,
+   producers prefill 1.6–2.0× more slowly than colocated engines (connector cost). Disaggregation removes stalls: the
+   worst gap between tokens stays ≤ 0.3 s, against 0.9–69 s for colocated whole. Under the 1 s stall cap, 3P1D beats the
+   best colocated deployment on lprompt (0.3 vs 0.2 rps) and ties colocated mix2048 on lctx (0.4). The KV hand-off adds
+   ≤ 0.12 s.
 
 ## 1. Platform, controls and failed cases
 
@@ -366,9 +372,13 @@ rather than a bandwidth term, takes most of the time.
   MALL-resident KV), pays off in proportion. More CUs do not.
 - **Long prompts are where a monolithic mixed scheduler fails, in both directions.** Mixing long-prefix chunks with
   decode costs 2–5× sustained rate (p95 SLO). Separating them on the same device costs multi-second worst-case
-  stalls. Neither policy meets both SLOs above a very low rate. This is the strongest measured argument here for
-  disaggregation: run long prefill on compute-rich parts and decode on a bandwidth-rich part. The November 18 s4
-  campaign measured that 3P1D wins on prefill-heavy traffic.
+  stalls. Neither policy meets both SLOs above a very low rate.
+- **Disaggregation fixes the stall, not the throughput, at these lengths on this stack** (section 10). Separate
+  decode devices keep worst-case gaps ≤ 0.3 s and win under a stall cap on lprompt. Under the p95 SLO they lose 2.7–4× (both
+  ends are ladder-censored lower bounds) to colocated whole-prompt engines, because the KV connector slows producer prefill 1.6–2.0×. For a split
+  compute-rich prefill / bandwidth-rich decode design, the KV export path must not tax prefill. This is an
+  implementation requirement the area model should carry: producer prefill efficiency is the dominant term. The
+  link time (≤ 0.12 s p99 for 30 K-token prompts) is not.
 - **Prefill on long prefixes is limited by kernel efficiency, not bytes.** Chunked attention costs 1.9–3.6× at equal
   FLOPs, and request-side reads do not rise. A memory-centric decode part does not need extra bandwidth to absorb
   chunking. A prefill part needs efficient paged-prefix attention.
@@ -389,6 +399,10 @@ rather than a bandwidth term, takes most of the time.
 - One attention backend (ROCM_ATTN), TP1 only, max 32 K positions. Other kernels may change the chunked-attention
   penalty that drives the long-prompt loss.
 - Prefill-only steps under memory competition were not measured, so rank 3's sensitivity is inferred from mixed steps.
+- Disaggregation (section 10) used one connector (vLLM 0.23 P2pNccl, PUT_ASYNC) and two seeds. The producer slowdown
+  was not split between KV extraction and RCCL sends. lctx d2p2 is crash-limited (lower bound) because of a recurring
+  consumer-engine HSA out-of-resources abort whose cause is unknown. A lower-overhead connector could change the
+  primary-SLO answer.
 
 ## 9. Per-family summary
 
@@ -398,4 +412,129 @@ rather than a bandwidth term, takes most of the time.
 | L2 decode vs prefill attention | Decode attention is linear in N·S at ≈ 3 TB/s on both models. Chunk prefill attention is independent of the decoders' S. The hybrid saves 12–27%, falling to 4% at long prefix | N = 1 mixed step: chunk attention 83–88 ms vs 60 ms (backend launch effect) | N = 32 at S ≥ 16 K (capacity); 7B kernel-level split |
 | L3 pure-decode tail | Pure decode is ≥ 99.5% of time with short prompts on either model. One 8 K injection drops it to 78–89% at O 512. Serving share falls from ≈ 100% (P:D < 0.3) to 1–36% (P:D 175) | at P:D 11, the share varies 0.39–0.86 with load and policy, so P:D alone does not set it | GPU-active time on profiled serving windows (execution time includes executor overhead) |
 | L4 memory service | 1.88 TB/s co-runner: +16–20% decode, +18–23% mixed, flat in S. Compute co-runner +1–5% | the co-runner lowers decoder SCLK 12–16% and MCLK 9% | no post-MALL counter (11 tested); clock-controlled dose response |
-| L5 serving | Chunking wins at P:D ≤ 0.6 (held-out lo2048 0.75 vs 0.5) and loses on long prompts under the p95 SLO (lctx 0.2 vs 0.3, lprompt 0.0375 vs 0.15, 7B 2–5×). Under a 1 s stall cap only small-budget chunking is feasible on lctx | the 7B lctx stall result ties; bursty arrivals make nearly all policies infeasible | multi-seed 7B; a stall cap derived from users rather than chosen; disaggregated long-prompt serving at these lengths |
+| L5 serving | Chunking wins at P:D ≤ 0.6 (held-out lo2048 0.75 vs 0.5) and loses on long prompts under the p95 SLO (lctx 0.2 vs 0.3, lprompt 0.0375 vs 0.15, 7B 2–5×). Under a 1 s stall cap only small-budget chunking is feasible on lctx | the 7B lctx stall result ties; bursty arrivals make nearly all policies infeasible | multi-seed 7B; a stall cap derived from users rather than chosen |
+| Disaggregation (ld) | Removes stalls: max ITL ≤ 0.3 s vs 0.9–69 s colocated whole. 3P1D wins lprompt under the 1 s cap (0.3 vs 0.2) and ties lctx. It loses 2.7–4× under the p95 SLO because producer prefill is 1.6–2.0× slower | colo4_whole saturates the top of its ladder on both workloads (≥ 1.6, ≥ 0.8) | consumer-engine abort (lctx d2p2 lower bound); producer slowdown breakdown; a second connector |
+
+## 10. Disaggregation at long prompts (amendments 5–6)
+
+Design: section 15 (amendment 5) and section 16 (amendment 6) of the design document. Both were committed before the
+data they govern.
+
+Sources:
+- `results_published/amd_20261126_mi300x_lc_ld/` (job 560897, 16 steps). Its `ld_tables.json` is the analysis
+  before the re-runs.
+- `results_published/amd_20261127_mi300x_lc_ldfx/` (job 561983, 3 re-run steps). Its `ld_tables.json` is the
+  merged analysis used below.
+
+**Setup.** Four MI300X per deployment, Qwen2.5-32B, held-out seeds 201 and 202, Poisson arrivals.
+- `colo4_whole`: four colocated engines with whole-prompt separate scheduling.
+- `colo4_mix2048`: four colocated engines with mixed B 2048 scheduling.
+- `dXpY`: X prefill GPUs (producers, whole prompts) and Y decode GPUs (consumers, stock mixed scheduling). The KV
+  cache moves over vLLM's P2pNccl connector (RCCL, PUT_ASYNC).
+
+Rates are 4 × the per-GPU lc ladder. The SLOs are as in section 5: the primary SLO (p95 ITL), and the stall SLO,
+which adds a 1 s cap on each request's maximum ITL.
+
+### 10.1 Capacity (all-seed sustained rate, rps on 4 GPUs)
+
+| workload | SLO | colo4_whole | colo4_mix2048 | d1p3 | d2p2 | d3p1 |
+|---|---|---|---|---|---|---|
+| lctx (P:D 11) | primary | **≥ 1.6** (top of ladder) | 0.5 | 0.2 | ≥ 0.4 † | — |
+| lctx | stall 1 s | infeasible | **0.4** | 0.2 | **≥ 0.4** † | — |
+| lprompt (P:D 175) | primary | **≥ 0.8** (top of ladder) | 0.1 | — | 0.15 | 0.3 |
+| lprompt | stall 1 s | 0.2 | 0.1 | — | 0.15 | **0.3** |
+
+† lctx d2p2 is limited by an engine crash, so its rate is a lower bound. A decode engine died in both re-runs: seed
+202 during 0.5 rps, seed 201 during 0.6 rps, after seed 201 had passed 0.5. Under amendment 6, any comparison this
+cell decides is reported as uncertain.
+
+![ld goodput](figs/lc/goodput_ld.png)
+
+**Decisions.** A decision is a win or loss when the two rates are ≥ 1 ladder step apart.
+
+- **Primary SLO: disaggregation loses on both workloads.**
+  - lctx: best disaggregated ≥ 0.4 vs colo4_whole ≥ 1.6. lprompt: d3p1 0.3 vs colo4_whole ≥ 0.8.
+  - Every ratio loses to colo4_whole.
+  - Against colo4_mix2048, the result depends on the workload:
+    - lprompt: both ratios win (0.3 and 0.15 vs 0.1).
+    - lctx d1p3: loses (0.2 vs 0.5).
+    - lctx d2p2: uncertain (crash-limited).
+- **Stall SLO: disaggregation wins on lprompt and ties on lctx.**
+  - lprompt: d3p1 0.3 vs colo4_whole 0.2 is a win, two ladder steps. d2p2 0.15 loses to colo4_whole.
+  - lctx: d2p2 ≥ 0.4 vs colo4_mix2048 0.4 is uncertain. Both ratios beat colo4_whole, which is infeasible.
+    d1p3 0.2 loses to colo4_mix2048.
+
+**Hypotheses.**
+- H1 (stall win on both workloads): supported on lprompt; uncertain on lctx.
+- H2 (primary not-loss on lctx): rejected.
+- H3 (harness check): passes. colo4_whole reaches the top of its ladder on both workloads: lctx ≥ 1.6 against a
+  4 × single-GPU prediction of 1.2, and lprompt ≥ 0.8 against 0.6. Both are one ladder step above the prediction.
+
+### 10.2 Why disaggregation loses throughput here: prefill runs slower on producers
+
+**Producers prefill more slowly.** On a producer, one whole-prompt prefill step takes 1.6–2.0× as long as the same
+step on a colocated engine. Medians in ms per 1 K prompt tokens, single-prompt prefill steps from the step logs:
+
+| prompt length | colocated | producers |
+|---|---|---|
+| lprompt, 16–24 K | 184 | 331–340 |
+| lprompt, 24–33 K | 205 | 399–405 |
+| lctx, 8–16 K | 163 | 254 |
+
+The engine, policy, budget and model are identical. The difference is the KV connector on the producer: per-layer KV
+extraction, plus RCCL sends from the same GPU. Which of the two dominates was not isolated.
+
+**Low-load latency.** At the lowest rate, median time to first token (TTFT) is higher on disaggregated deployments:
+3.3–6.6 s vs 2.0–2.7 s colocated on lctx, and 10–11 s vs 4.7–6.3 s on lprompt.
+
+**Capacity follows prefill.** Prefill is the binding resource. Producer capacity per prefill GPU is about 0.1 rps on
+lprompt (d3p1 0.3 rps on three producers, d2p2 0.15 on two), against 0.2 per GPU for colo4_whole (0.8 / 4). On lctx,
+d1p3 sustains 0.2 rps on one producer, against 0.4 per GPU colocated.
+
+**Decode-side costs are small.** The KV hand-off, the first decode token after the prefill response, takes
+0.08–0.12 s at p99 on every disaggregated trace. Up to 29 K-token prompts were transferred.
+
+The measured throughput loss is therefore a property of this connector implementation on MI300X, not of the
+disaggregated topology. With the November 18 s4 result on shorter prefill-heavy prompts (3P1D 4.5 vs 3.0 rps), this
+places the break-even prompt length below the lctx and lprompt lengths for this stack.
+
+### 10.3 What disaggregation does buy: no stalls
+
+Consumers never run a prompt. Each request's maximum ITL (p99 across requests) on disaggregated deployments is
+48–280 ms at every rate and seed. Colocated deployments, at sustainable rates:
+- `colo4_mix2048`: 0.2–1.5 s at its sustainable rates, up to 3.0 s beyond them;
+- `colo4_whole`: 2.7–9.4 s on lctx and 0.9–69 s on lprompt.
+
+That is why colo4_whole fails the stall SLO on lctx at every rate, while disaggregated deployments pass it up to their
+TTFT limit. Under disaggregation the stall SLO costs nothing: primary and stall capacities are identical for every
+ratio. Disaggregated deployments are limited only by prefill throughput.
+
+### 10.4 Energy (joules per output token, all four boards, both seeds)
+
+At equal offered load, energy is mostly idle-power-dominated. The ordering follows prefill efficiency:
+
+| workload | rate | colocated (whole / mix2048) | d1p3 | d2p2 | d3p1 |
+|---|---|---|---|---|---|
+| lctx | 0.3 rps | 9.2–10.3 / 9.2–10.3 | 9.6–11.2 | 7.6–8.6 | — |
+| lprompt | 0.2 rps | 56–59 / 61–63 | — | 80–81 | 74–78 |
+| lprompt | 0.3 rps | 49–50 / 52–54 | — | 77–78 | 67–69 |
+
+On lprompt, disaggregation costs 25–60% more energy per output token, because prefill (most of the work) runs
+slower on producers. On lctx, d2p2 is 15–20% lower. The energy key in the tables is named
+`joules_per_output_token_two_boards` for historical reasons; it sums every board in the telemetry, here four.
+
+### 10.5 Failures (kept)
+
+- A decode-engine abort, `hipErrorLaunchOutOfResources` / `HSA_STATUS_ERROR_OUT_OF_RESOURCES` on a kernel dispatch,
+  occurred in four ld steps: lctx d2p2 on both seeds, lprompt d3p1 seed 201, and lprompt d2p2 seed 202. It occurred
+  again in both lctx d2p2 re-runs at consumer gpu_memory_utilization 0.70.
+  - Lowering memory use did not prevent it. The re-runs crashed later (0.5–0.6 vs 0.2–0.4 rps), which is
+    consistent with, but does not establish, a memory-related cause.
+  - The same abort appeared on decode workers in the November 20 s5 campaign (deviation 15).
+  - It occurs only on consumer engines with the P2pNccl connector. No colocated engine had it in this campaign.
+- After an abort, every remaining request in the step fails, and the analysis scores it as a failure. The capacity
+  of the crashed cells is therefore a lower bound. lprompt d2p2 seed 202 died at its top rate, above both seeds'
+  capacity (0.15), so its capacity is unaffected.
+- The lprompt d3p1 re-run (seed 201) ran clean and replaces the crashed original.
+- The single consumer of lprompt d3p1 seed 202 overflowed its 2 × 10¹⁰ B receive buffer 58 times. The overflow
+  spilled to the host pool as designed, and that seed passed 0.3 rps.
