@@ -9,3 +9,5 @@ No measurements yet. Primary: Qwen2.5-32B BF16/TP1 B1/C4096 SM curve. Secondary 
 - Prepared bounded import-order correction: results/capture_binding_import_preflight_preparation.json. Nine CPU contracts passed; no GPU validation, active frozen worker unchanged. Any use requires a fresh identified cohort and fresh placement proofs.
 
 - GPU1 completed a three-acquisition full-GPU physical DRAM capture comparison: [report](../gpu1/analysis/P2a_triplicate_counter_report.md). Replay/source/reader gates pass; clean-clock/L2/kernel/restricted-arm joins remain incomplete. No qualified clean bandwidth or latency inference.
+
+- GPU1 native controls complete: all10 condition curves qualified across132/112/96/80/56/40SM,3acquisitionsx10trials each. [Native report](native_controls_report.md). Useful payload is not physical HBM service or a decoder threshold.
