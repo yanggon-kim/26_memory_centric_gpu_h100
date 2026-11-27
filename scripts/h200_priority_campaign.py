@@ -786,6 +786,17 @@ def coordinator(args):
             'launch_cutoff':(end-dt.timedelta(seconds=reserve)).isoformat(), 'closeout_buffer_s':reserve,
             'monitor_period_s':.05, 'idle_required_s':10, 'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
             'seed':20261013, 'acquisitions':3, 'warmups':3, 'trials':10}
+    if getattr(args,'resident_first',False):
+        candidate=PACKAGE/'h200/20261127_job16228671_priority/gpu0/results/resident_curve_CPU_review.json'
+        if candidate.exists():
+            try:
+                from h200_resident_campaign import verify_published_core
+                base['published_core_gate']=verify_published_core(candidate)
+                write(root/'results/published_core_gate.json',base['published_core_gate'])
+            except (OSError,ValueError,KeyError,AssertionError) as error:
+                limitation(root,'published_core_gate','Prior broad curve certificate could not be verified: '+str(error),
+                    str(candidate),'Retain the current-allocation ordering gate instead',
+                    'Inspect prior source records; no cross-allocation timing qualification')
     jobs=[]
     for i, device in enumerate(devices):
         subroot=root/f'gpu{i}'

@@ -11,6 +11,34 @@ from h200_resident_sweep import conditions
 SOURCE_AT_IMPORT=Path(__file__).read_bytes()
 
 
+def verify_published_core(path):
+    """Reuse a completed broad-curve gate, never its latency across devices."""
+    from h200_review_allocation import case_records
+    from h200_priority_campaign import strict_reference_record
+    review=load(path);root=Path(review['source_session']).parent
+    assert review['complete_acquisition_set'] and (review['batch'],review['context'])==(1,4096)
+    assert sha(review['source_session'])==review['source_session_sha256']
+    assert sha(review['strict_HF_reference'])==review['strict_HF_reference_sha256']
+    reference=load(review['strict_HF_reference'])
+    assert strict_reference_record(reference,sha(reference['source_run']))
+    assert len(review['cases'])==27
+    for case in review['cases']:assert sha(case['run'])==case['run_sha256']
+    rows,issues,interrupted=case_records(root);assert not issues and not interrupted
+    rows=[r for r in rows if (r['batch'],r['context'])==(1,4096)]
+    clean=[r for r in rows if not r['pilot']]
+    assert len(clean)==27 and all(r['status']=='complete' and len(r.get('step_ms',[]))==10 for r in clean)
+    for acquisition in range(3):
+        selected=[r for r in clean if r['acquisition']==acquisition]
+        assert len(selected)==9 and sum(r['stock'] for r in selected)==1
+        assert {r['actual_sm_count'] for r in selected}=={132,112,96,80,56,40}
+        assert {r['suffix'] for r in selected}=={'','_interleaved','_end'}
+    proofs=[r for r in rows if r['pilot'] and '_proof_' in r['id']]
+    assert len(proofs)==7 and all(r['qualified'] and r['placement_passed'] for r in proofs)
+    return {'status':'completed_broad_capture_verified','review':str(path),'review_sha256':sha(path),
+        'protocol':review['protocol'],'original_qualified_timing':review['qualified_timing_curve'],
+        'scope':'Order/eligibility gate only: broad eager fallback curve was published. No old latency, clock qualification, source/UUID measurement or optimized restriction success transfers to this allocation.'}
+
+
 def build_environment(worker):
     assert hashlib.sha256(SOURCE_AT_IMPORT).hexdigest()==sha(worker.script/Path(__file__).name),'loaded resident orchestration differs from frozen source'
     import h200_resident_sweep
@@ -239,14 +267,24 @@ def secondary(worker,conditioned=False):
             'configs/*memory_settle_v3.json; results/clock_conditioning_pilot.json',
             'Own stock placement/HF proof and3x10acquisitions per shape, with all warmup/timed conditioning receipts verified',
             'Interpret decode only; added untimed conditioning changes cache history and TTFT. No deployment optimization or original unconditioned latency claim')
+    previous=worker.settings.get('published_core_gate');previous_verified=False
+    if previous:
+        try:
+            assert sha(previous['review'])==previous['review_sha256'],'published core certificate changed'
+            verified=verify_published_core(Path(previous['review']))
+            write(worker.root/'results/published_core_gate.json',verified);previous_verified=True
+        except (OSError,ValueError,KeyError,AssertionError) as error:
+            limitation(worker.root,'published_core_gate','Published core could not be reverified: '+str(error),
+                str(previous.get('review')),'Fail closed to the current allocation core gate',
+                'Inspect source/checksum failure; no old qualification or timing transfers')
     gate=worker.root.parent/'gpu0/results/eager_core_disposition.json'
-    while not gate.exists():
+    while not previous_verified and not gate.exists():
         outcome=worker.root.parent/'gpu0/results/worker_outcome.json'
         if outcome.exists():return {'status':'partial','reason':'core worker ended without an explicit published disposition; context expansion deferred'}
         if time.time()+900>=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']:
             return {'status':'partial','reason':'core disposition pending before context budget'}
         time.sleep(15)
-    if not load(gate)['allow_context_expansion']:
+    if not previous_verified and not load(gate)['allow_context_expansion']:
         return {'status':'partial','reason':'core disposition defers context expansion'}
     from h200_eager_first import shape_summary
     outcomes=[]

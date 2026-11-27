@@ -43,3 +43,5 @@ Exact monitoring command for the pending replacement:
 ```bash
 timeout 25s squeue -h -j 16233972 -o '%i|%T|%l|%Q|%M|%R'
 ```
+
+The full closed-allocation archive is verified: `/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261127_job16228671_priority_420321f2d9fa.tar.gz`, SHA256 `34f54163e5c9b9869a24867700c6f6b39993cda1f43225a49b593e9ea91183a4`. All 834 members (82,245,854 source bytes) and destination readback passed. This final transfer receipt and subsequent planning metadata are published after the archive snapshot; original raw captures remain intact.
