@@ -1,0 +1,19 @@
+{
+  "status": "prepared_not_launched",
+  "reason": "Original native L2 control timeout600s; Triton launcher waited in site ld wrapper before any measurement",
+  "old_worker_pid": 2817338,
+  "old_worker_root": "gpu1",
+  "new_root": "gpu1_native_linker",
+  "scope": "same owned job16210814 and same GPU1 UUID; validated idle CPU-worker transition; GPU0 frozen eager sweep unchanged",
+  "repair": "same GCC12.3 frontend with explicit-B/usr/bin native linker via versioned CC/CXX wrappers; no installed tool or system change",
+  "pilot_limit_s": 180,
+  "tests": "test_h200_spare_transition.py passed; py_compile; actual selected linker /usr/bin/ld",
+  "source_sha256": {
+    "h200_spare_linker_followup.py": "5a3d7c382a95a49b7129ad7583ec12d0fb38e93980269b75e659f913951bd94e",
+    "h200_host_cc.sh": "22c8f9de78dda061607dfaadba3faebb115d66b44b5b79408a43c338be0decaf",
+    "h200_host_cxx.sh": "015698fb0f8d5079c709797c78ae64aed73a637bb4ff54199fd5424abf8bcbd0",
+    "h200_eager_first.py": "a0ac82fcc03da76799df3a5fa0241bac0f583408027ab917298a6b1f27a082c7"
+  },
+  "after_counter": "separate3x10 clean/observed scheduling pilot at originalB1/C4096; contexts still wait for core disposition",
+  "source_cohort": "fresh; no pooling with original counter attempt"
+}

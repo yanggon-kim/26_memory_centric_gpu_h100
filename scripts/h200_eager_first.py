@@ -113,7 +113,7 @@ def secondary(worker):
             '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum,lts__t_bytes.sum',
             '--export',report,worker.py,worker.script/'shoreline_native.py','--gpu-uuid',worker.uuid,
             '--output',output,'--acquisition','0','--pilot','--profile-case','stream_512mib']
-        proc=worker.execute(label,command,timeout=600)
+        proc=worker.execute(label,command,timeout=worker.settings.get('native_counter_timeout_s',600))
         valid=False;values={};error=None
         try:
             from h200_ncu_read import resolve_report,parse_csv
@@ -141,6 +141,8 @@ def secondary(worker):
                     'logs/P2a_query_L2_metric.log','Read-only allocated metric query; no guessed sector-to-byte conversion',
                     'Inspect supported names/units before a versioned L2 capture; prior DRAM-only evidence stays separate')
     publish(worker.root,'H200 full-target L2 counter comparison or explicit blocking evidence')
+    if worker.settings.get('spare_scheduler_pilot') and time.time()+1800<dt.datetime.fromisoformat(worker.settings['launch_cutoff']).timestamp():
+        scheduler_pilot(worker)
     gate=worker.root.parent/'gpu0/results/eager_core_disposition.json'
     while not gate.exists():
         failed=worker.root.parent/'gpu0/results/worker_outcome.json'
