@@ -45,3 +45,17 @@ Unrestricted graph B1/C4096 after blocked restriction: timing qualified=False; s
 - Limitation eager_fallback_adapter_inheritance: Loaded original driver retains graph capture_bind flag when entering eager fallback, so the failed early-import adapter may also block that eager proof. This is an orchestration integration limitation, not demonstrated eager resource incompatibility.. Evidence: ../../scripts/h200_priority_campaign.py primary; original actual-loaded driver snapshot and source hashes. Tried: Versioned future-driver fix clears capture_bind at the engine boundary while retaining explicit per-step rebinding; resume CPU contracts passed; active loaded/frozen cohort untouched. Resume: Use fresh recorded driver/source cohort and same-engine eager stock/full/cut proofs; do not conclude eager restriction unsupported from adapter import failure.
 
 - Limitation eager_b1_c4096_stock_f100_a0_target_control_capture_bind_v2: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16184819_priority/gpu0/results/eager_b1_c4096_stock_f100_a0_target_control_capture_bind_v2.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f100_a0_proof_capture_bind_v2: Producer, exact output, granted-SM scope, or measured decoder placement gate failed. Evidence: h200/20261127_job16184819_priority/gpu0/logs/eager_b1_c4096_green_f100_a0_proof_capture_bind_v2.log. Tried: Versioned green-context path and separate NSYS measured-decode proof. Resume: Inspect preserved failure; bounded repair before reusing this arm.
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |

@@ -61,6 +61,16 @@ def main():
                     'results/integration_pilot.json','One fresh full-green NSYS pilot after identity-checked import preflight',
                     'Keep optimized restriction blocked; retain separately collected eager/full-GPU cases; no further repair cycle in this follow-up')
         publish(a.root,'H200 corrected integration pilot: preserve blocked placement')
+        # The separate eager fallback must not inherit the graph import hook.
+        worker.capture_bind=False;worker.expected=None
+        eager_stock=worker.case('eager',1.,0,stock=True,pilot=True)
+        if eager_stock['qualified'] and worker.reference(eager_stock['run'],'eager_target'):
+            worker.expected=load(eager_stock['run'])['cases'][0]['trials'][0]['output_ids']
+            eager_qualified=worker.curve('eager',stock_proof=eager_stock)
+            write(a.root/'results/followup_outcome.json',{'status':'eager_fallback_attempted',
+                  'optimized_restriction':'blocked','complete_qualified_eager_curve':eager_qualified,
+                  'stop':worker.last_curve_stop,'scope':'explicit eager/per-step route with same-engine full references'})
+            publish(a.root,'H200 corrected integration cohort: publish separate eager fallback disposition')
         return
     qualified=worker.curve('graph',stock_proof=stock)
     write(a.root/'results/followup_outcome.json',{'status':'curve_attempted','complete_qualified_curve':qualified,
