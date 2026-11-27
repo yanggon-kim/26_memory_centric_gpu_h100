@@ -1,0 +1,35 @@
+{
+  "recorded_utc": "2026-11-27T00:47:06.017413+00:00",
+  "classification": "CPU source review and prepared repair, not a GPU result",
+  "route": "capture_bind_v2",
+  "reviewed_vllm_version": "0.22.1",
+  "reviewed_package_sources": {
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/parallel_state.py": "262da086371ef6c8cb0025531ca1c29ad81fe0edd238616a9b245805d0133df2",
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/utils/torch_utils.py": "004dc095d77dcd5026b16ba827724162a252db0f260cd025ba2df6fddb1f04ea",
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/worker/gpu_model_runner.py": "690998ae7d9353ce42d7fc43f755fdbd72097c6e1f7a364dde435743408b00f2",
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/compilation/cuda_graph.py": "cbc474f9098386d2eef2e3ff61364c611fbc1338d9c259ad5a24439aa7f06412"
+  },
+  "adapter_sha256": "a182f5044d7192dcb78640741dca1512635792fe4c5187ce7fdb93c6d506af51",
+  "producer_sha256": "f4ddb8724dc47d1267d10b69a5198e9361d0b5f3e3c936abfa52cb5fc0c013b6",
+  "source_findings": [
+    "The reviewed graph_capture factory constructs its own torch.cuda.Stream. Both tensor/pipeline group context managers accept an explicit GraphCaptureContext.",
+    "The reviewed current_stream utility initializes a dedicated stream when its tracker is empty. Importing the module and then calling its tracked torch.cuda.set_stream can seed that tracker. These facts alone do not prove that decoder kernels escape."
+  ],
+  "activation": "After a failed original optimized pilot with an allocation record, make one versioned repair cycle: --rebind-step --bind-vllm-capture. Re-pilot stock and every green count. Actual decoder NSYS mapping, positive graph nodes and exact outputs remain required before timing.",
+  "actions": [
+    "Seed stream tracking after the pinned vLLM imports",
+    "Supply the owned green stream to both original group communicator contexts during graph capture",
+    "Restore module aliases on success and exception; keep installed package files unchanged",
+    "Record capture calls, driver resource proof and actual original-function/adapter hashes",
+    "Reject mixed execution routes when qualifying curve comparisons"
+  ],
+  "CPU_validation": {
+    "capture_binding_tests": 6,
+    "capture_binding_result": "passed under pinned Python runtime",
+    "curve_budget_tests": 4,
+    "curve_budget_result": "passed",
+    "priority_source_clock_route_gates": "passed including mixed-route rejection",
+    "resume_contracts": "passed; quality failures do not trigger eager restriction fallback"
+  },
+  "limitations": "No new GPU SM grant, graph placement, optimized repair success or latency is established. The old full-green proof remains interrupted and unproved. CUDA/runtime interoperability and actual capture-hook use must be inspected in the bounded GPU proof."
+}

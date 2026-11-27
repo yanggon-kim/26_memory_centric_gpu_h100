@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Green-stream decoder pilot; NSYS kernel evidence must prove actual restriction."""
 import argparse
+import contextlib
 import json
 import os
 from pathlib import Path
@@ -54,10 +55,15 @@ def main(a):
         return result
     baseline.run_trial=trial
     with torch.cuda.stream(stream):
-        if a.external_profiler:
-            import shoreline_decode
-            shoreline_decode.main(a)
-        else:baseline.main(a)
+        binding=contextlib.nullcontext()
+        if getattr(a,'bind_vllm_capture',False):
+            from h200_vllm_capture_binding import install
+            binding=install(torch,green,stream,a.output/'capture_binding_audit.json')
+        with binding:
+            if a.external_profiler:
+                import shoreline_decode
+                shoreline_decode.main(a)
+            else:baseline.main(a)
     dump(a.output/'green_allocation.json',{'status':'complete','allocation':proof,
           'all_kernel_restriction_proof':'requires matching NSYS kernel greenContextId; stream endpoints alone are insufficient'})
 
@@ -69,6 +75,7 @@ if __name__=='__main__':
     p.add_argument('--mode',default='timing');p.add_argument('--external-profiler',action='store_true')
     p.add_argument('--force-green',action='store_true',help='use a green context even for the full-allocation path control')
     p.add_argument('--rebind-step',action='store_true',help='bounded repair: explicitly rebind the green context and stream at each scheduler tick')
+    p.add_argument('--bind-vllm-capture',action='store_true',help='versioned repair: seed vLLM stream tracking and use the owned green stream for graph capture')
     p.add_argument('--rounding',choices=['ceil','nearest'],default='ceil')
     p.add_argument('--collect-worker-metadata',action='store_true');p.add_argument('--batch',type=int)
     p.add_argument('--context',type=int);p.add_argument('--generated-tokens',type=int,default=64)

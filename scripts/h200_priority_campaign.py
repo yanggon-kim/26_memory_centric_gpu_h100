@@ -158,13 +158,15 @@ class Worker:
         self.expected = None
         self.records = []
         self.rebind_step = False
+        self.capture_bind = False
         self.last_curve_stop = None
 
     def execute(self, label, command, gpu=True, timeout=1200):
         return self.hs.run(self.root, label, command, timeout, gpu=gpu, env=self.hs.environment())
 
     def case(self, engine, fraction, acq, pilot=False, stock=False, suffix='', context=4096, batch=1):
-        label = f'{engine}_b{batch}_c{context}_{"stock" if stock else "green"}_f{round(fraction*100)}_a{acq}' + ('_proof' if pilot else '') + suffix + ('_rebind_v1' if self.rebind_step else '')
+        route='capture_bind_v2' if getattr(self,'capture_bind',False) else 'rebind_v1' if self.rebind_step else 'original'
+        label = f'{engine}_b{batch}_c{context}_{"stock" if stock else "green"}_f{round(fraction*100)}_a{acq}' + ('_proof' if pilot else '') + suffix + ('_'+route if route!='original' else '')
         output = self.root / 'runs' / label
         c = config(self.root, engine, context, 3 if pilot else 10, batch)
         command = [self.py, self.script / 'shoreline_restricted_decode.py', '--config', c,
@@ -174,6 +176,8 @@ class Worker:
             command += ['--force-green']
             if self.rebind_step:
                 command += ['--rebind-step']
+            if getattr(self,'capture_bind',False):
+                command += ['--bind-vllm-capture']
         report = self.root / 'profiles' / label
         if pilot:
             command = [self.cuda / 'bin/nsys', 'profile', '--sample=none', '--cpuctxsw=none',
@@ -181,10 +185,14 @@ class Worker:
                        '--capture-range-end=stop', '--output=' + str(report)] + command + ['--external-profiler']
         process = self.execute(label, command)
         row = {'id': label, 'engine': engine, 'fraction': fraction, 'acquisition': acq, 'pilot': pilot,
-               'stock': stock, 'suffix': suffix, 'rebind_step':self.rebind_step,'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
+               'stock': stock, 'suffix': suffix, 'rebind_step':self.rebind_step,'repair_route':route,'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
                'status': 'failed', 'process_status': process['status'], 'qualified': False,
                'source_identity': self.settings['frozen_source_identity'], 'run': str(output / 'run.json')}
         row['producer_elapsed_s']=process.get('elapsed_s')
+        binding_audit=output/'capture_binding_audit.json'
+        if binding_audit.exists():
+            row['capture_binding_audit']=load(binding_audit)
+            row['capture_binding_audit_sha256']=sha(binding_audit)
         allocation = output / 'green_allocation.json'
         if allocation.exists():
             row['allocation'] = load(allocation)['allocation']
@@ -263,11 +271,12 @@ class Worker:
             if not proof['qualified']:
                 analyze_curve(self.root,self.records,engine,batch,context)
                 if engine=='graph' and not self.rebind_step and proof.get('allocation'):
-                    limitation(self.root,proof['id'],'Optimized placement pilot failed; bounded explicit per-tick rebinding repair follows',
+                    limitation(self.root,proof['id'],'Optimized pilot failed a required gate; bounded graph-capture stream binding and per-tick rebinding follows',
                                str((self.root/'results'/(proof['id']+'.json')).relative_to(PACKAGE)),
-                               'Initial context/stream binding and NSYS graph-node placement check',
-                               'Require a fresh proof for every count using the versioned rebind_v1 route')
+                               'Initial context/stream binding and NSYS check; pinned vLLM source creates an ordinary capture stream and initializes its stream tracker on first use',
+                               'Require exact outputs and a fresh proof for every count using the versioned capture_bind_v2 route; no success inferred from source inspection')
                     self.rebind_step=True
+                    self.capture_bind=True
                     return self.curve(engine,batch,context)
                 self.unrestricted_after_block(engine,batch,context)
                 self.last_curve_stop='proof'
@@ -514,6 +523,7 @@ class Worker:
 
 def analyze_curve(root, records, engine, batch=1, context=4096):
     from shoreline_statistics import hierarchical_interval, paired_ratio
+    route=lambda r:r.get('repair_route','rebind_v1' if r.get('rebind_step') else 'original')
     clean = [r for r in records if r['engine'] == engine and not r['pilot'] and not r['stock'] and
              r['batch'] == batch and r['context'] == context]
     points = []
@@ -525,12 +535,13 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     stock={'qualified':False,'scope':'unrestricted stock reference; its normalized self-ratio is exactly1'}
     if (len(refs)==3 and stock_proofs and all(r.get('qualified') for r in refs) and
         len({r['source_identity'] for r in refs})==1 and len({r['actual_sm_count'] for r in refs})==1 and
+        len({route(r) for r in refs})==1 and route(stock_proofs[-1])==route(refs[0]) and
         stock_proofs[-1]['source_identity']==refs[0]['source_identity'] and
         stock_proofs[-1]['actual_sm_count']==refs[0]['actual_sm_count']):
         pooled={m:max(r['clock']['clocks'][m]['maximum'] for r in refs)/min(r['clock']['clocks'][m]['minimum'] for r in refs)
                 for m in ('sm_clock_mhz','memory_clock_mhz')}
         if all(v<=1.05 for v in pooled.values()):
-            stock.update(qualified=True,actual_sm_count=refs[0]['actual_sm_count'],pooled_clock_ratio=pooled,
+            stock.update(qualified=True,execution_route=route(refs[0]),actual_sm_count=refs[0]['actual_sm_count'],pooled_clock_ratio=pooled,
                          latency_ms=hierarchical_interval([r['step_ms'] for r in refs]),sources=[r['id'] for r in refs])
     for fraction in FRACTIONS:
         rows = sorted([r for r in clean if r['fraction'] == fraction and
@@ -544,6 +555,8 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
         if (stock['qualified'] and len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
             fraction in proofs and 1. in proofs and stock_proofs and
             len({r['source_identity'] for r in combined})==1 and
+            len({route(r) for r in combined})==1 and
+            all(route(r)==route(rows[0]) for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
             all(r['source_identity']==rows[0]['source_identity'] for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
             len({r['actual_sm_count'] for r in rows}) == 1 and
             proofs[fraction]['actual_sm_count']==rows[0]['actual_sm_count'] and
@@ -554,7 +567,7 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                       for m in ('sm_clock_mhz', 'memory_clock_mhz')}
             point['pooled_clock_ratio'] = pooled
             if all(v <= 1.05 for v in pooled.values()) and len(green_refs) == 3:
-                point.update(qualified=True, latency_ms=hierarchical_interval([r['step_ms'] for r in rows]),
+                point.update(qualified=True,execution_route=route(rows[0]), latency_ms=hierarchical_interval([r['step_ms'] for r in rows]),
                     ratio=paired_ratio([r['step_ms'] for r in rows], [r['step_ms'] for r in refs]),
                     ratio_to_full_green=paired_ratio([r['step_ms'] for r in rows], [r['step_ms'] for r in green_refs]),
                     tokens_s=hierarchical_interval([r['tokens_s'] for r in rows]))
@@ -567,6 +580,7 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                                   'restricted_path_smallest_tested_sm_count':min((p['actual_sm_count'] for p in candidates),default=None),
                                   'scope': 'tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds'}
     result = {'engine': engine, 'batch':batch,'context':context,'classification': 'measured-real-GPU', 'points': points, 'thresholds': thresholds,
+              'execution_routes':sorted({route(r) for r in records if (r['engine'],r['batch'],r['context'])==(engine,batch,context)}),
               'unrestricted_stock':stock,'complete_qualified_curve': stock['qualified'] and all(p['qualified'] for p in points),
               'scope': 'pure decode after verified prefill barrier, wall ms/tick; primary ratios use unrestricted stock; full-green ratios also retained; physical area/HBM capacity unchanged'}
     write(root/'results'/f'curve_{engine}_b{batch}_c{context}.json', result)
@@ -785,7 +799,9 @@ def bootstrap(args):
             ('runtime_check',[runtime,'-c',"import torch,vllm,transformers; assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda); print([(str(torch.cuda.get_device_properties(i).uuid),torch.cuda.get_device_properties(i).name,torch.cuda.get_device_properties(i).multi_processor_count,torch.cuda.mem_get_info(i)) for i in range(2)])"],180),
             ('model_download',[runtime,PACKAGE/'scripts/materialize_config.py','--model','qwen32b','--stage','smoke','--revision','5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd','--download','--output',PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json'],5400),
             ('cpu_contracts',[runtime,PACKAGE/'scripts/test_cpu_contracts.py'],300),
-            ('priority_contracts',[runtime,PACKAGE/'scripts/test_h200_priority.py'],300)]
+            ('priority_contracts',[runtime,PACKAGE/'scripts/test_h200_priority.py'],300),
+            ('curve_budget_contracts',[runtime,PACKAGE/'scripts/test_h200_curve_budget.py'],300),
+            ('capture_binding_contracts',[runtime,PACKAGE/'scripts/test_h200_vllm_capture_binding.py'],300)]
     try:
         for label,command,limit in stages:
             print('STAGING',label,flush=True)

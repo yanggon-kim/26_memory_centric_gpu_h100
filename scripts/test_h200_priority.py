@@ -63,6 +63,8 @@ def main():
         assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
         bad=copy.deepcopy(records);bad[0]['qualified']=False
         assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
+        bad=copy.deepcopy(records);bad[-1]['repair_route']='capture_bind_v2'
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve'], 'different repair programs must not be pooled'
     requested=[]
     resource=types.SimpleNamespace(sm_count=132,coscheduled_alignment=8,min_partition_size=16)
     class Device:
