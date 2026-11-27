@@ -161,7 +161,7 @@ def main():
         def tolist(self):return self.rows
     calls=[];fail_first=[False]
     class Model:
-        def __init__(self):self.count=0
+        def __init__(self):self.count=0;self.config=object()
         def eval(self):return self
         def to(self,device):return self
         def generate(self,**kwargs):
@@ -174,11 +174,14 @@ def main():
              manual_seed=lambda seed:None,bfloat16='BF16',tensor=lambda rows,**kw:Tensor(rows),
              ones_like=lambda t:Tensor([[1]*len(row) for row in t.rows]),inference_mode=contextlib.nullcontext)
     transformers=types.SimpleNamespace(__version__='CPU-fake',
+             StaticCache=lambda **kwargs:object(),
              AutoModelForCausalLM=types.SimpleNamespace(from_pretrained=lambda *a,**kw:Model()))
     nvml=types.SimpleNamespace(nvmlInit=lambda:None,nvmlShutdown=lambda:None)
     with tempfile.TemporaryDirectory() as name, \
          patch.dict(sys.modules,{'torch':torch,'transformers':transformers,'pynvml':nvml}), \
-         patch.object(gpu_target,'select',return_value=(None,None)),patch.object(gpu_target,'verify_cuda'):
+         patch.object(gpu_target,'select',return_value=(None,None)),patch.object(gpu_target,'verify_cuda'), \
+         patch('software_decode_experiments.make_decode',return_value=object()), \
+         patch('software_decode_experiments.controlled_trial',return_value={'output_ids':[[11,12,13]],'output_sha256':'CPU-fake','cache_length':6}) as static_calls:
         root=Path(name);model=root/('a'*40);model.mkdir()
         source={'status':'complete','config':{'model_path':str(model),'model_revision':model.name,'seed':20261013,
                     'model_id':'CPU-synthetic','config_sha256':'CPU-fake'},
@@ -195,6 +198,7 @@ def main():
                 else:raise AssertionError('reference harness did not enforce its exit gate')
             assert json.loads(output.read_text())['status']==('failed' if invalid else 'passed')
         assert len(calls)==12
+        assert static_calls.call_count==12, 'both full-shape StaticCache warmup/trial sets must execute'
     from h200_real_kv_smoke import verify_cache_transfer
     class KV:
         ndim=4;shape=(1,2,3,4);dtype='BF16'

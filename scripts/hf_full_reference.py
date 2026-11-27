@@ -1,10 +1,37 @@
 #!/usr/bin/env python3
-"""Independent full-length HF dynamic-cache reference; never a timing baseline."""
+"""Independent full-length HF dynamic and strict StaticCache output gates."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 from h200_session import dump
+
+
+def static_cache_gate(model,torch,transformers,prompt,case,reference,save):
+    from software_decode_experiments import controlled_trial,make_decode
+    maximum=case['context_length']+case['generated_tokens']
+    cache=transformers.StaticCache(config=model.config,max_cache_len=maximum)
+    decode=make_decode(model,cache,maximum,torch,False)
+    result={'status':'running','adapter':'unchanged controlled_trial/make_decode; uncompiled default SDPA boolean mask',
+            'adapter_sha256':hashlib.sha256((Path(__file__).parent/'software_decode_experiments.py').read_bytes()).hexdigest(),
+            'maximum_cache_length':maximum,'warmups':[],'trials':[],
+            'scope':'matching full shape/count correctness only; no timing, energy or compiled-HF claim'}
+    save(result)
+    with torch.inference_mode():
+        for i in range(6):
+            trial=controlled_trial(model,cache,decode,prompt,case['generated_tokens'],torch)
+            row={'output_ids':trial['output_ids'],'output_sha256':trial['output_sha256'],
+                 'cache_length':trial['cache_length'],'matches_dynamic_reference':trial['output_ids']==reference,
+                 'matches_source':all(trial['output_ids']==t['output_ids'] for t in case['trials'])}
+            result['warmups' if i<3 else 'trials'].append(row);save(result)
+    result['passed']=all(t['matches_dynamic_reference'] and t['matches_source'] and
+        t['cache_length']==case['context_length']+case['generated_tokens']-1 for t in result['warmups']+result['trials'])
+    result['status']='passed' if result['passed'] else 'failed'
+    result['first_differences']=[{'request':i,'token_index':j,'reference':ref,'actual':actual}
+        for i,(a,b) in enumerate(zip(reference,result['trials'][0]['output_ids']))
+        for j,(ref,actual) in enumerate(zip(a,b)) if ref!=actual][:20]
+    save(result)
+    return result
 
 
 def main():
@@ -40,7 +67,7 @@ def main():
             'source_sha256':hashlib.sha256(args.source_run.read_bytes()).hexdigest(),
             'prompt_ids':case['prompt_ids'],'prompt_sha256':case['prompt_sha256'],
             'batch':case['batch_size'],'context':case['context_length'],'generated_tokens':case['generated_tokens'],
-            'precision':'BF16','reference_program':'HF model.generate; dynamic cache; SDPA',
+            'precision':'BF16','reference_program':'HF generate dynamic cache plus unchanged controlled StaticCache SDPA gate',
             'attention_mask_policy':'explicit all-ones; every supplied prompt ID is active',
             'versions':{'torch':torch.__version__,'transformers':transformers.__version__,'cuda':torch.version.cuda},
             'scope':'correctness-only; no timing or energy claims','warmups':[],'trials':[]}
@@ -63,7 +90,12 @@ def main():
                      for j,(ref,actual) in enumerate(zip(a,b)) if ref!=actual]
         comparisons.append({'trial':index,'identical':not differences,'difference_count':len(differences),
                             'first_differences':differences[:20]})
-    result.update(status='passed' if len(hashes)==1 and all(x['identical'] for x in comparisons) else 'failed',
+    dynamic_passed=len(hashes)==1 and all(x['identical'] for x in comparisons)
+    def save_static(value):
+        result['static_cache_gate']=value
+        dump(args.output,result)
+    static=static_cache_gate(model,torch,transformers,prompt,case,reference,save_static)
+    result.update(status='passed' if dynamic_passed and static['passed'] else 'failed',dynamic_cache_gate_passed=dynamic_passed,
                   reference_outputs_identical=len(hashes)==1,source_comparisons=comparisons)
     if result['status']=='failed' and comparisons[0]['first_differences']:
         first=comparisons[0]['first_differences'][0]
@@ -84,6 +116,8 @@ def main():
     dump(args.output,result)
     nvml.nvmlShutdown()
     print(json.dumps({'status':result['status'],'reference_outputs_identical':result['reference_outputs_identical'],
+                      'dynamic_cache_gate_passed':dynamic_passed,'static_cache_gate_passed':static['passed'],
+                      'static_first_differences':static['first_differences'][:2],
                       'first_differences':comparisons[0]['first_differences'][:2]},indent=2))
     raise SystemExit(0 if result['status']=='passed' else 1)
 

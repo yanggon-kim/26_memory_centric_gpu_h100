@@ -52,3 +52,7 @@ Resume policy: run the target B1/C4096 bounded optimized smoke and exact HF gate
 Follow-up: the authorized replacement job **16184819** was submitted using the command above. See `../../20261125_priority_preparation/results/resubmission_16184819.json`. Its future measurements belong to a fresh allocation and are not pooled into this report.
 
 Source persistence audit: all99 frozen Python sources for each device survive on shared storage and match their hash names (`../results/source_persistence_audit.json`). The legacy process records do not explicitly identify an import-time campaign-driver hash. The next launcher exposes its loaded driver bytes to the existing supervisor snapshot mechanism; no legacy field is fabricated.
+
+## Later CPU correctness-scope audit
+
+This allocation's full-length32B C4096 HF reference uses dynamic-cache SDPA. The historical32B StaticCache smoke coversC128; matching C4096 StaticCache agreement is not demonstrated by it. No new StaticCache mismatch is claimed. See `h200/20261127_resident_preparation/results/reference_gate_audit.json` and the limitations register. Existing clock-rejected timings remain unqualified; physical captures keep their recorded dynamic-reference scope. The next versioned reference requires both full-shape cache routes and the exact source checksum. This follow-up note postdates the archived allocation snapshot and adds no GPU measurement.

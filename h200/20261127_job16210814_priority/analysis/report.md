@@ -41,3 +41,7 @@ The project archive contains all838 inventoried regular files (153,536,865 sourc
 ## Later CPU launch-path audit
 
 [The saved eager trace catalog](../../20261127_resident_preparation/analysis/eager_decoder_grid_catalog.md) records an actual attention-output-projection symbol/grid change between112and96SM, under the original frozen source and settings. See the GPU0 report for its interpretive limitation. This CPU follow-up and its notes postdate the verified archive snapshot and are published separately in Git; original raw traces are unchanged.
+
+## Later CPU correctness-scope audit
+
+This allocation's full-length32B C4096 HF reference uses dynamic-cache SDPA. The historical32B StaticCache smoke coversC128; matching C4096 StaticCache agreement is not demonstrated by it. No new StaticCache mismatch is claimed. See `h200/20261127_resident_preparation/results/reference_gate_audit.json` and the limitations register. Existing clock-rejected timings remain unqualified; physical captures keep their recorded dynamic-reference scope. The next versioned reference requires both full-shape cache routes and the exact source checksum. This follow-up note postdates the archived allocation snapshot and adds no GPU measurement.

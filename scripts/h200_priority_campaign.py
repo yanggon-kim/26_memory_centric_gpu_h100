@@ -144,6 +144,13 @@ def valid_tokens(data, expected=None):
                 for t in case['trials']))
 
 
+def strict_reference_record(data,source_sha256):
+    static=data.get('static_cache_gate',{})
+    return (data.get('status')=='passed' and data.get('dynamic_cache_gate_passed') is True
+            and static.get('status')=='passed' and static.get('passed') is True
+            and data.get('source_sha256')==source_sha256)
+
+
 def sm_grant_matches_case(stock, fraction, actual, physical):
     """Full controls must be full; a requested cut must actually reduce SMs."""
     if not isinstance(actual,int) or not isinstance(physical,int) or not 0<actual<=physical:
@@ -254,10 +261,10 @@ class Worker:
         path = self.root / 'results' / (label + '_hf.json')
         result = self.execute(label + '_hf', [self.py, self.script / 'hf_full_reference.py',
                     '--source-run', source, '--gpu-uuid', self.uuid, '--output', path], timeout=1800)
-        passed = result['status'] == 'complete' and path.exists() and load(path)['status'] == 'passed'
+        passed = result['status'] == 'complete' and path.exists() and strict_reference_record(load(path),sha(Path(source)))
         if not passed:
-            limitation(self.root, label, 'Strict independent HF SDPA exact-token gate failed',
-                str(path.relative_to(PACKAGE)), 'Independent full-length dynamic-cache reference; unchanged exact gate',
+            limitation(self.root, label, 'Strict independent HF dynamic/StaticCache SDPA exact-token gate failed or is incomplete',
+                str(path.relative_to(PACKAGE)), 'Independent full-length dynamic and unchanged controlled StaticCache references; both must pass',
                 'Diagnose first differing token without weakening correctness')
         return passed
 
@@ -832,6 +839,7 @@ def bootstrap(args):
             ('model_download',[runtime,PACKAGE/'scripts/materialize_config.py','--model','qwen32b','--stage','smoke','--revision','5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd','--download','--output',PACKAGE/'h200/20261125_priority_preparation/qwen32b_smoke.json'],5400),
             ('cpu_contracts',[runtime,PACKAGE/'scripts/test_cpu_contracts.py'],300),
             ('priority_contracts',[runtime,PACKAGE/'scripts/test_h200_priority.py'],300),
+            ('full_reference_contracts',[runtime,PACKAGE/'scripts/test_h200_full_reference.py'],300),
             ('curve_budget_contracts',[runtime,PACKAGE/'scripts/test_h200_curve_budget.py'],300),
             ('eager_first_contracts',[runtime,PACKAGE/'scripts/test_h200_eager_first.py'],300),
             ('ncu_reader_contracts',[runtime,PACKAGE/'scripts/test_h200_ncu_read.py'],300),

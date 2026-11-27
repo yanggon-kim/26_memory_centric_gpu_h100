@@ -28,3 +28,7 @@ All exact outputs, raw profilers, failed attempts and clock-rejected trials are 
 The next two-H200 allocation should prioritize the separately labeled eager SM curve, with graph-capture binding disabled and explicit per-step rebinding. Require fresh actual UUIDs and same-engine stock/full-green/cut NSYS proofs,3 independent acquisitionsx10trials, and all scientific gates. Keep optimized restriction blocked with its observed failure evidence. Use the spare device for eligible full-GPU long-context/scheduler work; do not repeat already completed native/physical comparisons merely for favorable clocks.
 
 The chronological in-allocation notes are preserved in `report_during_allocation.md`. Repeated sequential two-H200 submissions are authorized by the owner; no four-GPU or optional TP campaign is authorized yet.
+
+## Later CPU correctness-scope audit
+
+This allocation's full-length32B C4096 HF reference uses dynamic-cache SDPA. The historical32B StaticCache smoke coversC128; matching C4096 StaticCache agreement is not demonstrated by it. No new StaticCache mismatch is claimed. See `h200/20261127_resident_preparation/results/reference_gate_audit.json` and the limitations register. Existing clock-rejected timings remain unqualified; physical captures keep their recorded dynamic-reference scope. The next versioned reference requires both full-shape cache routes and the exact source checksum. This follow-up note postdates the archived allocation snapshot and adds no GPU measurement.
