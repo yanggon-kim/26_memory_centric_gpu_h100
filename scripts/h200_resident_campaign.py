@@ -103,8 +103,15 @@ def acquire(worker,acquisition,proof=False,pilot=False,batch=1,context=4096):
 
 def primary(worker):
     build_environment(worker)
-    worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
+    inventory=worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
                    '--check-cuda','--output',worker.root/'environment/inventory.json'],timeout=180)
+    if inventory['status']!='complete':
+        result={'status':'blocked_inventory','complete_acquisition_set':False,'allow_context_expansion':False}
+        write(worker.root/'results/eager_core_disposition.json',result)
+        limitation(worker.root,'resident_inventory','Inventory did not complete; no resident producer launched',
+            'logs/inventory.log','Allocation/identity-bound inventory before the pilot','Inspect the preserved inventory failure before a new identified attempt')
+        publish(worker.root,'H200 resident route: preserve inventory block before model launch')
+        return result
     limitation(worker.root,'resident_protocol_scope','Prior optimized graph restriction remains blocked; repeated model initialization prevented a complete fresh-model-per-point curve before preemption.',
         'h200/20261127_job16210814_priority/analysis/current_work_20261127.md',
         'Versioned one-resident-model-per-acquisition eager protocol; bounded stock/full-green/40SM pilot before full proof and3fresh acquisitions',
@@ -148,8 +155,12 @@ def primary(worker):
 def secondary(worker):
     """Reuse prior triplicate counters; capture missing full-device context cases."""
     build_environment(worker)
-    worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
+    inventory=worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
                    '--check-cuda','--output',worker.root/'environment/inventory.json'],timeout=180)
+    if inventory['status']!='complete':
+        limitation(worker.root,'spare_inventory','Inventory did not complete; no spare model producer launched',
+            'logs/inventory.log','Allocation/identity-bound inventory before model work','Inspect inventory and preserve the failed attempt')
+        return {'status':'blocked_inventory'}
     write(worker.root/'results/reused_work.json',{'scope':'Prior DRAM/L2 and observer pilots retained on original UUID/source cohorts; not repeated by default or pooled with this allocation',
         'DRAM_L2':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_L2_disposition.json',
         'scheduler_pilot':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P3a_observer_pilot.json'})
@@ -158,10 +169,12 @@ def secondary(worker):
     gate=worker.root.parent/'gpu0/results/eager_core_disposition.json'
     while not gate.exists():
         outcome=worker.root.parent/'gpu0/results/worker_outcome.json'
-        if outcome.exists():break
+        if outcome.exists():return {'status':'partial','reason':'core worker ended without an explicit published disposition; context expansion deferred'}
         if time.time()+900>=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']:
             return {'status':'partial','reason':'core disposition pending before context budget'}
         time.sleep(15)
+    if not load(gate)['allow_context_expansion']:
+        return {'status':'partial','reason':'core disposition defers context expansion'}
     from h200_eager_first import shape_summary
     outcomes=[]
     for context in (4096,16384,32704):
