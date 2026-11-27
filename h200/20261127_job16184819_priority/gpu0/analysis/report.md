@@ -59,3 +59,11 @@ Unrestricted graph B1/C4096 after blocked restriction: timing qualified=False; s
 | 0.6 | None | False | NA | NA |
 | 0.45 | None | False | NA | NA |
 | 0.3 | None | False | NA | NA |
+
+- Limitation eager_b1_c4096_stock_f100_a0_unrestricted_fallback_capture_bind_v2: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16184819_priority/gpu0/results/eager_b1_c4096_stock_f100_a0_unrestricted_fallback_capture_bind_v2.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_stock_f100_a1_unrestricted_fallback_capture_bind_v2: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16184819_priority/gpu0/results/eager_b1_c4096_stock_f100_a1_unrestricted_fallback_capture_bind_v2.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_stock_f100_a2_unrestricted_fallback_capture_bind_v2: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16184819_priority/gpu0/results/eager_b1_c4096_stock_f100_a2_unrestricted_fallback_capture_bind_v2.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+Unrestricted eager B1/C4096 after blocked restriction: timing qualified=False; see results/unrestricted_eager_b1_c4096.json.
