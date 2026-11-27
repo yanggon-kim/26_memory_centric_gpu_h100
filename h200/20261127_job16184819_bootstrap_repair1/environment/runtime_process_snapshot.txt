@@ -1,0 +1,19 @@
+---------------------------------------
+Begin Slurm Prolog: Nov-27-2026 00:42:40
+Job ID:    16184819
+User ID:   jkim4112
+Account:   gts-dmahajan7
+Job name:  bash
+Partition: gpu-h200
+QOS:       
+---------------------------------------
+atl1-1-03-020-11-0.pace.gatech.edu
+    PID    PPID     ELAPSED STAT WCHAN                            COMMAND
+1485097 1485084       00:00 S    do_wait                          /usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/bash -c hostname; ps -u jkim4112 -o pid,ppid,etime,stat,wchan:32,args --forest
+1485115 1485097       00:00 R    -                                 \_ ps -u jkim4112 -o pid,ppid,etime,stat,wchan:32,args --forest
+1474262 1474249       21:39 S    do_wait                          /usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3 -u scripts/h200_priority_campaign.py --bootstrap --cuda /usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3 --core-first --prior-kv-pilot /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/results/P0_real_hf_kv.json
+1483799 1474262       01:36 S    poll_schedule_timeout.constprop.  \_ /usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3 -u /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/scripts/h200_priority_campaign.py --bootstrap --bootstrap-attempt 1 --cuda /usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3 --core-first --prior-kv-pilot /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/results/P0_real_hf_kv.json
+1484434 1483799       01:01 I    cl_sync_io_wait                       \_ /storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -u -c print('runtime_check: importing torch',flush=True); import torch; print('runtime_check: importing vllm/transformers',flush=True); import vllm,transformers; print('runtime_check: validating versions/devices',flush=True); assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda); print([(str(torch.cuda.get_device_properties(i).uuid),torch.cuda.get_device_properties(i).name,torch.cuda.get_device_properties(i).multi_processor_count,torch.cuda.mem_get_info(i)) for i in range(2)])
+1474057 1474048       21:44 S    do_wait                          /bin/bash /var/lib/slurm/slurmd/job16184819/slurm_script
+1474237 1474057       21:39 Sl   futex_do_wait                     \_ srun --ntasks=1 --cpus-per-task=16 --gpus-per-task=2 --gpu-bind=none bash batch/h200_priority_allocated_step.sh --core-first --prior-kv-pilot /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/results/P0_real_hf_kv.json
+1474242 1474237       21:39 S    pipe_read                             \_ srun --ntasks=1 --cpus-per-task=16 --gpus-per-task=2 --gpu-bind=none bash batch/h200_priority_allocated_step.sh --core-first --prior-kv-pilot /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261126_job16163464_priority/results/P0_real_hf_kv.json
