@@ -43,3 +43,7 @@
 | 0.6 | 80 | False | NA | NA |
 | 0.45 | 56 | False | NA | NA |
 | 0.3 | 40 | False | NA | NA |
+
+- Limitation P3a_observer_clean_a0: Observer pilot clock envelope failed; all trials retained and no clean/observed latency ratio qualified. Evidence: /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu0/runs/P3a_observer_clean_a0/run.json. Tried: Passive clock evidence; matched clean and observed producers retained. Resume: Review pooled acquisition gates and observer intrusion separately; no favorable resampling.
+
+- Limitation P3a_observer_observed_a0: Observer pilot clock envelope failed; all trials retained and no clean/observed latency ratio qualified. Evidence: /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu0/runs/P3a_observer_observed_a0/run.json. Tried: Passive clock evidence; matched clean and observed producers retained. Resume: Review pooled acquisition gates and observer intrusion separately; no favorable resampling.
