@@ -158,6 +158,17 @@ def sm_grant_matches_case(stock, fraction, actual, physical):
     return actual==physical if stock or fraction==1. else actual<physical
 
 
+def case_conditioning_verified(data,conditioned,required_trials):
+    from h200_clock_conditioning_pilot import conditioning_gate
+    if not conditioning_gate(data,conditioned,required_trials):return False
+    if not conditioned:return True
+    cases=data.get('cases',[])
+    if len(cases)!=1:return False
+    receipts=cases[0].get('warmup_conditioning_receipts',[])
+    warm={'config':data['config'],'cases':[{'trials':[{'post_prefill_conditioning':r} for r in receipts]}]}
+    return conditioning_gate(warm,True,3)
+
+
 class Worker:
     def __init__(self, root, session):
         self.root = root
@@ -178,11 +189,20 @@ class Worker:
     def execute(self, label, command, gpu=True, timeout=1200):
         return self.hs.run(self.root, label, command, timeout, gpu=gpu, env=self.hs.environment())
 
-    def case(self, engine, fraction, acq, pilot=False, stock=False, suffix='', context=4096, batch=1):
+    def case(self, engine, fraction, acq, pilot=False, stock=False, suffix='', context=4096, batch=1,conditioned=False):
         route='capture_bind_v2' if getattr(self,'capture_bind',False) else 'rebind_v1' if self.rebind_step else 'original'
+        if conditioned:
+            assert stock and fraction==1., 'conditioned Worker.case currently supports full-device controls only'
+            route+='_memory_settle_v3'
         label = f'{engine}_b{batch}_c{context}_{"stock" if stock else "green"}_f{round(fraction*100)}_a{acq}' + ('_proof' if pilot else '') + suffix + ('_'+route if route!='original' else '')
         output = self.root / 'runs' / label
         c = config(self.root, engine, context, 3 if pilot else 10, batch)
+        conditioning=None
+        if conditioned:
+            declaration=load(c)
+            conditioning={'protocol':'memory_settle_v3','seconds':1.0,'buffer_bytes':256*1024**2,'scope':'conditioned_decode_only'}
+            declaration['decode_conditioning']=conditioning
+            c=c.with_name(c.stem+'_memory_settle_v3.json');write(c,declaration)
         command = [self.py, self.script / 'shoreline_restricted_decode.py', '--config', c,
                    '--gpu-uuid', self.uuid, '--output', output, '--fraction', str(fraction), '--mode', 'timing',
                    '--rounding','nearest']
@@ -204,6 +224,7 @@ class Worker:
                'sm_grant_matches_requested_scope':False,
                'source_identity': self.settings['frozen_source_identity'], 'run': str(output / 'run.json')}
         row['producer_elapsed_s']=process.get('elapsed_s')
+        row.update(conditioning=conditioning,config_path=str(c),case_config_sha256=sha(c))
         binding_audit=output/'capture_binding_audit.json'
         if binding_audit.exists():
             row['capture_binding_audit']=load(binding_audit)
@@ -220,7 +241,8 @@ class Worker:
                 row.get('actual_sm_count'),row['physical_sm_count'])
             row['run_sha256'] = sha(native)
             row['exact_outputs'] = bool(valid_tokens(d, self.expected))
-            if process['status'] == 'complete' and row['exact_outputs']:
+            row['conditioning_scope_verified']=case_conditioning_verified(d,conditioned,3 if pilot else 10)
+            if process['status'] == 'complete' and row['exact_outputs'] and row['conditioning_scope_verified']:
                 row['status'] = 'complete'
                 trials = d['cases'][0]['trials']
                 row['step_ms'] = [t['wall_ms']/t['decode_iterations'] for t in trials]
@@ -948,7 +970,7 @@ def main():
             if a.resident_first:
                 import h200_resident_campaign
                 outcome=h200_resident_campaign.primary(worker,conditioned=a.resident_conditioned,
-                    batch=a.resident_batch,context=a.resident_context) if a.worker==0 else h200_resident_campaign.secondary(worker)
+                    batch=a.resident_batch,context=a.resident_context) if a.worker==0 else h200_resident_campaign.secondary(worker,conditioned=a.resident_conditioned)
             elif a.eager_first:
                 import h200_eager_first
                 outcome=h200_eager_first.primary(worker) if a.worker==0 else h200_eager_first.secondary(worker)

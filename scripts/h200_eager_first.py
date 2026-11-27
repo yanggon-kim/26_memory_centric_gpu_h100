@@ -12,6 +12,8 @@ def shape_summary(worker,rows,engine,context):
     qualified=(len(rows)==3 and {r['acquisition'] for r in rows}=={0,1,2}
                and all(r.get('qualified') and len(r.get('step_ms',[]))==10 for r in rows)
                and len({r['source_identity'] for r in rows})==1)
+    protocols={r.get('repair_route','original') for r in rows}
+    qualified=qualified and len(protocols)==1
     pooled={}
     if len(rows)==3 and all('clock' in r and 'clocks' in r['clock'] for r in rows):
         pooled={m:max(r['clock']['clocks'][m]['maximum'] for r in rows)/min(r['clock']['clocks'][m]['minimum'] for r in rows)
@@ -23,7 +25,9 @@ def shape_summary(worker,rows,engine,context):
             'raw_acquisition_medians_ms':[statistics.median(r['step_ms']) if r.get('step_ms') else None for r in rows],
             'latency_ms':hierarchical_interval([r['step_ms'] for r in rows]) if qualified else None,
             'pooled_clock_ratios':pooled,'sources':[r['id'] for r in rows],
+            'execution_routes':sorted(protocols),'conditioning':rows[0].get('conditioning') if rows else None,
             'scope':'full-GPU shape only; clock-rejected rows retained; no restricted threshold'}
+    if result['conditioning']:result['scope']+='; fixed conditioned decode only, with changed cache history and added untimed TTFT; no unconditioned deployment claim'
     write(worker.root/'results'/f'full_graph_b1_c{context}.json',result)
     return result
 

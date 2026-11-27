@@ -304,6 +304,8 @@ def main(args):
             reference=run_trial(engine,prompts,sampling,f'B{batch}C{context}_warmup{trial}',torch,args.output)
             warmup.append(reference['output_sha256'])
             case['warmup_output_ids'].append(reference['output_ids'])
+            if config.get('decode_conditioning'):
+                case.setdefault('warmup_conditioning_receipts',[]).append(reference.get('post_prefill_conditioning'))
             case['warmup_output_sha256']=list(warmup)
             dump(args.output/'run.json',data)
         if args.collect_worker_metadata:

@@ -219,7 +219,7 @@ def primary(worker,conditioned=False,batch=1,context=4096):
     return disposition
 
 
-def secondary(worker):
+def secondary(worker,conditioned=False):
     """Reuse prior triplicate counters; capture missing full-device context cases."""
     build_environment(worker)
     inventory=worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
@@ -233,6 +233,12 @@ def secondary(worker):
         'scheduler_pilot':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P3a_observer_pilot.json'})
     from h200_clock_conditioning_pilot import run as clock_pilot
     clock_pilot(worker)
+    if conditioned:
+        limitation(worker.root,'conditioned_full_context_scope',
+            'Full-device context comparisons use the prospectively fixed memory_settle_v3 scope; original unconditioned timings remain separate.',
+            'configs/*memory_settle_v3.json; results/clock_conditioning_pilot.json',
+            'Own stock placement/HF proof and3x10acquisitions per shape, with all warmup/timed conditioning receipts verified',
+            'Interpret decode only; added untimed conditioning changes cache history and TTFT. No deployment optimization or original unconditioned latency claim')
     gate=worker.root.parent/'gpu0/results/eager_core_disposition.json'
     while not gate.exists():
         outcome=worker.root.parent/'gpu0/results/worker_outcome.json'
@@ -247,14 +253,14 @@ def secondary(worker):
     for context in (4096,16384,32704):
         worker.expected=None
         if time.time()+900>=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']:break
-        proof=worker.case('graph',1.,0,pilot=True,stock=True,context=context,suffix='_resident_followup_shape_proof')
+        proof=worker.case('graph',1.,0,pilot=True,stock=True,context=context,suffix='_resident_followup_shape_proof',conditioned=conditioned)
         if not proof['qualified'] or not worker.reference(proof['run'],f'full_graph_c{context}'):
             outcomes.append({'context':context,'status':'blocked proof/HF'});continue
         worker.expected=load(proof['run'])['cases'][0]['trials'][0]['output_ids']
         rows=[]
         for acquisition in range(3):
             if time.time()+max(180,proof['producer_elapsed_s']*1.5)>=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']:break
-            rows.append(worker.case('graph',1.,acquisition,stock=True,context=context,suffix='_resident_followup_full_shape'))
+            rows.append(worker.case('graph',1.,acquisition,stock=True,context=context,suffix='_resident_followup_full_shape',conditioned=conditioned))
         outcomes.append(shape_summary(worker,rows,'graph',context))
         publish(worker.root,f'H200 full-GPU context{context}: independent matched-shape acquisition bundle')
         if len(rows)<3:break

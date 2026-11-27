@@ -142,6 +142,8 @@ def main(a):
     assert template['status']=='complete'
     for name,_,_ in rows:
         record=records[name];data=copy.deepcopy(template);case=data['cases'][0]
+        if conditioning:
+            case['warmup_conditioning_receipts']=[t.get('post_prefill_conditioning') for t in record['warmups']]
         case.update(trials=record['trials'],warmup_output_ids=[t['output_ids'] for t in record['warmups']],
                     warmup_output_sha256=[t['output_sha256'] for t in record['warmups']],
                     output_digests_identical=True)
