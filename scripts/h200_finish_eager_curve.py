@@ -5,6 +5,7 @@ This changes analytical scheduling allowance, never numerical programs,
 acquisition counts, trial counts, correctness, clocks or isolation gates.
 """
 import argparse
+import datetime as dt
 import json
 import os
 from pathlib import Path
@@ -21,8 +22,8 @@ def allowance(observed,completed,available):
     estimate=(3-completed)*(max(observed)+60)
     return {'classification':'analytical scheduling estimate only','completed_acquisitions':completed,
             'observed_acquisition_wall_s':list(observed),'remaining_bundle_estimate_s':estimate,
-            'available_before_original_closeout_s':available,'admitted':estimate<=available,
-            'method':'maximum observed whole acquisition plus60s each; original actual Slurm cutoff and all scientific gates unchanged'}
+            'available_before_closeout_s':available,'admitted':estimate<=available,
+            'method':'maximum observed whole acquisition plus60s each;15minute CPU-closeout reserve; actual Slurm end and all scientific gates unchanged'}
 
 
 def captured_acquisition(records,acquisition):
@@ -60,7 +61,7 @@ def stop_idle_parent(pid,root,uuid,deadline):
             # CC/CXX. Never apply the spare's compiler repair to this curve.
             inherited=dict(x.split('=',1) for x in proc.joinpath('environ').read_bytes().decode().split('\0') if '=' in x)
             selected={}
-            for key in ('PATH','CC','CXX','CUDA_HOME','CUDA_INSTALL_PATH','OMP_NUM_THREADS','MAX_JOBS','TORCHINDUCTOR_COMPILE_THREADS','PYTHONNOUSERSITE'):
+            for key in ('PATH','CC','CXX','CUDA_HOME','CUDA_INSTALL_PATH','OMP_NUM_THREADS','MAX_JOBS','TORCHINDUCTOR_COMPILE_THREADS','PYTHONNOUSERSITE','LD_LIBRARY_PATH','LIBRARY_PATH','CPATH','CUDA_MODULE_LOADING','PYTORCH_CUDA_ALLOC_CONF','NVIDIA_TF32_OVERRIDE','CUBLAS_WORKSPACE_CONFIG'):
                 if key in inherited:os.environ[key]=inherited[key];selected[key]=inherited[key]
                 else:os.environ.pop(key,None);selected[key]=None
             os.kill(pid,signal.SIGTERM);os.kill(pid,signal.SIGCONT);terminated=True
@@ -80,9 +81,10 @@ def stop_idle_parent(pid,root,uuid,deadline):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--root',type=Path,required=True)
     p.add_argument('--previous-pid',type=int,required=True);a=p.parse_args();a.root=a.root.resolve()
-    worker=Worker(a.root,a.root/'session.json');worker.hs.verify_allocation()
+    original_session=load(a.root/'session.json')
+    assert os.environ['SLURM_JOB_ID']==original_session['slurm_job_id']
     for name in ('h200_priority_campaign.py','h200_session.py'):
-        assert sha(PACKAGE/'scripts'/name)==sha(worker.script/name), 'numerical/original supervisor source changed'
+        assert sha(PACKAGE/'scripts'/name)==sha(Path(original_session['frozen_source_root'])/'scripts'/name), 'numerical/original supervisor source changed'
     budget=a.root/'results/budget_eager_b1_c4096.json'
     while True:
         if budget.exists():
@@ -95,17 +97,26 @@ def main():
     completed=len(initial.get('observed_acquisition_wall_s',[]))
     assert completed in (1,2)
     original_bytes=budget.read_bytes()
+    session=dict(original_session)
+    session['closeout_buffer_s']=900
+    session['launch_cutoff']=(dt.datetime.fromisoformat(session['allocation_end'])-dt.timedelta(minutes=15)).isoformat()
+    session['operational_resume']={'original_session_sha256':sha(a.root/'session.json'),
+        'reason':'critical raw evidence already persistent; verified previous CPU archives/closeouts take seconds; prioritize complete current comparison',
+        'changes':'30minute reserve reduced to15minutes; no scientific or numerical setting changed'}
+    resume_session=a.root/'session_finish_curve.json';write(resume_session,session)
+    worker=Worker(a.root,resume_session);worker.hs.verify_allocation()
     plan=allowance(initial['observed_acquisition_wall_s'],completed,
                    worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time())
     write(a.root/'results/eager_curve_resume_budget.json',{'status':'reviewed','original_budget_sha256':sha(budget),'stages':[plan]})
-    if not plan['admitted'] or plan['available_before_original_closeout_s']-plan['remaining_bundle_estimate_s']<30:
+    if not plan['admitted'] or plan['available_before_closeout_s']-plan['remaining_bundle_estimate_s']<30:
         print('Measured remaining bundle does not fit; original worker left unchanged',flush=True);return
-    safe_wait=min(180,plan['available_before_original_closeout_s']-plan['remaining_bundle_estimate_s']-30)
+    safe_wait=min(180,plan['available_before_closeout_s']-plan['remaining_bundle_estimate_s']-30)
     try:transition=stop_idle_parent(a.previous_pid,a.root,worker.uuid,time.time()+safe_wait)
     except RuntimeError as error:
         write(a.root/'results/eager_curve_resume_transition.json',{'status':'no_safe_transition_original_unchanged','error':str(error)})
         return
     write(a.root/'results/eager_curve_resume_transition.json',transition)
+    os.environ['H200_SESSION_CONFIG']=str(resume_session)
     (a.root/'results/eager_curve_budget_before_resume.json').write_bytes(original_bytes)
     gate=a.root/'results/eager_core_disposition.json'
     if gate.exists():gate.rename(a.root/'results/eager_core_disposition_before_resume.json')
@@ -122,7 +133,7 @@ def main():
            'source_freeze_identity':worker.settings['frozen_source_identity'],'gpu_uuid':worker.uuid,
            'stages':[],'scientific_gates':'unchanged3acquisitionsx10trials, exact outputs, all NSYS/SM/source/clock/isolation gates'}
     with (a.root/'analysis/report.md').open('a') as stream:
-        stream.write('\n- Scheduling-only continuation: original remaining-bundle estimate declined; use the maximum observed acquisition plus60s per remaining acquisition, with the original Slurm cutoff. Same UUID, original frozen numerical sources, build environment and all scientific gates retained. See `../results/eager_curve_resume_transition.json` and `../results/eager_curve_resume_budget.json`.\n')
+        stream.write('\n- Scheduling-only continuation: original remaining-bundle estimate declined; use the maximum observed acquisition plus60s per remaining acquisition and a15minute CPU-closeout reserve before the actual Slurm end. Same UUID, original frozen numerical sources, build environment and all scientific gates retained. Critical raw files already persist on shared storage. See `../session_finish_curve.json`, `../results/eager_curve_resume_transition.json` and `../results/eager_curve_resume_budget.json`.\n')
     publish(a.root,'H200 core priority: preserve measured broad acquisition before scheduling-only continuation')
     observed=list(initial['observed_acquisition_wall_s']);stop='budget'
     for acquisition in range(completed,3):
