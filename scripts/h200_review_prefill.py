@@ -24,6 +24,7 @@ def pooled_gate(rows,clock_key):
 
 
 def review(root):
+    root=Path(root).resolve()
     session=load(root/'session.json');rows=[];errors=[];expected=None;prompt=None
     smoke_path=root/'results/prefill_smoke.json'
     try:

@@ -120,6 +120,13 @@ def main(args):
     import controlled_vllm_experiments as baseline
     from software_decode_experiments import dump
     original = baseline.run_trial
+    original_dump = baseline.dump
+    def labeled_dump(path, data):
+        if Path(path) == args.output/'run.json':
+            data = {**data, 'baseline_comparison_eligible': False,
+                    'classification': 'measured-real-GPU-instrumented',
+                    'experimental_scope': 'finite open-loop instrumented policy capture; serial rows are correctness references only'}
+        return original_dump(path, data)
     captured = []
     def trial(engine, prompts, sampling, prefix, torch, output_dir, *extra, **kwargs):
         result = original(engine, prompts, sampling, prefix, torch, output_dir, *extra, **kwargs)
@@ -130,12 +137,26 @@ def main(args):
         contexts = len(prompts[0])
         whole_budget = engine.engine_core.engine_core.scheduler.max_num_scheduled_tokens
         assert whole_budget >= contexts
+        functional = None
+        if args.pilot:
+            # Validate the current source/GPU's three policies in the same
+            # resident model before the larger development arrival traces.
+            from h200_serving_policy_pilot import scenario
+            folder = output_dir/'functional_policies'
+            folder.mkdir()
+            observations = [scenario(engine, prompts, sampling, torch, folder, name, expected)
+                            for name in POLICIES]
+            functional = {'status': 'three_functional_policies_passed',
+                'paths': [str(folder/(name+'.json')) for name in POLICIES],
+                'statuses': [row['status'] for row in observations]}
+            dump(output_dir/'functional_policy_pilot.json', functional)
         phases = [('warmup', 3), ('functional' if args.pilot else 'judging', 3 if args.pilot else 10)]
-        manifest = {'status': 'running', 'protocol': 'finite_open_loop_policy_v1',
+        manifest = {'status': 'running', 'protocol': 'finite_open_loop_policy_v2',
                     'pilot': args.pilot, 'acquisition': args.acquisition, 'rate': args.rate,
                     'context': contexts, 'tokens': 64, 'request_count': args.requests,
                     'slo': SLO, 'budget_settings': {'whole': whole_budget, 'chunked': args.chunk_budget},
                     'captures': captured, 'quantitative_qualified': False,
+                    'fresh_functional_policy_gate': functional,
                     'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
         for phase, count in phases:
             for number in range(count):
@@ -167,10 +188,12 @@ def main(args):
         dump(output_dir/'serving_load.json', manifest)
         return result
     baseline.run_trial = trial
+    baseline.dump = labeled_dump
     try:
         baseline.main(args)
     finally:
         baseline.run_trial = original
+        baseline.dump = original_dump
     assert len(captured) == (18 if args.pilot else 39)
     path = args.output/'run.json'
     data = json.loads(path.read_text())
