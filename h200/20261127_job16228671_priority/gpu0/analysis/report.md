@@ -69,3 +69,27 @@ Bounded remedy: version the shared dump helper to write a unique sibling tempora
 | 0.3 | 40 | False | NA | NA |
 
 Final CPU review: [complete resident curve and raw acquisition table](resident_curve_CPU_review.md). All27condition outputs and producer/source/isolation records passed; quantitative clocks remain unresolved. The transient live-manifest reads were followed by a complete, parseable final manifest. The prospective atomic dump fix passed an interrupted-publication test and preserves exact JSON bytes; current frozen source is unchanged.
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |

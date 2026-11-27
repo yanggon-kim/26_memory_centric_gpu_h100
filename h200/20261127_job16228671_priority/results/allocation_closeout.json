@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-11-27T18:46:52.879632+00:00",
+  "classification": "CPU reconciliation of saved measured evidence",
+  "allocation": {
+    "job_id": "16228671",
+    "state": "PREEMPTED",
+    "start": "2026-11-27T12:45:20",
+    "end": "2026-11-27T13:45:47",
+    "elapsed_seconds": 3627,
+    "allocated_gpus": 2,
+    "actual_allocated_gpu_hours": 2.015,
+    "scope": "allocated GPU-hours include staging, idle and instrumented work",
+    "source": "h200/20261127_job16228671_priority/environment/slurm_accounting_terminal.txt",
+    "source_sha256": "3316f79f2ddff13302d184c991b2ad9590ebee625ddd1e8f5421b5bdb0912bd5",
+    "raw_row": {
+      "JobID": "16228671",
+      "JobName": "yg-h200-resident",
+      "State": "PREEMPTED",
+      "Start": "2026-11-27T12:45:20",
+      "End": "2026-11-27T13:45:47",
+      "ElapsedRaw": "3627",
+      "Timelimit": "01:30:00",
+      "AllocTRES": "billing=104762,cpu=16,gres/gpu:h200=2,gres/gpu=2,mem=392G,node=1",
+      "ExitCode": "0:0"
+    }
+  },
+  "devices": [
+    {
+      "gpu_uuid": "GPU-d6a286c1-f8de-4287-55f5-2ba29b153b9c",
+      "source_freeze_identity": "3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e",
+      "curves": [
+        {
+          "engine": "eager",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": true,
+          "all_requested_placement_pilots_passed": true,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16228671_priority/gpu0/results/curve_eager_b1_c4096.json",
+          "disposition": "captured_quality_unresolved",
+          "resume": "Do not rerun merely for favorable clocks; inspect specific failed gates and advance eligible work"
+        }
+      ],
+      "case_gate_issues": [],
+      "interrupted_producers": [],
+      "physical_captures": [],
+      "native": null,
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    },
+    {
+      "gpu_uuid": "GPU-28fa5fe0-0a71-78dc-ff99-a1fb75e9d459",
+      "source_freeze_identity": "3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e",
+      "curves": [
+        {
+          "engine": "graph",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": false,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16228671_priority/gpu1/results/curve_graph_b1_c4096.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        },
+        {
+          "engine": "graph",
+          "batch": 1,
+          "context": 16384,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": false,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16228671_priority/gpu1/results/curve_graph_b1_c16384.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        }
+      ],
+      "case_gate_issues": [],
+      "interrupted_producers": [
+        {
+          "label": "graph_b1_c16384_stock_f100_a2_resident_followup_full_shape",
+          "original_status": null,
+          "process": "h200/20261127_job16228671_priority/gpu1/results/processes/graph_b1_c16384_stock_f100_a2_resident_followup_full_shape.json",
+          "sha256": "1d9e30ef91bae5839d1a5b290af794a63fae12bdd56a6e47c568fd294e74418c",
+          "classification": "incomplete at terminal allocation; cause requires logs and Slurm state"
+        }
+      ],
+      "physical_captures": [],
+      "native": null,
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    }
+  ],
+  "new_GPU_measurements": false,
+  "NVIDIA_thresholds_derived_from_AMD": false,
+  "resident_protocol_review": {
+    "path": "h200/20261127_job16228671_priority/gpu0/results/resident_curve_CPU_review.json",
+    "sha256": "078877dcdf3ff39dc35323f7bf4459c6b44979904cc2033dfd6dab0278077d32"
+  },
+  "full_device_context_review": {
+    "path": "h200/20261127_job16228671_priority/gpu1/results/full_context_CPU_review.json",
+    "sha256": "4a859da3ac71a5e099f60e581ca6ab397d1b04f002a0a1b3d2732557198c8e06"
+  },
+  "additional_cohorts": [
+    {
+      "root": "gpu0_postcore",
+      "source_identity": "75d508caf749ceab1c1b4e10d3920b5f85f1729f49c270dc8075918c8c17e98d",
+      "review": "h200/20261127_job16228671_priority/gpu0_postcore/results/functional_pilots_CPU_review.json",
+      "review_sha256": "6c64ff1be573b0ebacb796baafe8668f49ab99f204ab43178d75f8f5dd5993c6",
+      "classification": "functional serving/prefill only; same ownedGPU0, no additional allocation or GPUhours"
+    }
+  ]
+}

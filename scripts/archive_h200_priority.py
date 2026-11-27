@@ -34,7 +34,7 @@ def archive(root,destination,max_bytes=256*1024**2):
     for path in sorted(root.rglob('*')):
         relative=path.relative_to(root).as_posix()
         if '__pycache__' in path.parts:continue
-        if path.name.startswith(('archive_content_manifest_','archive_transfer_')):continue
+        if path.parent==root/'results' and path.name.startswith(('archive_content_manifest_','archive_transfer_')):continue
         if path.is_symlink():
             links.append({'path':relative,'target':os.readlink(path)});continue
         if path.is_file():entries.append({'path':relative,'bytes':path.stat().st_size,'sha256':digest(path)})
