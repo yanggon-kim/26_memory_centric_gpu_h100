@@ -1,0 +1,11 @@
+# Frozen allocation-penalty baseline — not yet judged
+
+The active artifact is `../results/frozen_allocation_penalty_null_v2.json`. It uses the six qualified conditioned-eager B1/C4096 paired latency ratios as fixed predictions for later eligible shapes. The null hypothesis is that batch/context changes preserve each tested SM-count penalty under the same model, decoder and one-second conditioning protocol. Each future curve uses its own unrestricted stock; raw timing is not pooled across devices.
+
+Targets are conditioned B8/C4096, B32/C4096, B1/C16384 and B1/C32704 if those already-planned cases are executed with the exact declared protocol/source/runtime/hardware domain. The queued unconditioned B8job is explicitly ineligible. Any prefix-reuse or different protocol is also outside this model. Earlier full optimized C16384captures were observed and clock-rejected; this model's target is the still-unmeasured restricted conditioned-eager curve.
+
+Only complete CPU-qualified three-acquisition/ten-trial curves with all six counts, actual placement, both strict HF routes and source/isolation/clock gates can be judged. Prediction creation must predate the first target producer. The predeclared engineering criterion is maximum absolute relative error of the predicted versus measured normalized point ratios <=5% across all six counts. A failed or incomplete gate yields not-judged, not a favorable partial score. Preserve any rejection and its actual errors.
+
+Development confidence intervals are not prediction intervals. Future confidence-bound widths are unknown, so no future demonstrated SM thresholds are predicted from the development112/80/40counts. This is a simple empirical null baseline, not independently calibrated compute/HBM/SRAM service, a causal explanation or architecture/area evidence. It needs no extra GPU case solely for validation; judge matching planned measurements when available.
+
+The first draft is retained byte-for-byte. V2clarifies wording only; predictions, domain, targets and scoring criteria are identical. The immutable overwrite guard was checked against the active artifact. Exact hashes and version history are in `../results/frozen_allocation_penalty_manifest.json`. No held-out judgment or new GPU measurement has occurred.

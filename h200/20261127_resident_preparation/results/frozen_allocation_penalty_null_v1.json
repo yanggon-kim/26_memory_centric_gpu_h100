@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "model_id": "allocation_penalty_null_v1",
+  "created_utc": "2026-11-27T23:11:51.056249+00:00",
+  "classification": "analytical predictions from qualified development measurements",
+  "hypothesis": "At the same context/decode protocol, changing batch or context preserves each tested SM-count penalty relative to its own unrestricted eager stock.",
+  "formula": "predicted_ratio(SM, target_shape) = development_paired_ratio(SM); no interpolation",
+  "training": {
+    "review": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16233972_priority/gpu0/results/resident_curve_CPU_review.json",
+    "review_sha256": "7704236ba577bd971fbd03c9893830333332c34ed17a1c3ba1b7f53a7cff02ce",
+    "curve": "h200/20261127_job16233972_priority/gpu0/results/curve_eager_b1_c4096.json",
+    "curve_sha256": "59a787d8ec1660a16ba7c83a0c08cf1359eb7793a2062569621f9bcdfe0d63ed",
+    "session": "h200/20261127_job16233972_priority/gpu0/session.json",
+    "session_sha256": "449732e07b9624cd92f6c5ba9c02fcc7adf6f2b8464a33130ae8d65746d323e7",
+    "gpu_uuid": "GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235",
+    "batch": 1,
+    "context": 4096,
+    "scope": "pure decode after verified prefill barrier, wall ms/tick; primary ratios use unrestricted stock; full-green ratios also retained; physical area/HBM capacity unchanged; all thresholds conditional on fixed memory_settle_v3; unconditioned thresholds remain separate",
+    "fully_observed_development_data": true
+  },
+  "predictions": [
+    {
+      "actual_sm_count": 40,
+      "predicted_latency_ratio": 1.1820462577178532,
+      "development_ci95_only": [
+        1.1753341288771966,
+        1.1867199568002773
+      ]
+    },
+    {
+      "actual_sm_count": 56,
+      "predicted_latency_ratio": 1.1038804572216059,
+      "development_ci95_only": [
+        1.097609543618839,
+        1.1090339178178823
+      ]
+    },
+    {
+      "actual_sm_count": 80,
+      "predicted_latency_ratio": 1.0418966359411455,
+      "development_ci95_only": [
+        1.029675493499242,
+        1.0527659037320976
+      ]
+    },
+    {
+      "actual_sm_count": 96,
+      "predicted_latency_ratio": 1.0515013183486728,
+      "development_ci95_only": [
+        1.0406450079178988,
+        1.059394476903814
+      ]
+    },
+    {
+      "actual_sm_count": 112,
+      "predicted_latency_ratio": 1.0300243033253234,
+      "development_ci95_only": [
+        1.0232089048868,
+        1.0363380457314422
+      ]
+    },
+    {
+      "actual_sm_count": 132,
+      "predicted_latency_ratio": 0.999526239373224,
+      "development_ci95_only": [
+        0.9912004413513636,
+        1.0049680112751833
+      ]
+    }
+  ],
+  "prediction_intervals": null,
+  "prediction_interval_reason": "Development confidence intervals do not quantify unseen-shape/device prediction uncertainty.",
+  "future_confidence_threshold_predictions": null,
+  "threshold_reason": "Future confidence-bound widths are unknown; do not transfer development112/80/40demonstrated counts as new measured thresholds.",
+  "predeclared_targets": [
+    {
+      "batch": 8,
+      "context": 4096
+    },
+    {
+      "batch": 32,
+      "context": 4096
+    },
+    {
+      "batch": 1,
+      "context": 16384
+    },
+    {
+      "batch": 1,
+      "context": 32704
+    }
+  ],
+  "eligibility": {
+    "protocol": "resident_eager_memory_settle_v3",
+    "conditioning": {
+      "protocol": "memory_settle_v3",
+      "seconds": 1.0,
+      "buffer_bytes": 268435456,
+      "scope": "conditioned_decode_only"
+    },
+    "model_id": "Qwen/Qwen2.5-32B-Instruct",
+    "model_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "precision": "BF16",
+    "seed": 20261013,
+    "generated_tokens": 64,
+    "runtime_versions": {
+      "vllm": "0.22.1",
+      "torch": "2.11.0+cu130",
+      "cuda_runtime": "13.0"
+    },
+    "essential_source_sha256": {
+      "controlled_vllm_experiments.py": "3295a8bd9359d7f9ba002345daea7148635d28e6bb6bb4cb52dd8352432be898",
+      "h200_resident_sweep.py": "48962db4a8a67ccee9e7791871fcbe8927aa8546ecc98f76b852d38df4b69cd7",
+      "h200_resident_campaign.py": "30d088e0fc14acdba7e4145d726826b82045212535fd25b38e7e06dcda50eab8",
+      "shoreline_green.py": "8b4bcb15dfa23b4242d234492f769bec21a34f0123fb3a8beebf8f17d551196a",
+      "decode_precondition.py": "d9df402b9633a2a991436500e320433ee3560f7dbeaecf2cbb6ca2e60ec6e70a",
+      "software_decode_experiments.py": "786e270f6549d19395d49df0448f85e4a67897b261807835fc0fa62cb345a837",
+      "h200_session.py": "838d57971bd7b08d1343f2c34c1e4ed3b503cfc02abcbfc3384dff032127ca2a",
+      "h200_priority_campaign.py": "baa79bc601c35d74dbec930d8376a4f806ac2920d69a687a8c799987a70b9977"
+    },
+    "physical_sm_count": 132,
+    "hardware_name": "NVIDIA H200",
+    "L2_bytes": 62914560,
+    "power_limit_w": 560.0,
+    "development_clock_bands": {
+      "sm_clock_mhz": {
+        "minimum": 1980,
+        "maximum": 1980
+      },
+      "memory_clock_mhz": {
+        "minimum": 3199,
+        "maximum": 3201
+      }
+    },
+    "target_absolute_clocks_within_development_fraction": 0.05,
+    "target_gate": "complete CPU-qualified3acquisition/10trial curve, own full stock, all actual-decoder placement/strict dualHF/source/isolation/clock gates; all six counts required",
+    "temporal_gate": "prediction artifact must predate the first target numerical producer",
+    "device_scope": "Each target curve is anchored on its own single physical UUID; do not pool raw timing across devices. Prediction transfer across matched hardware is itself the hypothesis."
+  },
+  "predeclared_score": {
+    "metric": "absolute relative error of predicted versus measured paired latency-ratio point estimates",
+    "formula": "abs(predicted_ratio / measured_ratio - 1)",
+    "maximum_error_tolerance": 0.05,
+    "pass_rule": "every one of the six qualified tested counts has error<=0.05",
+    "interpretation": "engineering prediction-accuracy criterion, not a significance test or physical-model validation",
+    "ineligible_or_incomplete_target": "not judged; retain reasons and every raw observation"
+  },
+  "current_queued_batch8": "Job16238357uses the original unconditioned protocol, so it is not an eligible test of this matched conditioned predictor.",
+  "already_seen_ancillary_data": "Full optimized C16384captures were already observed and clock-rejected. No restricted conditioned-eager C16384curve has been measured.",
+  "scope": "Simple empirical null baseline only. No independent HBM/compute/SRAM rate calibration, causal explanation, physical area or architectural benefit is inferred. Judge on eligible already-planned cases; retain rejected predictions.",
+  "script_sha256": "ca6a201111d3aab49bf85238337761b71ee5f09271d7ee8ca2bd3466e026dc7f"
+}
