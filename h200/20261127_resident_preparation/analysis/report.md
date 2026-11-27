@@ -63,3 +63,11 @@ If all three unconditioned resident acquisitions are captured but clock qualific
 The follow-up uses a new `gpu0_conditioned` root, workspace and frozen source cohort on the same allocatedGPU0. Its own stock/full-Green/40SM pilot, full7setting NSYS proof, dynamic plus unchanged StaticCache reference and three independent acquisitions are required. All warmup and timed conditioning receipts are checked, including the tenth trial. Clock/source/isolation and exact output gates remain unchanged.
 
 Any qualified thresholds describe conditioned decode only. The workload changes cache history and adds untimed TTFT; it does not repair or replace original unconditioned latency. A blocked or clock-rejected conditioned curve remains explicitly blocked/unqualified and is not rerun merely to obtain favorable clocks. GPUvalidation is pending.
+
+## 2026-11-27: retained aggregate checksum mismatch resolved by exact CPU reconstruction
+
+The October consolidated report references treatment aggregate SHA256 `04906c57be9b0b96f9cb46b219d29d659e272806e717f603f6bed9ff127906d7`, while the current historical file has `b128aa71f0179f89d0dc272b5cd1cf062908038a6aa3af185cc820b5c87fcab1`. The expected exact version was not found in the tracked Git revisions for that path. The current file was preserved.
+
+Recomputation from retained raw inputs using the pinned runtime and existing mathematical reader produced a new versioned copy whose complete bytes exactly match the expected04906c57SHA. All four qualified original contrasts exactly reproduce their reported ratios/intervals;24profile/run/process/source-manifest/monitor provenance checks passed, with no model-output or clock rule relaxed. Evidence: `h200/20261127_resident_preparation/results/retained_treatment_requalification.json` and `results/requalified_historical_treatment_statistics.json`.
+
+This resolves reuse of those original bridge scopes through the reconstructed copy, not by silently modifying the old file. The original canonical-path checksum difference remains documented. No GPU recapture or32B transfer is inferred. The12independent native-service cells have separately verified direct source hashes and are unaffected. Resume through the source-hashed reuse audit and reconstructed copy; never overwrite the historical artifact to hide the discrepancy.
