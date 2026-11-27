@@ -1,0 +1,13 @@
+{
+  "utc": "2026-11-27T22:28:55.692512+00:00",
+  "job_id": "16238357",
+  "command": "scontrol update JobId=16238357 TimeMin=75",
+  "accepted": true,
+  "maximum_time": "01:30:00",
+  "minimum_time": "01:15:00",
+  "original_submit_and_eligible_times_preserved": true,
+  "request_GPU_count": 2,
+  "excluded_node": "atl1-1-02-014-9-0",
+  "verification": "installed Slurm26.05.4 scontrol man page documents owner job TimeMin updates; sbatch man page says backfill can lower the requested time to no less than TimeMin before allocation and not afterward. Actual EndTime remains the numerical supervisor budget source.",
+  "reason": "Permit75\u201390minute backfill windows without cancelling/replacing the existing pending job. Every allowed duration retains the first protected hour plus15minutes of closeout reserve; preemption after the first hour remains possible. No GPU measurement or completion is claimed."
+}
