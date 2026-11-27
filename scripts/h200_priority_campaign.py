@@ -878,6 +878,8 @@ def bootstrap(args):
         stages.append(('resident_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_sweep.py'],300))
         stages.append(('resident_orchestration_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_campaign.py'],300))
         stages.append(('clock_conditioning_contracts',[runtime,PACKAGE/'scripts/test_h200_clock_conditioning_pilot.py'],300))
+        stages.append(('conditioned_full_contracts',[runtime,PACKAGE/'scripts/test_h200_conditioned_full.py'],300))
+        stages.append(('atomic_result_contracts',[runtime,PACKAGE/'scripts/test_atomic_decode_dump.py'],300))
         stages.append(('runtime_prewarm_contracts',[runtime,PACKAGE/'scripts/test_h200_runtime_prewarm.py'],300))
     try:
         for label,command,limit in stages:

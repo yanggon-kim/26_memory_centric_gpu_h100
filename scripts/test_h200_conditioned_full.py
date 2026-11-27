@@ -11,7 +11,7 @@ class ConditionedFull(unittest.TestCase):
     def test_every_warmup_and_timed_conditioning_receipt_is_required(self):
         receipt={'protocol':'memory_settle_v3','copies':64,'buffer_bytes':256*1024**2,
                  'wall_ms':1001.,'gpu_event_ms':1000.}
-        data={'config':{'decode_conditioning':{'protocol':'memory_settle_v3','seconds':1.,'buffer_bytes':256*1024**2}},
+        data={'config':{'decode_conditioning':{'protocol':'memory_settle_v3','seconds':1.,'buffer_bytes':256*1024**2,'scope':'conditioned_decode_only'}},
               'cases':[{'trials':[{'post_prefill_conditioning':copy.deepcopy(receipt)} for _ in range(10)],
                         'warmup_conditioning_receipts':[copy.deepcopy(receipt) for _ in range(3)]}]}
         self.assertTrue(case_conditioning_verified(data,True,10))
