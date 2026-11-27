@@ -1,16 +1,17 @@
 {
-  "updated_utc": "2026-11-27T20:29:19.438916+00:00",
+  "updated_utc": "2026-11-27T20:48:03.125427+00:00",
   "objective": "Finish all eligible two-H200 families one by one, sequentially replacing preempted Slurm jobs",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
-  "current_job_id": "16233972",
-  "current_observed_state": "RUNNING",
+  "current_job_id": "16238357",
+  "current_observed_state": "PENDING Priority",
   "closed_job_ids": [
     "16163464",
     "16184819",
     "16210814",
-    "16228671"
+    "16228671",
+    "16233972"
   ],
-  "closed_allocated_gpu_hours": 8.060555555555556,
+  "closed_allocated_gpu_hours": 9.997777777777777,
   "families": [
     {
       "id": "P0",
@@ -20,31 +21,42 @@
     },
     {
       "id": "P1a",
-      "status": "running",
-      "next": "Finish and qualify the current separate conditioned curve before selecting the next workload",
+      "status": "partial",
+      "next": "Retain complete qualified conditioned B1/C4096fallback; advance widths and eligible traffic/serving. Optimized graph restriction remains blocked; no default recapture for favorable outcomes.",
       "job_id": "16233972",
-      "clock_gate": "Acquisition0full controls and mostpoints fail unchanged5%clock envelope; no thresholds promoted",
+      "clock_gate": "All27clean conditions pass; pooled SM1980MHz/memory3201MHz",
       "captured_acquisitions": [
         0,
         1,
         2
       ],
-      "evidence": "h200/20261127_job16228671_priority/gpu0/results/resident_curve_CPU_review.json",
-      "reason": "Complete resident eager curve published with27conditions and all7placement/dualHF/source/isolation gates; unconditioned full controls clock-unqualified, optimized graphs separately blocked",
+      "evidence": "h200/20261127_job16233972_priority/gpu0/results/resident_curve_CPU_review.json",
+      "reason": "Complete3x9x10conditioned eager fallback qualified including all placement, strict dualHF, pooledclock/source/isolation gates; optimized restriction remains separately blocked",
       "active_attempt": {
         "job_id": "16233972",
         "protocol": "resident_eager_memory_settle_v3",
-        "status": "all_level_placement_passed_clean_acquisition0_running",
-        "captured_acquisitions": [],
+        "status": "qualified_conditioned_eager_fallback",
+        "captured_acquisitions": [
+          0,
+          1,
+          2
+        ],
         "scope": "fresh UUID/source/NSYS and strictHF gates before3x10; prior unconditioned complete raw curve retained separately",
-        "pilot_strict_HF_passed": true
+        "pilot_strict_HF_passed": true,
+        "thresholds": {
+          "5_percent": 112,
+          "10_percent": 80,
+          "25_percent": 40
+        }
       }
     },
     {
       "id": "P1b",
-      "status": "pending",
+      "status": "partial",
       "queued_job_id": "16238357",
-      "next": "Batch8 context4096 original resident eager protocol, then batch32 and long contexts subject to gates"
+      "next": "Batch8 context4096 original resident eager protocol, then batch32 and long contexts subject to gates",
+      "reason": "Current full optimized C4096/C16384triplicates captured with exactdualHF/source/process/isolation, but clock-unqualified and thermally limited on GPU1; batch8queued and further widths/contexts pending",
+      "evidence": "h200/20261127_job16233972_priority/gpu1/results/full_context_CPU_review.json"
     },
     {
       "id": "P2a",
@@ -110,21 +122,24 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": "h200/20261127_job16233972_priority",
+  "current_results": null,
   "next_job_id": "16238357",
-  "next_job_state": "PENDING Dependency",
+  "next_job_state": "PENDING Priority",
   "next_scope": "P1b batch8 context4096 resident eager original unconditioned protocol, own sparse/all-level placement and strict dynamic/StaticCache gates, three independent acquisitions x ten trials; spare P4a context1024 whole/chunk256/1024/4096/whole_end resident instrumented prefill; fresh functional/reference pilot before three independent acquisitions x ten trials",
-  "last_closed_job_id": "16228671",
-  "current_job_time_limit": "01:15:00",
+  "last_closed_job_id": "16233972",
+  "current_job_time_limit": "01:30:00",
   "current_bootstrap": "h200/20261127_job16233972_bootstrap",
-  "current_node": "atl1-1-02-014-9-0",
-  "current_allocation_end": "2026-11-27T16:00:43-05:00",
-  "current_first_preemption_eligible": "2026-11-27T15:45:43-05:00",
-  "current_GPU_UUIDs": [
-    "GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235",
-    "GPU-77cd4a86-b663-9b1f-80cd-4a0af9be721c"
-  ],
+  "current_node": null,
+  "current_allocation_end": null,
+  "current_first_preemption_eligible": null,
+  "current_GPU_UUIDs": [],
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
-  ]
+  ],
+  "last_closed_results": "h200/20261127_job16233972_priority",
+  "last_closed_archive": {
+    "receipt": "h200/20261127_job16233972_priority/results/archive_transfer_438b3c019c21.json",
+    "archive_sha256": "243f4481a13abb28e3aa22344d3caacab2be95a8800dfccbd68bd9cf45da9a5b",
+    "verified": true
+  }
 }

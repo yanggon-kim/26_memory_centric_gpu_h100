@@ -27,3 +27,27 @@ Evidence: `../results/clock_conditioning_pilot.json`. All failed windows are ret
 - Limitation graph_b1_c16384_stock_f100_a2_resident_followup_full_shape_original_memory_settle_v3: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16233972_priority/gpu1/results/graph_b1_c16384_stock_f100_a2_resident_followup_full_shape_original_memory_settle_v3.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
 
 - Limitation full_graph_c16384_pooled_clock: All three conditioned optimized full-device C16384acquisitions and strict dualHF gates completed, but pooled SM-clock ratio3.913043 exceeds1.05; memory ratio1.0. Raw medians35.395486/35.499924/35.805847ms per tick are descriptive only.. Evidence: results/full_graph_b1_c16384.json. Tried: Own stock placement/HF proof,3fresh acquisitions x10timed trials and fixed memory conditioning; all clock-rejected observations retained; live thermal event mask recorded separately. Resume: No clean long-context latency/bandwidth or eager/optimized comparison is qualified. Re-inventory a healthy physical pair for the next eligible comparison; C32704remains unlaunched. Do not resample favorable trials or alter cooling/clocks/power..
+
+## graph B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |
+
+## graph B1/C16384 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | None | False | NA | NA |
+| 0.85 | None | False | NA | NA |
+| 0.75 | None | False | NA | NA |
+| 0.6 | None | False | NA | NA |
+| 0.45 | None | False | NA | NA |
+| 0.3 | None | False | NA | NA |

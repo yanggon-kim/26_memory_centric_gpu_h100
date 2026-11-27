@@ -1,5 +1,5 @@
 {
-  "status": "workers_finished_scientific_gates_separate",
+  "status": "partial",
   "worker_exit_codes": [
     0,
     0
@@ -15,7 +15,7 @@
     {
       "id": "P1a",
       "status": "partial",
-      "reason": "Complete conditioned eager fallback qualified, thresholds112/80/40SMs; optimized graph restriction remains separately blocked",
+      "reason": "Complete qualified conditioned eager fallback: smallest tested upper95% bound thresholds112/80/40SMs; optimized restriction remains separately blocked",
       "reviewed_evidence": true,
       "eager_fallback_qualified": true,
       "optimized_curve_qualified": false,
@@ -25,9 +25,9 @@
     {
       "id": "P1b",
       "status": "partial",
-      "reason": "Full optimized B1/C4096andC16384triplicates captured with both HF references, but pooled clocks fail; width8queued separately, width32andlong restricted curves pending",
+      "reason": "Full optimized C4096/C16384triplicates pass capture/provenance/dualHF but fail pooled clocks; batch8queued, batch32andlong restricted curves pending",
       "reviewed_evidence": true,
-      "evidence": "gpu1/results/worker_outcome.json"
+      "evidence": "gpu1/results/full_context_CPU_review.json"
     },
     {
       "id": "P2a",
@@ -81,9 +81,38 @@
     },
     {
       "id": "P5d",
-      "status": "pending",
-      "reason": null
+      "status": "deferred",
+      "reason": "OptionalTPparity deferred beyond currenttwo-H200TP1scope"
     }
   ],
-  "next_command": "squeue --start -j 16233972"
+  "next_command": "timeout 25s squeue -h -j 16238357 -o '%i|%T|%l|%Q|%M|%R'",
+  "closeout_reviewed": true,
+  "termination": "COMPLETED",
+  "actual_allocated_gpu_hours": 1.9372222222222222,
+  "elapsed_seconds": 3487,
+  "closeout": "results/allocation_closeout.json",
+  "reviewed_case_manifest": "results/case_manifest_closeout.json",
+  "next_command_requires_new_allocation_authorization": false,
+  "continuation_authorization": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261125_priority_preparation/results/continuation_authorization.json",
+  "continuation_scope": "sequential two-H200 jobs only",
+  "next_job_id": "16238357",
+  "next_job_state": "PENDING Priority",
+  "qualified_eager_fallback": {
+    "protocol": "resident_eager_memory_settle_v3",
+    "batch": 1,
+    "context": 4096,
+    "thresholds_SM": {
+      "5_percent": 112,
+      "10_percent": 80,
+      "25_percent": 40
+    },
+    "evidence": "gpu0/results/resident_curve_CPU_review.json"
+  },
+  "archive": {
+    "receipt": "h200/20261127_job16233972_priority/results/archive_transfer_438b3c019c21.json",
+    "archive": "/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261127_job16233972_priority_438b3c019c21.tar.gz",
+    "sha256": "243f4481a13abb28e3aa22344d3caacab2be95a8800dfccbd68bd9cf45da9a5b",
+    "source_content_identity": "438b3c019c21b44643085f2d2c5acb80dc56a8aebf8c6833006534f5aa231f6d",
+    "every_member_verified": true
+  }
 }
