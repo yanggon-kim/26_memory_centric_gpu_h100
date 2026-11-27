@@ -33,3 +33,44 @@ INFO 11-27 01:06:23 [weight_utils.py:879] Prefetching checkpoint files into page
 Loading safetensors checkpoint shards:  24% Completed | 4/17 [00:07<00:23,  1.83s/it]
 Loading safetensors checkpoint shards:  29% Completed | 5/17 [00:09<00:21,  1.78s/it]
 Loading safetensors checkpoint shards:  35% Completed | 6/17 [00:11<00:20,  1.82s/it]
+Loading safetensors checkpoint shards:  41% Completed | 7/17 [00:12<00:17,  1.79s/it]
+Loading safetensors checkpoint shards:  47% Completed | 8/17 [00:14<00:15,  1.76s/it]
+Loading safetensors checkpoint shards:  53% Completed | 9/17 [00:16<00:14,  1.80s/it]
+Loading safetensors checkpoint shards:  59% Completed | 10/17 [00:18<00:12,  1.79s/it]
+Loading safetensors checkpoint shards:  65% Completed | 11/17 [00:19<00:10,  1.77s/it]
+Loading safetensors checkpoint shards:  71% Completed | 12/17 [00:21<00:08,  1.75s/it]
+Loading safetensors checkpoint shards:  76% Completed | 13/17 [00:23<00:07,  1.79s/it]
+Loading safetensors checkpoint shards:  82% Completed | 14/17 [00:25<00:05,  1.83s/it]
+Loading safetensors checkpoint shards:  88% Completed | 15/17 [00:27<00:03,  1.85s/it]
+Loading safetensors checkpoint shards:  94% Completed | 16/17 [00:28<00:01,  1.80s/it]
+Loading safetensors checkpoint shards: 100% Completed | 17/17 [00:30<00:00,  1.66s/it]
+Loading safetensors checkpoint shards: 100% Completed | 17/17 [00:30<00:00,  1.78s/it]
+
+INFO 11-27 01:06:51 [default_loader.py:397] Loading weights took 30.32 seconds
+INFO 11-27 01:06:51 [gpu_model_runner.py:5132] Model loading took 61.04 GiB memory and 30.917355 seconds
+INFO 11-27 01:06:56 [backends.py:1089] Using cache directory: /tmp/h200_priority_3449576_16184819_0/cache/vllm/torch_compile_cache/2921b28bf6/rank_0_0/backbone for vLLM's torch.compile
+INFO 11-27 01:06:56 [backends.py:1148] Dynamo bytecode transform time: 4.96 s
+INFO 11-27 01:06:59 [backends.py:292] Directly load the compiled graph(s) for compile range (1, 8192) from the cache, took 1.977 s
+INFO 11-27 01:06:59 [decorators.py:311] Directly load AOT compilation from path /tmp/h200_priority_3449576_16184819_0/cache/vllm/torch_compile_cache/torch_aot_compile/f63d56dd13ddca60abad8560905d15b051589dea9ae690cea418c58aaaab44c0/rank_0_0/model
+INFO 11-27 01:06:59 [monitor.py:53] torch.compile took 7.47 s in total
+INFO 11-27 01:07:00 [monitor.py:81] Initial profiling/warmup run took 1.16 s
+INFO 11-27 01:07:01 [gpu_model_runner.py:6279] Profiling CUDA graph memory: PIECEWISE=5 (largest=16), FULL=4 (largest=8)
+INFO 11-27 01:07:02 [gpu_model_runner.py:6365] Estimated CUDA graph memory: 0.10 GiB total
+INFO 11-27 01:07:02 [gpu_worker.py:466] Available KV cache memory: 55.95 GiB
+INFO 11-27 01:07:02 [gpu_worker.py:481] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.8500 is equivalent to --gpu-memory-utilization=0.8493 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.8507. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+INFO 11-27 01:07:02 [kv_cache_utils.py:1733] GPU KV cache size: 229,184 tokens
+INFO 11-27 01:07:02 [kv_cache_utils.py:1734] Maximum concurrency for 8,192 tokens per request: 27.98x
+2026-11-27 01:07:02,914 - INFO - autotuner.py:615 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-11-27 01:07:02,931 - INFO - autotuner.py:634 - flashinfer.jit: [Autotuner]: Autotuning process ends
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/5 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 2/5 [00:00<00:00, 19.47it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 4/5 [00:00<00:00, 19.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 5/5 [00:00<00:00, 18.56it/s]
+Capturing CUDA graphs (decode, FULL):   0%|          | 0/4 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):  75%|███████▌  | 3/4 [00:00<00:00, 24.38it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 4/4 [00:00<00:00, 24.32it/s]
+INFO 11-27 01:07:04 [gpu_model_runner.py:6456] Graph capturing finished in 2 secs, took 0.09 GiB
+INFO 11-27 01:07:04 [gpu_worker.py:619] CUDA graph pool memory: 0.09 GiB (actual), 0.1 GiB (estimated), difference: 0.01 GiB (11.1%).
+INFO 11-27 01:07:04 [jit_monitor.py:54] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+INFO 11-27 01:07:04 [core.py:302] init engine (profile, create kv cache, warmup model) took 12.89 s (compilation: 7.47 s)
+WARNING 11-27 01:07:04 [input_processor.py:274] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+WARNING 11-27 01:07:04 [jit_monitor.py:103] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO 11-27 01:07:15 [loggers.py:271] Engine 000: Avg prompt throughput: 2702.2 tokens/s, Avg generation throughput: 36.3 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 1.8%, Prefix cache hit rate: 0.0%
+INFO 11-27 01:07:25 [loggers.py:271] Engine 000: Avg prompt throughput: 2392.6 tokens/s, Avg generation throughput: 37.4 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 1.8%, Prefix cache hit rate: 0.0%
+controlled vLLM B=1 C=4096: [1201.0, 1203.2, 1201.27, 1200.46, 1201.2, 1201.96, 1201.78, 1204.72, 1205.38, 1201.03] ms
+Validated 1 controlled vLLM cases
