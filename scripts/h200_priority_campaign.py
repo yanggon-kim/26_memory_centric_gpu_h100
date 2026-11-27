@@ -719,6 +719,7 @@ def resident_flags(args):
     flags=['--resident-first','--resident-batch',str(getattr(args,'resident_batch',1)),
            '--resident-context',str(getattr(args,'resident_context',4096))]
     if getattr(args,'resident_conditioned',False):flags.append('--resident-conditioned')
+    if getattr(args,'spare_prefill_first',False):flags.append('--spare-prefill-first')
     return flags
 
 
@@ -797,6 +798,8 @@ def coordinator(args):
                 limitation(root,'published_core_gate','Prior broad curve certificate could not be verified: '+str(error),
                     str(candidate),'Retain the current-allocation ordering gate instead',
                     'Inspect prior source records; no cross-allocation timing qualification')
+        if (getattr(args,'resident_batch',1),getattr(args,'resident_context',4096))!=(1,4096) or getattr(args,'spare_prefill_first',False):
+            assert base.get('published_core_gate'),'expanded shapes/spare prefill require the verified published first broad curve'
     jobs=[]
     for i, device in enumerate(devices):
         subroot=root/f'gpu{i}'
@@ -965,11 +968,12 @@ def main():
     p.add_argument('--resident-batch',type=int,choices=(1,8,32),default=1)
     p.add_argument('--resident-context',type=int,choices=(4096,16384,32704),default=4096)
     p.add_argument('--resident-conditioned',action='store_true',help='separate prospectively fixed memory_settle_v3 decode scope')
+    p.add_argument('--spare-prefill-first',action='store_true',help='after verified published broad core, use the spare for the1Kprefill3x10comparison')
     p.add_argument('--prior-kv-pilot',type=Path)
     a=p.parse_args()
     if a.eager_first and not a.core_first:p.error('--eager-first requires --core-first')
     if a.resident_first and not a.eager_first:p.error('--resident-first requires --eager-first')
-    if (a.resident_batch!=1 or a.resident_context!=4096 or a.resident_conditioned) and not a.resident_first:
+    if (a.resident_batch!=1 or a.resident_context!=4096 or a.resident_conditioned or a.spare_prefill_first) and not a.resident_first:
         p.error('resident shape/conditioning options require --resident-first')
     if a.resident_batch!=1 and a.resident_context!=4096:p.error('resident width sweeps currently require context4096')
     if a.core_first and a.worker is None and a.prior_kv_pilot is None:p.error('--core-first coordinator/bootstrap requires --prior-kv-pilot')
@@ -982,8 +986,15 @@ def main():
         try:
             if a.resident_first:
                 import h200_resident_campaign
-                outcome=h200_resident_campaign.primary(worker,conditioned=a.resident_conditioned,
-                    batch=a.resident_batch,context=a.resident_context) if a.worker==0 else h200_resident_campaign.secondary(worker,conditioned=a.resident_conditioned)
+                if a.worker==1 and a.spare_prefill_first:
+                    previous=worker.settings['published_core_gate']
+                    assert sha(previous['review'])==previous['review_sha256']
+                    h200_resident_campaign.verify_published_core(Path(previous['review']))
+                    from h200_prefill_campaign import capture
+                    outcome=capture(worker,1024)
+                else:
+                    outcome=h200_resident_campaign.primary(worker,conditioned=a.resident_conditioned,
+                        batch=a.resident_batch,context=a.resident_context) if a.worker==0 else h200_resident_campaign.secondary(worker,conditioned=a.resident_conditioned)
             elif a.eager_first:
                 import h200_eager_first
                 outcome=h200_eager_first.primary(worker) if a.worker==0 else h200_eager_first.secondary(worker)
