@@ -895,7 +895,7 @@ def bootstrap(args):
         publish(root,'H200 staging failure: preserve logs and hold existing allocation for bounded repair')
         control=root/'control';control.mkdir(exist_ok=True)
         fields=dict(x.split('=',1) for x in state.split() if '=' in x)
-        cutoff=dt.datetime.fromisoformat(fields['EndTime']).astimezone().timestamp()-1800
+        cutoff=dt.datetime.fromisoformat(fields['EndTime']).astimezone().timestamp()-(900 if getattr(args,'resident_first',False) else 1800)
         print('STAGING_RECOVERY_HOLD',control,flush=True)
         while time.time()<cutoff and not (control/'finalize').exists():
             trigger=control/'retry_staging'
