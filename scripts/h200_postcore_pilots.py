@@ -36,7 +36,9 @@ def pilots(worker):
             'basis':'about twice observed prior functional producer+strict-reference time; analytic scheduling only, new source/UUID requires its own actual gates'}
         write(worker.root/'results'/(label+'_budget.json'),admission)
         if not admission['admitted']:
-            results.append({'id':label,'status':'deferred_budget','available_s':available});break
+            results.append({'id':label,'status':'deferred_budget','available_s':available})
+            write(worker.root/'results/functional_pilots.json',{'results':results})
+            continue  # The smaller independent prefill pilot may still fit.
         cfg=config(worker.root,'graph',context,3,1);output=worker.root/'runs'/label
         proc=worker.execute(label,[worker.py,worker.script/script,'--config',cfg,'--gpu-uuid',worker.uuid,
             '--output',output]+extra,timeout=600)
