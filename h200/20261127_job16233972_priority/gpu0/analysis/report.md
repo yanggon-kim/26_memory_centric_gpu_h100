@@ -1,1 +1,5 @@
 # GPU 0: GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235
+
+- Limitation resident_protocol_scope: Prior optimized graph restriction remains blocked; repeated model initialization prevented a complete fresh-model-per-point curve before preemption.. Evidence: h200/20261127_job16210814_priority/analysis/current_work_20261127.md. Tried: Versioned one-resident-model-per-acquisition eager protocol; bounded stock/full-green/40SM pilot before full proof and3fresh acquisitions. Resume: Never pool prior timings; retain exact outputs, actual decoder placement, all references and clock/isolation gates; optimized restriction remains independently blocked.
+
+- Limitation conditioned_scope: Fixed memory_settle_v3 changes cache history and adds untimed TTFT; it does not repair the original unconditioned latency scope.. Evidence: session.json; configs/*memory_settle_v3.json. Tried: Separate prospectively fixed protocol, own actual-decoder proof and dynamic/unchanged StaticCache references. Resume: Report thresholds only for this conditioned decode scope, preserving all rejected unconditioned trials.

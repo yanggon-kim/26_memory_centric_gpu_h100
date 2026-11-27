@@ -27,11 +27,15 @@ def pilots(worker):
         '--check-cuda','--output',worker.root/'environment/inventory.json'],timeout=180)
     assert inv['status']=='complete', 'post-core inventory failed'
     results=[]
-    for label,script,context,extra in (
-        ('P3a_functional_policies','h200_serving_policy_pilot.py',4096,[]),
-        ('P4a_functional_prefill','h200_prefill_resident.py',1024,['--pilot','--acquisition','0'])):
+    for label,script,context,extra,estimate in (
+        ('P3a_functional_policies','h200_serving_policy_pilot.py',4096,[],540),
+        ('P4a_functional_prefill','h200_prefill_resident.py',1024,['--pilot','--acquisition','0'],440)):
         available=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time()
-        if available<900:
+        admission={'id':label,'estimate_s':estimate,'margin_s':60,'available_s':available,
+            'admitted':available>=estimate+60,
+            'basis':'about twice observed prior functional producer+strict-reference time; analytic scheduling only, new source/UUID requires its own actual gates'}
+        write(worker.root/'results'/(label+'_budget.json'),admission)
+        if not admission['admitted']:
             results.append({'id':label,'status':'deferred_budget','available_s':available});break
         cfg=config(worker.root,'graph',context,3,1);output=worker.root/'runs'/label
         proc=worker.execute(label,[worker.py,worker.script/script,'--config',cfg,'--gpu-uuid',worker.uuid,

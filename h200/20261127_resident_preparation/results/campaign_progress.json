@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-27T18:51:45.535035+00:00",
+  "updated_utc": "2026-11-27T19:52:14.438053+00:00",
   "objective": "Finish all eligible two-H200 families one by one, sequentially replacing preempted Slurm jobs",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16233972",
-  "current_observed_state": "PENDING",
+  "current_observed_state": "RUNNING",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -20,8 +20,8 @@
     },
     {
       "id": "P1a",
-      "status": "partial",
-      "next": "Separate fixed-conditioned cohort on replacement allocation; current GPU0eligible for independent functional pilots",
+      "status": "running",
+      "next": "Finish and qualify the current separate conditioned curve before selecting the next workload",
       "job_id": "16228671",
       "clock_gate": "Acquisition0full controls and mostpoints fail unchanged5%clock envelope; no thresholds promoted",
       "captured_acquisitions": [
@@ -30,7 +30,14 @@
         2
       ],
       "evidence": "h200/20261127_job16228671_priority/gpu0/results/resident_curve_CPU_review.json",
-      "reason": "Complete resident eager curve published with27conditions and all7placement/dualHF/source/isolation gates; unconditioned full controls clock-unqualified, optimized graphs separately blocked"
+      "reason": "Complete resident eager curve published with27conditions and all7placement/dualHF/source/isolation gates; unconditioned full controls clock-unqualified, optimized graphs separately blocked",
+      "active_attempt": {
+        "job_id": "16233972",
+        "protocol": "resident_eager_memory_settle_v3",
+        "status": "staging_runtime_passed",
+        "captured_acquisitions": [],
+        "scope": "fresh UUID/source/NSYS and strictHF gates before3x10; prior unconditioned complete raw curve retained separately"
+      }
     },
     {
       "id": "P1b",
@@ -98,10 +105,18 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": null,
+  "current_results": "h200/20261127_job16233972_priority",
   "next_job_id": null,
   "next_job_state": null,
   "next_scope": "resident_eager_memory_settle_v3, batch1/context4096; separate source/UUID/cohort and fixed conditioning; same original3x10/placement/dualHF/source/clock/isolation gates",
   "last_closed_job_id": "16228671",
-  "current_job_time_limit": "01:15:00"
+  "current_job_time_limit": "01:15:00",
+  "current_bootstrap": "h200/20261127_job16233972_bootstrap",
+  "current_node": "atl1-1-02-014-9-0",
+  "current_allocation_end": "2026-11-27T16:00:43-05:00",
+  "current_first_preemption_eligible": "2026-11-27T15:45:43-05:00",
+  "current_GPU_UUIDs": [
+    "GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235",
+    "GPU-77cd4a86-b663-9b1f-80cd-4a0af9be721c"
+  ]
 }
