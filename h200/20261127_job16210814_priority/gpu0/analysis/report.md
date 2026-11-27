@@ -5,3 +5,27 @@
 - Limitation eager_b1_c4096_stock_f100_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_stock_f100_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
 
 - Limitation eager_b1_c4096_green_f100_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f100_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f85_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f85_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f75_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f75_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f100_a0_interleaved_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f100_a0_interleaved_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f60_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f60_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f45_a0_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f45_a0_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+- Limitation eager_b1_c4096_green_f100_a0_end_rebind_v1: Clock envelope failed; all trials retained. Evidence: h200/20261127_job16210814_priority/gpu0/results/eager_b1_c4096_green_f100_a0_end_rebind_v1.json. Tried: Passive clock sampling and per-trial endpoints; no clock settings changed. Resume: Independent source/clock-qualified acquisition; no favorable trial selection.
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
