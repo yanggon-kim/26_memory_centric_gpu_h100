@@ -25,3 +25,9 @@ The native1P1D connector is present in the pinned runtime. Its consumer loads al
 ## API reference and empirical requirement
 
 [CUDA13.0.1 Green Context API documentation](https://docs.nvidia.com/cuda/archive/13.0.1/cuda-driver-api/group__CUDA__GREEN__CONTEXTS.html) describes primary-context retention, explicit activation and the restriction that a Green context is current to one thread at a time. Those API statements do not establish resident32B decoder compatibility. Actual driver stream-resource queries, real decoder NSYS placement and full HF exact outputs remain mandatory.
+
+## Prepared long-prompt adapter — not enabled or GPU validated
+
+`scripts/h200_prefill_resident.py` prepares a separate whole/chunked-prefill acquisition protocol. Whole,256/1024/4096-token budgets and a whole-end reference share one resident full model per independent acquisition. The unchanged controlled decoder sees the same experimentally checked one-token barrier after all prompt chunks; exactly63later decode steps remain separate. Three CPU checks passed for reaching that barrier, rejecting extra tokens/premature completion and bounding a missing barrier.
+
+This is an instrumented policy/observer/event scope, not a qualified clean TTFT or traffic result. Cold prompt means no prefix/KV reuse, not forced cold weights or a cache flush. It is not enabled in job16228671. A bounded whole/chunk256 GPU pilot, independent HF exact outputs and a validated physical-counter reader are required before the context matrix or quantitative conclusions.

@@ -67,5 +67,25 @@
       "versioned source/runtime identity,source/clock/isolation gates and samepair controls"
     ]
   },
-  "new_GPU_measurements": false
+  "new_GPU_measurements": false,
+  "P4a": {
+    "adapter": "scripts/h200_prefill_resident.py",
+    "status": "implemented_CPU_tested_not_GPU_validated",
+    "CPU_tests_passed": 3,
+    "queued_job16228671_enabled": false,
+    "scope": "one resident optimized full model per independent acquisition; whole/256/1024/4096/whole-end prefill; no prefixcache reuse; measuredprefillplusfirsttoken separatedfrom63puredecode ticks; policy/event/observer costs explicitlyinstrumented",
+    "pilot_required": [
+      "boundedwhole/chunk256one-tokenbarrierandfull64exactoutputs",
+      "independentHFreference",
+      "actualschedulerqueryoffsetsandcounts",
+      "matchedintrusion/source/clock/isolationgates"
+    ],
+    "remaining": [
+      "GPUfunctionalpilot",
+      "3independentacquisitionsx10trials",
+      "fullprefillNCUrangeandcounterreaderpilot",
+      "contextmatrix1024/8192/16384/24576/32704",
+      "physicaltrafficandkernelattribution"
+    ]
+  }
 }

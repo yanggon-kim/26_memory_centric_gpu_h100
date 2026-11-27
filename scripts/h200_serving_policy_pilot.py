@@ -110,7 +110,7 @@ def main(a):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--config',required=True);p.add_argument('--gpu-uuid',required=True)
-    p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',default='timing')
+    p.add_argument('--output',type=Path,required=True);p.add_argument('--mode',choices=['timing'],default='timing')
     p.add_argument('--generated-tokens',type=int,default=64);p.add_argument('--batch',type=int);p.add_argument('--context',type=int)
     p.add_argument('--external-profiler',action='store_true');p.add_argument('--collect-worker-metadata',action='store_true')
     a=p.parse_args();assert not a.external_profiler and not a.collect_worker_metadata
