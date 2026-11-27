@@ -1,0 +1,269 @@
+{
+  "classification": "CPU analytical reprocessing of separately measured physical counters",
+  "new_GPU_measurements": false,
+  "source_root": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker",
+  "gpu_uuid": "GPU-4ec297c0-8010-9dee-aae9-54a7ad6eb4ad",
+  "source_freeze_identity": "bf8ee96b404f3d101113532ebc7c5e5959ec055225f7d1ee4a7a1d1b54ac5c34",
+  "model_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "model_headers": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_resident_preparation/environment/model_headers/qwen32b_v2.json",
+  "model_headers_sha256": "72913f92a8dac0830448fee09adc02bc0298bba040d9969e3092c8bcc7f1f3fd",
+  "model_download_manifest_source": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261125_priority_preparation/qwen32b_smoke.download_manifest.json",
+  "model_download_manifest_sha256": "504b391a411b2ad207b67188271e7f50ac2959710c41f701017f227a8e39b425",
+  "counter_review": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_L2_triplicate_review.json",
+  "counter_review_sha256": "a8472611c462439e2af4c5741e64f9d771f83eb500985e61f70e0d37d2971262",
+  "cases": [
+    {
+      "acquisition": 0,
+      "physical_result": "h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_graph_b1_c4096_a0.json",
+      "physical_result_sha256": "31421f33ef0ccfd91e15e9ae8784cc49a0ea9ec8f024ed95bc04e5e3a5270aa0",
+      "physical_DRAM_read_bytes": 195243088640.0,
+      "physical_DRAM_write_bytes": 151200768.0,
+      "physical_L2_total_requested_bytes": 300865757280.0,
+      "replays": [
+        {
+          "publication": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a0/pass000.json",
+          "publication_sha256": "c19e683559b7c5802a74b9b96a9579dadc70f886ba6c4d851cfa4165c65b777e",
+          "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a0/pass000/run.json",
+          "run_sha256": "cd7ecd0e02e32817ce06645c3167c1312bf0dbc75e8605b5d7fea899d2c3cb17",
+          "selected_interval": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a0/pass000/selected_interval.json",
+          "selected_interval_sha256": "c531fda47a469e74c864376fecb3534b66dc8c888d756324e5111ccc2b260c92"
+        }
+      ],
+      "analytical_logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074528256,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045155840,
+            "known_main_input_subtotal_bytes": 65045155840,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5373952000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074790400,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045417984,
+            "known_main_input_subtotal_bytes": 65045417984,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5375262720,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1075052544,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045680128,
+            "known_main_input_subtotal_bytes": 65045680128,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5376573440,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 195136253952,
+        "U_window_unique": 65045700608,
+        "U_window_initial_external_main": 65045176320,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 64,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "analytical_useful_FLOPs": 208030924800,
+      "physical_read_over_U_tick_sum": 1.0005474876443323,
+      "physical_read_over_U_window_unique": 3.0016294207766125,
+      "useful_FLOP_per_physical_DRAM_read_write_byte": 1.0646724908403726,
+      "signed_read_minus_three_weight_streams_bytes": 3331236608.0,
+      "signed_residual_scope": "not measured KV traffic; cache hits, rereads, writes/overfetch and omitted demand can offset",
+      "clean_bandwidth_GB_s": null,
+      "issued_FLOPs": null
+    },
+    {
+      "acquisition": 1,
+      "physical_result": "h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_graph_b1_c4096_a1.json",
+      "physical_result_sha256": "b583a2ad9ff7de33fa59b8b3decacd0959740c5617c52949858a6330ca4f375d",
+      "physical_DRAM_read_bytes": 195242616576.0,
+      "physical_DRAM_write_bytes": 149342208.0,
+      "physical_L2_total_requested_bytes": 300855715744.0,
+      "replays": [
+        {
+          "publication": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a1/pass000.json",
+          "publication_sha256": "76baecbb305aa0f4c9efd85cd77f1b99a37db591b8ae1d55957b8b834abf1604",
+          "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a1/pass000/run.json",
+          "run_sha256": "f908316d8dbdea2becca7b8e72b5b6b20567ad182967775aac4a3cdf6b13a75d",
+          "selected_interval": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a1/pass000/selected_interval.json",
+          "selected_interval_sha256": "b87bdef5fbb9197e939a739e9c06ae72be7eaeec5568828d9b22880d11a9e0a3"
+        }
+      ],
+      "analytical_logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074528256,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045155840,
+            "known_main_input_subtotal_bytes": 65045155840,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5373952000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074790400,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045417984,
+            "known_main_input_subtotal_bytes": 65045417984,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5375262720,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1075052544,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045680128,
+            "known_main_input_subtotal_bytes": 65045680128,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5376573440,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 195136253952,
+        "U_window_unique": 65045700608,
+        "U_window_initial_external_main": 65045176320,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 64,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "analytical_useful_FLOPs": 208030924800,
+      "physical_read_over_U_tick_sum": 1.0005450684936597,
+      "physical_read_over_U_window_unique": 3.0016221633561284,
+      "useful_FLOP_per_physical_DRAM_read_write_byte": 1.064685190192356,
+      "signed_read_minus_three_weight_streams_bytes": 3330764544.0,
+      "signed_residual_scope": "not measured KV traffic; cache hits, rereads, writes/overfetch and omitted demand can offset",
+      "clean_bandwidth_GB_s": null,
+      "issued_FLOPs": null
+    },
+    {
+      "acquisition": 2,
+      "physical_result": "h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_graph_b1_c4096_a2.json",
+      "physical_result_sha256": "63218944f9b59aa513515ebbe4fde5d0fbdc96a70b1426c57cdc5eb0327d1dde",
+      "physical_DRAM_read_bytes": 195242621184.0,
+      "physical_DRAM_write_bytes": 149340672.0,
+      "physical_L2_total_requested_bytes": 300854284224.0,
+      "replays": [
+        {
+          "publication": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a2/pass000.json",
+          "publication_sha256": "1ac6da61eed0dcbf6e9ffc215d634cd699d6bf52f1e7eec8aae522fb950d0c34",
+          "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a2/pass000/run.json",
+          "run_sha256": "2e55f2f9fa174f77543d3499841c90d05c9aff23feb6c88a01dc7fb6fd7eae34",
+          "selected_interval": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16210814_priority/gpu1_native_linker/runs/P2a_graph_b1_c4096_a2/pass000/selected_interval.json",
+          "selected_interval_sha256": "677e841e1bf4bd5205015a1dddac4d084df04694b735760ccad1c4feb59f83d7"
+        }
+      ],
+      "analytical_logical": {
+        "classification": "analytical-useful-input accounting",
+        "layer": null,
+        "batch": 1,
+        "context": 4096,
+        "ticks": [
+          {
+            "tick": 4,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074528256,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045155840,
+            "known_main_input_subtotal_bytes": 65045155840,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5373952000,
+            "missing_reason": null
+          },
+          {
+            "tick": 5,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1074790400,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045417984,
+            "known_main_input_subtotal_bytes": 65045417984,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5375262720,
+            "missing_reason": null
+          },
+          {
+            "tick": 6,
+            "required_weight_bytes": 63970617344,
+            "historical_kv_bytes": 1075052544,
+            "layer_entry_value_bytes": 0,
+            "untied_embedding_lookup_bytes": 10240,
+            "U_main_bytes": 65045680128,
+            "known_main_input_subtotal_bytes": 65045680128,
+            "useful_linear_flops": 63968378880,
+            "useful_attention_flops": 5376573440,
+            "missing_reason": null
+          }
+        ],
+        "U_tick_sum": 195136253952,
+        "U_window_unique": 65045700608,
+        "U_window_initial_external_main": 65045176320,
+        "window_KV_definition": "unique historical inputs across ticks4/5/6 include new values produced at ticks4/5 and consumed by later ticks; initial external KV is reported separately",
+        "accounting_reader_version": 2,
+        "geometry": {
+          "layers": 64,
+          "query_heads": 40,
+          "kv_heads": 8,
+          "head_dim": 128
+        },
+        "tied_output_head_inferred_from_config_and_absent_independent_tensor": false,
+        "omitted": "RoPE/scheduler metadata, sector overfetch, scratch and actual issued/padded work; physical traffic is measured separately",
+        "interpretation": "U is logical demand, not compulsory DRAM; near-one ratios can conceal rereads offset by hits"
+      },
+      "analytical_useful_FLOPs": 208030924800,
+      "physical_read_over_U_tick_sum": 1.0005450921079286,
+      "physical_read_over_U_window_unique": 3.001622234198628,
+      "useful_FLOP_per_physical_DRAM_read_write_byte": 1.064685173453116,
+      "signed_read_minus_three_weight_streams_bytes": 3330769152.0,
+      "signed_residual_scope": "not measured KV traffic; cache hits, rereads, writes/overfetch and omitted demand can offset",
+      "clean_bandwidth_GB_s": null,
+      "issued_FLOPs": null
+    }
+  ],
+  "scope": "Analytical useful inputs/FLOPs are separate from measured DRAM/L2. Aggregate near-one reads/logical demand does not prove address-level exactly-once reads or absence of reuse. Clock-rejected clean timing is not joined to these counters; no architectural benefit or clean bandwidth inferred."
+}

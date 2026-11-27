@@ -636,17 +636,18 @@ def continuation_task(task, root):
     return subroot
 
 
-def continue_allocation(root, end):
+def continue_allocation(root, end, closeout_buffer=1800):
     """Keep the same authorized job available for result-driven follow-up work.
 
     Tasks are explicit versioned script/argument records, never shell strings.
     GPU producers retain the same allocation/UUID/isolation/deadline supervisor.
     """
+    assert closeout_buffer in (900,1800)
     queue=root/'control';queue.mkdir(exist_ok=True)
     write(root/'STATUS.json',{'status':'awaiting_reviewed_continuation','allocation_end':end.isoformat(),
-                             'control_directory':str(queue),'closeout_buffer_s':1800})
+                             'control_directory':str(queue),'closeout_buffer_s':closeout_buffer})
     publish(root,'H200 initial queue checkpoint: retain allocation for reviewed follow-up cases')
-    cutoff=end.timestamp()-1800
+    cutoff=end.timestamp()-closeout_buffer
     print('CONTINUATION_QUEUE',queue,flush=True)
     while time.time()<cutoff and not (queue/'finalize').exists():
         for source in sorted(queue.glob('*.task.json')):
@@ -773,7 +774,7 @@ def coordinator(args):
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
     for p,s in processes:s.close()
-    continue_allocation(root,end)
+    continue_allocation(root,end,closeout_buffer=reserve)
     manifest=load(root/'results/case_manifest.json')
     for row in manifest['rows']:
         if row.get('reviewed_evidence'):

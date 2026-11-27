@@ -31,3 +31,9 @@ The native1P1D connector is present in the pinned runtime. Its consumer loads al
 `scripts/h200_prefill_resident.py` prepares a separate whole/chunked-prefill acquisition protocol. Whole,256/1024/4096-token budgets and a whole-end reference share one resident full model per independent acquisition. The unchanged controlled decoder sees the same experimentally checked one-token barrier after all prompt chunks; exactly63later decode steps remain separate. Three CPU checks passed for reaching that barrier, rejecting extra tokens/premature completion and bounding a missing barrier.
 
 This is an instrumented policy/observer/event scope, not a qualified clean TTFT or traffic result. Cold prompt means no prefix/KV reuse, not forced cold weights or a cache flush. It is not enabled in job16228671. A bounded whole/chunk256 GPU pilot, independent HF exact outputs and a validated physical-counter reader are required before the context matrix or quantitative conclusions.
+
+## Saved physical/logical demand comparison
+
+[The CPU accounting report](qwen32b_physical_logical_accounting.md) joins all three audited32B DRAM/L2 captures to exact checkpoint headers and replay-selected input tokens. Reads are approximately1.00055times the summed per-tick logical demand, consistent with aggregate repeated weight streaming. This does not prove address-level exactly-once reads, absence of reuse, a clean bandwidth join or architectural benefit. Detailed model/header, replay and raw-counter checksums remain in the accompanying JSON. No new GPU measurement was made.
+
+The resident-mode continuation holder uses the same explicitly declared15minute closeout reserve as its workers. Earlier modes retain30minutes. This scheduling correction avoids ending an unpreempted90minute allocation after only60minutes; all scientific gates and actual Slurm EndTime checks remain unchanged.
