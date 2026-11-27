@@ -1,0 +1,71 @@
+{
+  "status": "CPU_source_audit_only",
+  "updated_utc": "2026-11-27T16:55:26.410705+00:00",
+  "installed_sources": [
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/scheduler.py",
+      "sha256": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/request_queue.py",
+      "sha256": "4b8d938e5fb8152fe61030b8aa991f983fcac9a405c37ed8908045e05e82ae5e"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/output.py",
+      "sha256": "44230b995721a011dbe2c1d012371b1d9ec844b1b09abfc24dd0c6d8a9e307fc"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/config/kv_transfer.py",
+      "sha256": "d661008cfb85fbe0758994ab1970c55199e68abcd3633fd9d12e8b39d99d1652"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/factory.py",
+      "sha256": "e90b2eb336d11b164773b49bc6a5c92cb467e3eb7bf4f34ec854714e95779441"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_connector.py",
+      "sha256": "13e2e1b5baa8cd503c68a0729fe50124ee36d41320b63c94335bd7d0e04266a9"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_engine.py",
+      "sha256": "bcbb73c586bc82d51c84e89e6b0dca9dc2354fa7a48856c1ae3a9f7dc45fd17a"
+    },
+    {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/tensor_memory_pool.py",
+      "sha256": "03698c4c5289d73058128d203e17b5ebafa6b354bf80068be19b3db542cc6d37"
+    }
+  ],
+  "P3a": {
+    "adapter": "scripts/h200_serving_policy.py",
+    "pilot": "scripts/h200_serving_policy_pilot.py",
+    "CPU_tests_passed": 6,
+    "GPU_validation": "pending; not enabled in queued job16228671",
+    "implemented": "versioned scheduler masks preserve held KV/seats/queues and restore config; whole/separate, chunked/separate, chunked/mixed policies;3request functional pilot with exact prefix/progress/offered-time TTFT checks",
+    "remaining": [
+      "actual GPU hook/input-batch/whole/mixed/exact-output validation",
+      "matched observer/policy overhead review",
+      "open-loop development/held-out arrival traces",
+      "independent tuning,light/nearcapacity,SLO/goodput/queuegrowth/energy",
+      "3independent acquisitions and10timed trials for quantitative comparisons"
+    ]
+  },
+  "P3b_P5a": {
+    "candidate": "installed native P2pNcclConnector,1P1D",
+    "native_GPU_validation": "pending; previous HF functional handoff is not vLLM connector validation",
+    "source_findings": [
+      "connector consumer advertises prompt_length-1 externally computed tokens and recomputes last prompt query",
+      "request IDs encode producer and consumer host:port addresses",
+      "default transport pool is32GiB pinned host memory per process, not32GiB GPU cache",
+      "PUT_ASYNC uses owned listener/sender threads; payload/queue/completion need independent instrumentation",
+      "decoder SM restriction remains separately blocked for optimized graphs"
+    ],
+    "required_before_loaded_comparison": [
+      "fresh owned allocated pair inventory and bounded connector producer/consumer smoke",
+      "exact full outputs against independent HF and full-worker reference",
+      "actual payload/send-completion/receiver-load records and conditional physical-link counters",
+      "both devices energy,KV seats/backpressure/preemptions and timeouts",
+      "versioned source/runtime identity,source/clock/isolation gates and samepair controls"
+    ]
+  },
+  "new_GPU_measurements": false
+}
