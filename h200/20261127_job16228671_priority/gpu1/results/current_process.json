@@ -1,41 +1,25 @@
 {
-  "label": "graph_b1_c4096_stock_f100_a0_proof_resident_followup_shape_proof",
+  "label": "full_graph_c4096_hf",
   "command": [
-    "/usr/local/pace-apps/spack/packages/linux-rhel9-x86_64_v3/none-none/cuda-13.0.1-ne4hey4ce57lmd34nixeikyfribdqln3/bin/nsys",
-    "profile",
-    "--sample=none",
-    "--cpuctxsw=none",
-    "--trace=cuda,nvtx",
-    "--cuda-graph-trace=node",
-    "--capture-range=cudaProfilerApi",
-    "--capture-range-end=stop",
-    "--output=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/profiles/graph_b1_c4096_stock_f100_a0_proof_resident_followup_shape_proof",
     "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python",
-    "/tmp/h200_priority_3449576_16228671_1/frozen/3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e/scripts/shoreline_restricted_decode.py",
-    "--config",
-    "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/configs/qwen32b_graph_b1_c4096_t3.json",
+    "/tmp/h200_priority_3449576_16228671_1/frozen/3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e/scripts/hf_full_reference.py",
+    "--source-run",
+    "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/runs/graph_b1_c4096_stock_f100_a0_proof_resident_followup_shape_proof/run.json",
     "--gpu-uuid",
     "GPU-28fa5fe0-0a71-78dc-ff99-a1fb75e9d459",
     "--output",
-    "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/runs/graph_b1_c4096_stock_f100_a0_proof_resident_followup_shape_proof",
-    "--fraction",
-    "1.0",
-    "--mode",
-    "timing",
-    "--rounding",
-    "nearest",
-    "--external-profiler"
+    "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/results/full_graph_c4096_hf.json"
   ],
-  "started_utc": "2026-11-27T18:22:39.663136+00:00",
-  "timeout_s": 1200,
-  "log": "logs/graph_b1_c4096_stock_f100_a0_proof_resident_followup_shape_proof.log",
+  "started_utc": "2026-11-27T18:26:27.017289+00:00",
+  "timeout_s": 1800,
+  "log": "logs/full_graph_c4096_hf.log",
   "allocation_verification": {
     "job_id": "16228671",
     "hostname": "atl1-1-02-014-16-0.pace.gatech.edu",
     "state": "RUNNING",
     "scheduler_end_unix_s": 1795806921.0,
     "effective_launch_cutoff_unix_s": 1795806021.0,
-    "verified_utc": "2026-11-27T18:22:39.663096+00:00",
+    "verified_utc": "2026-11-27T18:26:27.017252+00:00",
     "transient_query_failures": []
   },
   "script_sha256": {
@@ -198,5 +182,5 @@
     "shoreline_queue.py": "d995718344abbf1295208877daecb6db5f7454fde4efda02dbd520a7e4aa8dc4"
   },
   "script_snapshot_root": "environment/source_snapshots",
-  "pid": 4019771
+  "pid": 4021563
 }
