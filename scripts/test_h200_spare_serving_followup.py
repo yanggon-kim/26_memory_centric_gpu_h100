@@ -3,6 +3,7 @@ import tempfile
 import time
 import types
 from pathlib import Path
+from unittest.mock import patch
 from h200_spare_serving_followup import validate_idle,capture
 
 
@@ -11,7 +12,9 @@ class SpareAdmission(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             worker=types.SimpleNamespace(root=Path(folder),hs=types.SimpleNamespace(
                 verify_allocation=lambda:{'effective_launch_cutoff_unix_s':time.time()+10000}))
-            result=capture(worker,time.time()+30)
+            with patch('h200_spare_serving_followup.limitation') as recorded:
+                result=capture(worker,time.time()+30)
+            recorded.assert_called_once()
             self.assertEqual(result['status'],'deferred_budget')
             self.assertFalse(result['budget']['admitted'])
 

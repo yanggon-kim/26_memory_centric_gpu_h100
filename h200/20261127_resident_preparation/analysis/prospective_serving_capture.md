@@ -25,3 +25,5 @@ This is not automatically selected by the queued Slurm command. After that job a
 ## Functional trace reader prepared
 
 `scripts/h200_review_serving_pilot.py` joins the actual18development/warmup trace publications to the frozen policy/observer sources, completed producer/strict HF records, exact64outputs, offered-time timestamps, full per-request scheduler queries and actual compositions. It keeps all quantitative/ordinary-serving qualification false for this one-process development pilot. Three negative/positive CPU contracts pass. Its request/scheduler functions also rechecked the existing nine-request v1functional proof (65/142/112steps; mixed policy33mixed steps) without adding or relabeling GPU evidence. Complete v2reader validation remains pending its first actual GPU dataset.
+
+Budget rejection also writes the affected report and central limitations entry before returning, including the post-inventory recheck. The short-budget CPU contract verifies that this record is made and no model producer starts.

@@ -36,6 +36,9 @@ def capture(worker, protected_cutoff):
               'scope': 'analytical admission only; aim to finish2minutes before first-hour preemption eligibility, never a guaranteed lease'}
     write(worker.root/'results/comparison_budget.json', budget)
     if not budget['admitted']:
+        limitation(worker.root,'serving_pilot_admission','Protected launch budget is below1020seconds; no serving producer launched',
+            'results/comparison_budget.json','Conservative complete producer/reference/publication budget before first-hour preemption eligibility',
+            'Defer to a future owned allocation with the complete budget; retain the finished preceding comparison')
         return {'status': 'deferred_budget', 'budget': budget}
     build_environment(worker)
     inventory = worker.execute('inventory', [worker.py, worker.script/'inventory.py',
@@ -47,6 +50,9 @@ def capture(worker, protected_cutoff):
     budget['admitted_after_inventory'] = available >= budget['required_s']
     write(worker.root/'results/comparison_budget.json', budget)
     if not budget['admitted_after_inventory']:
+        limitation(worker.root,'serving_pilot_admission_after_inventory','Inventory completed but the complete protected serving budget no longer fits; no model producer launched',
+            'results/comparison_budget.json','Recheck the same conservative budget after inventory rather than assuming its duration is free',
+            'Defer the full pilot/reference to a new owned allocation; do not shorten output/trial gates')
         return {'status': 'deferred_budget_after_inventory', 'budget': budget}
     cfg = config(worker.root, 'graph', 4096, 3, 1)
     label = 'P3a_openloop_development_pilot'
