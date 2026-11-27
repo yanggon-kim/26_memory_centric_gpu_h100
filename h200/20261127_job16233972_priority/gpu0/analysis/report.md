@@ -15,3 +15,15 @@
 | 0.6 | 80 | False | NA | NA |
 | 0.45 | 56 | False | NA | NA |
 | 0.3 | 40 | False | NA | NA |
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
