@@ -1,0 +1,102 @@
+{
+  "id": "resident_b1_c4096_a2_green112",
+  "producer_label": "resident_b1_c4096_a2",
+  "engine": "eager",
+  "batch": 1,
+  "context": 4096,
+  "fraction": 0.85,
+  "acquisition": 2,
+  "pilot": false,
+  "stock": false,
+  "suffix": "",
+  "repair_route": "resident_eager_memory_settle_v3",
+  "gpu_uuid": "GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235",
+  "source_identity": "b10d2f7b72147cbcb883ae99b6ba9d49cbf11a6c433080ff53d8070ce72987f7",
+  "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16233972_priority/gpu0/runs/resident_b1_c4096_a2/green112/run.json",
+  "status": "complete",
+  "process_status": "complete",
+  "qualified": true,
+  "producer_elapsed_s": 476.2626485824585,
+  "protocol_scope": "one full resident model per acquisition; sequential conditions, never pooled with fresh-model-per-point",
+  "conditioning": {
+    "protocol": "memory_settle_v3",
+    "seconds": 1.0,
+    "buffer_bytes": 268435456,
+    "scope": "conditioned_decode_only"
+  },
+  "allocation": {
+    "stream_handle": 346535536,
+    "actual_sm_count": 112,
+    "green_context_handle": 383204960,
+    "green_context_id": 3,
+    "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+    "requested_fraction": 0.85,
+    "requested_sms": 112,
+    "requested_rounding": "nearest",
+    "device_sm_count": 132,
+    "min_partition_size": 8,
+    "alignment": 8,
+    "converted_context_made_current": false,
+    "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+  },
+  "actual_sm_count": 112,
+  "physical_sm_count": 132,
+  "sm_grant_matches_requested_scope": true,
+  "run_sha256": "8bbaf1943361f75efcdc34136bdeec2ad34836227558ca90bf1f877f1b8b1395",
+  "exact_outputs": true,
+  "conditioning_scope_verified": true,
+  "step_ms": [
+    21.513832540857415,
+    21.519978552879323,
+    21.592185873213033,
+    21.45561460582983,
+    21.59112723662503,
+    21.506707586850677,
+    21.561526046651935,
+    21.62141249411636,
+    21.497363490717753,
+    21.514200524146123
+  ],
+  "gpu_event_step_ms": [
+    21.51311577690972,
+    21.51911078559028,
+    21.59149654327877,
+    21.45488823784722,
+    21.59033203125,
+    21.505909753224206,
+    21.56065925719246,
+    21.620696537078373,
+    21.49667697482639,
+    21.513443235367063
+  ],
+  "tokens_s": [
+    46.48172277537612,
+    46.46844779806727,
+    46.313050743073966,
+    46.607846867657855,
+    46.31532152261601,
+    46.497121698507016,
+    46.378906476115574,
+    46.25044734113097,
+    46.51733225015177,
+    46.48092774247716
+  ],
+  "clock": {
+    "passed": true,
+    "clocks": {
+      "sm_clock_mhz": {
+        "minimum": 1980,
+        "maximum": 1980,
+        "max_min_ratio": 1.0,
+        "samples": 274
+      },
+      "memory_clock_mhz": {
+        "minimum": 3201,
+        "maximum": 3201,
+        "max_min_ratio": 1.0,
+        "samples": 274
+      }
+    },
+    "reason": "predeclared <=5% clock envelope; all trials retained"
+  }
+}
