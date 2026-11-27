@@ -1,0 +1,278 @@
+{
+  "id": "resident_b1_c4096_a0_proof_green96",
+  "producer_label": "resident_b1_c4096_a0_proof",
+  "engine": "eager",
+  "batch": 1,
+  "context": 4096,
+  "fraction": 0.75,
+  "acquisition": 0,
+  "pilot": true,
+  "stock": false,
+  "suffix": "",
+  "repair_route": "resident_eager_v1",
+  "gpu_uuid": "GPU-d6a286c1-f8de-4287-55f5-2ba29b153b9c",
+  "source_identity": "3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e",
+  "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu0/runs/resident_b1_c4096_a0_proof/green96/run.json",
+  "status": "complete",
+  "process_status": "complete",
+  "qualified": true,
+  "producer_elapsed_s": 258.0058569908142,
+  "protocol_scope": "one full resident model per acquisition; sequential conditions, never pooled with fresh-model-per-point",
+  "conditioning": null,
+  "allocation": {
+    "stream_handle": 340501792,
+    "actual_sm_count": 96,
+    "green_context_handle": 386048352,
+    "green_context_id": 4,
+    "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+    "requested_fraction": 0.75,
+    "requested_sms": 96,
+    "requested_rounding": "nearest",
+    "device_sm_count": 132,
+    "min_partition_size": 8,
+    "alignment": 8,
+    "converted_context_made_current": false,
+    "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+  },
+  "actual_sm_count": 96,
+  "physical_sm_count": 132,
+  "sm_grant_matches_requested_scope": true,
+  "run_sha256": "9b7a0d2b94888d8fd6a856e20d33b010a7781affa6b54b01cb592f76390d00ec",
+  "exact_outputs": true,
+  "conditioning_scope_verified": true,
+  "step_ms": [
+    58.36568729922412,
+    25.41773168310996,
+    25.516631968674204
+  ],
+  "gpu_event_step_ms": [
+    58.36432369171627,
+    25.416573660714285,
+    25.51530529203869
+  ],
+  "tokens_s": [
+    17.13335430924144,
+    39.342613749617094,
+    39.1901251398563
+  ],
+  "timeline": {
+    "status": "complete",
+    "windows": [
+      {
+        "start_ns": 28496147,
+        "end_ns": 112715265,
+        "instrumented_wall_ms": 84.219118,
+        "kernel_union_ms": 58.416185,
+        "kernel_sum_ms": 58.44761,
+        "launches": 2553,
+        "green_context_ids": [
+          4
+        ],
+        "distinct_green_context_kernel_overlap_ms": 0.0,
+        "restriction_passed": true,
+        "graph_kernel_count": 0,
+        "kernels": {
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>>(int, T2, T3)": {
+            "launches": 3,
+            "duration_ns_sum": 2336,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)4>>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)": {
+            "launches": 3,
+            "duration_ns_sum": 5600,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 4)]::operator ()() const::[lambda(long) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+            "launches": 12,
+            "duration_ns_sum": 15393,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUDAFunctor_add<long>, std::array<char *, (unsigned long)3>>(int, T2, T3)": {
+            "launches": 3,
+            "duration_ns_sum": 3712,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctor_add<int>, std::array<char *, (unsigned long)3>>(int, T2, T3)": {
+            "launches": 3,
+            "duration_ns_sum": 3168,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::unrolled_elementwise_kernel<at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>, (int)4, TrivialOffsetCalculator<(int)0, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)": {
+            "launches": 3,
+            "duration_ns_sum": 1824,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "_compute_slot_mapping_kernel": {
+            "launches": 3,
+            "duration_ns_sum": 7488,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctorOnSelf_add<int>, std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithoutCast, at::native::memory::StoreWithoutCast>(int, T1, T2, T4, T5, T6, T7)": {
+            "launches": 3,
+            "duration_ns_sum": 2496,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void flash::prepare_varlen_num_blocks_kernel<(int)1, (bool)0>(int, int, int, const int *, const int *, const int *, const int *, const int *, const int *, int, int, int, int, int, cutlass::FastDivmod, cutlass::FastDivmod, int *, int *, int *, int *, int *, bool, bool, bool, int)": {
+            "launches": 3,
+            "duration_ns_sum": 5344,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::<unnamed>::indexSelectSmallIndex<c10::BFloat16, long, unsigned int, (int)2, (int)2, (int)-2>(at::cuda::detail::TensorInfo<T1, T3>, at::cuda::detail::TensorInfo<const T1, T3>, at::cuda::detail::TensorInfo<const T2, T3>, int, int, T3, long)": {
+            "launches": 3,
+            "duration_ns_sum": 5632,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void vllm::rms_norm_kernel<c10::BFloat16, (int)8, (int)2>(T1 *, const T1 *, long, long, long, long, long, const T1 *, float, int, int)": {
+            "launches": 3,
+            "duration_ns_sum": 6496,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "nvjet_sm90_tst_64x8_64x16_2x1_v_bz_splitK_bias_TNT": {
+            "launches": 192,
+            "duration_ns_sum": 4478411,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, __nv_bfloat16, float, __nv_bfloat16, (bool)0, float, __nv_bfloat16, __nv_bfloat16, (bool)1, (bool)1, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)": {
+            "launches": 192,
+            "duration_ns_sum": 439905,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, (bool)1>(const long *, T1 *, T1 *, const T2 *, int, long, long, long, int, int, int, long, bool)": {
+            "launches": 192,
+            "duration_ns_sum": 649505,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(const T1 *, const T1 *, T2 *, T2 *, const long *, long, long, long, long, long, int, int, int, const float *, const float *, int)": {
+            "launches": 192,
+            "duration_ns_sum": 426274,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void cutlass::device_kernel<flash::enable_sm90_or_later<flash::FlashAttnFwdSm90<flash::CollectiveMainloopFwdSm90<(int)2, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cute::tuple<cute::C<(int)64>, cute::C<(int)128>, cute::C<(int)128>>, (int)128, cutlass::bfloat16_t, float, cutlass::arch::Sm90, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)1, (bool)1, (bool)0, cutlass::bfloat16_t, (int)1>, flash::CollectiveEpilogueFwd<cute::tuple<cute::C<(int)64>, cute::C<(int)128>, cute::C<(int)128>>, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cutlass::bfloat16_t, cutlass::arch::Sm90, (int)128, (bool)1, (bool)1, (bool)1, (bool)0, (int)1>, flash::VarlenDynamicPersistentTileScheduler<(int)64, (int)128, (int)128, (int)128, (bool)1, (bool)1, (bool)1, (bool)1, (bool)0, (bool)1>>>>(T1::Params)": {
+            "launches": 192,
+            "duration_ns_sum": 2518016,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void cutlass::device_kernel<flash::FlashAttnFwdCombine<cute::tuple<cute::C<(int)8>, cute::C<(int)128>>, (int)5, (int)256, (int)1, (bool)0, (bool)1, cutlass::bfloat16_t, float, cutlass::arch::Sm90>>(T1::Params)": {
+            "launches": 192,
+            "duration_ns_sum": 663651,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "nvjet_sm90_tst_64x8_64x16_4x1_v_bz_TNT": {
+            "launches": 192,
+            "duration_ns_sum": 3030119,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "std::enable_if<T2>(int)0&&vllm::_typeConvert<T1>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, (int)8>(T1 *, long, T1 *, const T1 *, float, int, int)": {
+            "launches": 384,
+            "duration_ns_sum": 961760,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "nvjet_sm90_tst_256x8_64x6_2x1_v_bz_TNT": {
+            "launches": 192,
+            "duration_ns_sum": 28262269,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &vllm::silu_kernel<c10::BFloat16>, &vllm::packed_silu_kernel<__nv_bfloat162>, (bool)1, (bool)1, (bool)0, (bool)0>(T1 *, const T1 *, int, float)": {
+            "launches": 192,
+            "duration_ns_sum": 1067809,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "nvjet_sm90_tst_256x8_64x6_2x1_v_bz_splitK_TNT": {
+            "launches": 192,
+            "duration_ns_sum": 14164416,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, __nv_bfloat16, float, __nv_bfloat16, (bool)0, float, __nv_bfloat16, __nv_bfloat16, (bool)1, (bool)0, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)": {
+            "launches": 192,
+            "duration_ns_sum": 547904,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_kernel_impl<at::native::OpaqueType<(int)2>>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)": {
+            "launches": 3,
+            "duration_ns_sum": 10176,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "nvjet_sm90_tst_384x8_64x4_2x1_v_bz_TNT": {
+            "launches": 3,
+            "duration_ns_sum": 1128706,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+            "launches": 3,
+            "duration_ns_sum": 11200,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, (int)4, (int)4>>(T3)": {
+            "launches": 3,
+            "duration_ns_sum": 23936,
+            "green_context_ids": [
+              4
+            ]
+          },
+          "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 3)]::operator ()() const::[lambda(int) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)": {
+            "launches": 3,
+            "duration_ns_sum": 4064,
+            "green_context_ids": [
+              4
+            ]
+          }
+        },
+        "scope": "instrumented ticks 4/5/6; kernel union excludes copies; wall remainder is not entirely host idle"
+      }
+    ],
+    "restriction_passed": true
+  },
+  "placement_passed": true
+}
