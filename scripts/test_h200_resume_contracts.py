@@ -52,9 +52,11 @@ def main():
             run=root/'run.json';run.write_text(json.dumps({'cases':[{'trials':[{'output_ids':[[1,2]]}]}]}))
             calls=[];curves=[]
             def case(engine,*args,**kwargs):
+                if engine=='eager':assert worker.capture_bind is False
                 calls.append((engine,kwargs))
                 return {'status':'complete','qualified':True,'run':str(run)}
             worker=types.SimpleNamespace(root=root,py='CPU-fake',script=root,uuid='GPU-fake',expected=None,
+                capture_bind=True,
                 settings={'launch_cutoff':'2000-01-01T00:00:00+00:00'},last_curve_stop=None,
                 execute=lambda *a,**kw:{'status':'complete'},case=case,
                 reference=lambda *a,**kw:reference_passed,traffic=lambda:{'status':'CPU-fake'})

@@ -446,6 +446,9 @@ class Worker:
                 'results/curve_graph.json and individual proof/acquisition records',
                 'One initial versioned optimized-path proof cycle; preserve all diagnostics for bounded repair',
                 'Repair actual decoder context/graph placement, then re-pilot; eager fallback remains separate')
+            # Graph-capture adapter imports/aliases are not an eager-path gate.
+            # Preserve explicit per-tick rebinding, but use a separate route.
+            self.capture_bind = False
             eager = self.case('eager', 1., 0, stock=True, suffix='_target_control')
             if eager['status'] == 'complete':
                 self.curve('eager')
