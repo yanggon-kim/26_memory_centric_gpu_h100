@@ -92,11 +92,13 @@ def main(a):
     import controlled_vllm_experiments as baseline
     from software_decode_experiments import dump
     original=baseline.run_trial;cfg=json.loads(Path(a.config).read_text())
+    assert a.profile_condition in (('whole','chunk256') if a.pilot else ('whole','chunk256','chunk1024','chunk4096','whole_end'))
     assert cfg['batch_sizes']==[1] and len(cfg['context_lengths'])==1, 'prefill producer requires one batch-one workload shape'
     assert cfg['warmup_trials']==3 and cfg['trials'] in (3,10)
     assert not cfg['engine']['enforce_eager'] and not cfg.get('decode_conditioning')
     records={};initialized=False;expected=None
     manifest={'status':'running','protocol':'resident_prefill_v1','acquisition':a.acquisition,'conditions':records,
+        'profile_condition':a.profile_condition if a.external_profiler else None,
         'scope':'one resident full BF16 model per acquisition; cold means no prefix/KV reuse, not cold weights or forced cache flushing; instrumented policy/event/observer scopes'}
     def save():dump(a.output/'prefill_resident.json',manifest)
     save()
@@ -114,7 +116,7 @@ def main(a):
                 for phase,n in (('warmup',3),('measured',cfg['trials'])):
                     for index in range(n):
                         result=prefill_trial(original,engine,prompts,sampling,f'{name}_{phase}{index}',
-                            torch,sub,budget,whole,capture=a.external_profiler and phase=='measured' and index==0)
+                            torch,sub,budget,whole,capture=a.external_profiler and name==a.profile_condition and phase=='measured' and index==0)
                         record['warmups' if phase=='warmup' else 'trials'].append(result);save()
                         if expected is None:expected=result['output_ids']
                         assert result['output_ids']==expected,'chunked/full greedy output disagreement retained'
@@ -144,6 +146,7 @@ if __name__=='__main__':
     p.add_argument('--config',required=True);p.add_argument('--gpu-uuid',required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--acquisition',type=int,required=True)
     p.add_argument('--pilot',action='store_true');p.add_argument('--external-profiler',action='store_true')
+    p.add_argument('--profile-condition',choices=('whole','chunk256','chunk1024','chunk4096','whole_end'),default='whole')
     p.add_argument('--mode',choices=['timing'],default='timing');p.add_argument('--generated-tokens',type=int,default=64)
     p.add_argument('--batch',type=int);p.add_argument('--context',type=int);p.add_argument('--collect-worker-metadata',action='store_true')
     a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)

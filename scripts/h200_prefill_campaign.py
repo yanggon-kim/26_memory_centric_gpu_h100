@@ -11,8 +11,8 @@ def capture(worker,context):
     assert hashlib.sha256(SOURCE_AT_IMPORT).hexdigest()==sha(worker.script/Path(__file__).name),'loaded prefill controller differs from frozen source'
     from h200_resident_campaign import build_environment
     build_environment(worker)
-    budget={'estimate_s':1122.,'available_s':worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time(),
-        'basis':'same-GPU functional pilot151.13seconds; conservatively280seconds per full acquisition,90reference and90publication,10percent scheduling margin',
+    budget={'estimate_s':1380.,'available_s':worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time(),
+        'basis':'prior151.13second functional pilot; new owned-GPU smoke and dualHF before3x10, with conservative full-acquisition/publication margin',
         'scope':'analytical scheduling only; first-hour preemption may interrupt sooner'}
     budget['admitted']=budget['available_s']>=budget['estimate_s']+60
     write(worker.root/'results/comparison_budget.json',budget)
@@ -20,7 +20,25 @@ def capture(worker,context):
     inventory=worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
         '--check-cuda','--output',worker.root/'environment/inventory.json'],timeout=180)
     assert inventory['status']=='complete'
-    records=[];elapsed=[];expected=None
+    pilot=f'P4a_prefill_c{context}_smoke';pilot_output=worker.root/'runs'/pilot
+    pilot_config=config(worker.root,'graph',context,3,1)
+    proc=worker.execute(pilot,[worker.py,worker.script/'h200_prefill_resident.py','--config',pilot_config,
+        '--gpu-uuid',worker.uuid,'--output',pilot_output,'--acquisition','0','--pilot'],timeout=600)
+    source=pilot_output/'run.json';manifest=pilot_output/'prefill_resident.json'
+    passed=proc['status']=='complete' and source.exists() and manifest.exists()
+    if passed:passed=bool(valid_tokens(load(source))) and load(manifest).get('status')=='complete'
+    if passed:passed=worker.reference(source,pilot)
+    write(worker.root/'results/prefill_smoke.json',{'status':'passed' if passed else 'blocked',
+        'source':str(source),'source_sha256':sha(source) if source.exists() else None,
+        'scope':'fresh owned-GPU whole/chunk256functional and strict dualHF gate before quantitative acquisition'})
+    if not passed:
+        limitation(worker.root,pilot,'Fresh prefill smoke or strict reference did not pass',str(manifest),
+            'Bounded600second same-GPU functional pilot before3x10capture',
+            'Inspect saved failure; no baseline acquisition launched and no old-GPU qualification transferred')
+        publish(worker.root,'H200 prefill: preserve blocked owned-GPU smoke');return {'status':'blocked_smoke'}
+    expected=load(source)['cases'][0]['trials'][0]['output_ids']
+    publish(worker.root,'H200 prefill: publish fresh owned-GPU smoke and dualHF before repeated acquisitions')
+    records=[];elapsed=[]
     for acquisition in range(3):
         remaining=worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time()
         estimate=max(280,max(elapsed,default=0)*1.2)
@@ -40,9 +58,6 @@ def capture(worker,context):
                 for name,condition in m['conditions'].items():
                     native=load(output/name/'run.json')
                     passed=passed and len(condition['warmups'])==3 and len(condition['trials'])==10 and bool(valid_tokens(native,expected))
-        if passed and expected is None:
-            passed=worker.reference(path,f'P4a_prefill_c{context}')
-            if passed:expected=load(path)['cases'][0]['trials'][0]['output_ids']
         row={'acquisition':acquisition,'status':'capture_passed_pending_CPU_review' if passed else 'blocked_capture_or_reference',
              'producer_status':proc['status'],'context':context,'gpu_uuid':worker.uuid,
              'source_identity':worker.settings['frozen_source_identity'],'run':str(path),
