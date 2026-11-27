@@ -1,5 +1,43 @@
-# Two-H200 priority campaign
+# H200 campaign: complete qualified conditioned eager SM curve
 
-No measurements yet. New separately labeled resident eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first, one model per independent acquisition. Fixed memory conditioning: True. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.
+CPU review qualified the complete Qwen2.5-32B BF16 **conditioned eager** B1/context4096 curve. Three independent processes each captured nine conditions, with three warmups and ten timed trials per condition. All seven real-decoder placement proofs, independent dynamic and unchanged StaticCache references, immutable source/run checksums and isolation checks passed. Every sampled clean SM clock was1980MHz and memory clock3201MHz; pooled clock gates passed.
 
-- Limitation P0_new_pair_KV: Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair. Evidence: results/P0_prior_KV_software_validation.json. Tried: Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate. Resume: At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs.
+The smallest **tested** counts demonstrated within5%,10%and25%of unrestricted full eager latency, using the paired upper95%confidence bound, are **112,80and40SMs**, respectively. These NVIDIA thresholds were derived independently of AMD. Counts between tested levels remain unresolved; nonmonotonic points are retained.
+
+**Scope:** one prospectively fixed one-second private-buffer workload follows each verified prefill barrier, outside pure-decode timing. This changes cache history and TTFT. The result does not qualify the original unconditioned workload, optimized graph restriction, deployment benefit, physical area or HBM-capacity savings. Optimized SM restriction remains blocked by the earlier captured graph-context escape and bounded repair failure. The earlier complete unconditioned raw curve remains clock-rejected in its own UUID/source cohort.
+
+## Measured curve
+
+![Qualified conditioned eager curve](../gpu0/analysis/eager_qualified_sm_curve.png)
+
+| Path | Actual SMs | Median of acquisition medians, ms/tick | Hierarchical95%CI | Paired latency/stock | Paired95%CI |
+|---|---:|---:|---|---:|---|
+| unrestricted eager stock | 132 | 20.9098 | [20.8151, 21.0780] | 1 | normalization |
+| Green eager | 132 | 20.8656 | [20.8405, 20.9755] | 0.9995 | [0.9912, 1.0050] |
+| Green eager | 112 | 21.5171 | [21.4764, 21.6509] | 1.0300 | [1.0232, 1.0363] |
+| Green eager | 96 | 21.9397 | [21.8784, 22.1510] | 1.0515 | [1.0406, 1.0594] |
+| Green eager | 80 | 21.7021 | [21.6443, 21.9623] | 1.0419 | [1.0297, 1.0528] |
+| Green eager | 56 | 23.0040 | [22.9641, 23.2378] | 1.1039 | [1.0976, 1.1090] |
+| Green eager | 40 | 24.6278 | [24.6156, 24.8476] | 1.1820 | [1.1753, 1.1867] |
+
+Each request produces64fixed greedy outputs. Pure decode starts only after the one-token prefill barrier and times63ticks; first-selected-token/prefill, total generated tokens, GPU-event time and synchronized wall time remain separate. Full Green132SM references are interleaved and repeated at the end of each acquisition. Bootstrap uses10000draws and seed20261013. Primary energy remains NA under the existing window/cadence gates.
+
+GPU0: `GPU-c0239183-b7f8-10aa-11ef-b7e9c10a4235`,132physical SMs; numerical source `b10d2f7b72147cbcb883ae99b6ba9d49cbf11a6c433080ff53d8070ce72987f7`. The full64-output dynamic and unchanged StaticCache references both passed at context4096. Decoder placement captures cover ticks4/5/6,2553kernel launches per setting, with no graph kernels and the expected context.
+
+Core evidence: [curve JSON](../gpu0/results/curve_eager_b1_c4096.json), [CPU provenance review](../gpu0/results/resident_curve_CPU_review.json), [raw acquisition medians](../gpu0/analysis/resident_curve_CPU_review.md), [kernel launch catalog](../gpu0/analysis/eager_decoder_grid_catalog.md), [plot receipt](../gpu0/results/eager_qualified_sm_plot.json). Raw counter/SQLite artifacts are inventoried separately and retained.
+
+## Independent GPU1 context work and thermal limitation
+
+GPU1 `GPU-77cd4a86-b663-9b1f-80cd-4a0af9be721c` completed all three optimized full-device C4096acquisitions and both independent references, but pooled SM-clock ratio3.565217failed the unchanged1.05gate. Its raw timings are descriptive only; no optimized/eager ratio, clean bandwidth or confidence interval is qualified. C16384passed its full-device kernel proof and both independent references; its final timed acquisition is currently running. Do not count it complete until reviewed. C32704has not been launched.
+
+The read-only20:28UTCdiagnostic recorded `SwThermalSlowdown` on GPU1 in25/25samples at87–88C and345–855MHz. GPU0was32–38C without that thermal flag. This supports a current thermal limitation, not retrospective proof of every failed clock window. No clock, power, driver, cooling or cluster settings changed. Exact source/raw observations remain in [the diagnostic](../environment/clock_events_20261127T2028.json) and [GPU1report](../gpu1/analysis/report.md). The queued replacement job excludes this node.
+
+## Continuation
+
+GPU0has returned after completing and publishing the curve. Its remaining budget is below both full functional-pilot-plus-reference admission estimates, so no additional GPU0producer was launched; see [budget disposition](../results/postcore_deferred_budget.json). Priority now advances to batch8before batch32and longer restricted curves, with independent prefill work on the spare device.
+
+Owner-authorized replacement **16238357** is PENDING with `afterany:16233972`, twoH200s,90minute ceiling and node`atl1-1-02-014-9-0`excluded. It will run the original unconditioned batch8/C4096resident eager protocol with its own placement/reference gates; the spare runs the first1Kwhole/chunk256/1024/4096/whole_end3x10prefill comparison after a fresh functional/dualHFsmoke. A queued case is not evidence. Exact submission/exclusion receipts are in `h200/20261127_resident_preparation/results/submission_16238357*.json`.
+
+P2a prior physical DRAM/L2 triplicates and native service controls remain reusable only in their recorded scopes. Kernel retuning and restricted counter joins, P2bcompetition, loaded/tuned/held-out P3serving and native1P1D, long-prompt/output/serving P4matrix, P5aKV-capacity/deployment and remaining P5ccalibration are unfinished. Four-GPU ratios and optional TP remain deferred beyond the current two-GPU scope. Prospective CPU adapters and code audits are not new GPU results.
+
+Final Slurm disposition, GPU-hours and whole-allocation archive are pending terminal accounting. Earlier closed allocations total8.060556GPU-hours. Chronological notes are preserved in [the in-allocation report](report_during_allocation.md); all limitations remain in the central register and affected worker reports.
