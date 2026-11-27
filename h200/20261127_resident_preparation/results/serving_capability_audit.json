@@ -1,6 +1,6 @@
 {
   "status": "CPU_source_audit_only",
-  "updated_utc": "2026-11-27T18:03:32.078711+00:00",
+  "updated_utc": "2026-11-27T20:58:50.610114+00:00",
   "installed_sources": [
     {
       "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/scheduler.py",
@@ -42,16 +42,17 @@
   "P3a": {
     "adapter": "scripts/h200_serving_policy.py",
     "pilot": "scripts/h200_serving_policy_pilot.py",
-    "CPU_tests_passed": 6,
-    "GPU_validation": "pending; not enabled in queued job16228671",
+    "CPU_tests_passed": 11,
+    "GPU_validation": "v1 three-policy no-preemption functional pilot and strict dualHF passed on job16228671 GPU0_postcore; v2queue-preservation repair has CPU proof but fresh GPU/pressure validation remains pending",
     "implemented": "versioned scheduler masks preserve held KV/seats/queues and restore config; whole/separate, chunked/separate, chunked/mixed policies;3request functional pilot with exact prefix/progress/offered-time TTFT checks",
     "remaining": [
-      "actual GPU hook/input-batch/whole/mixed/exact-output validation",
+      "fresh v2 policy/open-loop GPU validation before loaded comparisons; actual pressure semantics remain pending",
       "matched observer/policy overhead review",
       "open-loop development/held-out arrival traces",
       "independent tuning,light/nearcapacity,SLO/goodput/queuegrowth/energy",
       "3independent acquisitions and10timed trials for quantitative comparisons"
-    ]
+    ],
+    "prospective_openloop_adapter": "scripts/h200_serving_load.py; sealed-trace accounting CPU-tested only; not selected by current queued job"
   },
   "P3b_P5a": {
     "candidate": "installed native P2pNcclConnector,1P1D",
@@ -75,12 +76,19 @@
       "default_hazard": "InputProcessor.assign_request_id independently appends an eight-character random suffix in each engine; native connector uses full internal request_id plus layer name as tensor key. Equal external IDs alone do not establish matched transport keys.",
       "bounded_prospective_remedy": "For an isolated pilot, set installed VLLM_DISABLE_REQUEST_ID_RANDOMIZATION=1 before engine construction on both workers, generate globally unique identical request IDs across the pair, log and verify actual internal IDs and tensor keys. This compatibility environment flag is deprecated in the pinned runtime; fail closed if absent or keys differ.",
       "claim_limit": "No connector deadlock or successful GPU transfer has been observed by this CPU inspection."
-    }
+    },
+    "prospective_CPU_contract": "scripts/h200_native_pd_contract.py;3CPUchecks passed, no GPU connector implementation or validation claimed",
+    "additional_source_limits": [
+      "Producer native cached-request metadata asserts chunked-prefill state, so the first simple pilot must request only its first token rather than ordinary full64-output producer generation.",
+      "Consumer prompt can append the produced first token: native external matched count then equals original C; its one locally prefill-classified query is canonical decode, followed by62post-prompt queries for64total outputs. Actual scheduling/payload/output proof is still required.",
+      "Native GPU staging threshold defaults1e9bytes; C4096Qwen32B full BF16 KV tensor payload is analytically1073741824bytes before padding. Host spilling and extra staging memory must be recorded, not silently omitted.",
+      "Base connector shutdown is a no-op; engine.close directly joins infinite daemon loops. Do not claim cleanup completion from that API without a bounded owned-process protocol. Transfers must be complete and recorded before normal owned workers exit."
+    ]
   },
   "new_GPU_measurements": false,
   "P4a": {
     "adapter": "scripts/h200_prefill_resident.py",
-    "status": "implemented_CPU_tested_not_GPU_validated",
+    "status": "v1 functional pilot passed with strict dualHF; v2submitted-TTFT fields CPU-tested, fresh smoke and3x10capture queued on16238357",
     "CPU_tests_passed": 3,
     "queued_job16228671_enabled": false,
     "scope": "one resident optimized full model per independent acquisition; whole/256/1024/4096/whole-end prefill; no prefixcache reuse; measuredprefillplusfirsttoken separatedfrom63puredecode ticks; policy/event/observer costs explicitlyinstrumented",
@@ -91,11 +99,12 @@
       "matchedintrusion/source/clock/isolationgates"
     ],
     "remaining": [
-      "GPUfunctionalpilot",
+      "fresh v2 same-GPU functional/dualHFsmoke before3x10",
       "3independentacquisitionsx10trials",
       "fullprefillNCUrangeandcounterreaderpilot",
       "contextmatrix1024/8192/16384/24576/32704",
       "physicaltrafficandkernelattribution"
-    ]
+    ],
+    "queued_job16238357_enabled": true
   }
 }
