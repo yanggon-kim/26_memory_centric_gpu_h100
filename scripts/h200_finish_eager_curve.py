@@ -6,6 +6,7 @@ acquisition counts, trial counts, correctness, clocks or isolation gates.
 """
 import argparse
 import datetime as dt
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ import time
 from h200_priority_campaign import PACKAGE,Worker,load,write,sha,publish,analyze_curve,limitation,FRACTIONS
 
 SOURCE_AT_IMPORT=Path(__file__).read_bytes()
+HELD_PARENT=None
 
 
 def allowance(observed,completed,available):
@@ -50,12 +52,15 @@ def stop_idle_parent(pid,root,uuid,deadline):
         current=load(root/'results/current_process.json')
         if current.get('status')!='idle' or pynvml.nvmlDeviceGetComputeRunningProcesses(handle):
             time.sleep(.5);continue
-        paused=False;terminated=False
+        guard=(Path(load(root/'session.json')['workspace'])/'producer.lock').open('a')
+        try:fcntl.flock(guard,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            guard.close();time.sleep(.5);continue
+        paused=False;retained=False
         try:
             os.kill(pid,signal.SIGSTOP);paused=True
-            children=proc.joinpath('task',str(pid),'children').read_text().split()
             current=load(root/'results/current_process.json')
-            if children or current.get('status')!='idle' or pynvml.nvmlDeviceGetComputeRunningProcesses(handle):
+            if current.get('status')!='idle' or pynvml.nvmlDeviceGetComputeRunningProcesses(handle):
                 continue
             # Preserve the original runtime build choices, including an unset
             # CC/CXX. Never apply the spare's compiler repair to this curve.
@@ -64,21 +69,23 @@ def stop_idle_parent(pid,root,uuid,deadline):
             for key in ('PATH','CC','CXX','CUDA_HOME','CUDA_INSTALL_PATH','OMP_NUM_THREADS','MAX_JOBS','TORCHINDUCTOR_COMPILE_THREADS','PYTHONNOUSERSITE','LD_LIBRARY_PATH','LIBRARY_PATH','CPATH','CUDA_MODULE_LOADING','PYTORCH_CUDA_ALLOC_CONF','NVIDIA_TF32_OVERRIDE','CUBLAS_WORKSPACE_CONFIG'):
                 if key in inherited:os.environ[key]=inherited[key];selected[key]=inherited[key]
                 else:os.environ.pop(key,None);selected[key]=None
-            os.kill(pid,signal.SIGTERM);os.kill(pid,signal.SIGCONT);terminated=True
-            return {'status':'owned_idle_orchestrator_transition','previous_pid':pid,'command':command,
+            retained=True
+            return {'status':'owned_idle_orchestrator_paused_to_retain_allocation','previous_pid':pid,'command':command,
                     'current_process':current,'runtime_environment':selected,'gpu_uuid':uuid,
-                    'scope':'no GPU child or active selected-device process stopped; original frozen numerical cohort retained'}
+                    'scope':'free original producer lock and idle GPU verified before pausing CPU orchestrator; no GPU child stopped; original numerical cohort retained'}
         finally:
-            if paused and not terminated:
+            guard.close()
+            if paused and not retained:
                 try:os.kill(pid,signal.SIGCONT)
                 except ProcessLookupError:pass
-            if terminated:pynvml.nvmlShutdown()
+            if retained:pynvml.nvmlShutdown()
         time.sleep(.5)
     pynvml.nvmlShutdown()
     raise RuntimeError('no safe idle boundary before bounded transition deadline')
 
 
 def main():
+    global HELD_PARENT
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--root',type=Path,required=True)
     p.add_argument('--previous-pid',type=int,required=True);a=p.parse_args();a.root=a.root.resolve()
     original_session=load(a.root/'session.json')
@@ -115,6 +122,7 @@ def main():
     except RuntimeError as error:
         write(a.root/'results/eager_curve_resume_transition.json',{'status':'no_safe_transition_original_unchanged','error':str(error)})
         return
+    HELD_PARENT=(a.previous_pid,a.root)
     write(a.root/'results/eager_curve_resume_transition.json',transition)
     os.environ['H200_SESSION_CONFIG']=str(resume_session)
     (a.root/'results/eager_curve_budget_before_resume.json').write_bytes(original_bytes)
@@ -162,6 +170,26 @@ def main():
                     'results/curve_eager_b1_c4096.json','All trials/references and original clock/source gates retained; no favorable resampling',
                     'Inspect specific quality failures; no NVIDIA threshold without qualification')
     publish(a.root,'H200 original eager curve continuation: publish complete or explicit partial disposition')
+    cutoff=dt.datetime.fromisoformat(worker.settings['launch_cutoff']).timestamp()
+    release=a.root.parent/'control/release_eager_curve_holder'
+    write(a.root/'results/eager_curve_holder.json',{'status':'CPU_orchestrator_paused_until_review_or_cutoff',
+          'previous_pid':a.previous_pid,'release_file':str(release),'release_deadline':worker.settings['launch_cutoff'],
+          'scope':'retains existing allocation while final evidence is reviewed; no new GPU work from paused original worker'})
+    print('CURVE_COMPLETE_HOLDER',release,flush=True)
+    while time.time()<cutoff and not release.exists():time.sleep(5)
 
 
-if __name__=='__main__':main()
+def release_holder():
+    if HELD_PARENT is None:return
+    pid,root=HELD_PARENT;proc=Path('/proc')/str(pid)
+    if not proc.exists():return
+    command=proc.joinpath('cmdline').read_bytes().decode().strip('\0').split('\0')
+    assert proc.stat().st_uid==os.getuid() and '--worker' in command
+    assert command[command.index('--worker')+1]=='0'
+    assert Path(command[command.index('--root')+1]).resolve()==root.resolve()
+    os.kill(pid,signal.SIGTERM);os.kill(pid,signal.SIGCONT)
+
+
+if __name__=='__main__':
+    try:main()
+    finally:release_holder()
