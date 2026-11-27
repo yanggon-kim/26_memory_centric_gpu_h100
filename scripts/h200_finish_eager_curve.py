@@ -25,6 +25,16 @@ def allowance(observed,completed,available):
             'method':'maximum observed whole acquisition plus60s each; original actual Slurm cutoff and all scientific gates unchanged'}
 
 
+def captured_acquisition(records,acquisition):
+    selected=[r for r in records if r['engine']=='eager' and not r['pilot'] and r['acquisition']==acquisition]
+    if len(selected)!=9 or not all(r['status']=='complete' and len(r.get('step_ms',[]))==10 for r in selected):return False
+    stock=[r for r in selected if r['stock']]
+    green=[r for r in selected if not r['stock']]
+    return (len(stock)==1 and not stock[0].get('suffix') and
+            {(r['fraction'],r.get('suffix','')) for r in green}==
+            {(f,'') for f in FRACTIONS}|{(1.,'_interleaved'),(1.,'_end')})
+
+
 def stop_idle_parent(pid,root,uuid,deadline):
     import pynvml
     pynvml.nvmlInit();handle=pynvml.nvmlDeviceGetHandleByUUID(uuid)
@@ -88,9 +98,13 @@ def main():
     plan=allowance(initial['observed_acquisition_wall_s'],completed,
                    worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time())
     write(a.root/'results/eager_curve_resume_budget.json',{'status':'reviewed','original_budget_sha256':sha(budget),'stages':[plan]})
-    if not plan['admitted']:
+    if not plan['admitted'] or plan['available_before_original_closeout_s']-plan['remaining_bundle_estimate_s']<30:
         print('Measured remaining bundle does not fit; original worker left unchanged',flush=True);return
-    transition=stop_idle_parent(a.previous_pid,a.root,worker.uuid,time.time()+180)
+    safe_wait=min(180,plan['available_before_original_closeout_s']-plan['remaining_bundle_estimate_s']-30)
+    try:transition=stop_idle_parent(a.previous_pid,a.root,worker.uuid,time.time()+safe_wait)
+    except RuntimeError as error:
+        write(a.root/'results/eager_curve_resume_transition.json',{'status':'no_safe_transition_original_unchanged','error':str(error)})
+        return
     write(a.root/'results/eager_curve_resume_transition.json',transition)
     (a.root/'results/eager_curve_budget_before_resume.json').write_bytes(original_bytes)
     gate=a.root/'results/eager_core_disposition.json'
@@ -103,8 +117,7 @@ def main():
     worker.expected=load(proof['run'])['cases'][0]['trials'][0]['output_ids']
     assert all(r['source_identity']==worker.settings['frozen_source_identity'] and r['gpu_uuid']==worker.uuid for r in records)
     for acquisition in range(completed):
-        original=[r for r in records if r['engine']=='eager' and not r['pilot'] and r['acquisition']==acquisition]
-        assert len(original)==9 and all(r['status']=='complete' and len(r.get('step_ms',[]))==10 for r in original)
+        assert captured_acquisition(records,acquisition), 'original acquisition incomplete'
     state={'status':'resuming_original_cohort','original_budget_sha256':sha(a.root/'results/eager_curve_budget_before_resume.json'),
            'source_freeze_identity':worker.settings['frozen_source_identity'],'gpu_uuid':worker.uuid,
            'stages':[],'scientific_gates':'unchanged3acquisitionsx10trials, exact outputs, all NSYS/SM/source/clock/isolation gates'}
@@ -128,8 +141,8 @@ def main():
         write(a.root/'results/eager_curve_resume_budget.json',state)
         publish(a.root,f'H200 original eager cohort: completed broad acquisition{acquisition} with all gates retained')
     result=analyze_curve(a.root,worker.records,'eager')
-    complete=len(observed)==3
-    if complete:stop=None if result['complete_qualified_curve'] else 'quality'
+    complete=all(captured_acquisition(worker.records,a) for a in range(3))
+    if len(observed)==3:stop=(None if result['complete_qualified_curve'] else 'quality') if complete else 'producer'
     write(gate,{'status':'eager_curve_continuation_disposition','complete_acquisition_set':complete,
                 'complete_qualified_eager_curve':result['complete_qualified_curve'],'stop':stop,
                 'allow_context_expansion':complete,'scope':'same original numerical cohort; no cross-allocation/device pooling'})
