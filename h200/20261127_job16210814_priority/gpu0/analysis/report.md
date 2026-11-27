@@ -59,3 +59,15 @@
 Slurm accounting records PREEMPTED, start 09:38:37 and end 10:39:07 Eastern, elapsed3630s (2.0166666667 allocated GPU-hours). Evidence: `h200/20261127_job16210814_priority/environment/final_slurm_accounting.psv` and `logs/eager_curve_finish_supervisor.log` under that root. The complete nine-producer eager acquisition0 is retained; acquisition1 completed only its stock control before full-Green was interrupted. Acquisition2 was not captured. Actual decoder placements were proved for132/112/96/80/56/40SM, but the three-acquisition curve remains partial and the recorded clock gate failures preclude NVIDIA latency thresholds. A same-source continuation with an explicit15minute closeout reserve was attempted; preemption ended it before the scheduled two-hour limit. Resume in a fresh identified allocation/cohort, retain all partial records, and do not pool timings across UUIDs. Repeated fresh model initialization makes the current protocol too slow for a reliably one-hour allocation; a versioned protocol that reduces initialization overhead needs bounded correctness and actual-placement pilots before use.
 
 - Additional raw-point caveat: the CPU-only process-state diagnostic `../../environment/eager_init_delay_state.txt` began at10:17:41Eastern during SM80/acquisition0 and may overlap timed decode. It adds an isolation caveat; the point already failed the clock gate. No trials are removed and no qualified threshold uses this point. No initialization cause is established by that diagnostic.
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |

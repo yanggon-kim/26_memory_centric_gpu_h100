@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-11-27T16:37:24.798040+00:00",
+  "classification": "CPU reconciliation of saved measured evidence",
+  "allocation": {
+    "job_id": "16210814",
+    "state": "PREEMPTED",
+    "start": "2026-11-27T09:38:37",
+    "end": "2026-11-27T10:39:07",
+    "elapsed_seconds": 3630,
+    "allocated_gpus": 2,
+    "actual_allocated_gpu_hours": 2.0166666666666666,
+    "scope": "allocated GPU-hours include staging, idle and instrumented work",
+    "source": "h200/20261127_job16210814_priority/environment/final_slurm_accounting.psv",
+    "source_sha256": "ee689c14bdb084ac337e628d6d9a64ffad18517dee2286b85e71c792f455f5c9",
+    "raw_row": {
+      "JobID": "16210814",
+      "State": "PREEMPTED",
+      "Start": "2026-11-27T09:38:37",
+      "End": "2026-11-27T10:39:07",
+      "ElapsedRaw": "3630",
+      "AllocTRES": "billing=104762,cpu=16,gres/gpu:h200=2,gres/gpu=2,mem=392G,node=1"
+    }
+  },
+  "devices": [
+    {
+      "gpu_uuid": "GPU-522f3fae-e05d-fc45-ba23-34c699fa4185",
+      "source_freeze_identity": "29034043d0444f3150afc2306fa7503ff92396a1be7a2f7b541a396db9967047",
+      "curves": [
+        {
+          "engine": "eager",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": true,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16210814_priority/gpu0/results/curve_eager_b1_c4096.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        }
+      ],
+      "case_gate_issues": [],
+      "interrupted_producers": [
+        {
+          "label": "eager_b1_c4096_green_f100_a1_rebind_v1",
+          "original_status": null,
+          "process": "h200/20261127_job16210814_priority/gpu0/results/processes/eager_b1_c4096_green_f100_a1_rebind_v1.json",
+          "sha256": "1b26bdf193b440f127544a589bd171918a333d388e8e9369113b1aa21d49f879",
+          "classification": "incomplete at terminal allocation; cause requires logs and Slurm state"
+        }
+      ],
+      "physical_captures": [],
+      "native": null,
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    },
+    {
+      "gpu_uuid": "GPU-4ec297c0-8010-9dee-aae9-54a7ad6eb4ad",
+      "source_freeze_identity": "29034043d0444f3150afc2306fa7503ff92396a1be7a2f7b541a396db9967047",
+      "curves": [],
+      "case_gate_issues": [],
+      "interrupted_producers": [
+        {
+          "label": "P0_native_L2_counter",
+          "original_status": "timeout",
+          "process": "h200/20261127_job16210814_priority/gpu1/results/processes/P0_native_L2_counter.json",
+          "sha256": "60ac970d8b0548b7ec0ed6c4f8b5f20fa36cddd684eb27135eee116c23cea13a",
+          "classification": "incomplete at terminal allocation; cause requires logs and Slurm state"
+        }
+      ],
+      "physical_captures": [],
+      "native": null,
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    }
+  ],
+  "new_GPU_measurements": false,
+  "NVIDIA_thresholds_derived_from_AMD": false
+}

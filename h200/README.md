@@ -34,3 +34,6 @@ Decoder calibration/held-out validation is implemented in `docs/h200_decoder_cal
 
 - 2026-11-27 job16184819 closed as preempted: [results](20261127_job16184819_priority/analysis/report.md), [three-capture DRAM comparison](20261127_job16184819_priority/gpu1/analysis/P2a_triplicate_counter_report.md), [native controls](20261127_job16184819_priority/analysis/native_controls_report.md), [verified project archive receipt](20261127_job16184819_priority/results/archive_transfer_8f17ab09f8e2.json). Two allocations total4.0289GPU-hours.
 - [Prepared eager-first two-H200 continuation](20261127_eager_continuation_preparation/analysis/report.md); no GPU results claimed.
+
+- 2026-11-27 job16210814 was preempted after3,630seconds: [eager sweep and closeout](20261127_job16210814_priority/analysis/report.md), [audited triplicate DRAM/L2 and scheduler pilot](20261127_job16210814_priority/gpu1_native_linker/analysis/counter_observer_review.md). Three allocations consumed6.0456GPU-hours. The eager curve remains incomplete and clock-unqualified.
+- [Resident eager continuation job16228671](20261127_resident_preparation/analysis/report.md) is submitted for twoH200s and90minutes; actual GPUvalidation is pending.

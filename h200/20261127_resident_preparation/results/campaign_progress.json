@@ -1,0 +1,85 @@
+{
+  "updated_utc": "2026-11-27T16:41:34.873620+00:00",
+  "objective": "Finish all eligible two-H200 families one by one, sequentially replacing preempted Slurm jobs",
+  "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
+  "current_job_id": "16228671",
+  "current_observed_state": "PENDING",
+  "closed_job_ids": [
+    "16163464",
+    "16184819",
+    "16210814"
+  ],
+  "closed_allocated_gpu_hours": 6.045555555555556,
+  "families": [
+    {
+      "id": "P0",
+      "status": "partial"
+    },
+    {
+      "id": "P1a",
+      "status": "partial",
+      "next": "resident_eager_v1 bounded pilot then3acquisition curve",
+      "job_id": "16228671",
+      "clock_gate": "unresolved; no favorable retries"
+    },
+    {
+      "id": "P1b",
+      "status": "pending"
+    },
+    {
+      "id": "P2a",
+      "status": "partial"
+    },
+    {
+      "id": "P2b",
+      "status": "pending"
+    },
+    {
+      "id": "P3a",
+      "status": "partial"
+    },
+    {
+      "id": "P3b",
+      "status": "pending"
+    },
+    {
+      "id": "P4a",
+      "status": "pending"
+    },
+    {
+      "id": "P4b",
+      "status": "pending"
+    },
+    {
+      "id": "P4c",
+      "status": "pending"
+    },
+    {
+      "id": "P5a",
+      "status": "pending"
+    },
+    {
+      "id": "P5b",
+      "status": "deferred",
+      "reason": "requires4GPUs; current scope2GPUs"
+    },
+    {
+      "id": "P5c",
+      "status": "pending"
+    },
+    {
+      "id": "P5d",
+      "status": "deferred",
+      "reason": "optionalTP deferred; no precision/TP change authorized in current campaign"
+    }
+  ],
+  "selection_rules": [
+    "reuse completed controls within original UUID/source scope",
+    "finish and publish current comparison before expanding",
+    "no cross-UUID/protocol timing pooling",
+    "qualify source,outputs,placement,isolation and pooledclocks; never relax gates",
+    "after bounded adapter failure recordblocked evidence and advance eligible work",
+    "request only2H200s; no overlapping replacement allocation",
+    "visible squeue checks approximately300s apart"
+  ]
+}

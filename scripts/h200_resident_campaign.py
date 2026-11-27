@@ -125,6 +125,8 @@ def primary(worker):
         rows,proc,good=acquire(worker,acquisition)
         worker.records.extend(rows);observed.append(proc.get('elapsed_s') or estimate)
         result=analyze_curve(worker.root,worker.records,'eager')
+        from h200_plot_sm_curve import plot
+        plot(worker.root,worker.records)
         publish(worker.root,f'H200 resident eager acquisition{acquisition}: publish broad curve and unchanged qualification gates')
     result=analyze_curve(worker.root,worker.records,'eager')
     complete=all(sum(r['acquisition']==a and not r['pilot'] and r['status']=='complete' and len(r.get('step_ms',[]))==10
