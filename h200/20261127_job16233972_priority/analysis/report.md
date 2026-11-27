@@ -28,7 +28,7 @@ Core evidence: [curve JSON](../gpu0/results/curve_eager_b1_c4096.json), [CPU pro
 
 ## Independent GPU1 context work and thermal limitation
 
-GPU1 `GPU-77cd4a86-b663-9b1f-80cd-4a0af9be721c` completed all three optimized full-device C4096acquisitions and both independent references, but pooled SM-clock ratio3.565217failed the unchanged1.05gate. Its raw timings are descriptive only; no optimized/eager ratio, clean bandwidth or confidence interval is qualified. C16384passed its full-device kernel proof and both independent references; its final timed acquisition is currently running. Do not count it complete until reviewed. C32704has not been launched.
+GPU1 `GPU-77cd4a86-b663-9b1f-80cd-4a0af9be721c` completed all three optimized full-device C4096acquisitions and both independent references, but pooled SM-clock ratio3.565217failed the unchanged1.05gate. Its raw timings are descriptive only; no optimized/eager ratio, clean bandwidth or confidence interval is qualified. C16384 completed its full-device kernel proof, both independent references and all three acquisitions with ten timed trials each. Its pooled SM-clock ratio 3.913043 failed the gate; raw medians 35.395486/35.499924/35.805847 ms/tick remain descriptive only. C32704 has not been launched.
 
 The read-only20:28UTCdiagnostic recorded `SwThermalSlowdown` on GPU1 in25/25samples at87–88C and345–855MHz. GPU0was32–38C without that thermal flag. This supports a current thermal limitation, not retrospective proof of every failed clock window. No clock, power, driver, cooling or cluster settings changed. Exact source/raw observations remain in [the diagnostic](../environment/clock_events_20261127T2028.json) and [GPU1report](../gpu1/analysis/report.md). The queued replacement job excludes this node.
 
@@ -41,3 +41,24 @@ Owner-authorized replacement **16238357** is PENDING with `afterany:16233972`, t
 P2a prior physical DRAM/L2 triplicates and native service controls remain reusable only in their recorded scopes. Kernel retuning and restricted counter joins, P2bcompetition, loaded/tuned/held-out P3serving and native1P1D, long-prompt/output/serving P4matrix, P5aKV-capacity/deployment and remaining P5ccalibration are unfinished. Four-GPU ratios and optional TP remain deferred beyond the current two-GPU scope. Prospective CPU adapters and code audits are not new GPU results.
 
 Final Slurm disposition, GPU-hours and whole-allocation archive are pending terminal accounting. Earlier closed allocations total8.060556GPU-hours. Chronological notes are preserved in [the in-allocation report](report_during_allocation.md); all limitations remain in the central register and affected worker reports.
+
+## Allocation release
+
+Both owned workers returned and their current-process records are idle. No complete additional GPU comparison fits the remaining launch budget. The coordinator is being finalized gracefully before first-hour preemption eligibility; final state and GPU-hours still require Slurm accounting. The replacement remains dependency-held until this job terminates.
+
+## Queue disposition
+
+- P0: partial; Inventory, sparse and all-level eager kernel proofs, independent dynamic/StaticCache and peer-copy controls recorded; optimized Green graphs and fresh-pair realKVremain separate
+- P1a: partial; Complete conditioned eager fallback qualified, thresholds112/80/40SMs; optimized graph restriction remains separately blocked
+- P1b: partial; Full optimized B1/C4096andC16384triplicates captured with both HF references, but pooled clocks fail; width8queued separately, width32andlong restricted curves pending
+- P2a: pending; Physical traffic captures retain replay/range gates; counter-clock joins and kernel retuning are separate
+- P2b: pending; not acquired in this allocation
+- P3a: pending; not acquired in this allocation
+- P3b: pending; not acquired in this allocation
+- P4a: pending; not acquired in this allocation
+- P4b: pending; not acquired in this allocation
+- P4c: pending; not acquired in this allocation
+- P5a: pending; not acquired in this allocation
+- P5b: deferred; requires four allocated GPUs
+- P5c: pending; not acquired in this allocation
+- P5d: pending; not acquired in this allocation
