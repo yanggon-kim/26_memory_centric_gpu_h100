@@ -692,13 +692,21 @@ def continue_allocation(root, end, closeout_buffer=1800):
         time.sleep(15)
 
 
+def resident_flags(args):
+    if not getattr(args,'resident_first',False):return []
+    flags=['--resident-first','--resident-batch',str(getattr(args,'resident_batch',1)),
+           '--resident-context',str(getattr(args,'resident_context',4096))]
+    if getattr(args,'resident_conditioned',False):flags.append('--resident-conditioned')
+    return flags
+
+
 def coordinator(args):
     assert os.environ.get('SLURM_JOB_ID', '').isdigit(), 'requires allocated sbatch/srun'
     root = PACKAGE/'h200'/f'{dt.datetime.now():%Y%m%d}_job{os.environ["SLURM_JOB_ID"]}_priority'
     root.mkdir(exist_ok=False)
     for folder in ('environment', 'results', 'logs', 'configs', 'runs', 'profiles', 'analysis'):
         (root/folder).mkdir()
-    scope=('New separately labeled resident eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first, one model per independent acquisition. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.'
+    scope=(f'New separately labeled resident eager Qwen2.5-32B BF16/TP1 B{getattr(args,"resident_batch",1)}/C{getattr(args,"resident_context",4096)} SM curve first, one model per independent acquisition. Fixed memory conditioning: {getattr(args,"resident_conditioned",False)}. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.'
            if getattr(args,'resident_first',False) else
            'Separate eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first; optimized restriction remains blocked by prior measured context escape and bounded repair failure. Spare UUID: missing full-target DRAM/L2 evidence, then contexts only after the core disposition.'
            if getattr(args,'eager_first',False) else
@@ -776,7 +784,7 @@ def coordinator(args):
         command=[sys.executable,Path(__file__).resolve(),'--worker',str(i),'--root',str(subroot),'--session',str(subroot/'session.json')]
         if args.core_first:command+=['--core-first']
         if getattr(args,'eager_first',False):command+=['--eager-first']
-        if getattr(args,'resident_first',False):command+=['--resident-first']
+        command+=resident_flags(args)
         processes.append((subprocess.Popen(command,stdout=stream,stderr=subprocess.STDOUT),stream))
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
@@ -886,7 +894,7 @@ def bootstrap(args):
         publish(root,'H200 priority: pinned runtime and immutable32B staging complete')
         flags=['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []
         if getattr(args,'eager_first',False):flags+=['--eager-first']
-        if getattr(args,'resident_first',False):flags+=['--resident-first']
+        flags+=resident_flags(args)
         subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda]+flags,check=True)
     except Exception as error:
         write(root/'STATUS.json',{'status':'blocked','error':str(error),'traceback':traceback.format_exc()})
@@ -905,7 +913,7 @@ def bootstrap(args):
                     '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda]+
                     (['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else [])+
                     (['--eager-first'] if getattr(args,'eager_first',False) else [])+
-                    (['--resident-first'] if getattr(args,'resident_first',False) else []),check=True)
+                    resident_flags(args),check=True)
                 break
             time.sleep(15)
     finally:
@@ -919,10 +927,16 @@ def main():
     p.add_argument('--core-first',action='store_true',help='target3+3 graph smoke/HF before SM sweep; defer fresh paired KV handoff')
     p.add_argument('--eager-first',action='store_true',help='after recorded graph repair block: separate eager curve first; spare full-GPU L2 then gated contexts')
     p.add_argument('--resident-first',action='store_true',help='separate resident eager acquisition protocol with bounded placement/HF pilot')
+    p.add_argument('--resident-batch',type=int,choices=(1,8,32),default=1)
+    p.add_argument('--resident-context',type=int,choices=(4096,16384,32704),default=4096)
+    p.add_argument('--resident-conditioned',action='store_true',help='separate prospectively fixed memory_settle_v3 decode scope')
     p.add_argument('--prior-kv-pilot',type=Path)
     a=p.parse_args()
     if a.eager_first and not a.core_first:p.error('--eager-first requires --core-first')
     if a.resident_first and not a.eager_first:p.error('--resident-first requires --eager-first')
+    if (a.resident_batch!=1 or a.resident_context!=4096 or a.resident_conditioned) and not a.resident_first:
+        p.error('resident shape/conditioning options require --resident-first')
+    if a.resident_batch!=1 and a.resident_context!=4096:p.error('resident width sweeps currently require context4096')
     if a.core_first and a.worker is None and a.prior_kv_pilot is None:p.error('--core-first coordinator/bootstrap requires --prior-kv-pilot')
     if a.bootstrap:
         bootstrap(a)
@@ -933,7 +947,8 @@ def main():
         try:
             if a.resident_first:
                 import h200_resident_campaign
-                outcome=h200_resident_campaign.primary(worker) if a.worker==0 else h200_resident_campaign.secondary(worker)
+                outcome=h200_resident_campaign.primary(worker,conditioned=a.resident_conditioned,
+                    batch=a.resident_batch,context=a.resident_context) if a.worker==0 else h200_resident_campaign.secondary(worker)
             elif a.eager_first:
                 import h200_eager_first
                 outcome=h200_eager_first.primary(worker) if a.worker==0 else h200_eager_first.secondary(worker)

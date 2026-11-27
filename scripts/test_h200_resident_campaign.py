@@ -5,11 +5,23 @@ from pathlib import Path
 import types
 import unittest
 from unittest.mock import patch
-from h200_resident_campaign import acquire
+from h200_resident_campaign import acquire,analyze
 from h200_resident_sweep import conditions
 
 
 class Failure(unittest.TestCase):
+    def test_width_analysis_cannot_be_published_as_batch_one(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);(root/'analysis').mkdir()
+            worker=types.SimpleNamespace(root=root,records=[])
+            result=analyze(worker,True,batch=8,context=4096)
+            self.assertEqual(result['batch'],8)
+            self.assertFalse(result['complete_qualified_curve'])
+            self.assertEqual(result['conditioning']['scope'].split(';')[0],'conditioned decode only')
+            self.assertTrue((root/'results/curve_eager_b8_c4096.json').exists())
+            self.assertFalse((root/'results/curve_eager_b1_c4096.json').exists())
+            self.assertFalse((root/'results/curve_eager.json').exists())
+
     def test_failed_conditioned_producer_preserves_config_and_all_missing_points(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)

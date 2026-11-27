@@ -113,13 +113,14 @@ def acquire(worker,acquisition,proof=False,pilot=False,batch=1,context=4096,cond
     return rows,proc,good
 
 
-def analyze(worker,conditioned):
-    result=analyze_curve(worker.root,worker.records,'eager')
+def analyze(worker,conditioned,batch=1,context=4096):
+    result=analyze_curve(worker.root,worker.records,'eager',batch=batch,context=context)
     result['protocol']='resident_eager_memory_settle_v3' if conditioned else 'resident_eager_v1'
     result['conditioning']={'protocol':'memory_settle_v3','seconds':1.0,'buffer_bytes':256*1024**2,
         'scope':'conditioned decode only; changes cache history and adds untimed TTFT; not the original unconditioned latency'} if conditioned else None
     if conditioned:result['scope']+='; all thresholds conditional on fixed memory_settle_v3; unconditioned thresholds remain separate'
-    write(worker.root/'results/curve_eager_b1_c4096.json',result);write(worker.root/'results/curve_eager.json',result)
+    write(worker.root/'results'/f'curve_eager_b{batch}_c{context}.json',result)
+    if (batch,context)==(1,4096):write(worker.root/'results/curve_eager.json',result)
     return result
 
 
@@ -158,7 +159,8 @@ def conditioned_followup(worker,observed,proof_elapsed):
     return decision
 
 
-def primary(worker,conditioned=False):
+def primary(worker,conditioned=False,batch=1,context=4096):
+    assert batch in (1,8,32) and context in (4096,16384,32704), 'unsupported resident follow-up shape'
     build_environment(worker)
     inventory=worker.execute('inventory',[worker.py,worker.script/'inventory.py','--gpu-uuid',worker.uuid,
                    '--check-cuda','--output',worker.root/'environment/inventory.json'],timeout=180)
@@ -178,7 +180,7 @@ def primary(worker,conditioned=False):
             'session.json; configs/*memory_settle_v3.json',
             'Separate prospectively fixed protocol, own actual-decoder proof and dynamic/unchanged StaticCache references',
             'Report thresholds only for this conditioned decode scope, preserving all rejected unconditioned trials')
-    pilot,process,good=acquire(worker,0,proof=True,pilot=True,conditioned=conditioned)
+    pilot,process,good=acquire(worker,0,proof=True,pilot=True,batch=batch,context=context,conditioned=conditioned)
     if good:good=worker.reference(pilot[0]['run'],'resident_pilot')
     if not good:
         result={'status':'blocked_resident_pilot','allow_context_expansion':True,'complete_acquisition_set':False}
@@ -186,7 +188,7 @@ def primary(worker,conditioned=False):
         publish(worker.root,'H200 resident eager pilot: preserve blocked proof/reference and advance eligible full-GPU cases')
         return result
     worker.expected=load(pilot[0]['run'])['cases'][0]['trials'][0]['output_ids']
-    proofs,proof_process,good=acquire(worker,0,proof=True,conditioned=conditioned)
+    proofs,proof_process,good=acquire(worker,0,proof=True,batch=batch,context=context,conditioned=conditioned)
     if good:worker.records.extend(proofs)
     observed=[]
     for acquisition in range(3):
@@ -197,13 +199,13 @@ def primary(worker,conditioned=False):
             'next_producer_estimate_s':estimate,'observed_s':observed,'admitted':available>=estimate,
             'scope':'analytical scheduling only; preemption can occur earlier than scheduler EndTime'})
         if available<estimate:break
-        rows,proc,good=acquire(worker,acquisition,conditioned=conditioned)
+        rows,proc,good=acquire(worker,acquisition,batch=batch,context=context,conditioned=conditioned)
         worker.records.extend(rows);observed.append(proc.get('elapsed_s') or estimate)
-        result=analyze(worker,conditioned)
+        result=analyze(worker,conditioned,batch=batch,context=context)
         from h200_plot_sm_curve import plot
         plot(worker.root,worker.records)
         publish(worker.root,f'H200 resident eager acquisition{acquisition}: publish broad curve and unchanged qualification gates')
-    result=analyze(worker,conditioned)
+    result=analyze(worker,conditioned,batch=batch,context=context)
     complete=all(sum(r['acquisition']==a and not r['pilot'] and r['status']=='complete' and len(r.get('step_ms',[]))==10
                      for r in worker.records)==9 for a in range(3))
     disposition={'status':'resident_curve_disposition','protocol':'resident_eager_memory_settle_v3' if conditioned else 'resident_eager_v1',
@@ -211,7 +213,7 @@ def primary(worker,conditioned=False):
         'allow_context_expansion':True,'reason':'broad curve published; advance eligible full-GPU work, retaining any blocked or clock-unqualified restriction result'}
     write(worker.root/'results/eager_core_disposition.json',disposition)
     publish(worker.root,'H200 resident eager curve: publish final captured/qualified disposition before expansion')
-    if not conditioned and complete and not result['complete_qualified_curve']:
+    if not conditioned and complete and not result['complete_qualified_curve'] and (batch,context)==(1,4096):
         disposition['conditioned_followup']=conditioned_followup(worker,observed,proof_process.get('elapsed_s') or max(observed))
         write(worker.root/'results/worker_followup_disposition.json',disposition)
     return disposition

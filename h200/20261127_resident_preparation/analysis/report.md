@@ -81,3 +81,9 @@ Before the P3b/P5a functional pilot, use the installed compatibility flag `VLLM_
 ## Prospective resident shape guard
 
 Resident SM producers now reject configurations containing multiple workload shapes; resident prefill producers additionally require batch1. Their cached controlled-run responses are valid for exactly one declared shape per producer. Existing six CPU binding/barrier checks passed. These guards apply to future frozen cohorts; job16228671 keeps its already frozen source and single-shape configuration.
+
+## Prepared sequential follow-up selection
+
+The resident campaign now carries explicit batch/context/conditioning options through allocated bootstrap, coordinator, worker and bounded staging retry. Defaults preserve the current B1/C4096 unconditioned behavior. Supported prospective widths are8/32at4096, or batch1at16384/32704; each producer still admits exactly one shape. Analysis/plot metadata and paths retain the actual shape; width results cannot overwrite the B1alias. Existing scientific gates remain unchanged, and each new shape requires its own placement and dual HF pilot.
+
+`batch/h200_priority_resident_followup_20261127.sbatch` is prepared but not submitted. It requires an explicit scope argument. After the current curve disposition, a separate fixed-conditioned B1/C4096 job can be submitted with `sbatch --parsable batch/h200_priority_resident_followup_20261127.sbatch --resident-conditioned`. Width sweeps follow the published broad curve; conditioned results retain their distinct cache/TTFT interpretation. Selection depends on actual current outcomes; no next job has been queued prematurely and no new GPU result is implied by these adapters.

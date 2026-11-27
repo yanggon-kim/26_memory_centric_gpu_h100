@@ -13,6 +13,9 @@ def plot(root,records):
     assert len({r['gpu_uuid'] for r in selected})==1
     assert len({r['source_identity'] for r in selected})==1
     assert len({r.get('repair_route','original') for r in selected})==1
+    shapes={(r['batch'],r['context']) for r in selected}
+    assert len(shapes)==1, 'one plotted curve must contain one workload shape'
+    batch,context=next(iter(shapes))
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -28,13 +31,13 @@ def plot(root,records):
                        label=f'Stock full device, acquisition {acquisition}')
     ax.set(xlabel='Actual granted SMs (decoder placement proved separately)',
            ylabel='Raw median wall ms / decode tick',
-           title=('Conditioned ' if selected[0].get('conditioning') else '')+'Qwen2.5-32B BF16 eager decode · batch 1 / context 4096\nRetained observations; see qualification gates before inference')
+           title=('Conditioned ' if selected[0].get('conditioning') else '')+f'Qwen2.5-32B BF16 eager decode · batch {batch} / context {context}\nRetained observations; see qualification gates before inference')
     ax.set_xticks([40,56,80,96,112,132]);ax.grid(alpha=.25);ax.legend(fontsize=8)
     fig.tight_layout(rect=(0,.06,1,1))
     fig.text(.01,.005,'No confidence bounds or NVIDIA thresholds are inferred from clock-rejected or incomplete acquisitions.',fontsize=8)
     path=root/'analysis/eager_raw_sm_curve.png';fig.savefig(path,dpi=180);plt.close(fig)
     write(root/'results/eager_raw_sm_plot.json',{'classification':'visualization of retained measured observations',
-          'plot':str(path),'plot_sha256':sha(path),'points':[{'id':r['id'],'actual_sm_count':r['actual_sm_count'],
+          'plot':str(path),'plot_sha256':sha(path),'batch':batch,'context':context,'points':[{'id':r['id'],'actual_sm_count':r['actual_sm_count'],
               'raw_median_ms_per_tick':statistics.median(r['step_ms']),'qualified':r.get('qualified',False),
               'run':r['run'],'run_sha256':r['run_sha256']} for r in selected],
           'scope':'each acquisition kept separate; ten trial medians only; no error bars, cross-device pooling or threshold inference'})
