@@ -16,10 +16,11 @@ import traceback
 
 
 @contextmanager
-def submission_clock(engine):
+def submission_clock(engine,hardware_sampler=None):
     original=engine.add_request;record={}
     def submit(*args,**kwargs):
         assert not record,'one batch-one submission per prefill trial'
+        if hardware_sampler is not None:record['hardware_before']=hardware_sampler()
         record.update(start_unix_ns=time.time_ns(),start_perf=time.perf_counter())
         try:return original(*args,**kwargs)
         finally:record.update(end_perf=time.perf_counter(),end_unix_ns=time.time_ns())
@@ -80,6 +81,7 @@ def prefill_trial(original,engine,prompts,sampling,prefix,torch,output_dir,budge
             scope='instrumented complete prefill plus first selected token; includes policy/observer/event and chunk launch costs; excludes later63decode steps')
         assert submitted['start_perf']<=submitted['end_perf']<=observed_perf
         prefill.update(submit_start_unix_ns=submitted['start_unix_ns'],
+            submission_hardware_before=submitted['hardware_before'],
             submit_end_unix_ns=submitted['end_unix_ns'],first_token_observed_unix_ns=observed_ns,
             submit_call_wall_ms=(submitted['end_perf']-submitted['start_perf'])*1000,
             submit_to_first_token_wall_ms=(observed_perf-submitted['start_perf'])*1000,
@@ -92,7 +94,7 @@ def prefill_trial(original,engine,prompts,sampling,prefix,torch,output_dir,budge
         return outputs
     engine.step=observed_step
     try:
-        with submission_clock(engine) as submitted:
+        with submission_clock(engine,lambda:describe(pynvml,handle,torch)) as submitted:
             result=original(engine,prompts,sampling,prefix,torch,output_dir,
                             hardware_sampler=lambda:describe(pynvml,handle,torch))
         assert len(observer.rows)==prefill['actual_prefill_steps']+63

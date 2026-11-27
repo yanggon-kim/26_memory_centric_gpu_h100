@@ -22,6 +22,15 @@ class Barrier(unittest.TestCase):
             with submission_clock(engine):engine.add_request()
         self.assertIs(engine.add_request,fail)
 
+    def test_clock_endpoint_precedes_submission(self):
+        events=[]
+        engine=types.SimpleNamespace(add_request=lambda:events.append('submit'))
+        def sample():events.append('hardware');return {'sm_clock_mhz':1980}
+        with submission_clock(engine,sample) as record:
+            engine.add_request()
+        self.assertEqual(events,['hardware','submit'])
+        self.assertEqual(record['hardware_before']['sm_clock_mhz'],1980)
+
     def test_chunked_prefill_reaches_same_one_token_barrier(self):
         replies=iter([[],[],[],[output()]])
         result,calls=drain_prefill(lambda:next(replies))
