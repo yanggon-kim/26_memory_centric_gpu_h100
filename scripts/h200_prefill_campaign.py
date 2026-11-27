@@ -1,9 +1,14 @@
 """Bounded acquisition of the first resident prefill comparison; CPU review follows."""
 import time
+import hashlib
+from pathlib import Path
 from h200_priority_campaign import config,load,write,sha,valid_tokens,publish,limitation
+SOURCE_AT_IMPORT=Path(__file__).read_bytes()
 
 
 def capture(worker,context):
+    assert context==1024,'this scheduling pilot admits only the validated1Kshape'
+    assert hashlib.sha256(SOURCE_AT_IMPORT).hexdigest()==sha(worker.script/Path(__file__).name),'loaded prefill controller differs from frozen source'
     from h200_resident_campaign import build_environment
     build_environment(worker)
     budget={'estimate_s':1122.,'available_s':worker.hs.verify_allocation()['effective_launch_cutoff_unix_s']-time.time(),
