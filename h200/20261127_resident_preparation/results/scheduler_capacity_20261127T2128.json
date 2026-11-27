@@ -1,0 +1,16 @@
+{
+  "observed_utc": "2026-11-27T21:28:39+00:00",
+  "classification": "scheduler observation, not a GPU measurement",
+  "commands": [
+    "timeout 25s squeue --start -h -j 16238357 -o '%i|%T|%S|%R'",
+    "timeout 25s sinfo -p gpu-h200 -N -O NodeList:30,StateLong:15,Gres:30,GresUsed:45,CPUsState:18,Memory:12,AllocMem:12"
+  ],
+  "job_id": "16238357",
+  "state": "PENDING",
+  "reason": "Priority",
+  "estimated_start": null,
+  "H200_nodes": 12,
+  "configured_H200s": 96,
+  "allocated_H200s": 96,
+  "decision": "Retain90minute limit and node exclusion. All H200s currently allocated; reducing request length cannot create currently free devices, while batch8duration is not yet measured. Continue visible checks about300seconds apart."
+}
