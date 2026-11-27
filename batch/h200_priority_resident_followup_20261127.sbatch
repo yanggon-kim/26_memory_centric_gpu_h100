@@ -28,6 +28,8 @@ export HF_HUB_CACHE=/storage/scratch1/6/jkim4112/models/h200_priority_hub
 export HF_HUB_DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 VLLM_NO_USAGE_STATS=1
 unset PYTHONPATH PYTHONHOME LD_PRELOAD CUDA_INJECTION64_PATH NVBIT_INSTRUMENTATION_ENABLED
 unset LD_LIBRARY_PATH LIBRARY_PATH CPATH
-srun --ntasks=1 --cpus-per-task=16 --gpus-per-task=2 --gpu-bind=none \
+h200_task_cpus=${SLURM_CPUS_PER_TASK:-16}
+test "$h200_task_cpus" -ge 8 # two independent workers, OMP_NUM_THREADS=4 each
+srun --ntasks=1 --cpus-per-task="$h200_task_cpus" --gpus-per-task=2 --gpu-bind=none \
   bash batch/h200_priority_allocated_step.sh --core-first --eager-first --resident-first \
   --prior-kv-pilot "$repo/h200/20261126_job16163464_priority/results/P0_real_hf_kv.json" "$@"
