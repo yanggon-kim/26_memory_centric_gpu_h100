@@ -21,3 +21,17 @@
 All seven placement captures contain2553decoder kernel launches over the selected three ticks. The six Green settings have exactly identical launch signatures (symbol, grid/block, registers, shared/local allocations and counts); the CPU review is saved in `results/eager_decoder_grid_catalog.json` and `analysis/eager_decoder_grid_catalog.md`. Missing per-operation NVTX ranges remain unattributed. This is launch metadata, not occupancy, issue/stalls, measured physical traffic or clean timing.
 
 The prior fresh-model-per-point cohort showed an output-projection symbol/grid variant change between112and96SM. The new resident cohort does not show such a change across these selected ranges. Protocol and physical GPU differ, so the observation does not isolate a cause or establish a latency transition. These datasets must remain distinct; a retuning intervention with identical-settings controls is still pending.
+
+- Limitation resident_b1_c4096_a1: Resident curve clocks fail the predeclared envelope; all trials retained. Evidence: /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu0/runs/resident_b1_c4096_a1/resident_sweep.json. Tried: New separate protocol; bounded actual-kernel proof, independent HF exact reference, original3x10 clock/source/isolation gates. Resume: Inspect the saved failure; do not pool protocols or resample for favorable clocks. Continue eligible full-GPU cases when the captured curve is quality-limited..
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
