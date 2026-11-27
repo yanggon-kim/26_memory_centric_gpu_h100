@@ -1,0 +1,15 @@
+{
+  "status": "resolved_startup_only",
+  "runtime_check": {
+    "status": "complete",
+    "exit_code": 0,
+    "elapsed_s": 368.7791221141815,
+    "command": [
+      "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python",
+      "-u",
+      "-c",
+      "print('runtime_check: importing torch',flush=True); import torch; print('runtime_check: importing vllm/transformers',flush=True); import vllm,transformers; print('runtime_check: validating versions/devices',flush=True); assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda); print([(str(torch.cuda.get_device_properties(i).uuid),torch.cuda.get_device_properties(i).name,torch.cuda.get_device_properties(i).multi_processor_count,torch.cuda.mem_get_info(i)) for i in range(2)])"
+    ]
+  },
+  "note": "Bounded startup retry resolved: pinned version checks and exact two-H200 validation passed after 368.8s. Both actual devices report132SM and150156607488B total HBM; no package or GPU setting changed. Evidence: h200/20261127_job16184819_bootstrap_repair1/logs/runtime_check.log and results/runtime_check.json. All subsequent model/config/CPU contracts passed; coordinator started. Initial180s timeout and filesystem-wait snapshots retained. This is startup evidence only, not model performance."
+}
