@@ -1,0 +1,15 @@
+# Prospective finite open-loop serving capture — CPU preparation only
+
+No GPU capture from these new adapters is claimed. The active allocation continues its frozen resident sweep unchanged.
+
+`scripts/h200_serving_trace.py` seals Poisson arrival traces, separates development/warmup/judging seeds, retains offered timestamps despite delayed admission, checks every greedy output token, and includes unfinished requests in the offered denominator. Three CPU checks pass for late admission/censoring, sealed/disjoint traces and early or wrong outputs. Stdlib unittest is sufficient; no measurement environment package was installed.
+
+`scripts/h200_serving_load.py` prepares one resident optimized full-device model per process/acquisition. Each policy gets3warmup traces and10judging traces (a functional pilot uses3timed development traces). Each trace has24requests by default and64outputs per request. Policies share exact arrivals and prompts; policy order rotates prospectively. Whole/separate uses the original engine token ceiling; chunked policies use the declared budget. Every output must match the serial same-engine oracle, followed by the independent dynamic/unchanged StaticCache reference under a future owned Worker controller. Three independent processes and pooled source/device/clock/isolation checks remain required.
+
+The provisional common absolute diagnostic criteria are TTFT<=5s and maximum observed inter-token gap<=0.1s for all63gaps. These are explicit initial settings, not an AMD-derived boundary, tuned budget or deployment recommendation. Development tuning/rate selection must finish and be frozen before judging streams are run. A functional pilot cannot use judging seeds. The first comparison must retain the same criterion across all policies.
+
+Per-step policy checks, observer, CUDA-event pairs, Python admission and one-second partial-ledger flushes are part of the observed service. A matched instrumentation control and reader are pending. No ordinary serving/SLO qualification is inferred. Finite-trace completion/goodput includes drain, and `steady_state_demonstrated` remains false until a separate queue/arrival-window assessment. Hardware, sampled-power and raw energy monitoring still require the owned worker and explicit serving-window joins; primary J/token remains NA.
+
+Known capacity limit: actual preemption causes this initial adapter to fail and preserve evidence. The separate-policy recompute phase definition is still pending; do not interpret the prior no-preemption pilots or this prospective code as pressure robustness. Native1P1D, tuning, held-out load matrix and multi-shape serving remain unfinished.
+
+Resume: finish the current core and the queued batch8/prefill comparison first. After fresh policy v2 smoke, run an owned-GPU bounded open-loop development pilot, qualify exact outputs and both independent references, estimate duration, implement/review the clock/isolation/intrusion reader, then admit a complete paired3x10comparison. This prospective adapter is not yet selected by any Slurm job.
