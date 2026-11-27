@@ -1,5 +1,33 @@
-# Two-H200 priority campaign
+# Two-H200 campaign: complete raw NVIDIA eager curve
 
-No measurements yet. New separately labeled resident eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first, one model per independent acquisition. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.
+Updated 2026-11-27T18:29:05.070410+00:00. Allocation16228671remains active; this report distinguishes finished evidence from work in progress.
 
-- Limitation P0_new_pair_KV: Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair. Evidence: results/P0_prior_KV_software_validation.json. Tried: Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate. Resume: At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs.
+Qwen2.5-32B-Instruct BF16, batch1/context4096, seed20261013,64fixed outputs after the one-token prefill barrier. The separately labeled `resident_eager_v1` protocol captured all3independent acquisitions,9conditions each,3warmups and10timed trials per condition. Seven actual-decoder placement proofs, matching dynamic/unchanged StaticCache HF checks, and producer/source/isolation provenance passed.
+
+**The raw eager curve is complete; qualified NVIDIA thresholds remain NA.** Full-device and most intermediate points fail the predeclared5%SMclock envelope. All trials and nonmonotonic observations are retained. Optimized Green graph restriction remains separately blocked by earlier measured context escape and bounded repair failure. This eager fallback does not normalize optimized decoder latency.
+
+| Path | Actual SMs | Acquisition0raw ms/tick | Acquisition1 | Acquisition2 |
+|---|---:|---:|---:|---:|
+| stock | 132 | 20.8135 | 20.6459 | 20.7675 |
+| green132 | 132 | 20.7671 | 20.8158 | 20.7584 |
+| green112 | 112 | 22.0124 | 21.7344 | 21.6189 |
+| green96 | 96 | 22.2352 | 21.9382 | 22.0744 |
+| green80 | 80 | 21.5108 | 21.6885 | 21.5096 |
+| green56 | 56 | 23.1994 | 23.1194 | 22.9668 |
+| green40 | 40 | 24.8450 | 24.7503 | 24.7872 |
+
+These are medians of ten retained timed trials per acquisition, not qualified confidence intervals or thresholds. Interleaved/end full-Green controls are included in the complete [CPU review](../gpu0/analysis/resident_curve_CPU_review.md). [Raw plot](../gpu0/analysis/eager_raw_sm_curve.png), [curve gates](../gpu0/results/curve_eager_b1_c4096.json), [strict HF reference](../gpu0/results/resident_pilot_hf.json) and [chronological worker report](../gpu0/analysis/report.md).
+
+All seven placement ranges contain2553decoder kernel launches. All six restricted settings share identical launch signatures in this resident cohort. [Saved launch-geometry review](../gpu0/analysis/eager_decoder_grid_catalog.md). The prior per-point-model cohort used a different GPU and showed a kernel variant change; these protocols cannot isolate retuning causality. Missing resident operation ranges remain unattributed.
+
+## Current independent work and next allocation
+
+- GPU1: optimized full-device context4096proof and both HF reference routes passed; repeated full-device context cases continue. See its [worker report](../gpu1/analysis/report.md). Its separate fixed-conditioned diagnostic held sampled timed SMclocks at1980MHz; this single functional pair is not a3acquisition latency comparison.
+- GPU0post-core: verified original worker completion and zero selected-GPU compute processes before creating a separate frozen cohort for bounded serving-policy and chunked-prefill functional pilots. See [post-core report](../gpu0_postcore/analysis/report.md). These are instrumented functional prerequisites, not completed P3a/P4aquantitative families.
+- Job16233972: two-H200,1:30walltime, fixed-conditioned B1/C4096resident curve, queued with `afterany:16228671`; no overlapping allocation. Current allocation had2537.5seconds estimated work versus2275.6seconds before its launch cutoff, so that curve was deferred to the replacement.
+
+## Preserved core evidence
+
+Before allocation termination, the completed GPU0evidence unit was transferred to project storage with every archive member and destination SHAverified: `/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/gpu0_d71e1de9a02c.tar.gz`. SHA256: `d29b6a85befbdb6f3fcb6ca7e16e86f33b4b4bb5ccdf03bc264533fb10923368`. Receipt: [archive transfer](../gpu0/results/archive_transfer_d71e1de9a02c.json). Other workers remain active and are outside this completed-unit archive. Later parent-level reports are published separately.
+
+Limitations and attempted remedies are recorded in the affected worker reports and [central register](../../../docs/h200_measurement_limitations_20261125.md). A prospective atomic JSON replacement repair protects future snapshots after two transient live-manifest reads; final acquisition2JSON and all condition files passed review. The running original frozen source was unchanged. No AMD threshold, clean bandwidth join, area benefit, optimized restriction success or loaded-serving result is inferred.

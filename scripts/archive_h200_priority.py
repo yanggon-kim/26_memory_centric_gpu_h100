@@ -97,7 +97,7 @@ def archive(root,destination,max_bytes=256*1024**2):
           'original_bytes':total,'archive':str(target),'archive_bytes':target.stat().st_size,
           'archive_sha256':source_hash,'local_archive_sha256':source_hash,'destination_sha256':digest(target),
           'every_archive_member_verified':True,'source_manifest':str(manifest),'manifest_sha256':digest(manifest),
-          'implementation_sha256':digest(Path(__file__)),'scope':'closed-allocation evidence backup only; no new GPU measurement or qualification'}
+          'implementation_sha256':digest(Path(__file__)),'scope':'closed evidence-unit backup; allocation may still be active; no new GPU measurement or qualification'}
     with receipt.open('xb') as stream:stream.write(encoded(data))
     return data
 
