@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "reviewed_utc": "2026-11-27T06:21:54.329732+00:00",
+  "classification": "CPU reconciliation of saved measured evidence",
+  "allocation": {
+    "job_id": "16184819",
+    "state": "PREEMPTED",
+    "start": "2026-11-27T00:20:53",
+    "end": "2026-11-27T01:21:12",
+    "elapsed_seconds": 3619,
+    "allocated_gpus": 2,
+    "actual_allocated_gpu_hours": 2.0105555555555554,
+    "scope": "allocated GPU-hours include staging, idle and instrumented work",
+    "source": "h200/20261127_job16184819_priority/environment/final_slurm_accounting.psv",
+    "source_sha256": "4467bcae73bc2230250eb0f85f8b4192cb235eb504be6f80b583cd80c58d573b",
+    "raw_row": {
+      "JobID": "16184819",
+      "State": "PREEMPTED",
+      "Start": "2026-11-27T00:20:53",
+      "End": "2026-11-27T01:21:12",
+      "ElapsedRaw": "3619",
+      "AllocTRES": "billing=104762,cpu=16,gres/gpu:h200=2,gres/gpu=2,mem=392G,node=1"
+    }
+  },
+  "devices": [
+    {
+      "gpu_uuid": "GPU-2779f29d-9f2a-0102-9d29-b982904324b9",
+      "source_freeze_identity": "fc47e1f53a0d9c7c50098cebe91e03615c942211f84853e169096801493926f7",
+      "curves": [
+        {
+          "engine": "eager",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": false,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16184819_priority/gpu0/results/curve_eager_b1_c4096.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        },
+        {
+          "engine": "graph",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": false,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16184819_priority/gpu0/results/curve_graph_b1_c4096.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        }
+      ],
+      "case_gate_issues": [
+        {
+          "case": "eager_b1_c4096_green_f100_a0_proof_capture_bind_v2",
+          "source": "h200/20261127_job16184819_priority/gpu0/results/eager_b1_c4096_green_f100_a0_proof_capture_bind_v2.json",
+          "errors": [
+            "producer not complete",
+            "producer output absent or checksum changed"
+          ]
+        },
+        {
+          "case": "graph_b1_c4096_green_f100_a0_proof_capture_bind_v2",
+          "source": "h200/20261127_job16184819_priority/gpu0/results/graph_b1_c4096_green_f100_a0_proof_capture_bind_v2.json",
+          "errors": [
+            "producer not complete",
+            "producer output absent or checksum changed"
+          ]
+        }
+      ],
+      "interrupted_producers": [
+        {
+          "label": "P2a_graph_b1_c4096_a1",
+          "original_status": null,
+          "process": "h200/20261127_job16184819_priority/gpu0/results/processes/P2a_graph_b1_c4096_a1.json",
+          "sha256": "866dde9b0c537679698f7f5dacd3d378860b108f5e88a7f11f44f48068aeccd9",
+          "classification": "incomplete at terminal allocation; cause requires logs and Slurm state"
+        }
+      ],
+      "physical_captures": [
+        {
+          "source": "h200/20261127_job16184819_priority/gpu0/results/P2a_graph_b1_c4096_a0.json",
+          "sha256": "1d6883812e06827b79c9c187d5fe6d41b23cf9ffab524d3119866f545eab2b43",
+          "status": "complete",
+          "acquisition": 0,
+          "gpu_uuid": "GPU-2779f29d-9f2a-0102-9d29-b982904324b9",
+          "replay_passed": true,
+          "ranges": {
+            "0": {
+              "dram__bytes_read.sum": 195244858368.0,
+              "dram__bytes_write.sum": 147686656.0,
+              "gpu__time_duration.sum": 72203264.0
+            }
+          },
+          "token_denominator": 3,
+          "clock_join": "unqualified until pooled replay clock/source/isolation join",
+          "ordinary_latency": null
+        }
+      ],
+      "native": null,
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    },
+    {
+      "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+      "source_freeze_identity": "fc47e1f53a0d9c7c50098cebe91e03615c942211f84853e169096801493926f7",
+      "curves": [
+        {
+          "engine": "graph",
+          "batch": 1,
+          "context": 4096,
+          "complete_acquisition_set": false,
+          "all_requested_placement_pilots_passed": false,
+          "complete_qualified_curve": false,
+          "thresholds": {
+            "0.05": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.1": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            },
+            "0.25": {
+              "smallest_tested_demonstrated_sm_count": null,
+              "restricted_path_smallest_tested_sm_count": null,
+              "scope": "tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds"
+            }
+          },
+          "source": "h200/20261127_job16184819_priority/gpu1/results/curve_graph_b1_c4096.json",
+          "disposition": "incomplete",
+          "resume": "Review saved placement/quality evidence and actual case budget before a fresh cohort"
+        }
+      ],
+      "case_gate_issues": [],
+      "interrupted_producers": [],
+      "physical_captures": [
+        {
+          "source": "h200/20261127_job16184819_priority/gpu1/results/P2a_graph_b1_c4096_a0.json",
+          "sha256": "0ecf47c92017adea628627ed786adea0675cea3a9d363214a8834ec1898cbe25",
+          "status": "complete",
+          "acquisition": 0,
+          "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+          "replay_passed": true,
+          "ranges": {
+            "0": {
+              "dram__bytes_read.sum": 195243638528.0,
+              "dram__bytes_write.sum": 148950528.0,
+              "gpu__time_duration.sum": 74078400.0
+            }
+          },
+          "token_denominator": 3,
+          "clock_join": "unqualified until pooled replay clock/source/isolation join",
+          "ordinary_latency": null
+        },
+        {
+          "source": "h200/20261127_job16184819_priority/gpu1/results/P2a_graph_b1_c4096_a1.json",
+          "sha256": "630cdfe77ded55838656c82c72fa738480b4126a0e70c34450690ba544fd7290",
+          "status": "complete",
+          "acquisition": 1,
+          "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+          "replay_passed": true,
+          "ranges": {
+            "0": {
+              "dram__bytes_read.sum": 195244933632.0,
+              "dram__bytes_write.sum": 150202624.0,
+              "gpu__time_duration.sum": 74112160.0
+            }
+          },
+          "token_denominator": 3,
+          "clock_join": "unqualified until pooled replay clock/source/isolation join",
+          "ordinary_latency": null
+        },
+        {
+          "source": "h200/20261127_job16184819_priority/gpu1/results/P2a_graph_b1_c4096_a2.json",
+          "sha256": "cc4d55e3d45b0625869c55fe0c1c236d6429da2a20859f1918eca0a5004ce629",
+          "status": "complete",
+          "acquisition": 2,
+          "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+          "replay_passed": true,
+          "ranges": {
+            "0": {
+              "dram__bytes_read.sum": 195245096192.0,
+              "dram__bytes_write.sum": 147781632.0,
+              "gpu__time_duration.sum": 73760288.0
+            }
+          },
+          "token_denominator": 3,
+          "clock_join": "unqualified until pooled replay clock/source/isolation join",
+          "ordinary_latency": null
+        }
+      ],
+      "native": {
+        "status": "analyzed",
+        "qualified_condition_curves": 10,
+        "source": "h200/20261127_job16184819_priority/gpu1/results/native_priority_analysis.json",
+        "scope": "native timing/useful payload only; no decoder threshold or physical HBM service inferred"
+      },
+      "physical_join_scope": "instrumented capture status only; pooled source/clock/clean timing, L2 and kernel attribution remain separate gates"
+    }
+  ],
+  "new_GPU_measurements": false,
+  "NVIDIA_thresholds_derived_from_AMD": false
+}
