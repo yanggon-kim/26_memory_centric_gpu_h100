@@ -46,3 +46,22 @@ INFO 11-27 01:08:01 [weight_utils.py:879] Prefetching checkpoint files into page
 Loading safetensors checkpoint shards:  76% Completed | 13/17 [00:23<00:07,  1.80s/it]
 Loading safetensors checkpoint shards:  82% Completed | 14/17 [00:25<00:05,  1.83s/it]
 Loading safetensors checkpoint shards:  88% Completed | 15/17 [00:27<00:03,  1.85s/it]
+Loading safetensors checkpoint shards:  94% Completed | 16/17 [00:28<00:01,  1.81s/it]
+Loading safetensors checkpoint shards: 100% Completed | 17/17 [00:30<00:00,  1.71s/it]
+Loading safetensors checkpoint shards: 100% Completed | 17/17 [00:30<00:00,  1.79s/it]
+
+INFO 11-27 01:08:29 [default_loader.py:397] Loading weights took 30.44 seconds
+INFO 11-27 01:08:30 [gpu_model_runner.py:5132] Model loading took 61.04 GiB memory and 30.733052 seconds
+INFO 11-27 01:08:33 [gpu_worker.py:466] Available KV cache memory: 56.06 GiB
+INFO 11-27 01:08:33 [kv_cache_utils.py:1733] GPU KV cache size: 229,616 tokens
+INFO 11-27 01:08:33 [kv_cache_utils.py:1734] Maximum concurrency for 8,192 tokens per request: 28.03x
+2026-11-27 01:08:33,158 - INFO - autotuner.py:615 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+2026-11-27 01:08:33,182 - INFO - autotuner.py:634 - flashinfer.jit: [Autotuner]: Autotuning process ends
+INFO 11-27 01:08:33 [jit_monitor.py:54] Kernel JIT monitor activated — Triton JIT compilations during inference will be logged as warnings.
+INFO 11-27 01:08:33 [core.py:309] init engine (profile, create kv cache, warmup model) took 3.61 s
+WARNING 11-27 01:08:34 [input_processor.py:274] Passing raw prompts to InputProcessor is deprecated and will be removed in v0.18. You should instead pass the outputs of Renderer.render_cmpl() or Renderer.render_chat().
+WARNING 11-27 01:08:34 [jit_monitor.py:103] Triton kernel JIT compilation during inference: _compute_slot_mapping_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO 11-27 01:08:44 [loggers.py:271] Engine 000: Avg prompt throughput: 2328.2 tokens/s, Avg generation throughput: 35.5 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 1.8%, Prefix cache hit rate: 0.0%
+INFO 11-27 01:08:54 [loggers.py:271] Engine 000: Avg prompt throughput: 2455.2 tokens/s, Avg generation throughput: 33.2 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 1.8%, Prefix cache hit rate: 0.0%
+controlled vLLM B=1 C=4096: [1309.04, 1312.98, 1315.53, 1314.11, 1317.44, 1316.6, 1321.89, 1312.94, 1316.21, 1312.54] ms
+Validated 1 controlled vLLM cases
