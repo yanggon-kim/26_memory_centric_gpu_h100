@@ -144,6 +144,13 @@ def valid_tokens(data, expected=None):
                 for t in case['trials']))
 
 
+def sm_grant_matches_case(stock, fraction, actual, physical):
+    """Full controls must be full; a requested cut must actually reduce SMs."""
+    if not isinstance(actual,int) or not isinstance(physical,int) or not 0<actual<=physical:
+        return False
+    return actual==physical if stock or fraction==1. else actual<physical
+
+
 class Worker:
     def __init__(self, root, session):
         self.root = root
@@ -187,6 +194,7 @@ class Worker:
         row = {'id': label, 'engine': engine, 'fraction': fraction, 'acquisition': acq, 'pilot': pilot,
                'stock': stock, 'suffix': suffix, 'rebind_step':self.rebind_step,'repair_route':route,'gpu_uuid': self.uuid, 'batch': batch, 'context': context,
                'status': 'failed', 'process_status': process['status'], 'qualified': False,
+               'sm_grant_matches_requested_scope':False,
                'source_identity': self.settings['frozen_source_identity'], 'run': str(output / 'run.json')}
         row['producer_elapsed_s']=process.get('elapsed_s')
         binding_audit=output/'capture_binding_audit.json'
@@ -200,6 +208,9 @@ class Worker:
         native = output / 'run.json'
         if native.exists():
             d = load(native)
+            row['physical_sm_count']=row.get('allocation',{}).get('device_sm_count',d.get('hardware',{}).get('sm_count'))
+            row['sm_grant_matches_requested_scope']=sm_grant_matches_case(stock,fraction,
+                row.get('actual_sm_count'),row['physical_sm_count'])
             row['run_sha256'] = sha(native)
             row['exact_outputs'] = bool(valid_tokens(d, self.expected))
             if process['status'] == 'complete' and row['exact_outputs']:
@@ -211,7 +222,7 @@ class Worker:
                 if not pilot:
                     import shoreline_campaign as campaign
                     row['clock'] = campaign.clock_qualification(d, process['monitor']['source'])
-                    row['qualified'] = row['clock']['passed'] and len(trials) == 10
+                    row['qualified'] = row['clock']['passed'] and len(trials) == 10 and row['sm_grant_matches_requested_scope']
         if pilot and report.with_suffix('.nsys-rep').exists() and allocation.exists():
             db = report.with_suffix('.sqlite')
             export = self.execute(label + '_export', [self.cuda / 'bin/nsys', 'export', '--type=sqlite',
@@ -222,13 +233,13 @@ class Worker:
                     row['timeline'] = read(db, row['allocation']['green_context_id'] or 0)
                     row['placement_passed'] = (row['timeline']['restriction_passed'] and
                         (engine != 'graph' or all(w['graph_kernel_count'] > 0 for w in row['timeline']['windows'])))
-                    row['qualified'] = row['status'] == 'complete' and row['placement_passed']
+                    row['qualified'] = row['status'] == 'complete' and row['placement_passed'] and row['sm_grant_matches_requested_scope']
                 except Exception as error:
                     row['proof_error'] = str(error)
         self.records.append(row)
         write(self.root / 'results' / (label + '.json'), row)
-        if row['status'] != 'complete' or (pilot and not row['qualified']):
-            limitation(self.root, label, 'Producer, exact output, or measured decoder placement gate failed',
+        if row['status'] != 'complete' or not row['sm_grant_matches_requested_scope'] or (pilot and not row['qualified']):
+            limitation(self.root, label, 'Producer, exact output, granted-SM scope, or measured decoder placement gate failed',
                        str((self.root/'logs'/(label+'.log')).relative_to(PACKAGE)),
                        'Versioned green-context path and separate NSYS measured-decode proof',
                        'Inspect preserved failure; bounded repair before reusing this arm')
@@ -352,8 +363,8 @@ class Worker:
         from shoreline_evidence import qualify_replays
         if reference_case is None:
             reference=self.case(engine,1.,0,stock=True,suffix='_traffic_reference',context=context,batch=batch)
-            if reference['status']!='complete' or not self.reference(reference['run'],f'{engine}_b{batch}_c{context}_traffic'):
-                return {'status':'blocked','reason':'exact traffic reference unavailable'}
+            if reference['status']!='complete' or not reference.get('sm_grant_matches_requested_scope') or not self.reference(reference['run'],f'{engine}_b{batch}_c{context}_traffic'):
+                return {'status':'blocked','reason':'exact full-SM traffic reference unavailable'}
             expected=load(reference['run'])['cases'][0]
         else:
             # The resume collector validates the immutable source/HF artifacts,
@@ -532,6 +543,9 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
     refs = sorted([r for r in records if r['engine'] == engine and not r['pilot'] and r['stock']
                    and r['batch'] == batch and r['context'] == context and not r.get('suffix')], key=lambda r:r['acquisition'])
     green_refs = sorted([r for r in clean if r['fraction'] == 1. and not r.get('suffix')], key=lambda r:r['acquisition'])
+    drift_refs=[r for r in clean if r['fraction']==1. and r.get('suffix') in ('_end','_interleaved')]
+    drift_complete=all(sorted(r['acquisition'] for r in drift_refs if r['suffix']==suffix)==[0,1,2]
+                       for suffix in ('_end','_interleaved'))
     stock={'qualified':False,'scope':'unrestricted stock reference; its normalized self-ratio is exactly1'}
     if (len(refs)==3 and stock_proofs and all(r.get('qualified') for r in refs) and
         len({r['source_identity'] for r in refs})==1 and len({r['actual_sm_count'] for r in refs})==1 and
@@ -550,15 +564,17 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                  'actual_sm_count': rows[0].get('actual_sm_count') if rows else None,
                  'raw_acquisition_medians_ms': [statistics.median(r['step_ms']) if r.get('step_ms') else None for r in rows],
                  'raw_scope': 'retained observations, not qualified comparisons until every gate passes'}
-        combined = rows + refs + green_refs + [r for r in clean if r.get('suffix') in ('_end', '_interleaved')]
+        combined = rows + refs + green_refs + drift_refs
         clocks = [r.get('clock', {}).get('clocks', {}) for r in combined]
-        if (stock['qualified'] and len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
+        if (stock['qualified'] and drift_complete and len(rows) == len(refs) == 3 and all(r.get('qualified') for r in combined) and
             fraction in proofs and 1. in proofs and stock_proofs and
             len({r['source_identity'] for r in combined})==1 and
             len({route(r) for r in combined})==1 and
+            len({r['actual_sm_count'] for r in combined if r['fraction']==1.})==1 and
             all(route(r)==route(rows[0]) for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
             all(r['source_identity']==rows[0]['source_identity'] for r in (proofs[fraction],proofs[1.],stock_proofs[-1])) and
             len({r['actual_sm_count'] for r in rows}) == 1 and
+            (fraction==1. or rows[0]['actual_sm_count']<refs[0]['actual_sm_count']) and
             proofs[fraction]['actual_sm_count']==rows[0]['actual_sm_count'] and
             green_refs and proofs[1.]['actual_sm_count']==green_refs[0]['actual_sm_count'] and
             stock_proofs[-1]['actual_sm_count']==refs[0]['actual_sm_count'] and
@@ -581,6 +597,8 @@ def analyze_curve(root, records, engine, batch=1, context=4096):
                                   'scope': 'tested counts only, includes qualified full stock itself; no interpolation or AMD thresholds'}
     result = {'engine': engine, 'batch':batch,'context':context,'classification': 'measured-real-GPU', 'points': points, 'thresholds': thresholds,
               'execution_routes':sorted({route(r) for r in records if (r['engine'],r['batch'],r['context'])==(engine,batch,context)}),
+              'drift_references':{'complete':drift_complete,'required_acquisitions':[0,1,2],
+                                  'required_suffixes':['_interleaved','_end'],'sources':[r['id'] for r in drift_refs]},
               'unrestricted_stock':stock,'complete_qualified_curve': stock['qualified'] and all(p['qualified'] for p in points),
               'scope': 'pure decode after verified prefill barrier, wall ms/tick; primary ratios use unrestricted stock; full-green ratios also retained; physical area/HBM capacity unchanged'}
     write(root/'results'/f'curve_{engine}_b{batch}_c{context}.json', result)

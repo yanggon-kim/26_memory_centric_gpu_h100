@@ -18,6 +18,13 @@ def main():
     estimate=campaign.estimate_curve_seconds(10.,pilots)
     assert abs(estimate-1301.25)<1e-6
     assert campaign.estimate_curve_seconds(20.,pilots)>estimate
+    assert campaign.sm_grant_matches_case(True,1.,132,132)
+    assert campaign.sm_grant_matches_case(False,1.,132,132)
+    assert campaign.sm_grant_matches_case(False,.3,40,132)
+    assert not campaign.sm_grant_matches_case(False,.3,132,132), 'requesting fewer SMs is not a measured cut'
+    assert not campaign.sm_grant_matches_case(True,1.,128,132), 'stock control must receive the full device'
+    assert not campaign.sm_grant_matches_case(False,1.,128,132), 'full-green control must receive the full device'
+    assert not campaign.sm_grant_matches_case(False,.3,None,132)
     try:campaign.estimate_curve_seconds(10.,{1.:10.})
     except AssertionError:pass
     else:raise AssertionError("incomplete pilot coverage accepted for scheduling")
@@ -39,10 +46,10 @@ def main():
         assert all(x['smallest_tested_demonstrated_sm_count'] is None for x in result['thresholds'].values())
     # Synthetic positive control plus independent negative provenance/placement gates.
     records=[]
-    def record(fraction,acq,pilot=False,stock=False):
+    def record(fraction,acq,pilot=False,stock=False,suffix=''):
         count={1.:132,.85:120,.75:104,.60:80,.45:64,.30:40}[fraction]
-        return {'id':f'{fraction}_{acq}_{pilot}_{stock}','engine':'graph','batch':1,'context':4096,
-                'fraction':fraction,'acquisition':acq,'pilot':pilot,'stock':stock,'suffix':'',
+        return {'id':f'{fraction}_{acq}_{pilot}_{stock}_{suffix}','engine':'graph','batch':1,'context':4096,
+                'fraction':fraction,'acquisition':acq,'pilot':pilot,'stock':stock,'suffix':suffix,
                 'qualified':True,'actual_sm_count':count,'source_identity':'frozenA',
                 'step_ms':[10.]*10,'tokens_s':[100.]*10,
                 'clock':{'clocks':{m:{'minimum':1000.,'maximum':1000.} for m in ('sm_clock_mhz','memory_clock_mhz')}}}
@@ -51,6 +58,7 @@ def main():
     for acq in range(3):
         records.append(record(1.,acq,stock=True))
         records.extend(record(f,acq) for f in campaign.FRACTIONS)
+        records.extend(record(1.,acq,suffix=s) for s in ('_interleaved','_end'))
     def cheap_interval(*args,**kwargs):return {'value':1.,'ci95':[1.,1.]}
     with tempfile.TemporaryDirectory() as name, \
          patch('shoreline_statistics.hierarchical_interval',side_effect=cheap_interval), \
@@ -65,6 +73,16 @@ def main():
         assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve']
         bad=copy.deepcopy(records);bad[-1]['repair_route']='capture_bind_v2'
         assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve'], 'different repair programs must not be pooled'
+        bad=copy.deepcopy(records)
+        for row in bad:
+            if row['fraction']==.3:row['actual_sm_count']=132
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve'], 'an ignored SM cut must not qualify'
+        bad=[r for r in records if not (r['acquisition']==2 and r['suffix']=='_end')]
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve'], 'preemption before the final drift reference must remain partial'
+        bad=copy.deepcopy(records)
+        for row in bad:
+            if row['fraction']==1. and not row['stock']:row['actual_sm_count']=128
+        assert not campaign.analyze_curve(root,bad,'graph')['complete_qualified_curve'], 'full-green and stock controls must have equal SM counts'
     requested=[]
     resource=types.SimpleNamespace(sm_count=132,coscheduled_alignment=8,min_partition_size=16)
     class Device:

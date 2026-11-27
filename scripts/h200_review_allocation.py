@@ -101,9 +101,10 @@ def closeout(root, accounting_path):
             curve=campaign.analyze_curve(sub,records,engine,batch,context)
             attempts=[r for r in records if (r['engine'],r['batch'],r['context'])==(engine,batch,context)]
             expected={(f,a) for f in campaign.FRACTIONS for a in range(3)}
-            actual={(r['fraction'],r['acquisition']) for r in attempts if not r['stock'] and not r['pilot'] and not r.get('suffix') and r.get('status')=='complete'}
-            stock={r['acquisition'] for r in attempts if r['stock'] and not r['pilot'] and not r.get('suffix') and r.get('status')=='complete'}
-            captured=expected<=actual and stock=={0,1,2}
+            actual={(r['fraction'],r['acquisition']) for r in attempts if not r['stock'] and not r['pilot'] and not r.get('suffix') and r.get('status')=='complete' and len(r.get('step_ms',[]))==10}
+            stock={r['acquisition'] for r in attempts if r['stock'] and not r['pilot'] and not r.get('suffix') and r.get('status')=='complete' and len(r.get('step_ms',[]))==10}
+            drift=all(sorted(r['acquisition'] for r in attempts if not r['stock'] and not r['pilot'] and r.get('suffix')==s and r.get('status')=='complete' and len(r.get('step_ms',[]))==10)==[0,1,2] for s in ('_interleaved','_end'))
+            captured=expected<=actual and stock=={0,1,2} and drift
             proofs={r['fraction'] for r in attempts if r['pilot'] and not r['stock'] and r.get('qualified')}
             curves.append({'engine':engine,'batch':batch,'context':context,
                 'complete_acquisition_set':captured,'all_requested_placement_pilots_passed':set(campaign.FRACTIONS)<=proofs,
