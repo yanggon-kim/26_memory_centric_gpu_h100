@@ -71,3 +71,9 @@ Slurm accounting records PREEMPTED, start 09:38:37 and end 10:39:07 Eastern, ela
 | 0.6 | 80 | False | NA | NA |
 | 0.45 | 56 | False | NA | NA |
 | 0.3 | 40 | False | NA | NA |
+
+## CPU follow-up after archive: SM-dependent output-projection launch path
+
+The [source-bound grid catalog](../../../20261127_resident_preparation/analysis/eager_decoder_grid_catalog.md) identifies a192-launch attention output-projection group that changes between112and96SM: a4x1named variant at grid4×20×1 becomes a2x1named variant at grid2×40×1. Attribution uses actual CUDA launch correlation and enclosing operation NVTX intervals, not kernel-name inference. Actual CUDA cluster dimensions, causality and a latency threshold are unresolved. The raw curve is not an unchanged-kernel hardware-only intervention. A future resident-model curve requires separate labels and setting-specific proofs because initialization/library state differs.
+
+This is CPU reprocessing of preserved raw traces. The verified archive predates this follow-up note; the note and derived catalog are published separately in Git. No new GPU measurement or original raw-file change occurred.

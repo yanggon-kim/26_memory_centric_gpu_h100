@@ -37,3 +37,7 @@ The chronological allocation report is preserved in [report_during_allocation.md
 ## Verified backup
 
 The project archive contains all838 inventoried regular files (153,536,865 source bytes); every archived member and the destination checksum were verified. Archive: `/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261127_job16210814_priority_b15337e1c640.tar.gz`. SHA256: `a1e264980631ab717c8869082beeba47edb82891c592f6d368484e969c87faee`. The [transfer receipt](../results/archive_transfer_b15337e1c640.json) records exact counts and checksums. Original shared-storage data is retained. The receipt and this archive note were created after the archive snapshot and are published separately in Git.
+
+## Later CPU launch-path audit
+
+[The saved eager trace catalog](../../20261127_resident_preparation/analysis/eager_decoder_grid_catalog.md) records an actual attention-output-projection symbol/grid change between112and96SM, under the original frozen source and settings. See the GPU0 report for its interpretive limitation. This CPU follow-up and its notes postdate the verified archive snapshot and are published separately in Git; original raw traces are unchanged.
