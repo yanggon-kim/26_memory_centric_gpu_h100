@@ -837,6 +837,7 @@ def bootstrap(args):
             ('capture_binding_contracts',[runtime,PACKAGE/'scripts/test_h200_vllm_capture_binding.py'],300)]
     if getattr(args,'resident_first',False):
         stages.append(('resident_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_sweep.py'],300))
+        stages.append(('clock_conditioning_contracts',[runtime,PACKAGE/'scripts/test_h200_clock_conditioning_pilot.py'],300))
     try:
         for label,command,limit in stages:
             print('STAGING',label,flush=True)

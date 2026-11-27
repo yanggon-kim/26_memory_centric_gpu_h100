@@ -1,14 +1,19 @@
 """Versioned orchestration for the independently labeled resident eager curve."""
 import datetime as dt
+import hashlib
 import os
 from pathlib import Path
 import sqlite3
 import time
 from h200_priority_campaign import load,write,sha,config,publish,limitation,valid_tokens,analyze_curve
 from h200_resident_sweep import conditions
+SOURCE_AT_IMPORT=Path(__file__).read_bytes()
 
 
 def build_environment(worker):
+    assert hashlib.sha256(SOURCE_AT_IMPORT).hexdigest()==sha(worker.script/Path(__file__).name),'loaded resident orchestration differs from frozen source'
+    import h200_resident_sweep
+    assert hashlib.sha256(h200_resident_sweep.SOURCE_AT_IMPORT).hexdigest()==sha(worker.script/'h200_resident_sweep.py')
     wrappers={}
     for variable,name in (('CC','h200_host_cc.sh'),('CXX','h200_host_cxx.sh')):
         path=worker.script/name
@@ -16,6 +21,7 @@ def build_environment(worker):
         os.environ[variable]=str(path)
         wrappers[variable]={'path':str(path),'sha256':sha(path)}
     write(worker.root/'environment/host_build_wrappers.json',{'wrappers':wrappers,
+        'actual_loaded_resident_driver_sha256':hashlib.sha256(SOURCE_AT_IMPORT).hexdigest(),
         'scope':'Same pinned GCC12.3 frontend, native /usr/bin linker via -B/usr/bin; fresh source cohort only; no system changes',
         'prior_repair_evidence':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P0_native_L2_counter_review.json'})
 
@@ -147,6 +153,8 @@ def secondary(worker):
     write(worker.root/'results/reused_work.json',{'scope':'Prior DRAM/L2 and observer pilots retained on original UUID/source cohorts; not repeated by default or pooled with this allocation',
         'DRAM_L2':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P2a_L2_disposition.json',
         'scheduler_pilot':'h200/20261127_job16210814_priority/gpu1_native_linker/results/P3a_observer_pilot.json'})
+    from h200_clock_conditioning_pilot import run as clock_pilot
+    clock_pilot(worker)
     gate=worker.root.parent/'gpu0/results/eager_core_disposition.json'
     while not gate.exists():
         outcome=worker.root.parent/'gpu0/results/worker_outcome.json'

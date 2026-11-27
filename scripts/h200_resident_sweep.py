@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import traceback
+SOURCE_AT_IMPORT=Path(__file__).read_bytes()
 
 
 def conditions(pilot=False, proof=False):

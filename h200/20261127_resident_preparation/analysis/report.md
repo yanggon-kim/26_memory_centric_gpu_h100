@@ -9,3 +9,9 @@ A bounded NSYS pilot verifies stock/full-Green/40SM real decoder launches and in
 Spare work reuses prior3DRAM/L2 captures and3scheduler-observer pairs within their original source/device scopes. Missing full-GPU context acquisitions follow the core disposition; no loaded serving or calibrated bandwidth is inferred from those earlier pilots.
 
 CPUcontracts passed:3resident binding/window/order checks, priority contracts,3eager-first tests and5allocation-review tests. GPUvalidation is pending. The exact next command is `sbatch --parsable batch/h200_priority_resident_20261127.sbatch`.
+
+## Spare clock diagnostic
+
+Saved job16210814 trial windows show SM clocks rising from roughly1,305–1,440MHz near decode entry to1,980MHz during the same interval. The rejection is not just an idle endpoint outside decode. On the spare GPU, one prospectively fixed unconditioned/memory_settle_v3 pair will investigate this while the core GPU runs. Each arm has one independent producer, three warmups and three timed trials with the original exact HF and clock checks. This is a functional diagnostic, not a qualified latency comparison.
+
+The existing memory_settle_v3 adapter executes a fixed one-second256MiB private-buffer read/write workload after the prefill barrier, outside decode timing. It changes cache history and TTFT. No clock or power settings change. All failed windows remain; no favorable trials are selected. A conditioned restricted curve would need a separate declared protocol, actual-kernel proof, HF reference and three-acquisition/ten-trial/source/clock/isolation gates before any threshold.

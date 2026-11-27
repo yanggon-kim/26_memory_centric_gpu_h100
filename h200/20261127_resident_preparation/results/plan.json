@@ -6,6 +6,7 @@
   "preemption_assumption": "may be reclaimed immediately after first hour; no guaranteed grace",
   "phases": [
     "owned allocation/runtime inventory",
+    "spare GPU: one bounded unconditioned/memory_settle_v3 full-GPU clock diagnostic pair while core GPU runs; no qualified latency claim",
     "stock/full-Green/40SM resident NSYS proof and independent HF exact output",
     "all7 stock/Green actual-decoder proofs in one separate producer",
     "3independent full resident-model acquisitions,9conditions each,3warmups and10timed trials per condition",
@@ -38,5 +39,10 @@
     "eager_first": 3,
     "allocation_review": 5
   },
-  "next_command": "sbatch --parsable batch/h200_priority_resident_20261127.sbatch"
+  "next_command": "sbatch --parsable batch/h200_priority_resident_20261127.sbatch",
+  "clock_pilot": {
+    "scope": "one producer per arm,3warmup/3timed trials; existing fixed1second/256MiB private-buffer memory_settle_v3 afterprefill, outside decode timing",
+    "limitation": "changescachehistoryandTTFT; cannotqualifyoriginalunconditionedcurve or eager placement; no clock/power settings changed",
+    "resume": "separate conditioned SM proof/reference/3x10 required before thresholds"
+  }
 }
