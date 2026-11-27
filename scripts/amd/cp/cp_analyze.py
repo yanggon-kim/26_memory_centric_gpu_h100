@@ -387,7 +387,10 @@ def disagg_trace(t, slo, kv_per_tok, stall=()):
         ts = r['token_s']
         return [1e3 * (b - a) for a, b in zip(ts, ts[1:])]
     ttft = [r['token_s'][0] - r['arrival_s'] for r in done]
-    ok = [r for r in done if r['token_s'][0] - r['arrival_s'] <= slo['ttft_s'] and (len(r['token_s']) < 2 or p95(itl(r)) <= slo['itl_ms'])]
+    # lc amendment 7 (optional): prompts >= slo['long_prompt_min'] use slo['ttft_long_s'] (mixed-tenant workload)
+    lim_ttft = lambda r: (slo['ttft_long_s'] if 'long_prompt_min' in slo and r['prompt_len'] >= slo['long_prompt_min']  # noqa: E731
+                          else slo['ttft_s'])
+    ok = [r for r in done if r['token_s'][0] - r['arrival_s'] <= lim_ttft(r) and (len(r['token_s']) < 2 or p95(itl(r)) <= slo['itl_ms'])]
     out = {'requests': len(meas), 'complete': len(done), 'attainment': len(ok) / len(meas) if meas else None,
            'goodput_rps': len(ok) / span if span else None, 'goodput_tok_s': sum(r['tokens'] for r in ok) / span if span else None,
            'ttft_p50_s': pct(ttft, .5), 'ttft_p99_s': pct(ttft, .99),
@@ -400,6 +403,18 @@ def disagg_trace(t, slo, kv_per_tok, stall=()):
             okm = [r for r in ok if len(r['token_s']) < 2 or max(itl(r)) <= lim]
             out[f'attainment_stall{int(lim)}'] = len(okm) / len(meas) if meas else None
             out[f'goodput_stall{int(lim)}_rps'] = len(okm) / span if span else None
+    if slo.get('itl_tight_ms'):  # lc amendment 7: tight-ITL SLO, same TTFT, p95 ITL <= itl_tight_ms
+        okt = [r for r in done if r['token_s'][0] - r['arrival_s'] <= lim_ttft(r) and
+               (len(r['token_s']) < 2 or p95(itl(r)) <= slo['itl_tight_ms'])]
+        k = f"itl{int(slo['itl_tight_ms'])}"
+        out[f'attainment_{k}'] = len(okt) / len(meas) if meas else None
+        out[f'goodput_{k}_rps'] = len(okt) / span if span else None
+    if 'long_prompt_min' in slo:  # lc amendment 7: short (chat) requests alone
+        sh = [r for r in done if r['prompt_len'] < slo['long_prompt_min']]
+        out['short_ttft_p50_s'] = pct([r['token_s'][0] - r['arrival_s'] for r in sh], .5)
+        out['short_ttft_p99_s'] = pct([r['token_s'][0] - r['arrival_s'] for r in sh], .99)
+        out['short_req_itl_max_p99_ms'] = pct([max(itl(r)) for r in sh if len(r['token_s']) > 1], .99)
+        out['short_itl_p99_ms'] = pct([x for r in sh for x in itl(r)], .99)
     pre = [r for r in done if r.get('prefill_s') is not None]
     if pre:
         out['prefill_response_p50_s'] = pct([r['prefill_s'] for r in pre], .5)

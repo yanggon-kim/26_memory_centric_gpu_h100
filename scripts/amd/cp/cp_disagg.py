@@ -72,7 +72,8 @@ def server_cmd(a, cfg, port, role=None):
     if role:
         kv = {'kv_connector': 'P2pNcclConnector', 'kv_role': role, 'kv_port': str(KV_PORT[k]),
               'kv_buffer_size': '1e1' if role == 'kv_producer' else f'{a.decode_kv_buffer:g}',
-              'kv_connector_extra_config': {'send_type': 'PUT_ASYNC', 'nccl_num_channels': '16', 'http_port': str(port)}}
+              'kv_connector_extra_config': {'send_type': a.kv_send_type, 'nccl_num_channels': str(a.kv_channels),
+                                            'http_port': str(port)}}
         if role == 'kv_consumer' and a.kv_mem_pool_gb:
             kv['kv_connector_extra_config']['mem_pool_size_gb'] = str(a.kv_mem_pool_gb)
         cmd += ['--kv-transfer-config', json.dumps(kv)]
@@ -376,6 +377,9 @@ if __name__ == '__main__':
     p.add_argument('--decode-kv-buffer', type=float, default=8e9,
                    help='disagg: consumer kv_buffer_size in bytes (GPU receive buffer; overflow goes to the host pool)')
     p.add_argument('--kv-mem-pool-gb', type=float, default=None, help='disagg: consumer host memory pool (vLLM default 32)')
+    p.add_argument('--kv-channels', type=int, default=16, help='disagg: P2pNccl nccl_num_channels (lc amendment 7)')
+    p.add_argument('--kv-send-type', choices=('PUT_ASYNC', 'PUT', 'GET'), default='PUT_ASYNC',
+                   help='disagg: P2pNccl send_type (lc amendment 7)')
     p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)
     p.add_argument('--gpu-mem', type=float, default=0.85)

@@ -331,15 +331,95 @@ def ldfx(cohort, params):
     return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
 
 
+O8 = {'O8': [0, 1, 2, 3, 4, 5, 6, 7]}
+
+
+def _ld2_dis(params, npf, kv):
+    ch, st = kv
+    return ['--deployment', 'disagg', '--prefill-workers', npf, '--decode-policy', 'mixed', '--decode-gpu-mem',
+            params['ld2_decode_gpu_mem'], '--decode-kv-buffer', params['ld2_decode_kv_buffer'], '--p2p-none-blocks-fix',
+            '--kv-channels', ch, '--kv-send-type', st, '--policy', 'separate', '--budget', 32768, '--no-chunk']
+
+
+_LD2_COLO = {'whole': ['--deployment', 'colocated', '--policy', 'separate', '--budget', 32768, '--no-chunk'],
+             'mix2048': ['--deployment', 'colocated', '--policy', 'mixed', '--budget', 2048],
+             'mix8192': ['--deployment', 'colocated', '--policy', 'mixed', '--budget', 8192]}
+_LD2_BASE = ['--config', CFG['q32'], '--gpu-uuids', '@UUIDS', '--gpu-indices', '@IDX', '--max-model-len', 32768, '--max-seqs', 64]
+
+
+def _ld2_est(n, rates, drain):
+    return int(sum(n / r + 0.6 * drain + 30 for r in rates) + 600)
+
+
+def ld2a(cohort, params):
+    """Amendment 7 phase A: connector micro-test. lprompt 3P1D at 0.1 rps, 30 requests, development seed 101, one step per
+    P2pNccl setting (nccl_num_channels, send_type) plus colo4_whole at the same load; two 4-GPU lanes."""
+    p = Plan('ld2a', cohort)
+    tr = ['--workload', 'lprompt', '--rates', 0.1, '--seeds', 101, '--requests', 30, '--drain-s', params['ld2_drain']['lprompt']]
+    est = _ld2_est(30, [0.1], params['ld2_drain']['lprompt'])
+    for name, kv in params['ld2a_settings'].items():
+        p.add('a', 'ld2a', f'ld2a_{name}', DG, _LD2_BASE + _ld2_dis(params, 3, kv) + tr, est=est, model='q32',
+              workload='lprompt', deployment='d3p1', prefill_workers=3, seed=101, rates=[0.1], setting=name)
+    p.add('a', 'ld2a', 'ld2a_colo4_whole', DG, _LD2_BASE + _LD2_COLO['whole'] + tr, est=est, model='q32', workload='lprompt',
+          deployment='colo4_whole', prefill_workers=None, seed=101, rates=[0.1], setting='colo')
+    return p, {'a': Q4}, {'a': p.assign('a', list(Q4))}
+
+
+def ld2b(cohort, params):
+    """Amendment 7 phase B: one workload (lclo), one 8-GPU deployment at a time. colo8_{whole,mix2048,mix8192} and
+    d{k}p{8-k} for k = 2..6 with the phase A connector setting; held-out seeds 201 and 202."""
+    assert params.get('ld2_kv'), 'ld2_kv must be set from the phase A rule first'
+    p = Plan('ld2b', cohort)
+    wl, n, dr, rates = 'lclo', params['ld2_requests']['lclo'], params['ld2_drain']['lclo'], params['ld2_rates']['lclo']
+    deps = {f'colo8_{k}': v for k, v in _LD2_COLO.items()}
+    deps.update({f'd{k}p{8 - k}': _ld2_dis(params, k, params['ld2_kv']) for k in range(2, 7)})
+    for dn, extra in deps.items():
+        for seed in (201, 202):
+            p.add('a', 'ld', f'ld2b_{wl}_{dn}_s{seed}', DG, _LD2_BASE + extra + ['--workload', wl, '--rates',
+                  ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n, '--drain-s', dr],
+                  est=_ld2_est(n, rates, dr), model='q32', workload=wl, deployment=dn,
+                  prefill_workers=int(dn[1]) if dn.startswith('d') else None, seed=seed, rates=rates)
+    return p, {'a': O8}, {'a': p.assign('a', list(O8))}
+
+
+def ld2c(cohort, params):
+    """Amendment 7 phase C (deployments from the phase B rule, params['ld2c']): lclo with bursty arrivals; the selected
+    disaggregated ratio with consumers restricted to params['ld2c']['decode_cus'] CUs; the mixed-tenant workload mixdoc."""
+    c = params.get('ld2c')
+    assert c, 'ld2c must be set from the phase B rule first'
+    p = Plan('ld2c', cohort)
+    kv = params['ld2_kv']
+
+    def dep(dn):
+        return _LD2_COLO[dn[6:]] if dn.startswith('colo8_') else _ld2_dis(params, int(dn[1]), kv)
+
+    def add(tag, wl, dn, extra, arrival, seed):
+        n, dr, rates = params['ld2_requests'][wl], params['ld2_drain'][wl], params['ld2_rates'][wl]
+        base = dn.split('_dcu')[0]
+        p.add('a', 'ld', f'ld2c_{tag}_{wl}_{dn}_s{seed}', DG, _LD2_BASE + extra + ['--workload', wl, '--arrivals', arrival,
+              '--rates', ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n, '--drain-s', dr],
+              est=_ld2_est(n, rates, dr), model='q32', workload=wl, deployment=dn,
+              prefill_workers=int(base[1]) if base.startswith('d') else None, seed=seed, rates=rates, arrival=arrival)
+    for seed in (201, 202):
+        for dn in c['bursty_deps']:
+            add('bursty', 'lclo', dn, dep(dn), 'bursty', seed)
+        dn = c['cu_dep']
+        add('cu', 'lclo', f"{dn}_dcu{c['decode_cus']}", dep(dn) + ['--decode-cus', c['decode_cus'], '--decode-grid',
+            c['decode_cus']], 'poisson', seed)
+        for dn in c['mixdoc_deps']:
+            add('mix', 'mixdoc', dn, dep(dn), 'poisson', seed)
+    return p, {'a': O8}, {'a': p.assign('a', list(O8))}
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke', 'ldfx'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke', 'ldfx', 'ld2a', 'ld2b', 'ld2c'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld, 'ldfx': ldfx,
+                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld, 'ldfx': ldfx, 'ld2a': ld2a, 'ld2b': ld2b, 'ld2c': ld2c,
                             'ld_smoke': lambda c, prm: ld(c, prm, smoke=True)}[a.which](a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition

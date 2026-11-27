@@ -642,11 +642,13 @@ def lc_serve_plan(a):
     print(f'-> {out / "lc_tables.json"}')
 
 
-def decide(rows, sel, exp='lc5h', model='q32'):
+def decide(rows, sel, exp='lc5h', model='q32', extra=()):
     """Design section 7 + amendment 3: per workload and SLO, the selected mixed policy vs each of the selected separate
     policy and whole. All-seed sustained rate = highest ladder rate at which every seed attains >= 0.9 with nothing
     incomplete, at that rate and every lower one. win / loss if >= 1 ladder step apart, else uncertain."""
     slos = {'primary': ('attainment', 'goodput_rps'), 'stall1000': ('attainment_stall1000', 'goodput_stall1000_rps')}
+    for k in extra:  # lc amendment 7 (ld only): further SLOs, e.g. 'stall500', 'itl50'
+        slos[k] = (f'attainment_{k}', f'goodput_{k}_rps')
     by = collections.defaultdict(lambda: collections.defaultdict(list))
     for r in rows:
         if r['experiment'] == exp and r.get('model', 'q32') == model:
@@ -732,7 +734,8 @@ def ld_rows(root, prm):
         kv = meta['layout']['kv_bytes_per_token']
         for tr in meta['traces']:
             t = json.loads((run / tr['file']).read_text())
-            r = {'step': s['id'], 'engine_dead': bool(dead), 'experiment': 'ld', 'workload': s['workload'], 'policy': s['deployment'],
+            wl = s['workload'] + ('' if t['arrival'] == 'poisson' else '_' + t['arrival'])  # amendment 7: bursty apart
+            r = {'step': s['id'], 'engine_dead': bool(dead), 'experiment': 'ld', 'workload': wl, 'policy': s['deployment'],
                  'deployment': s['deployment'], 'prefill_workers': s.get('prefill_workers'), 'rate': t['rate'],
                  'seed': t['seed'], 'arrival': t['arrival'], 'model': 'q32', 'span_s': t['span_s'],
                  'unfinished': t['unfinished'], **A.disagg_trace(t, prm['slo'][s['workload']], kv, stall)}
@@ -751,8 +754,9 @@ def ld_decide(rows):
     for wl in sorted({r['workload'] for r in rows}):
         sub = [r for r in rows if r['workload'] == wl]
         deps = sorted({r['policy'] for r in sub})
-        res = decide(sub, {wl: {'mixed': deps[0], 'separate': deps[0]}}, 'ld')[wl]
-        for sl in ('primary', 'stall1000'):
+        extra = [k for k in ('stall250', 'stall500', 'stall2000', 'itl50') if all(f'attainment_{k}' in r for r in sub)]
+        res = decide(sub, {wl: {'mixed': deps[0], 'separate': deps[0]}}, 'ld', extra=extra)[wl]
+        for sl in ['primary', 'stall1000'] + extra:
             cap = res[sl]['capacity']
             colo = [d for d in deps if d.startswith('colo')]
             dis = [d for d in deps if d.startswith('d')]
@@ -778,6 +782,52 @@ def ld_decide(rows):
     return out
 
 
+def ld2a_cmd(a):
+    """amendment 7 phase A: producer (or colocated) single-prompt prefill time per 1 K prompt tokens from the step logs,
+    TTFT, KV hand-off, completion and engine deaths per connector setting; selection rule of design section 17."""
+    root = Path(a.root)
+    plan = json.loads((root / 'launch_plan.json').read_text())
+    jr = A.journal(root)
+    res = []
+    for s in plan['steps']:
+        rec = A.final(jr.get(s['id'], []))
+        if not rec or not rec.get('command_completed'):
+            res.append({'id': s['id'], 'status': 'failed'})
+            continue
+        run = A.run_dir(rec)
+        meta = json.loads((run / 'run.json').read_text())
+        npf = s.get('prefill_workers') or 4
+        ms = []
+        for w in range(npf):
+            for line in open(run / f'steplog_w{w}.jsonl'):
+                x = json.loads(line)
+                if x['kind'] == 'prefill' and len(x['prefill']) == 1 and x['prefill'][0][2] >= 16384:
+                    ms.append(1e6 * x['exec_s'] / x['prefill'][0][2])
+        t = json.loads((run / meta['traces'][0]['file']).read_text())
+        rq = t['requests']
+        done = [r for r in rq if r['tokens'] == r['max_tokens'] and r['token_s']]
+        ho = [r['token_s'][0] - r['prefill_done_s'] for r in done if r.get('prefill_done_s') is not None]
+        dead = sorted(f.name for f in run.glob('server_w*.log') if 'EngineDeadError' in f.read_text(errors='replace'))
+        res.append({'id': s['id'], 'setting': s.get('setting'), 'status': 'complete', 'requests': len(rq), 'complete': len(done),
+                    'prefill_ms_per_1k_p50': st.median(ms) if ms else None, 'prefill_steps': len(ms),
+                    'ttft_p50_s': A.pct([r['token_s'][0] - r['arrival_s'] for r in done], .5),
+                    'handoff_p99_s': A.pct(ho, .99) if ho else None, 'engine_dead': dead})
+    ctl = next((r for r in res if r.get('setting') == 'ch16_PUT_ASYNC' and r['status'] == 'complete'), None)
+    ok = [r for r in res if r['status'] == 'complete' and r['setting'] not in (None, 'colo') and r['complete'] == r['requests']
+          and not r['engine_dead'] and (r['handoff_p99_s'] or 0) <= 0.5 and r['prefill_ms_per_1k_p50']]
+    best = min(ok, key=lambda r: r['prefill_ms_per_1k_p50']) if ok else None
+    pick = 'ch16_PUT_ASYNC'
+    if best and ctl and ctl['prefill_ms_per_1k_p50'] and best['prefill_ms_per_1k_p50'] <= 0.9 * ctl['prefill_ms_per_1k_p50']:
+        pick = best['setting']
+    out = {'rows': res, 'selected': pick}
+    o = Path(a.out or root / 'analysis')
+    o.mkdir(parents=True, exist_ok=True)
+    (o / 'ld2a_tables.json').write_text(json.dumps(out, indent=1) + '\n')
+    for r in res:
+        print(r)
+    print('selected:', pick)
+
+
 def ld_cmd(a):
     prm = json.loads(Path(a.params).read_text())
     out = Path(a.out or Path(a.root[-1]) / 'analysis')
@@ -793,7 +843,7 @@ def ld_cmd(a):
     res = {'status': status, 'rows': rows, 'decision': ld_decide(rows) if rows else {}}
     (out / 'ld_tables.json').write_text(json.dumps(res, indent=1, default=str) + '\n')
     for wl, v in res['decision'].items():
-        for sl in ('primary', 'stall1000'):
+        for sl in [k for k in v if isinstance(v[k], dict) and 'capacity' in v[k]]:
             print(wl, sl, {p: c['sustained_rps'] for p, c in v[sl]['capacity'].items()},
                   {k: d['decision'] + (f" ({d['note']})" if d['note'] else '') for k, d in v[sl]['decision'].items()})
     print(sum(x['status'] == 'complete' for x in status), '/', len(status), 'steps complete;',
@@ -820,6 +870,9 @@ if __name__ == '__main__':
     r.add_argument('--root', required=True, nargs='+')
     r.add_argument('--params', required=True)
     r.add_argument('--out')
+    r = s.add_parser('ld2a')  # amendment 7 phase A: connector micro-test
+    r.add_argument('--root', required=True)
+    r.add_argument('--out')
     r = s.add_parser('decide')  # held-out decisions from one or more lc3 / lc3fx analysis tables
     r.add_argument('--tables', nargs='+', required=True)
     r.add_argument('--params', required=True)
@@ -827,4 +880,4 @@ if __name__ == '__main__':
     a = q.parse_args()
     if getattr(a, 'model', 'q32') == 'q7':  # Qwen2.5-7B: 28 layers x 4 KV heads x 128 x (K, V) x 2 B; 7.62 B params
         KV_TOK, WEIGHTS, LIN_FLOP_TOK = 57344, 15.23e9, 2 * 7.62e9
-    (lc1 if a.cmd in ('lc1', 'smoke') else lc3_decide if a.cmd == 'decide' else ld_cmd if a.cmd == 'ld' else lc_serve_plan)(a)
+    (lc1 if a.cmd in ('lc1', 'smoke') else lc3_decide if a.cmd == 'decide' else ld_cmd if a.cmd == 'ld' else ld2a_cmd if a.cmd == 'ld2a' else lc_serve_plan)(a)

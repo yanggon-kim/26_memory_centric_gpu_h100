@@ -400,3 +400,96 @@ neither the capacity nor any decision changes.
 - lprompt d3p1, seed 201 sustains ≥ 0.25 rps under the stall SLO (seed 202: 0.3). If so, d3p1 vs colo4_whole under
   the stall SLO is a win.
 - lctx d2p2 sustains 0.3–0.4 rps under both SLOs. Vs colo4_mix2048 under the stall SLO (0.4): uncertain or loss.
+
+## 17. Amendment 7 (2026-11-27, after ld/ldfx, before any ld2 data): scenarios that may favour disaggregation
+
+The owner asked for scenarios that favour disaggregation, including other prefill:decode GPU ratios on one workload,
+and ordered all of them executed.
+
+**Basis from ld/ldfx (report section 10).**
+- Disaggregation was prefill-bound: producers prefill 1.6–2.0× slower than colocated engines.
+- Consumers never stall: per-request max ITL ≤ 0.3 s.
+- Colocated whole fails every stall cap. At caps ≤ 500 ms no colocated deployment is feasible on lctx; disaggregation
+  sustains 0.2–0.4 rps there. This comes from the pre-registered stall grid of amendment 5.
+
+**Plans and params.** Plans `ld2a`, `ld2b` and `ld2c` in `scripts/amd/lc/lc_plan.py`; params
+`scripts/amd/lc/params/mi300x_ld2.json`.
+
+**Code (additive; defaults and existing traces unchanged; lctx trace digests verified identical).**
+- `cp_disagg.py`: `--kv-channels` (P2pNccl nccl_num_channels, default 16) and `--kv-send-type` (default PUT_ASYNC).
+- `cp_trace.py`: workloads `lclo` and `mixdoc` (below).
+- `cp_analyze.disagg_trace`, opt-in per-workload SLO keys:
+  - `long_prompt_min` / `ttft_long_s`: per-class TTFT;
+  - `itl_tight_ms`: the tight-ITL SLO `itl50`;
+  - per-class short-request breakdown.
+- `lc_analyze.py ld`:
+  - decisions for every present SLO (primary, stall 250 / 500 / 1 000 / 2 000, itl50);
+  - bursty rows are kept separate (`<workload>_bursty`);
+  - a new `ld2a` command for phase A.
+
+**Workloads.**
+- `lclo` (long context, long output): prompt 8 192–16 384, output 2 048–4 096, P:D ≈ 4. Each colocated request
+  lives through many other requests' multi-second whole-prompt prefills.
+- `mixdoc` (mixed tenants): each request is independently a document with probability 0.1 (prompt 16 384–30 720,
+  output 128–512) or otherwise a chat turn (prompt 128–512, output 512–1 024).
+
+**SLOs.**
+- `lclo`: TTFT 25 s (as lctx, same prompt range), ITL p95 110 ms.
+- `mixdoc`: chat TTFT 2 s, document TTFT 41 s (as lprompt), ITL p95 110 ms. The 2 s chat TTFT is chosen, not derived.
+- All workloads: the stall grid 250 / 500 / 1 000 / 2 000 ms (primary 1 000), and `itl50` (p95 ITL ≤ 50 ms with the
+  same TTFT).
+
+**Phase A (connector micro-test, plan `ld2a`).**
+- Setup: lprompt 3P1D at 0.1 rps, 30 requests, development seed 101; two 4-GPU lanes.
+- One step per setting: nccl_num_channels 16 / 4 / 2 / 1 with PUT_ASYNC, and 16 with PUT. Plus colo4_whole at the
+  same load as reference.
+- Measure: median producer single-prompt prefill time per 1 K prompt tokens (prompts ≥ 16 K, step logs); TTFT;
+  hand-off p99; completion; engine deaths.
+- Selection rule (`lc_analyze.py ld2a`):
+  - Eligible: all 30 requests complete, no engine death, hand-off p99 ≤ 0.5 s.
+  - Pick the eligible setting with the lowest prefill time if it is ≥ 10% below the 16-channel PUT_ASYNC control.
+    Otherwise keep the control.
+  - The pick is written to `ld2_kv` and committed before ld2b is submitted.
+- HA: ≤ 4 channels cuts producer prefill time ≥ 10% vs 16 channels. Prediction: within 1.3× of colocated.
+
+**Phase B (ratio sweep, one workload, plan `ld2b`).**
+- Setup: lclo, one 8-GPU deployment at a time, held-out seeds 201 and 202, Poisson. Rates 0.2, 0.4, 0.6, 0.8, 1.2,
+  1.6, 2.4, 3.2 rps; 100 requests per rate; drain 400 s.
+- Deployments:
+  - colo8_whole, colo8_mix2048 and colo8_mix8192 (both budgets that won a single-GPU long-prompt SLO);
+  - d2p6, d3p5, d4p4, d5p3 and d6p2, using the phase A connector setting.
+- Consumers: gpu_mem 0.80, buffer 2 × 10¹⁰ B. 16 steps, about 18 node-hours, one resubmission to the same root
+  (12 h limit).
+- Hypotheses:
+  - HB1: under the stall SLO, the best ratio wins over the best colocated deployment.
+  - HB2: under the primary SLO, the best ratio is not a loss. Prediction: loss, unless phase A removes most of the
+    producer slowdown. Colocated deployments use the KV capacity of all eight GPUs for decode.
+  - HB3: the best ratio is between 3:5 and 5:3. Estimate: a producer handles ≈ 0.2–0.3 rps of 12 K prompts, and a
+    consumer ≈ 0.2 rps of 3 K-token outputs (KV-limited).
+  - HB4: under itl50, prediction is uncertain. Large-batch decode at ≈ 14 K context runs near 50 ms per step for
+    either deployment.
+
+**Phase C (plan `ld2c`).** Deployments for C1 and C2 come from phase B by the rule below. The rule is applied
+mechanically, written to `ld2c` and committed before ld2c is submitted.
+
+- **C1, bursty arrivals (gamma, CV 4), lclo,** same rates and seeds. Deployments:
+  - the best colocated deployment under the primary SLO;
+  - the best colocated deployment under the stall SLO; if that is the same deployment, colo8_mix2048 is added;
+  - the best disaggregated ratio under the stall SLO (ties: higher primary capacity, then fewer producers).
+  - HC1: stall win; primary uncertain.
+- **C2, CU-restricted decode, lclo, Poisson.** The C1 disaggregated ratio with consumers restricted to 152 of 304 CUs
+  (`--decode-cus 152 --decode-grid 152`, as in s5). It emulates a decode part with half the compute.
+  - HC2: not a loss (within one ladder step) against the same ratio at 304 CUs in phase B, under both SLOs.
+- **C3, mixed tenants (`mixdoc`),** rates 0.5, 1, 1.5, 2, 3, 4, 6, 8 rps; 200 requests; drain 300 s. Deployments
+  fixed now: colo8_whole, colo8_mix2048, d4p4 and d6p2.
+  - HC3: under the stall SLO, the best ratio wins.
+  - HC3: chat requests' p99 max ITL on disaggregated deployments ≤ 0.3 s, against ≥ 1 s for colo8_whole.
+  - HC3: primary uncertain.
+- Size: about 16.5 node-hours, one resubmission.
+
+**Decision and failure handling.**
+- Decisions use the all-seed sustained rate, win or loss at ≥ 1 ladder step, as in amendment 5.
+- At most two attempts per step. No re-runs are planned under this amendment.
+- A consumer-engine death makes the crashed cell a lower bound. A comparison that is a loss only because of a
+  crash-limited cell is reported as uncertain.
+- Total estimate: about 36 node-hours (≈ 36 units of the ≈ 490 remaining).

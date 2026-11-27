@@ -1,0 +1,85 @@
+{
+ "slo": {
+  "lprompt": {
+   "ttft_s": 41,
+   "itl_ms": 110
+  },
+  "lclo": {
+   "ttft_s": 25,
+   "itl_ms": 110,
+   "itl_tight_ms": 50
+  },
+  "mixdoc": {
+   "ttft_s": 2.0,
+   "ttft_long_s": 41,
+   "long_prompt_min": 16384,
+   "itl_ms": 110,
+   "itl_tight_ms": 50
+  }
+ },
+ "stall_ms_grid": [
+  250,
+  500,
+  1000,
+  2000
+ ],
+ "stall_primary_ms": 1000,
+ "ld2a_settings": {
+  "ch16_PUT_ASYNC": [
+   16,
+   "PUT_ASYNC"
+  ],
+  "ch4_PUT_ASYNC": [
+   4,
+   "PUT_ASYNC"
+  ],
+  "ch2_PUT_ASYNC": [
+   2,
+   "PUT_ASYNC"
+  ],
+  "ch1_PUT_ASYNC": [
+   1,
+   "PUT_ASYNC"
+  ],
+  "ch16_PUT": [
+   16,
+   "PUT"
+  ]
+ },
+ "ld2_kv": null,
+ "ld2_rates": {
+  "lclo": [
+   0.2,
+   0.4,
+   0.6,
+   0.8,
+   1.2,
+   1.6,
+   2.4,
+   3.2
+  ],
+  "mixdoc": [
+   0.5,
+   1,
+   1.5,
+   2,
+   3,
+   4,
+   6,
+   8
+  ]
+ },
+ "ld2_requests": {
+  "lclo": 100,
+  "mixdoc": 200
+ },
+ "ld2_drain": {
+  "lclo": 400,
+  "mixdoc": 300,
+  "lprompt": 240
+ },
+ "ld2_decode_gpu_mem": 0.8,
+ "ld2_decode_kv_buffer": 20000000000.0,
+ "ld2c": null,
+ "note": "amendment 7 (design section 17): disaggregation-favouring scenarios. ld2_kv is filled from the phase A rule and ld2c from the phase B rule, each committed before the phase it governs."
+}
