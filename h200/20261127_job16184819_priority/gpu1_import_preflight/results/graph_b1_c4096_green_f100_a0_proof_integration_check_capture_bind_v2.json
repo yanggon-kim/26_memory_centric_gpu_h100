@@ -1,0 +1,75 @@
+{
+  "id": "graph_b1_c4096_green_f100_a0_proof_integration_check_capture_bind_v2",
+  "engine": "graph",
+  "fraction": 1.0,
+  "acquisition": 0,
+  "pilot": true,
+  "stock": false,
+  "suffix": "_integration_check",
+  "rebind_step": true,
+  "repair_route": "capture_bind_v2",
+  "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+  "batch": 1,
+  "context": 4096,
+  "status": "failed",
+  "process_status": "failed",
+  "qualified": false,
+  "sm_grant_matches_requested_scope": true,
+  "source_identity": "84b951e4a93a3b604ebef3f3d22020cb6851246a5f06ca030e2af50c8f5c4aca",
+  "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16184819_priority/gpu1_import_preflight/runs/graph_b1_c4096_green_f100_a0_proof_integration_check_capture_bind_v2/run.json",
+  "producer_elapsed_s": 58.77398419380188,
+  "capture_binding_audit": {
+    "status": "failed",
+    "route": "capture_bind_v2",
+    "stream_proof": {
+      "stream_handle": 165744576,
+      "actual_sm_count": 132,
+      "green_context_handle": 165686320,
+      "green_context_id": 2,
+      "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx"
+    },
+    "bound_aliases": [
+      "vllm.distributed.parallel_state.graph_capture",
+      "vllm.distributed.graph_capture",
+      "vllm.v1.worker.gpu_model_runner.graph_capture"
+    ],
+    "capture_calls": [
+      {
+        "stream_handle": 165744576,
+        "actual_sm_count": 132,
+        "green_context_id": 2
+      }
+    ],
+    "original_graph_capture_sha256": "631ab2a1d010e535d42ddcbb3b51a87dbcb87c738b9a460811f40ac49544d88a",
+    "adapter_sha256": "bf0eeaacbd3dae2a9dfe011d5ccb3627e1d8052addf3f1a8eb63cfba34bb0a16",
+    "scope": "capture-stream audit only; actual decoder kernels still require independent NSYS greenContextId validation",
+    "vllm_version": "0.22.1",
+    "early_import_visibility": {
+      "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+      "numeric_mask": "1",
+      "physical_nvml_index": 1,
+      "scope": "metadata compatibility after CUDA UUID initialization; no additional device initialized"
+    },
+    "aliases_restored": true
+  },
+  "capture_binding_audit_sha256": "ebe8c2b6d5ef375568821ca485e3b7188b2c277bc5416106fd2675608b6936a1",
+  "allocation": {
+    "stream_handle": 165744576,
+    "actual_sm_count": 132,
+    "green_context_handle": 165686320,
+    "green_context_id": 2,
+    "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx",
+    "requested_fraction": 1.0,
+    "requested_sms": 132,
+    "requested_rounding": "nearest",
+    "device_sm_count": 132,
+    "min_partition_size": 8,
+    "alignment": 8,
+    "converted_context_made_current": true,
+    "lifetime_policy": "process-lifetime retained; framework cached streams/graphs may outlive local scope; driver reclaims on child exit"
+  },
+  "actual_sm_count": 132,
+  "physical_sm_count": 132,
+  "run_sha256": "378d443c0b106ea1514b3cc6039454cfc785cdb25e83c8cd86baf78b533ef1a7",
+  "exact_outputs": false
+}

@@ -1,0 +1,34 @@
+{
+  "status": "failed",
+  "route": "capture_bind_v2",
+  "stream_proof": {
+    "stream_handle": 165744576,
+    "actual_sm_count": 132,
+    "green_context_handle": 165686320,
+    "green_context_id": 2,
+    "proof_source": "CUDA driver cuStreamGetDevResource and cuStreamGetGreenCtx"
+  },
+  "bound_aliases": [
+    "vllm.distributed.parallel_state.graph_capture",
+    "vllm.distributed.graph_capture",
+    "vllm.v1.worker.gpu_model_runner.graph_capture"
+  ],
+  "capture_calls": [
+    {
+      "stream_handle": 165744576,
+      "actual_sm_count": 132,
+      "green_context_id": 2
+    }
+  ],
+  "original_graph_capture_sha256": "631ab2a1d010e535d42ddcbb3b51a87dbcb87c738b9a460811f40ac49544d88a",
+  "adapter_sha256": "bf0eeaacbd3dae2a9dfe011d5ccb3627e1d8052addf3f1a8eb63cfba34bb0a16",
+  "scope": "capture-stream audit only; actual decoder kernels still require independent NSYS greenContextId validation",
+  "vllm_version": "0.22.1",
+  "early_import_visibility": {
+    "gpu_uuid": "GPU-7838118b-b9d4-2865-898f-f2dc79e741e7",
+    "numeric_mask": "1",
+    "physical_nvml_index": 1,
+    "scope": "metadata compatibility after CUDA UUID initialization; no additional device initialized"
+  },
+  "aliases_restored": true
+}
