@@ -1,0 +1,52 @@
+WARNING 11-27 01:02:20 [config.py:70] Support for Transformers v4 is deprecated. The Transformers v4 codepath will become unmaintained in vLLM v0.22.0 and will be removed in vLLM v0.24.0. Please upgrade to Transformers v5: pip install --upgrade transformers
+Traceback (most recent call last):
+  File "/tmp/h200_priority_3449576_16184819_0/frozen/fc47e1f53a0d9c7c50098cebe91e03615c942211f84853e169096801493926f7/scripts/shoreline_restricted_decode.py", line 83, in <module>
+    try:main(a)
+  File "/tmp/h200_priority_3449576_16184819_0/frozen/fc47e1f53a0d9c7c50098cebe91e03615c942211f84853e169096801493926f7/scripts/shoreline_restricted_decode.py", line 62, in main
+    with binding:
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/tmp/h200_priority_3449576_16184819_0/frozen/fc47e1f53a0d9c7c50098cebe91e03615c942211f84853e169096801493926f7/scripts/h200_vllm_capture_binding.py", line 69, in install
+    runner=importlib.import_module('vllm.v1.worker.gpu_model_runner')
+  File "/usr/local/pace-apps/manual/packages/anaconda3/2023.03/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/worker/gpu_model_runner.py", line 57, in <module>
+    from vllm.lora.layers import LoRAMapping, LoRAMappingType
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/lora/layers/__init__.py", line 4, in <module>
+    from vllm.lora.layers.column_parallel_linear import (
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/lora/layers/column_parallel_linear.py", line 20, in <module>
+    from .base_linear import BaseLinearLayerWithLoRA
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/lora/layers/base_linear.py", line 28, in <module>
+    from .utils import _get_lora_aux_cuda_stream, _get_lora_device
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/lora/layers/utils.py", line 11, in <module>
+    from vllm.model_executor.layers.fused_moe.fused_moe import try_get_optimal_moe_config
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/fused_moe/__init__.py", line 18, in <module>
+    from vllm.model_executor.layers.fused_moe.fused_moe_method_base import (
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/fused_moe/fused_moe_method_base.py", line 9, in <module>
+    import vllm.model_executor.layers.fused_moe.modular_kernel as mk
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/fused_moe/modular_kernel.py", line 28, in <module>
+    from vllm.model_executor.layers.fused_moe.utils import (
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/fused_moe/utils.py", line 10, in <module>
+    from vllm.model_executor.layers.quantization.utils.fp8_utils import (
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/quantization/utils/fp8_utils.py", line 19, in <module>
+    from vllm.model_executor.layers.quantization.utils.w8a8_utils import (
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/quantization/utils/w8a8_utils.py", line 41, in <module>
+    CUTLASS_FP8_SUPPORTED = cutlass_fp8_supported()
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/model_executor/layers/quantization/utils/w8a8_utils.py", line 15, in cutlass_fp8_supported
+    capability_tuple = current_platform.get_device_capability()
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/platforms/cuda.py", line 155, in wrapper
+    return fn(*args, **kwargs)
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/platforms/cuda.py", line 615, in get_device_capability
+    physical_device_id = cls.device_id_to_physical_device_id(device_id)
+  File "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/platforms/interface.py", line 237, in device_id_to_physical_device_id
+    return int(physical_device_id)
+ValueError: invalid literal for int() with base 10: 'GPU-2779f29d-9f2a-0102-9d29-b982904324b9'
+Processing events...
+Generated:
+	No reports were generated

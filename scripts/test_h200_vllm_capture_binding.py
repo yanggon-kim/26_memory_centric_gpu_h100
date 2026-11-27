@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 import types
 import unittest
+import os
 from unittest.mock import patch
 import h200_vllm_capture_binding as binding
 import shoreline_green
@@ -79,16 +80,46 @@ class Contracts(unittest.TestCase):
         self.assertTrue(all(m.graph_capture is self.original for _,m in self.targets))
 
     def test_public_adapter_seeds_current_stream_tracking(self):
-        modules={'vllm':types.SimpleNamespace(__version__='0.22.1'),'vllm.distributed.parallel_state':self.ps,
+        modules={'pynvml':object(),'vllm':types.SimpleNamespace(__version__='0.22.1'),'vllm.distributed.parallel_state':self.ps,
                  'vllm.distributed':self.export,'vllm.v1.worker.gpu_model_runner':self.runner,
                  'vllm.utils.torch_utils':types.SimpleNamespace(current_stream=self.cuda.current_stream)}
         with patch.object(binding.importlib,'import_module',side_effect=modules.__getitem__), \
+             patch.object(binding,'numeric_visibility',return_value={'gpu_uuid':'GPU-owned'}), \
              patch.object(shoreline_green,'stream_proof',return_value=self.proof), \
              binding.install(self.torch,self.green,self.stream,self.path) as data:
             self.assertIs(self.cuda.current_stream(),self.stream)
             with self.runner.graph_capture(device='cuda:0'):pass
         self.assertEqual(data['vllm_version'],'0.22.1')
+        self.assertEqual(data['early_import_visibility']['gpu_uuid'],'GPU-owned')
         self.assertIs(self.runner.graph_capture,self.original)
+
+    def visibility_fixture(self,reverse=False):
+        states=[]
+        cuda=types.SimpleNamespace(device_count=lambda:1,get_device_properties=lambda i:types.SimpleNamespace(uuid='owned'))
+        nvml=types.SimpleNamespace(nvmlInit=lambda:states.append('init'),nvmlShutdown=lambda:states.append('shutdown'),
+            nvmlDeviceGetHandleByUUID=lambda u:0,nvmlDeviceGetUUID=lambda h:'GPU-owned',
+            nvmlDeviceGetIndex=lambda h:h,nvmlDeviceGetCount=lambda:2,nvmlDeviceGetHandleByIndex=lambda i:i,
+            nvmlDeviceGetPciInfo=lambda h:types.SimpleNamespace(busId=str(1-h if reverse else h)))
+        return types.SimpleNamespace(cuda=cuda),nvml,states
+
+    def test_early_import_numeric_mask_preserves_initialized_uuid(self):
+        torch,nvml,states=self.visibility_fixture()
+        with patch.dict(os.environ,{'CUDA_VISIBLE_DEVICES':'GPU-owned'}):
+            result=binding.numeric_visibility(torch,nvml)
+            self.assertEqual(os.environ['CUDA_VISIBLE_DEVICES'],'0')
+        self.assertEqual(result['gpu_uuid'],'GPU-owned');self.assertEqual(states,['init','shutdown'])
+
+    def test_early_import_rejects_ambiguous_order_without_mask_change(self):
+        torch,nvml,states=self.visibility_fixture(reverse=True)
+        with patch.dict(os.environ,{'CUDA_VISIBLE_DEVICES':'GPU-owned'}),self.assertRaisesRegex(AssertionError,'ordering differ'):
+            binding.numeric_visibility(torch,nvml)
+        self.assertEqual(states,['init','shutdown'])
+
+    def test_early_import_rejects_unverified_uuid_mask(self):
+        torch,nvml,states=self.visibility_fixture()
+        with patch.dict(os.environ,{'CUDA_VISIBLE_DEVICES':'GPU-other'}),self.assertRaisesRegex(AssertionError,'UUID mask'):
+            binding.numeric_visibility(torch,nvml)
+        self.assertEqual(states,[])
 
 
 if __name__=='__main__':unittest.main()

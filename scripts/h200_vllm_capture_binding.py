@@ -8,6 +8,7 @@ import hashlib
 import importlib
 import inspect
 import json
+import os
 from pathlib import Path
 
 
@@ -15,6 +16,36 @@ def _write(path,data):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     temporary=path.with_name(path.name+'.tmp')
     temporary.write_text(json.dumps(data,indent=2)+'\n');temporary.replace(path)
+
+
+def numeric_visibility(torch,nvml):
+    """Prepare vLLM's numeric mask only after verifying the initialized UUID.
+
+    The ordinary baseline does this in gpu_target.select. This adapter imports
+    the model runner earlier, so its NVML capability query needs that mask too.
+    Refuse ambiguous PCI/NVML ordering rather than guess a physical device.
+    """
+    assert torch.cuda.device_count()==1
+    actual='GPU-'+str(torch.cuda.get_device_properties(0).uuid).removeprefix('GPU-')
+    assert os.environ['CUDA_VISIBLE_DEVICES']==actual, 'explicit initialized UUID mask required'
+    nvml.nvmlInit()
+    try:
+        handle=nvml.nvmlDeviceGetHandleByUUID(actual)
+        assert nvml.nvmlDeviceGetUUID(handle)==actual
+        physical=nvml.nvmlDeviceGetIndex(handle)
+        def pci(h):
+            value=nvml.nvmlDeviceGetPciInfo(h).busId
+            return value.decode() if isinstance(value,bytes) else value
+        ordered=sorted((pci(nvml.nvmlDeviceGetHandleByIndex(i)),i) for i in range(nvml.nvmlDeviceGetCount()))
+        ordinal=next(i for i,(_,index) in enumerate(ordered) if index==physical)
+        assert ordinal==physical, 'PCI and NVML ordering differ; early capability query requires a reviewed mapping'
+        os.environ['CUDA_VISIBLE_DEVICES']=str(ordinal)
+        assert torch.cuda.device_count()==1
+        assert 'GPU-'+str(torch.cuda.get_device_properties(0).uuid).removeprefix('GPU-')==actual
+        return {'gpu_uuid':actual,'numeric_mask':str(ordinal),'physical_nvml_index':physical,
+                'scope':'metadata compatibility after CUDA UUID initialization; no additional device initialized'}
+    finally:
+        nvml.nvmlShutdown()
 
 
 @contextmanager
@@ -64,6 +95,7 @@ def bind_api(torch,green,stream,parallel_state,targets,audit_path):
 def install(torch,green,stream,audit_path):
     vllm=importlib.import_module('vllm')
     assert vllm.__version__=='0.22.1', 'repair requires reviewed pinned vLLM API'
+    visibility=numeric_visibility(torch,importlib.import_module('pynvml'))
     ps=importlib.import_module('vllm.distributed.parallel_state')
     distributed=importlib.import_module('vllm.distributed')
     runner=importlib.import_module('vllm.v1.worker.gpu_model_runner')
@@ -77,4 +109,5 @@ def install(torch,green,stream,audit_path):
              ('vllm.v1.worker.gpu_model_runner.graph_capture',runner)]
     with bind_api(torch,green,stream,ps,targets,audit_path) as data:
         data['vllm_version']=vllm.__version__
+        data['early_import_visibility']=visibility
         yield data
