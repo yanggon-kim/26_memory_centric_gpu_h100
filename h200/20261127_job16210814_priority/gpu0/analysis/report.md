@@ -29,3 +29,17 @@
 | 0.6 | 80 | False | NA | NA |
 | 0.45 | 56 | False | NA | NA |
 | 0.3 | 40 | False | NA | NA |
+
+- Limitation eager_b1_c4096_budget_a1: Next comparable curve bundle does not fit before actual closeout cutoff. Evidence: h200/20261127_job16210814_priority/gpu0/results/budget_eager_b1_c4096.json. Tried: Proved requested placements; staged first broad acquisition and measured-cost refinement; every completed acquisition retained. Resume: Resume a fresh identified cohort with enough time; no cross-allocation timing pooling or favorable-clock retries.
+
+## eager B1/C4096 curve
+
+| Requested fraction | Actual SMs | Qualified | ms/tick | Ratio 95% CI |
+|---|---:|---|---:|---|
+| stock | NA | False | NA | 1 (normalization) |
+| 1.0 | 132 | False | NA | NA |
+| 0.85 | 112 | False | NA | NA |
+| 0.75 | 96 | False | NA | NA |
+| 0.6 | 80 | False | NA | NA |
+| 0.45 | 56 | False | NA | NA |
+| 0.3 | 40 | False | NA | NA |
