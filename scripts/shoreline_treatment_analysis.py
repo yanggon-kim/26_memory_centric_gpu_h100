@@ -19,7 +19,7 @@ def provenance(root, row):
     return identity
 
 
-def analyze(root):
+def analyze(root,output=None):
     from shoreline_statistics import paired_ratio
     def load(p):return json.loads(p.read_text())
     contrasts=[('bridge',1,1024),('bridge',8,4096),('mistral7b',1,4096),('mistral7b',8,4096),('qwen14b',1,4096)]
@@ -70,5 +70,7 @@ def analyze(root):
         for mode in ('memory50','memory100','arithmetic50','arithmetic100'):
             comparisons.append(compare('J6','bridge',b,c,mode,'idle'))
     result={'comparisons':comparisons,'interpretation':'pressure is cache competition, event timing is instrumented; neither creates SRAM/PHY area'}
-    (root/'results/shoreline_treatment_statistics.json').write_text(json.dumps(result,indent=2)+'\n')
+    destination=output if output is not None else root/'results/shoreline_treatment_statistics.json'
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    destination.write_text(json.dumps(result,indent=2)+'\n')
     return result
