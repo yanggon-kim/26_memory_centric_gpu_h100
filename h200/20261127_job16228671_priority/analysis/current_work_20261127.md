@@ -12,3 +12,9 @@ GPU0 passed the resident eager stock/full-Green/40SM actual-decoder pilot and in
 GPU1 passed both HF reference paths for the unconditioned optimized full-device clock pilot. Its unconditioned clock envelope failed (1260–1980MHz SM; memory3201MHz), so those observations are diagnostic. The separate fixed memory_settle_v3 pilot is running. It changes cache history and adds untimed TTFT; it cannot promote unconditioned timings. Longer-context cases wait for the explicit core disposition.
 
 Frozen runtime source identity: `3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e`. Later repository edits do not change this running frozen cohort. Worker reports and limitations record new outcomes as they occur; limits and quantitative gates are unchanged. Native KV connector and new serving/prefill policy adapters remain prospective and are not enabled in this job.
+
+## Resident decoder launch geometry: CPU review of saved captures
+
+All seven placement captures contain2553decoder kernel launches over the selected three ticks. The six Green settings have exactly identical launch signatures (symbol, grid/block, registers, shared/local allocations and counts); the CPU review is saved in `results/eager_decoder_grid_catalog.json` and `analysis/eager_decoder_grid_catalog.md`. Missing per-operation NVTX ranges remain unattributed. This is launch metadata, not occupancy, issue/stalls, measured physical traffic or clean timing.
+
+The prior fresh-model-per-point cohort showed an output-projection symbol/grid variant change between112and96SM. The new resident cohort does not show such a change across these selected ranges. Protocol and physical GPU differ, so the observation does not isolate a cause or establish a latency transition. These datasets must remain distinct; a retuning intervention with identical-settings controls is still pending.
