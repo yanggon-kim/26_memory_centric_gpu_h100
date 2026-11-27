@@ -1,0 +1,100 @@
+{
+  "status": "paired_functional_diagnostic_captured",
+  "records": [
+    {
+      "conditioned": false,
+      "producer_label": "clock_pilot_unconditioned",
+      "producer_complete": true,
+      "exact_outputs": true,
+      "gpu_uuid": "GPU-28fa5fe0-0a71-78dc-ff99-a1fb75e9d459",
+      "source_freeze_identity": "3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/runs/clock_pilot_unconditioned/run.json",
+      "run_sha256": "5a4a16bced9133c9fe502e2990e13bfdcb64944fc8022339fd8afa9e9c760779",
+      "classification": "functional clock diagnostic only",
+      "qualified_timing_comparison": false,
+      "conditioning_scope_verified": true,
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1260,
+            "maximum": 1980,
+            "max_min_ratio": 1.5714285714285714,
+            "samples": 76
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 76
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "post_prefill_conditioning": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "conditioned": true,
+      "producer_label": "clock_pilot_memory_settle_v3",
+      "producer_complete": true,
+      "exact_outputs": true,
+      "gpu_uuid": "GPU-28fa5fe0-0a71-78dc-ff99-a1fb75e9d459",
+      "source_freeze_identity": "3e08ca0ce0d8b265b436dfae285772922f91f5b44b3a3173c5e6eed2d7a4a07e",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16228671_priority/gpu1/runs/clock_pilot_memory_settle_v3/run.json",
+      "run_sha256": "aa220c344245c3b23b522131b9339fbf6e7139801efca816dfa715875bfd82d5",
+      "classification": "functional clock diagnostic only",
+      "qualified_timing_comparison": false,
+      "conditioning_scope_verified": true,
+      "clock": {
+        "passed": true,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1980,
+            "maximum": 1980,
+            "max_min_ratio": 1.0,
+            "samples": 78
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 78
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "post_prefill_conditioning": [
+        {
+          "protocol": "memory_settle_v3",
+          "copies": 7360,
+          "buffer_bytes": 268435456,
+          "gpu_event_ms": 1002.4599609375,
+          "wall_ms": 1002.5309668853879,
+          "scope": "one fixed-duration private-buffer read/write workload after the verified prefill barrier; outside decode timing/energy; changes cache history and TTFT; no clock/power settings changed"
+        },
+        {
+          "protocol": "memory_settle_v3",
+          "copies": 7360,
+          "buffer_bytes": 268435456,
+          "gpu_event_ms": 1002.7758178710938,
+          "wall_ms": 1002.8447520453483,
+          "scope": "one fixed-duration private-buffer read/write workload after the verified prefill barrier; outside decode timing/energy; changes cache history and TTFT; no clock/power settings changed"
+        },
+        {
+          "protocol": "memory_settle_v3",
+          "copies": 7360,
+          "buffer_bytes": 268435456,
+          "gpu_event_ms": 1002.3799438476562,
+          "wall_ms": 1002.4556589778513,
+          "scope": "one fixed-duration private-buffer read/write workload after the verified prefill barrier; outside decode timing/energy; changes cache history and TTFT; no clock/power settings changed"
+        }
+      ]
+    }
+  ],
+  "qualified_timing_comparison": false,
+  "scope": "One independent producer per arm, three warmups and three timed trials; no three-acquisition latency claim. memory_settle_v3 is a fixed one-second private-buffer workload after prefill, outside decode timing; it changes cache history and TTFT. Any future conditioned SM curve needs its own placement, HF and3x10/source/clock/isolation proof and must stay separate from unconditioned results."
+}
