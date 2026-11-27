@@ -80,20 +80,25 @@ def main(a):
     fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     a.root=a.root.resolve();a.root.mkdir(exist_ok=False)
     for folder in ('environment','results','logs','configs','runs','profiles','analysis'):(a.root/folder).mkdir()
-    (a.root/'analysis/report.md').write_text('# Post-core functional serving/prefill pilots\n\nSame allocated GPU0, new frozen source/workspace after the original core worker returned. Original core observations are retained separately. The other allocated GPU may independently run context cases; shared host CPU concurrency remains part of this functional pilot environment. No new allocation, clock/power or system changes.\n')
+    (a.root/'analysis/report.md').write_text(('# Post-core resident prefill acquisitions\n\n' if a.prefill_curve else '# Post-core functional serving/prefill pilots\n\n')+'Same allocated GPU0, new frozen source/workspace after the original core worker returned. Original core observations are retained separately. The other allocated GPU may independently run context cases; shared host CPU concurrency remains part of this environment. No new allocation, clock/power or system changes.\n')
     write(a.root/'results/idle_transition.json',{'time_utc':dt.datetime.now(dt.timezone.utc).isoformat(),
         'gpu_uuid':old['gpu_uuid'],'prior_session':str(a.source_session),'prior_session_sha256':sha(a.source_session),
         'core':core,'worker_outcome':outcome,'current_process':current,'gpu_pids':gpu_pids,
         'scope':'original core returned and selected GPU idle; old producer lock held until post-core controller exits'})
-    session=dict(old);session['workspace']=old['workspace']+'_postcore'
+    session=dict(old);session['workspace']=old['workspace']+(f'_prefill_c{a.context}' if a.prefill_curve else '_postcore')
     Path(session['workspace']).mkdir(exist_ok=False)
     session['source_commit']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PACKAGE,text=True).strip()
-    session['protocol']='postcore_functional_pilots_v1'
+    session['protocol']='resident_prefill_3x10_v1' if a.prefill_curve else 'postcore_functional_pilots_v1'
     for key in ('frozen_source_root','frozen_source_identity'):session.pop(key,None)
     path=a.root/'session.json';write(path,session)
     subprocess.run([session['python'],PACKAGE/'scripts/freeze_shoreline.py','--session',path,'--activate'],check=True)
     worker=Worker(a.root,path)
-    try:write(a.root/'results/worker_outcome.json',pilots(worker))
+    try:
+        if a.prefill_curve:
+            from h200_prefill_campaign import capture
+            outcome=capture(worker,a.context)
+        else:outcome=pilots(worker)
+        write(a.root/'results/worker_outcome.json',outcome)
     except BaseException as error:
         write(a.root/'results/worker_outcome.json',{'status':'failed','error':str(error),'traceback':traceback.format_exc()})
         limitation(a.root,'postcore_controller','Post-core controller failed: '+str(error),
@@ -108,4 +113,6 @@ def main(a):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-session',type=Path,required=True);p.add_argument('--root',type=Path,required=True)
+    p.add_argument('--prefill-curve',action='store_true')
+    p.add_argument('--context',type=int,choices=(1024,),default=1024,help='first repeated prefill comparison only; expand after its review')
     main(p.parse_args())
