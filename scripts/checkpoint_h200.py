@@ -20,6 +20,43 @@ def git(*args):
     return subprocess.check_output(['git', *args], cwd=PACKAGE, text=True).strip()
 
 
+def scan_staged(package=PACKAGE):
+    """Inspect immutable index objects with one Git reader, including binary data.
+
+    NUL-delimited raw diff records also preserve unusual path names. Read the
+    staged object, rather than the possibly newer working file. Deleted paths
+    have no new object and remain excluded as in the previous scanner.
+    """
+    raw=subprocess.check_output(['git','diff','--cached','--raw','-z','--no-abbrev',
+                                 '--no-renames','--diff-filter=d'],cwd=package)
+    records=raw.split(b'\0')
+    assert records[-1]==b'' and (len(records)-1)%2==0,'malformed staged diff'
+    if len(records)==1:return
+    reader=subprocess.Popen(['git','cat-file','--batch'],cwd=package,
+                            stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    try:
+        for offset in range(0,len(records)-1,2):
+            metadata,name=records[offset:offset+2]
+            fields=metadata.split()
+            assert len(fields)==5 and fields[0].startswith(b':'),'malformed staged metadata'
+            oid=fields[3]
+            assert oid and set(oid)!={48},'unresolved staged object'
+            reader.stdin.write(oid+b'\n');reader.stdin.flush()
+            header=reader.stdout.readline().split()
+            assert len(header)==3 and header[0]==oid,'staged object read failed'
+            size=int(header[2]);content=reader.stdout.read(size)
+            assert len(content)==size and reader.stdout.read(1)==b'\n','truncated staged object'
+            if any(pattern.search(content) for pattern in SECRETS):
+                raise RuntimeError('Secret pattern in staged file; publication refused: '+name.decode(errors='replace'))
+    finally:
+        reader.stdin.close();reader.stdout.close()
+        if reader.poll() is None:
+            try:reader.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                reader.terminate();reader.wait(timeout=10)
+    assert reader.returncode==0,'Git object reader failed'
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--root', type=Path, action='append', required=True)
@@ -78,10 +115,7 @@ def main():
     staged = git('diff', '--cached', '--name-only').splitlines()
     # Removed generated aggregates have no index blob to scan. Their bounded
     # replacement shards still pass the same staged-content secret checks.
-    for name in git('diff', '--cached', '--name-only', '--diff-filter=d').splitlines():
-        content = subprocess.check_output(['git', 'show', ':'+name], cwd=PACKAGE)
-        if any(s.search(content) for s in SECRETS):
-            raise RuntimeError('Secret pattern in staged file; publication refused: '+name)
+    scan_staged()
     if staged:
         print(git('commit', '-q', '-m', a.message), flush=True)
     commit = git('rev-parse', 'HEAD')
