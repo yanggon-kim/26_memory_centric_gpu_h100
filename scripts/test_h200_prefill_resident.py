@@ -1,6 +1,6 @@
 import types
 import unittest
-from h200_prefill_resident import drain_prefill
+from h200_prefill_resident import drain_prefill,submission_clock
 
 
 def output(n=1,finished=False):
@@ -8,6 +8,20 @@ def output(n=1,finished=False):
 
 
 class Barrier(unittest.TestCase):
+    def test_submission_clock_preserves_native_return_and_restores_on_failure(self):
+        def add(value):return value
+        engine=types.SimpleNamespace(add_request=add)
+        with submission_clock(engine) as record:
+            self.assertEqual(engine.add_request('id'),'id')
+            self.assertGreaterEqual(record['end_perf'],record['start_perf'])
+            with self.assertRaises(AssertionError):engine.add_request('duplicate')
+        self.assertIs(engine.add_request,add)
+        def fail():raise RuntimeError('native submit failed')
+        engine.add_request=fail
+        with self.assertRaisesRegex(RuntimeError,'native submit'):
+            with submission_clock(engine):engine.add_request()
+        self.assertIs(engine.add_request,fail)
+
     def test_chunked_prefill_reaches_same_one_token_barrier(self):
         replies=iter([[],[],[],[output()]])
         result,calls=drain_prefill(lambda:next(replies))

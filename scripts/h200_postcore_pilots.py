@@ -88,7 +88,7 @@ def main(a):
     session=dict(old);session['workspace']=old['workspace']+(f'_prefill_c{a.context}' if a.prefill_curve else '_postcore')
     Path(session['workspace']).mkdir(exist_ok=False)
     session['source_commit']=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PACKAGE,text=True).strip()
-    session['protocol']='resident_prefill_3x10_v1' if a.prefill_curve else 'postcore_functional_pilots_v1'
+    session['protocol']='resident_prefill_3x10_v2' if a.prefill_curve else 'postcore_functional_pilots_v1'
     for key in ('frozen_source_root','frozen_source_identity'):session.pop(key,None)
     path=a.root/'session.json';write(path,session)
     subprocess.run([session['python'],PACKAGE/'scripts/freeze_shoreline.py','--session',path,'--activate'],check=True)

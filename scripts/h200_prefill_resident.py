@@ -8,10 +8,24 @@ All policy/observer/event costs remain in the reported instrumented scopes.
 """
 import argparse
 import copy
+from contextlib import contextmanager
 import json
 from pathlib import Path
 import time
 import traceback
+
+
+@contextmanager
+def submission_clock(engine):
+    original=engine.add_request;record={}
+    def submit(*args,**kwargs):
+        assert not record,'one batch-one submission per prefill trial'
+        record.update(start_unix_ns=time.time_ns(),start_perf=time.perf_counter())
+        try:return original(*args,**kwargs)
+        finally:record.update(end_perf=time.perf_counter(),end_unix_ns=time.time_ns())
+    engine.add_request=submit
+    try:yield record
+    finally:engine.add_request=original
 
 
 def drain_prefill(step,limit=1024):
@@ -49,6 +63,7 @@ def prefill_trial(original,engine,prompts,sampling,prefix,torch,output_dir,budge
             torch.cuda.nvtx.range_push('prefill_selected')
         begin.record();start_ns=time.time_ns();start=time.perf_counter()
         outputs,calls=drain_prefill(step)
+        observed_perf=time.perf_counter();observed_ns=time.time_ns()
         end.record();torch.cuda.synchronize()
         finish=time.perf_counter();end_ns=time.time_ns()
         if capture:torch.cuda.nvtx.range_pop()
@@ -63,6 +78,12 @@ def prefill_trial(original,engine,prompts,sampling,prefix,torch,output_dir,budge
             actual_prefill_steps=calls,input_prompt_tokens=len(prompts[0]),first_selected_tokens=1,
             token_budget=budget,whole=whole,scheduler_rows=rows,
             scope='instrumented complete prefill plus first selected token; includes policy/observer/event and chunk launch costs; excludes later63decode steps')
+        assert submitted['start_perf']<=submitted['end_perf']<=observed_perf
+        prefill.update(submit_start_unix_ns=submitted['start_unix_ns'],
+            submit_end_unix_ns=submitted['end_unix_ns'],first_token_observed_unix_ns=observed_ns,
+            submit_call_wall_ms=(submitted['end_perf']-submitted['start_perf'])*1000,
+            submit_to_first_token_wall_ms=(observed_perf-submitted['start_perf'])*1000,
+            submit_timing_scope='pretokenized engine submission through first host-visible token; instrumented, not an offered-load/HTTP/SLO measurement')
         if capture:
             dump(output_dir/'prefill_interval_output.json',{'prefix':prefix,'prefill':prefill,
                 'first_selected_ids':[list(o.outputs[0].token_ids) for o in outputs],
@@ -71,8 +92,9 @@ def prefill_trial(original,engine,prompts,sampling,prefix,torch,output_dir,budge
         return outputs
     engine.step=observed_step
     try:
-        result=original(engine,prompts,sampling,prefix,torch,output_dir,
-                        hardware_sampler=lambda:describe(pynvml,handle,torch))
+        with submission_clock(engine) as submitted:
+            result=original(engine,prompts,sampling,prefix,torch,output_dir,
+                            hardware_sampler=lambda:describe(pynvml,handle,torch))
         assert len(observer.rows)==prefill['actual_prefill_steps']+63
         result['prefill_and_first_token']=prefill
         result['scheduler_decisions']=copy.deepcopy(observer.rows)
@@ -97,7 +119,7 @@ def main(a):
     assert cfg['warmup_trials']==3 and cfg['trials'] in (3,10)
     assert not cfg['engine']['enforce_eager'] and not cfg.get('decode_conditioning')
     records={};initialized=False;expected=None
-    manifest={'status':'running','protocol':'resident_prefill_v1','acquisition':a.acquisition,'conditions':records,
+    manifest={'status':'running','protocol':'resident_prefill_v2','acquisition':a.acquisition,'conditions':records,
         'profile_condition':a.profile_condition if a.external_profiler else None,
         'scope':'one resident full BF16 model per acquisition; cold means no prefix/KV reuse, not cold weights or forced cache flushing; instrumented policy/event/observer scopes'}
     def save():dump(a.output/'prefill_resident.json',manifest)
@@ -132,7 +154,7 @@ def main(a):
         case.update(trials=record['trials'],warmup_output_ids=[t['output_ids'] for t in record['warmups']],
             warmup_output_sha256=[t['output_sha256'] for t in record['warmups']],output_digests_identical=True)
         case['hardware_before_after_scope']='outer snapshots span the whole resident acquisition; use per-trial prefill/decode endpoints and sampled monitor for each condition'
-        data['prefill_protocol']={'version':'resident_prefill_v1','acquisition':a.acquisition,
+        data['prefill_protocol']={'version':'resident_prefill_v2','acquisition':a.acquisition,
             'condition':name,'budget':record['budget'],'whole':record['whole'],'full_model_loads_in_producer':1}
         dump(a.output/name/'run.json',data);baseline.validate(a.output/name)
         data.update(classification='measured-real-GPU-instrumented',baseline_comparison_eligible=False)
