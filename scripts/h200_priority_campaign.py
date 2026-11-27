@@ -358,7 +358,7 @@ class Worker:
             stream.write(f'\nUnrestricted {engine} B{batch}/C{context} after blocked restriction: timing qualified={passed}; see results/unrestricted_{engine}_b{batch}_c{context}.json.\n')
         publish(self.root,f'H200 {engine} B{batch}/C{context}: independent full reference after blocked restriction')
 
-    def traffic(self, engine='graph', context=4096, batch=1, acquisitions=None, reference_case=None):
+    def traffic(self, engine='graph', context=4096, batch=1, acquisitions=None, reference_case=None,include_l2=False):
         """Three independent app-range producers; physical bytes never use clean profiler time."""
         from shoreline_evidence import qualify_replays
         if reference_case is None:
@@ -384,7 +384,7 @@ class Worker:
             report=self.root/'profiles'/(label+'.ncu-rep')
             command=[self.cuda/'bin/ncu','--replay-mode','app-range','--clock-control','none',
                 '--cache-control','none','--nvtx','--nvtx-include','shoreline_ticks_4_6/',
-                '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum',
+                '--metrics','dram__bytes_read.sum,dram__bytes_write.sum,gpu__time_duration.sum'+(',lts__t_bytes.sum' if include_l2 else ''),
                 '--export',report,self.py,self.script/'shoreline_replay.py','--config',cfg,
                 '--gpu-uuid',self.uuid,'--mode','timing','--output',output,'--external-profiler']
             producer=self.execute(label,command,timeout=1800)
@@ -400,17 +400,19 @@ class Worker:
                           '--print-units','base','--csv'],gpu=False,timeout=180)
                 text=(self.root/'logs'/(label+'_import.log')).read_text()
                 if imp['status']=='complete':
-                    try:values=parse_csv(text)
+                    try:values=parse_csv(text,include_l2=include_l2)
                     except ValueError as error:reader_error=str(error)
                 else:reader_error='Profiler report import process failed'
             valid=(producer['status']=='complete' and replay['passed'] and len(values)==1 and
-                all(v.get('dram__bytes_read.sum',0)>0 and v.get('dram__bytes_write.sum',-1)>=0 for v in values.values()))
+                all(v.get('dram__bytes_read.sum',0)>0 and v.get('dram__bytes_write.sum',-1)>=0
+                    and (not include_l2 or v.get('lts__t_bytes.sum',0)>0) for v in values.values()))
             row={'status':'complete' if valid else 'failed','acquisition':acq,'gpu_uuid':self.uuid,
                 'classification':'measured-real-GPU-instrumented','ranges':values,'replays':replay,
                 'counter_artifact':str(actual_report) if actual_report else None,'counter_reader_error':reader_error,
                 'ticks':[4,5,6],'token_denominator':3*batch,'ordinary_latency':None,
+                'L2_total_bytes_requested':include_l2,
                 'clock_join':'unqualified until pooled replay clock/source/isolation join',
-                'scope':'physical full-range DRAM reads/writes; aggregate counters do not prove address-level exactly-once access'}
+                'scope':'physical full-range DRAM reads/writes'+(' and profiler L2 total-byte counter (not an L2 hit rate)' if include_l2 else '')+'; aggregate counters do not prove address-level exactly-once access'}
             write(self.root/'results'/(label+'.json'),row);results.append(row)
             if not valid:
                 limitation(self.root,label,'Physical-counter replay/output/range gate failed',
@@ -688,7 +690,10 @@ def coordinator(args):
     root.mkdir(exist_ok=False)
     for folder in ('environment', 'results', 'logs', 'configs', 'runs', 'profiles', 'analysis'):
         (root/folder).mkdir()
-    (root/'analysis/report.md').write_text('# Two-H200 priority campaign\n\nNo measurements yet. Primary: Qwen2.5-32B BF16/TP1 B1/C4096 SM curve. Secondary UUID: independent native controls.\n')
+    scope=('Separate eager Qwen2.5-32B BF16/TP1 B1/C4096 SM curve first; optimized restriction remains blocked by prior measured context escape and bounded repair failure. Spare UUID: missing full-target DRAM/L2 evidence, then contexts only after the core disposition.'
+           if getattr(args,'eager_first',False) else
+           'Primary: optimized Qwen2.5-32B BF16/TP1 B1/C4096 SM curve. Secondary UUID: independent native controls.')
+    (root/'analysis/report.md').write_text('# Two-H200 priority campaign\n\nNo measurements yet. '+scope+'\n')
     state = subprocess.check_output(['scontrol', 'show', 'job', '-o', os.environ['SLURM_JOB_ID']], text=True)
     (root/'environment/slurm.txt').write_text(state)
     fields = dict(item.split('=',1) for item in state.split() if '=' in item)
@@ -759,6 +764,7 @@ def coordinator(args):
         stream=(root/'logs'/f'worker{i}.log').open('w')
         command=[sys.executable,Path(__file__).resolve(),'--worker',str(i),'--root',str(subroot),'--session',str(subroot/'session.json')]
         if args.core_first:command+=['--core-first']
+        if getattr(args,'eager_first',False):command+=['--eager-first']
         processes.append((subprocess.Popen(command,stdout=stream,stderr=subprocess.STDOUT),stream))
     while any(p.poll() is None for p,s in processes):
         time.sleep(15)
@@ -822,6 +828,8 @@ def bootstrap(args):
             ('cpu_contracts',[runtime,PACKAGE/'scripts/test_cpu_contracts.py'],300),
             ('priority_contracts',[runtime,PACKAGE/'scripts/test_h200_priority.py'],300),
             ('curve_budget_contracts',[runtime,PACKAGE/'scripts/test_h200_curve_budget.py'],300),
+            ('eager_first_contracts',[runtime,PACKAGE/'scripts/test_h200_eager_first.py'],300),
+            ('ncu_reader_contracts',[runtime,PACKAGE/'scripts/test_h200_ncu_read.py'],300),
             ('capture_binding_contracts',[runtime,PACKAGE/'scripts/test_h200_vllm_capture_binding.py'],300)]
     try:
         for label,command,limit in stages:
@@ -835,6 +843,7 @@ def bootstrap(args):
         write(root/'STATUS.json',{'status':'staging_complete','next':'coordinator'})
         publish(root,'H200 priority: pinned runtime and immutable32B staging complete')
         flags=['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []
+        if getattr(args,'eager_first',False):flags+=['--eager-first']
         subprocess.run([runtime,'-u',PACKAGE/'scripts/h200_priority_campaign.py','--cuda',args.cuda]+flags,check=True)
     except Exception as error:
         write(root/'STATUS.json',{'status':'blocked','error':str(error),'traceback':traceback.format_exc()})
@@ -851,7 +860,8 @@ def bootstrap(args):
                 trigger.rename(root/'results/retry_staging.request')
                 subprocess.run([sys.executable,'-u',PACKAGE/'scripts/h200_priority_campaign.py',
                     '--bootstrap','--bootstrap-attempt','1','--cuda',args.cuda]+
-                    (['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else []),check=True)
+                    (['--core-first','--prior-kv-pilot',str(args.prior_kv_pilot)] if args.core_first else [])+
+                    (['--eager-first'] if getattr(args,'eager_first',False) else []),check=True)
                 break
             time.sleep(15)
     finally:
@@ -863,8 +873,10 @@ def main():
     p.add_argument('--bootstrap',action='store_true');p.add_argument('--bootstrap-attempt',type=int,choices=(0,1),default=0)
     p.add_argument('--cuda');p.add_argument('--worker',type=int,choices=(0,1));p.add_argument('--root',type=Path);p.add_argument('--session',type=Path)
     p.add_argument('--core-first',action='store_true',help='target3+3 graph smoke/HF before SM sweep; defer fresh paired KV handoff')
+    p.add_argument('--eager-first',action='store_true',help='after recorded graph repair block: separate eager curve first; spare full-GPU L2 then gated contexts')
     p.add_argument('--prior-kv-pilot',type=Path)
     a=p.parse_args()
+    if a.eager_first and not a.core_first:p.error('--eager-first requires --core-first')
     if a.core_first and a.worker is None and a.prior_kv_pilot is None:p.error('--core-first coordinator/bootstrap requires --prior-kv-pilot')
     if a.bootstrap:
         bootstrap(a)
@@ -873,7 +885,11 @@ def main():
     else:
         worker=Worker(a.root,a.session)
         try:
-            outcome=worker.primary(core_first=a.core_first) if a.worker==0 else worker.secondary(core_first=a.core_first)
+            if a.eager_first:
+                import h200_eager_first
+                outcome=h200_eager_first.primary(worker) if a.worker==0 else h200_eager_first.secondary(worker)
+            else:
+                outcome=worker.primary(core_first=a.core_first) if a.worker==0 else worker.secondary(core_first=a.core_first)
             write(a.root/'results/worker_outcome.json',outcome)
         except BaseException as error:
             write(a.root/'results/worker_outcome.json',{'status':'failed','error':str(error),'traceback':traceback.format_exc()})

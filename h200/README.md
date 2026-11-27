@@ -31,3 +31,6 @@ Keep H200, historical H100 and RTX evidence separate. Use actual H200 UUID/SKU/c
 Large profiler databases, model weights and traces stay outside Git with verified locations/hashes. Runtime/cache/build paths and launch deadlines in current scripts are allocation-specific. Inventory the live allocation before reuse; no new Slurm job, clocks/power/driver change, MIG or multi-GPU execution is requested. Follow the new assignment's closeout and trace-budget gates.
 
 Decoder calibration/held-out validation is implemented in `docs/h200_decoder_calibration_v4.md`; GPU outcomes remain pending until the new batch runs.
+
+- 2026-11-27 job16184819 closed as preempted: [results](20261127_job16184819_priority/analysis/report.md), [three-capture DRAM comparison](20261127_job16184819_priority/gpu1/analysis/P2a_triplicate_counter_report.md), [native controls](20261127_job16184819_priority/analysis/native_controls_report.md), [verified project archive receipt](20261127_job16184819_priority/results/archive_transfer_8f17ab09f8e2.json). Two allocations total4.0289GPU-hours.
+- [Prepared eager-first two-H200 continuation](20261127_eager_continuation_preparation/analysis/report.md); no GPU results claimed.

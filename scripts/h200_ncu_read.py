@@ -10,7 +10,9 @@ METRICS = {'dram__bytes_read.sum': {'byte', 'bytes'},
            'gpu__time_duration.sum': {'ns', 'nsecond'}}
 
 
-def parse_csv(text):
+def parse_csv(text,include_l2=False):
+    metrics=dict(METRICS)
+    if include_l2:metrics['lts__t_bytes.sum']={'byte','bytes'}
     lines = text.splitlines()
     start = next((i for i, line in enumerate(lines) if line.lstrip('\ufeff').startswith('"ID"')), None)
     if start is None:
@@ -18,7 +20,7 @@ def parse_csv(text):
     reader = csv.DictReader(io.StringIO('\n'.join(lines[start:])))
     fields = set(reader.fieldnames or [])
     long = {'Metric Name', 'Metric Unit', 'Metric Value'} <= fields
-    if not long and not set(METRICS) <= fields:
+    if not long and not set(metrics) <= fields:
         raise ValueError('Unsupported or incomplete NCU metric schema')
     values = {}
     units_seen = False
@@ -34,7 +36,7 @@ def parse_csv(text):
     for row in reader:
         rid = row.get('ID')
         if not long and rid == '':
-            if units_seen or any(row.get(m) not in allowed for m, allowed in METRICS.items()):
+            if units_seen or any(row.get(m) not in allowed for m, allowed in metrics.items()):
                 raise ValueError('Missing, duplicate or incompatible wide CSV unit row')
             units_seen = True
             continue
@@ -42,9 +44,9 @@ def parse_csv(text):
             continue
         if long:
             metric = row['Metric Name']
-            if metric not in METRICS:
+            if metric not in metrics:
                 continue
-            if row['Metric Unit'] not in METRICS[metric]:
+            if row['Metric Unit'] not in metrics[metric]:
                 raise ValueError('Counter unit incompatible with base units')
             target = values.setdefault(rid, {})
             if metric in target:
@@ -53,8 +55,8 @@ def parse_csv(text):
         else:
             if not units_seen or rid in values:
                 raise ValueError('Wide CSV unit row absent or duplicate range ID')
-            values[rid] = {m: number(row[m]) for m in METRICS}
-    if not values or any(set(row) != set(METRICS) for row in values.values()):
+            values[rid] = {m: number(row[m]) for m in metrics}
+    if not values or any(set(row) != set(metrics) for row in values.values()):
         raise ValueError('Empty or incomplete counter observations')
     return values
 

@@ -17,6 +17,14 @@ WIDE = '''Slurm preamble
 
 
 class Contract(unittest.TestCase):
+    def test_optional_l2_requires_positive_base_unit_observation(self):
+        long=LONG+'"0","lts__t_bytes.sum","byte","4096"\n'
+        wide=WIDE.replace('"gpu__time_duration.sum"','"gpu__time_duration.sum","lts__t_bytes.sum"').replace('"","byte","byte","ns"','"","byte","byte","ns","byte"').replace('"0","1,024","512","100"','"0","1,024","512","100","4096"')
+        self.assertEqual(parse_csv(long,include_l2=True),parse_csv(wide,include_l2=True))
+        self.assertEqual(parse_csv(wide,include_l2=True)['0']['lts__t_bytes.sum'],4096)
+        for bad in (LONG,WIDE,long.replace('"byte","4096"','"sector","4096"'),wide.replace('"4096"','"nan"')):
+            with self.assertRaises(ValueError):parse_csv(bad,include_l2=True)
+
     def test_equivalent_schemas(self):
         self.assertEqual(parse_csv(LONG), parse_csv(WIDE))
         self.assertEqual(parse_csv(WIDE)['0']['dram__bytes_read.sum'], 1024)
