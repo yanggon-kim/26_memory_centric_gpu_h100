@@ -37,3 +37,9 @@ This is an instrumented policy/observer/event scope, not a qualified clean TTFT 
 [The CPU accounting report](qwen32b_physical_logical_accounting.md) joins all three audited32B DRAM/L2 captures to exact checkpoint headers and replay-selected input tokens. Reads are approximately1.00055times the summed per-tick logical demand, consistent with aggregate repeated weight streaming. This does not prove address-level exactly-once reads, absence of reuse, a clean bandwidth join or architectural benefit. Detailed model/header, replay and raw-counter checksums remain in the accompanying JSON. No new GPU measurement was made.
 
 The resident-mode continuation holder uses the same explicitly declared15minute closeout reserve as its workers. Earlier modes retain30minutes. This scheduling correction avoids ending an unpreempted90minute allocation after only60minutes; all scientific gates and actual Slurm EndTime checks remain unchanged.
+
+## Optional allocated runtime I/O diagnostic
+
+Earlier cold runtime imports consumed roughly408seconds before experiments. An optional read-only page-cache diagnostic is prepared for the next resident-mode allocation: read selected installed runtime libraries for at most60seconds and8GiB, with an80second subprocess limit. It runs only inside the allocation, imports no Torch/CUDA code and changes no installed bytes. Two CPU tests passed for read-budget bounds and exclusion of external symlinks/unrelated files.
+
+This is a hypothesis about startup I/O, not an established cause or speedup. Failure is recorded and the original mandatory600second runtime/device/version check still runs unchanged. It does not change numerical programs, scientific gates or reported GPU-hours.

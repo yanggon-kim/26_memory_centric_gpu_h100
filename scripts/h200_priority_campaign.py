@@ -839,8 +839,33 @@ def bootstrap(args):
     if getattr(args,'resident_first',False):
         stages.append(('resident_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_sweep.py'],300))
         stages.append(('clock_conditioning_contracts',[runtime,PACKAGE/'scripts/test_h200_clock_conditioning_pilot.py'],300))
+        stages.append(('runtime_prewarm_contracts',[runtime,PACKAGE/'scripts/test_h200_runtime_prewarm.py'],300))
     try:
         for label,command,limit in stages:
+            if label=='runtime_check' and getattr(args,'resident_first',False):
+                prewarm_command=[sys.executable,PACKAGE/'scripts/h200_runtime_prewarm.py',
+                    '--environment',runtime.parent.parent,'--output',root/'results/runtime_prewarm.json',
+                    '--seconds','60','--max-bytes',str(8*1024**3)]
+                print('STAGING optional_runtime_prewarm',flush=True)
+                try:
+                    with (root/'logs/runtime_prewarm.log').open('x') as stream:
+                        prewarm=subprocess.run(list(map(str,prewarm_command)),stdout=stream,stderr=subprocess.STDOUT,timeout=80)
+                    write(root/'results/runtime_prewarm_supervisor.json',{'status':'finished' if prewarm.returncode==0 else 'optional_failed',
+                        'exit_code':prewarm.returncode,'scope':'CPU-only I/O diagnostic; mandatory runtime_check remains unchanged'})
+                    evidence=root/'results/runtime_prewarm.json'
+                    detail=load(evidence) if evidence.exists() else {}
+                    if prewarm.returncode or detail.get('stop_reason') or any(r.get('read_error') for r in detail.get('files',[])):
+                        limitation(root,'runtime_prewarm','Optional runtime read diagnostic failed or reached its predeclared budget; no startup improvement established',
+                            'results/runtime_prewarm_supervisor.json; results/runtime_prewarm.json; logs/runtime_prewarm.log',
+                            'Read-only8GiB/60second diagnostic; mandatory runtime/device/version checks still run',
+                            'Inspect preserved I/O evidence and actual import wall time; no runtime or scientific gate bypass')
+                except (subprocess.SubprocessError,OSError) as error:
+                    write(root/'results/runtime_prewarm_supervisor.json',{'status':'optional_failed','error':str(error),
+                        'scope':'continue original mandatory runtime checks; no scientific acceptance inferred'})
+                    limitation(root,'runtime_prewarm','Optional read-only runtime diagnostic stopped: '+str(error),
+                        'results/runtime_prewarm_supervisor.json; logs/runtime_prewarm.log',
+                        'Bounded optional prewarm only; continue unchanged mandatory runtime/device/version checks',
+                        'Inspect I/O evidence; never infer runtime correctness from prewarming')
             print('STAGING',label,flush=True)
             started=time.time()
             with (root/'logs'/(label+'.log')).open('x') as stream:

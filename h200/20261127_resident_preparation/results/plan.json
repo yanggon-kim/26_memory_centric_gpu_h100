@@ -44,5 +44,13 @@
     "scope": "one producer per arm,3warmup/3timed trials; existing fixed1second/256MiB private-buffer memory_settle_v3 afterprefill, outside decode timing",
     "limitation": "changescachehistoryandTTFT; cannotqualifyoriginalunconditionedcurve or eager placement; no clock/power settings changed",
     "resume": "separate conditioned SM proof/reference/3x10 required before thresholds"
+  },
+  "optional_runtime_prewarm": {
+    "status": "prepared_unmeasured",
+    "scope": "allocatedCPUreadonly page-cache diagnostic before mandatory runtime_check; noTorchimport or installedfilemutation",
+    "limits": "60second internal read budget,80second subprocess budget,8GiB read cap",
+    "hypothesis": "mayreducecoldsharedruntimeimportwalltime; no speedup claimed",
+    "failure_policy": "recordoptional failure and continue original mandatory600second runtime/device/versioncheck",
+    "CPU_tests_passed": 2
   }
 }
