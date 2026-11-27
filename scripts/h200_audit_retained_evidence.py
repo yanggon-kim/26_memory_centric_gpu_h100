@@ -60,6 +60,17 @@ def audit(destination):
         'source':str(source),'source_sha256':sha(source),'source_hash_checks':checks,'components':components,'retained_repairs':retained,
         'reusable_qualified_native_cells':sum(c['family']=='native_service' and c['qualified_in_original_scope'] and c['source_hash_checks_passed'] and c['ten_trials_each'] for c in components),
         'limitation':'Accepted original shapes/runtime/source/UUID scopes only. Does not complete32B C4096, new serving/load/KV comparisons or architecture validation. Missing/changed files require requalification before reuse; do not recapture merely to fill a new label.'}
+    recovered=destination/'results/retained_treatment_requalification.json'
+    if recovered.exists():
+        receipt=load(recovered);copy=Path(receipt['new_statistics'])
+        if (receipt.get('exact_old_aggregate_recovered') and sha(copy)==receipt['original_aggregate_expected_sha256']
+                and all(c['maximum_ratio_or_CI_difference_from_old_snapshot']==0 for c in receipt['contrasts'])):
+            result['exact_reconstruction']={'receipt':str(recovered),'receipt_sha256':sha(recovered),
+                'copy':str(copy),'copy_sha256':sha(copy),'original_current_path_preserved':True}
+            identities={tuple(c['identity']) for c in receipt['contrasts']}
+            for component in components:
+                identity=tuple(component.get(k) for k in ('family','model','batch','context','numerator','denominator'))
+                if identity in identities:component['source_requalified_from_retained_raw']=True
     write(destination/'results/retained_H200_reuse_audit.json',result)
     failed=[c for c in checks if not c['passed']]
     lines=['# Retained H200 evidence audit','',result['limitation'],'',
@@ -68,6 +79,9 @@ def audit(destination):
         'Four qualified retained J6 bridge B1/C1024 comparisons remain separate from current32B and other allocations. Physical-counter records preserve their original exact scope and counter/clock limitations. Rejected J8/J10 families and failed old StaticCache routes are not promoted.', '',
         'P5c remains partial: old J0–J11 evidence is audited for reuse, but new model/shape calibration, matched traffic/resource/kernel evidence and held-out prediction requirements remain pending.']
     if failed:lines+=['','## Source failures','']+[f"- `{c['path']}`: absent or checksum changed; do not reuse that component without requalification." for c in failed]
+    if result.get('exact_reconstruction'):
+        lines+=['','## Exact reconstruction resolves the treatment aggregate','',
+            'The original path remains unchanged with its different checksum. A CPU reconstruction from the original raw inputs exactly matches the aggregate SHA expected by the consolidated report. Four original J7/J8 contrasts were independently requalified with24raw provenance checks and exactly matching statistics. Reuse those original scopes through the reconstructed copy and its receipt, not through an assumed match at the historical path. No new GPU measurement occurred.']
     (destination/'analysis/retained_H200_reuse_audit.md').write_text('\n'.join(lines)+'\n')
     return result
 
