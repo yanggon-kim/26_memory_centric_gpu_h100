@@ -79,9 +79,14 @@ def main(a):
     cfg=json.loads(Path(a.config).read_text())
     assert cfg['engine']['enforce_eager'] and cfg['engine']['compilation_config']=={'mode':0}
     assert cfg['warmup_trials']==3 and cfg['trials']==(3 if a.external_profiler else 10)
+    conditioning=cfg.get('decode_conditioning')
+    if conditioning:
+        from decode_precondition import validate
+        validate(conditioning)
+    protocol='resident_eager_memory_settle_v3' if conditioning else 'resident_eager_v1'
     rows=conditions(a.pilot,a.external_profiler)
     records={};expected=None;initialized=False
-    manifest={'status':'running','protocol':'resident_eager_v1','acquisition':a.acquisition,
+    manifest={'status':'running','protocol':protocol,'conditioning':conditioning,'acquisition':a.acquisition,
               'condition_order':[r[0] for r in rows],'conditions':records,
               'scope':'one resident full BF16 model per independent process/acquisition; sequential SM conditions; new cache/initialization history, never pooled with fresh-model-per-point protocol'}
     def save():dump(a.output/'resident_sweep.json',manifest)
@@ -139,7 +144,7 @@ def main(a):
         case.update(trials=record['trials'],warmup_output_ids=[t['output_ids'] for t in record['warmups']],
                     warmup_output_sha256=[t['output_sha256'] for t in record['warmups']],
                     output_digests_identical=True)
-        data['resident_protocol']={'version':'resident_eager_v1','acquisition':a.acquisition,
+        data['resident_protocol']={'version':protocol,'conditioning':conditioning,'acquisition':a.acquisition,
                                    'condition':name,'condition_order':manifest['condition_order'],
                                    'full_model_loads_in_this_producer':1,'allocation':record['allocation']}
         # Per-condition timing windows are the retained original trial windows;

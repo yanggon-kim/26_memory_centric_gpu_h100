@@ -12,6 +12,14 @@ class Gate(unittest.TestCase):
         del data['cases'][0]['trials'][1]['post_prefill_conditioning']
         self.assertFalse(conditioning_gate(data,True))
 
+    def test_ten_trial_curve_checks_the_last_receipt_too(self):
+        declaration={'protocol':'memory_settle_v3','seconds':1.0,'buffer_bytes':256*1024**2,'scope':'conditioned_decode_only'}
+        receipt={'protocol':'memory_settle_v3','copies':64,'buffer_bytes':256*1024**2,'wall_ms':1001.,'gpu_event_ms':999.}
+        data={'config':{'decode_conditioning':declaration},'cases':[{'trials':[{'post_prefill_conditioning':copy.deepcopy(receipt)} for _ in range(10)]}]}
+        self.assertTrue(conditioning_gate(data,True,10))
+        data['cases'][0]['trials'][-1].pop('post_prefill_conditioning')
+        self.assertFalse(conditioning_gate(data,True,10))
+
     def test_unconditioned_arm_rejects_hidden_conditioning(self):
         data={'config':{},'cases':[{'trials':[{} for _ in range(3)]}]}
         self.assertTrue(conditioning_gate(data,False))

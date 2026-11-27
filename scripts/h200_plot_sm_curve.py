@@ -28,7 +28,7 @@ def plot(root,records):
                        label=f'Stock full device, acquisition {acquisition}')
     ax.set(xlabel='Actual granted SMs (decoder placement proved separately)',
            ylabel='Raw median wall ms / decode tick',
-           title='Qwen2.5-32B BF16 eager decode · batch 1 / context 4096\nRetained observations; see qualification gates before inference')
+           title=('Conditioned ' if selected[0].get('conditioning') else '')+'Qwen2.5-32B BF16 eager decode · batch 1 / context 4096\nRetained observations; see qualification gates before inference')
     ax.set_xticks([40,56,80,96,112,132]);ax.grid(alpha=.25);ax.legend(fontsize=8)
     fig.tight_layout(rect=(0,.06,1,1))
     fig.text(.01,.005,'No confidence bounds or NVIDIA thresholds are inferred from clock-rejected or incomplete acquisitions.',fontsize=8)

@@ -62,5 +62,29 @@
     "missing_static_record_rejected": true,
     "exact_source_sha256_required": true,
     "CPU_tests_passed": 3
+  },
+  "conditioned_followup": {
+    "status": "prospectively_prepared_pending_GPU",
+    "trigger": "unconditioned3acquisition_set_complete_and_clock_unqualified_and_measured_budget_fits",
+    "fixed_protocol": "memory_settle_v3:1.0second,256MiB private buffer afterprefill,outside decode timing",
+    "root": "gpu0_conditioned under actual allocation root",
+    "ownership": "same allocatedGPU0UUID,independent sequential child orchestrator and workspace; GPU1 remains independent",
+    "gates": [
+      "newfrozen source and config",
+      "ownstock/fullGreen/40SMpilot thenall7actualdecoderproofs",
+      "HFdynamicandunchangedStaticCachefullshapeexactchecks",
+      "3freshacquisitionsx10timedtrials,3warmupspercondition",
+      "everywarm/timedconditioningreceiptverified",
+      "originalsource/pooledclock/isolationgates"
+    ],
+    "scope": "conditioneddecodeonly;changescachehistoryandTTFT;neverpooledwithunconditionedmeasurements",
+    "retry_policy": "onefixedprotocol;allfailuresretained;nocurve rerun merelyforfavorableclocks",
+    "budget_formula": "1.15*(3*(max_unconditioned_acquisition_s+117)+2*fullproof_s+240),plus60s margin beforeactual15minutecloseoutcutoff",
+    "CPU_tests": {
+      "resident_bindings": 3,
+      "resident_acquisition_and_missing_receipt": 2,
+      "conditioning_receipts_including_trial10": 3,
+      "strict_full_reference": 3
+    }
   }
 }

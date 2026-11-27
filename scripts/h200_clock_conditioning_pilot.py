@@ -10,9 +10,9 @@ from h200_priority_campaign import config,load,write,sha,valid_tokens,publish,li
 SOURCE_AT_IMPORT=Path(__file__).read_bytes()
 
 
-def conditioning_gate(data,conditioned):
+def conditioning_gate(data,conditioned,required_trials=3):
     trials=[t for case in data.get('cases',[]) for t in case.get('trials',[])]
-    if len(trials)!=3:return False
+    if len(trials)!=required_trials:return False
     if not conditioned:
         return not data.get('config',{}).get('decode_conditioning') and all(not t.get('post_prefill_conditioning') for t in trials)
     declaration=data.get('config',{}).get('decode_conditioning',{})

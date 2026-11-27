@@ -846,6 +846,7 @@ def bootstrap(args):
             ('capture_binding_contracts',[runtime,PACKAGE/'scripts/test_h200_vllm_capture_binding.py'],300)]
     if getattr(args,'resident_first',False):
         stages.append(('resident_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_sweep.py'],300))
+        stages.append(('resident_orchestration_contracts',[runtime,PACKAGE/'scripts/test_h200_resident_campaign.py'],300))
         stages.append(('clock_conditioning_contracts',[runtime,PACKAGE/'scripts/test_h200_clock_conditioning_pilot.py'],300))
         stages.append(('runtime_prewarm_contracts',[runtime,PACKAGE/'scripts/test_h200_runtime_prewarm.py'],300))
     try:
