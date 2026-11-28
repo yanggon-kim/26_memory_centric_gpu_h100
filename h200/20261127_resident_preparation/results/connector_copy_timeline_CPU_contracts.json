@@ -1,0 +1,48 @@
+{
+  "created_utc": "2026-11-28T13:07:41.828356+00:00",
+  "classification": "CPU-only read-only CUDA-copy schema/accounting validation on retained R5resident trace; not a new GPU/connector acquisition",
+  "files": {
+    "h200/20261127_resident_preparation/h200_connector_copy_timeline.py": "ea7342d3535a70ee41bcfc4b76e54246921fad8101f86cc72f1b3a2afca0b6fd",
+    "h200/20261127_resident_preparation/test_connector_copy_timeline.py": "7e5d033cc7ac174713e23e8e6554fd987da97ac9b74165d619f6f4b173bfa7d9"
+  },
+  "CPU_tests": {
+    "command": "python -m unittest discover -s h200/20261127_resident_preparation -p test_connector_copy_timeline.py -v",
+    "passed": 6,
+    "failed": 0
+  },
+  "source_database": "h200/20261127_job16233972_priority/gpu0/profiles/resident_b1_c4096_a0_proof.5.sqlite",
+  "source_database_sha256_before_and_after": "d2dfbe16a4e4af9cf5f1693aeb190d1c060ce1e249fd0d554ce68be45932bb02",
+  "source_matches_previously_verified_R5archive_member": true,
+  "output": "h200/20261127_resident_preparation/results/connector_copy_timeline_retained_trace_CPU_review.json",
+  "observed": {
+    "copy_table_available": true,
+    "actor_copy_records": 33,
+    "selected_launch_correlated_copy_records": 33,
+    "copy_record_bytes_field_sum": 6399,
+    "by_copy_kind": {
+      "CUDA_MEMCPY_KIND_HTOD": {
+        "copy_records": 24,
+        "bytes_field_sum": 6339,
+        "duration_sum_ns": 18688,
+        "active_union_ns": 18688
+      },
+      "CUDA_MEMCPY_KIND_DTOD": {
+        "copy_records": 6,
+        "bytes_field_sum": 36,
+        "duration_sum_ns": 4864,
+        "active_union_ns": 4864
+      },
+      "CUDA_MEMCPY_KIND_DTOH": {
+        "copy_records": 3,
+        "bytes_field_sum": 24,
+        "duration_sum_ns": 7040,
+        "active_union_ns": 7040
+      }
+    },
+    "copy_count_not_single_record_rowids": []
+  },
+  "unresolved_launch_count": 0,
+  "GPU_execution": false,
+  "runtime_scripts_or_enabled_plan_changed": false,
+  "scope": "Only schema/correlation/unit validation. Resident trace does not measure native model KV staging. Literal copy bytes remain distinct from physical HBM/NVLink traffic; no calibrated bandwidth or energy inferred. New analysis files stay outside frozen runtime source directories."
+}
