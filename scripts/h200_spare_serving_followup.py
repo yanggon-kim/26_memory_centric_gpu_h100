@@ -33,11 +33,11 @@ def capture(worker, protected_cutoff):
               'publication_allowance_s': 60, 'margin_s': 60,
               'required_s': 1020, 'admitted': available >= 1020,
               'basis': 'prior three-policy202.79s and strict71.29s plus18development arrival traces; conservative new-source bounded producer/reference limits',
-              'scope': 'analytical admission only; aim to finish2minutes before first-hour preemption eligibility, never a guaranteed lease'}
+              'scope': 'analytical admission against actual scheduler/session closeout cutoff; first-hour preemption can interrupt sooner and is not a guaranteed deadline or lease'}
     write(worker.root/'results/comparison_budget.json', budget)
     if not budget['admitted']:
         limitation(worker.root,'serving_pilot_admission','Protected launch budget is below1020seconds; no serving producer launched',
-            'results/comparison_budget.json','Conservative complete producer/reference/publication budget before first-hour preemption eligibility',
+            'results/comparison_budget.json','Conservative complete producer/reference/publication budget before actual scheduler closeout cutoff',
             'Defer to a future owned allocation with the complete budget; retain the finished preceding comparison')
         return {'status': 'deferred_budget', 'budget': budget}
     build_environment(worker)
@@ -110,7 +110,9 @@ def main(args):
         assert timezone is not None
         started_at = started_at.replace(tzinfo=timezone)
     started = started_at.timestamp()
-    protected_cutoff = started+3600-120
+    fields=dict(item.split('=',1) for item in state.split() if '=' in item)
+    protected_cutoff = min(dt.datetime.fromisoformat(fields['EndTime']).timestamp()-900,
+                           dt.datetime.fromisoformat(old['launch_cutoff']).timestamp())
     import pynvml as nv
     nv.nvmlInit()
     try:
@@ -144,12 +146,18 @@ def main(args):
     Path(session['workspace']).mkdir(exist_ok=False)
     for key in ('frozen_source_root','frozen_source_identity'):
         session.pop(key, None)
-    session['protocol'] = 'spare_finite_openloop_development_pilot_v2'
+    session['protocol'] = 'spare_finite_openloop_development_cached_startup_v3' if getattr(args,'reuse_runtime_cache',False) else 'spare_finite_openloop_development_pilot_v2'
     session_path = args.root/'session.json';write(session_path, session)
     publish(args.root, 'H200 serving follow-up: publish reviewed idle admission and versioned source')
     session['source_commit'] = subprocess.check_output(['git','rev-parse','HEAD'],cwd=PACKAGE,text=True).strip()
     write(session_path, session)
     subprocess.run([session['python'],PACKAGE/'scripts/freeze_shoreline.py','--session',session_path,'--activate'],check=True)
+    if getattr(args,'reuse_runtime_cache',False):
+        from h200_native_model_followup import copy_runtime_cache
+        copied=copy_runtime_cache(Path(old['workspace']),Path(session['workspace']))
+        copied.update(source_session=str(args.source_session),source_session_sha256=sha(args.source_session),
+            first_preemption_eligible_unix_s=started+3600)
+        write(args.root/'environment/runtime_cache_copy.json',copied)
     worker = Worker(args.root,session_path)
     try:
         result = capture(worker,protected_cutoff)
@@ -169,4 +177,5 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-session',type=Path,required=True)
     p.add_argument('--root',type=Path,required=True)
+    p.add_argument('--reuse-runtime-cache',action='store_true',help='Copy only the owned completed prefill compilation/registry caches with per-file verification; no output/timing qualification transfer')
     main(p.parse_args())
