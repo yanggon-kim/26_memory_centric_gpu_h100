@@ -1,4 +1,4 @@
-# Partial acquisition0host handoff observations
+# Partial acquisition 0 host handoff observations
 
 Post-archive derived metadata; original captures/certificates unchanged. Send-completion observation is an upper observation bound, not isolated wire time. Consumer whole request includes CPU bookkeeping. Host intervals overlap and are not additive. File IPC/harness request span is not deployed TTFT, offered-load goodput, clean GPU/event latency, layer attribution or a qualified slowdown ratio. One paired acquisition is not the required3independent-acquisition comparison. Rejected clocks and stock-after timeout remain binding.
 
@@ -25,4 +25,14 @@ The original run members match the verified archive. This derived JSON and repor
 
 ## Reproduction and pinned-source scope
 
-Command: `/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python h200/20261127_resident_preparation/h200_partial_host_handoff.py --root /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant --acquisition 0`. The versioned CPU reader reproduces all10request rows and10metric summaries. Installed native engine/connector source hashes match the captured pins. The sender removes the final item before completing its blocking send; queue-empty alone is insufficient, so the collector separately polls actual sent-ID markers. Its observed timestamp remains a host observation bound. Source inspection is not concurrent-load or physical-traffic validation. Evidence: `../results/partial_host_handoff_reproduction_CPU_review.json`.
+Command: `/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python h200/20261127_resident_preparation/h200_partial_host_handoff.py --root /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant --acquisition 0`. The versioned CPU reader reproduces all 10 request rows and 10 metric summaries. Installed native engine/connector source hashes match the captured pins. The sender removes the final item before completing its blocking send; queue-empty alone is insufficient, so the collector separately polls actual sent-ID markers. Its observed timestamp remains a host observation bound. Source inspection is not concurrent-load or physical-traffic validation. Evidence: `../results/partial_host_handoff_reproduction_CPU_review.json`.
+
+## Raw host timeline figure
+
+![Raw host windows from ten requests; incomplete cohort and rejected producer clocks](partial_a0_host_handoff_timeline.png)
+
+[PDF export](partial_a0_host_handoff_timeline.pdf). The two panels show the same actual host intervals at full and handoff scales; blue call gaps are preserved. No GPU kernel or isolated wire durations are plotted.
+
+In 10/10 retained timed requests, the sender's all-send observation preceded the first consumer engine-call start. The median host observation-to-call gap was 10.616221ms (range 4.275704–15.566046ms). This ordering does not isolate receiver restore/blocking or GPU computation. It motivates the separate profiler capture.
+
+Figure command used: `/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python h200/20261127_resident_preparation/plot_partial_host_handoff.py --root h200/20261128_job16281263_native_functional_c16384_producer_quant`. The plotter refuses existing outputs. Figure hashes and source/reader pins are in `../results/partial_host_handoff_figure.json`; visual/chronology review is in `../results/partial_host_handoff_figure_CPU_review.json`. This figure postdates the original verified raw archive.
