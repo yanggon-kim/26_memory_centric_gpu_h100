@@ -67,6 +67,8 @@ def review(root):
             assert run['pair_config_sha256'] == sha(root/'pair.json')
             assert run['numerical_source_identity'] == session['frozen_source_identity']
             assert run['native_engine_sha256'] == ENGINE_SHA
+            assert run['optional_dependencies']['msgpack']=='1.1.1'
+            assert run['optional_dependencies']['package_file_sha256']
             assert run['synthetic_payload'] is True
             assert run['model_KV_generated'] is False and run['model_KV_injected'] is False
             assert run['qualified_performance'] is False and run['physical_HBM_or_NVLink_bytes'] is None
@@ -79,6 +81,7 @@ def review(root):
                 'process':str(process_path),'process_sha256':sha(process_path),
                 'monitor':str(monitor_path),'monitor_sha256':sha(monitor_path)})
         assert len({s['frozen_source_identity'] for s in sessions}) == 1
+        assert runs[0]['optional_dependencies']==runs[1]['optional_dependencies']
         check_trials(runs[0]['trials'],runs[1]['trials'])
     except (OSError,ValueError,KeyError,AssertionError,TypeError,IndexError) as error:
         errors.append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -87,6 +90,7 @@ def review(root):
         'job_id':pair['job_id'],'gpu_uuids':[r['gpu_uuid'] for r in pair['roles'].values()],
         'implementation_sha256':sha(Path(__file__)),
         'pair_sha256':sha(root/'pair.json'),'roles':records,'errors':errors,
+        'optional_dependencies':runs[0].get('optional_dependencies') if not errors else None,
         'model_KV_verified':False,'serving_qualified':False,'quantitative_performance_qualified':False,
         'physical_HBM_or_NVLink_bytes':None,
         'scope':'Six known-data transfer trials per role:3warm/3diagnostic, one process per device. Independently recomputed BF16 payload hashes, paired completion and source/isolation checks only. No model KV injection, serving, clean latency or calibrated bandwidth.'}
