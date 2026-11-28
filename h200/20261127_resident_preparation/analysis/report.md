@@ -225,3 +225,7 @@ All26native CPUchecks passed after the final source edits. The bounded spare-dev
 Exact submission command: `sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter`.
 
 Job16266958submitted at2026-11-28T06:25:57.697822+00:00, requested twoH200s/75minutes. Initial scheduler statePENDING; StartTime=Unknown. No allocation or new measurement is claimed by submission. Source9ec7c394a06159da0ecf1582d95395b87ab73f11published; fast-forward-only pull and both required ancestors passed before submission.
+
+## Prospective connector span attribution
+
+Prepared a separate functional attribution entrypoint and host/NVTX observer; three CPUchecks passed for asynchronous thread ownership, original return/exception preservation and overlapping interval union. Pinned installed connector/engine/pool methods were checked from their actual source without initializing CUDA. Native API wrappers add no tensor reads, GPU copies or synchronization. Host spans remain instrumented and do not prove GPU kernel/layer attribution; metadata and intrusive payload arms stay separate. Integration into a bounded paired controller, actual profiler coverage and a separate matched clean producer comparison remain pending. No source used by queued job16266958was changed. Receipt: `results/connector_span_CPU_contracts.json`.

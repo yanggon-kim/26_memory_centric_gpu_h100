@@ -1,0 +1,56 @@
+{
+  "created_utc": "2026-11-28T06:28:30.177760+00:00",
+  "classification": "CPU preparation; no new GPU measurement",
+  "CPU_tests": {
+    "passed": 3,
+    "failed": 0,
+    "command": "python -m unittest discover -s scripts -p test_h200_connector_spans.py -v"
+  },
+  "installed_source_method_contracts": {
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_connector.py": {
+      "sha256": "13e2e1b5baa8cd503c68a0729fe50124ee36d41320b63c94335bd7d0e04266a9",
+      "required_methods": [
+        "save_kv_layer",
+        "wait_for_save",
+        "start_load_kv",
+        "wait_for_layer_load"
+      ],
+      "methods_present": true
+    },
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_engine.py": {
+      "sha256": "bcbb73c586bc82d51c84e89e6b0dca9dc2354fa7a48856c1ae3a9f7dc45fd17a",
+      "required_methods": [
+        "send_tensor",
+        "recv_tensor",
+        "send_sync",
+        "wait_for_sent",
+        "send",
+        "recv"
+      ],
+      "methods_present": true
+    },
+    "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/tensor_memory_pool.py": {
+      "sha256": "03698c4c5289d73058128d203e17b5ebafa6b354bf80068be19b3db542cc6d37",
+      "required_methods": [
+        "store_tensor",
+        "load_tensor",
+        "free"
+      ],
+      "methods_present": true
+    }
+  },
+  "files": {
+    "scripts/h200_connector_spans.py": "f63841b456129765c9fc8fea70ba396561bf6b62fad58f64059979673227b269",
+    "scripts/h200_native_connector_attribution.py": "57e0e42d29dc2a849e41a439ab68803712cc45548540cd1673d1f3975e7a3c30",
+    "scripts/test_h200_connector_spans.py": "145e9e08f60c4f91f464d68977ab8f9294061dfe4a414a4662ad3cab5e5c0664"
+  },
+  "GPU_execution": false,
+  "quantitative_qualified": false,
+  "prerequisites": [
+    "New paired descriptor with explicit host_API_NVTX_functional_v1 label",
+    "Actual same-allocation long-model stock/default dualHF and native component gates",
+    "Owned bounded paired controller, separate output directories and profiler coverage pilot",
+    "Independent matched clean producer comparison; host spans alone cannot establish optimized layer compute"
+  ],
+  "queued_job_16266958_preserved": true
+}
