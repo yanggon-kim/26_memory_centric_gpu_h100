@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T12:20:59.047838+00:00",
+  "updated_utc": "2026-11-28T12:45:07.777632+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16281263",
@@ -303,7 +303,7 @@
   "current_allocation_start": null,
   "current_comparison_disposition": "h200/20261127_resident_preparation/results/producer_quant_submission_20261128.json",
   "next_command": "timeout 25s squeue -h -j 16281263 -o '%i|%T|%l|%Q|%M|%R'",
-  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job 16280236 --pilot-root h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+  "next_experiment_command_after_current_job_closes": "Inspect actual producer and optional connector outcomes before selecting next sequential job; never repeat a completed cohort by default.",
   "next_experiment_command_after_current_job_closes_condition": "Actual current job is terminal; verified pilot supplies runtime bounds only. Fresh current-allocation functional refs and complete fixed3x10cohort retain all source/output/clock/isolation gates. Preserve rejected pilot, never resample it.",
   "current_launch_cutoff": null,
   "progress_estimate": {
@@ -322,7 +322,7 @@
     "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
   },
   "first_preemption_eligible": "2026-11-28T07:03:04",
-  "current_scope": "Fresh16K fixed3acquisition/10timed matched producer cohort after current-allocation correctness prerequisites",
+  "current_scope": "Fixed16K3x10producer cohort first; exact-job optional instrumented connector continuation only after complete/published/archived cohort and full remaining budget",
   "latest_completed_prerequisite": "h200/20261128_job16280236_native_functional_c16384/results/worker_outcome.json",
   "latest_producer_pilot": {
     "root": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
@@ -335,5 +335,14 @@
     "source_role_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
   },
   "scheduler_poll_interval_s": 300,
-  "next_scheduler_poll_not_before_utc": "2026-11-28T12:25:59.047838+00:00"
+  "next_scheduler_poll_not_before_utc": "2026-11-28T12:25:59.047838+00:00",
+  "prepared_connector_continuation": {
+    "plan": "h200/20261127_resident_preparation/results/connector_followup_16281263.json",
+    "job_id": "16281263",
+    "status": "conditional_only; no GPU capture yet",
+    "minimum_protected_time_s": 1860,
+    "new_reservation": false,
+    "CPU_tests_passed": 36,
+    "primary_numerical_role_changed": false
+  }
 }

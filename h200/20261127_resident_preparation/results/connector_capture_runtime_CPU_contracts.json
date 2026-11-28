@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-11-28T12:45:07.777632+00:00",
+  "classification": "Versioned runtime candidate and exact-job optional plan; CPU verified, no new GPU measurement",
+  "observed_job_state": "PENDING",
+  "current_job": "16281263",
+  "files": {
+    "h200_connector_capture_campaign.py": "82634fdeb228b9d30bd938e2626cb27fc15bbd87969cf5b16c7376965af1b4ce",
+    "h200_native_connector_capture.py": "1446ba1e5ba8ee273af290325ea6d1aae4fe47e725bb390000446894c735d981",
+    "h200_connector_capture_gate.py": "9faf07e31f28816dc54585606df44a27cd78f00f05401cfebd0b44eb93b5cc22",
+    "h200_connector_spans.py": "f63841b456129765c9fc8fea70ba396561bf6b62fad58f64059979673227b269",
+    "h200_connector_timeline.py": "893838a93a52dc6f16bd6d6cf3f7b752359a487171cd979bce5ea22c813b04b4",
+    "h200_review_connector_capture.py": "fe7fcd6c762912e5b0bb487747e0b17b221a0e5a2941d66ebb77b52788cf22ee",
+    "h200_planned_connector_followup.py": "3371e55371b127faff46f47118df7bb3128b8c162d29f18c4acf2fc0784086a1",
+    "h200_producer_quant_entrypoint.py": "2ec2e38653173c4cfb92124e9897146cd3839e624a5381ecb048f33e2bbcd691"
+  },
+  "CPU_tests": {
+    "connector_command": "python -m unittest discover -s scripts -p test_h200*connector*.py -v",
+    "connector_passed": 33,
+    "entrypoint_command": "python -m unittest discover -s scripts -p test_h200_producer_quant_continuation.py -v",
+    "entrypoint_passed": 3,
+    "failed": 0
+  },
+  "GPU_execution": false,
+  "scientific_qualified": false,
+  "promoted_to_runtime_scripts": true,
+  "numerical_role_unchanged_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+  "plan": "h200/20261127_resident_preparation/results/connector_followup_16281263.json",
+  "remaining": [
+    "Actual owned-pair instrumented functional pilot",
+    "NSYSsource/process/actor/range/kernel coverage and method association review",
+    "CUDA memcpy payload and copy/communication analysis from retained raw trace, distinct from physical HBM/wire bytes",
+    "Independent instrumentation calibration; per-layer compute remains unmatched until validated"
+  ],
+  "scope": "Optional controller is called only after primary subprocess returns. Missing/disabled plans preserve previous behavior. Fresh allocation source equality and independent controller ownership/idleness/time checks still gate every GPU launch."
+}
