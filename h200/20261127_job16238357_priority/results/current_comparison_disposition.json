@@ -1,7 +1,7 @@
 {
-  "updated_utc": "2026-11-28T05:22:19.290797+00:00",
+  "updated_utc": "2026-11-28T05:51:41.978120+00:00",
   "job_id": "16238357",
-  "status": "current_original_comparisons_reviewed; independent native component active",
+  "status": "Original comparisons reviewed; native model functional prerequisite passed; finite serving development pilot active",
   "B8_C4096": {
     "status": "blocked_exact_default_reference_after_one_bounded_control",
     "three_acquisition_curve_launched": false,
@@ -29,6 +29,26 @@
     "review": "gpu1/results/prefill_CPU_review.json",
     "review_sha256": "29f5afcc9d741ed0d7c9ffca27d9b3d81fc09e187780337b6cf992c2e00de6a0"
   },
-  "ongoing_native_component": "native_transport_component; synthetic32MiB BF16 known-data per trial, not real model KV or serving; actual outcome pending",
-  "GPU_hours": "Allocation still running; final GPU-hours require terminal Slurm accounting, overlapping steps use the same owned pair."
+  "ongoing_native_component": "Passed native_transport_component_msgpack functional CPU review; first missing-dependency attempt retained separately.",
+  "GPU_hours": "Allocation still running; final GPU-hours require terminal Slurm accounting, overlapping steps use the same owned pair.",
+  "native_model_functional": {
+    "status": "native_model_functional_review_passed",
+    "review": "native_model_functional_cached/model/results/native_model_CPU_review.json",
+    "review_sha256": "7e697fc062e1bbb63365f9d354b4db4181321196a80e1b6f4dafd245f7e756db",
+    "paired_requests": 12,
+    "metadata_only_requests": 6,
+    "intrusive_payload_requests": 6,
+    "warmup_per_mode": 3,
+    "diagnostic_per_mode": 3,
+    "original_prompt_queries_on_consumer": 0,
+    "canonical_decode_queries": 63,
+    "packed_KV_layers": 64,
+    "actual_requested_tensor_bytes_per_request": 33554432,
+    "combined_outputs_per_request": 64,
+    "serialized_handoff": true,
+    "producer_penalty_or_serving_qualified": false,
+    "archive_receipt": "native_model_functional_cached/results/archive_transfer_7066bcd438c3.json",
+    "archive_sha256": "de03d3a8d9183229acc2b51a45dffb9e305f241173f1981a0d04692537cd8c4f"
+  },
+  "active_serving_pilot": "gpu1_serving_development; instrumented finite18trace development pilot, not tuned/held-out or steady-state serving; preemption possible"
 }

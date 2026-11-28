@@ -36,3 +36,13 @@ Both native component roles failed before trial0because the pinned vLLM P2pNccl 
 
 - Limitation P0_new_pair_KV: Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair. Evidence: results/P0_prior_KV_software_validation.json. Tried: Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate. Resume: At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs.
 
+
+## Real-model native KV functional prerequisite passed
+
+The same pair passed all12paired C128/N64functional requests:3warm/3diagnostic metadata-only controls, followed by3warm/3diagnostic intrusive payload proofs. Each request transferred64packed BF16 model KV layers (32MiB tensor payload), executed zero original-prompt queries on the consumer and produced exactly64combined outputs matching fresh stock and strict default dynamic/unchanged StaticCache references. Source/receive/injected payloads match for every layer in the intrusive arm; metadata controls add no payload hash synchronization. Both owned workers cleaned up normally. The CPUreader also rechecked stock/HFprocess NUM, snapshots, logs, idleness and monitor ancestry; two actual reference chains pass and a wrong-source test is rejected.
+
+This is deliberately serialized functional handoff, not producer-penalty timing, default deployment latency, loaded/tuned serving, three independent performance acquisitions, physical link/HBM bytes or energy. Evidence: `native_model_functional_cached/model/results/native_model_CPU_review.json`; remote publicationa6138561432f622c9d148a044325a8bd557e0e97. The closed unit archive is destination-readback/member verified: `native_model_functional_cached/results/archive_transfer_7066bcd438c3.json`, SHA256de03d3a8d9183229acc2b51a45dffb9e305f241173f1981a0d04692537cd8c4f. All failed dependency/cold-start attempts remain separately preserved.
+
+## Remaining allocation
+
+GPU1has started the prepared finite serving development pilot after its original prefill worker returned, all15source/phase rows were checked, its original lock was held and its exact UUIDwas idle. A new frozen cached-startup protocol copies only verified owned compilation/registry files. The complete1020second admission uses actual EndTime/session closeout, rechecked after inventory; first-hour preemption can still interrupt sooner. This is a new independent case, not a timing extension of the clock-rejected prefill comparison or a held-out/steady-state serving result. GPU0is idle while current evidence is published and the owner-prioritized timing adapter is prepared. No extra allocation has been submitted.

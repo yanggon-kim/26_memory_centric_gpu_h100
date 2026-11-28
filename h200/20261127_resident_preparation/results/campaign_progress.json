@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T05:39:35.547980+00:00",
+  "updated_utc": "2026-11-28T05:51:41.978120+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16238357",
-  "current_observed_state": "RUNNING; native component passed CPUreview, same-pair cached model functional prerequisite active",
+  "current_observed_state": "RUNNING; native model functional prerequisite passed and archived; finite serving development pilot active",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -79,7 +79,9 @@
     },
     {
       "id": "P3b",
-      "status": "pending"
+      "status": "partial",
+      "reason": "Same-pair real-model native KV functional prerequisite passed atC128; quantitative producer/consumer/seat/goodput comparisons remain pending",
+      "evidence": "h200/20261127_job16238357_priority/native_model_functional_cached/model/results/native_model_CPU_review.json"
     },
     {
       "id": "P4a",
@@ -99,7 +101,9 @@
     },
     {
       "id": "P5a",
-      "status": "pending"
+      "status": "partial",
+      "reason": "Same-pair real-model native KV functional prerequisite passed atC128; quantitative producer/consumer/seat/goodput comparisons remain pending",
+      "evidence": "h200/20261127_job16238357_priority/native_model_functional_cached/model/results/native_model_CPU_review.json"
     },
     {
       "id": "P5b",
@@ -204,7 +208,9 @@
       "model_KV_verified": false,
       "serving_qualified": false
     },
-    "same_allocation_model_prerequisite": "h200/20261127_job16238357_priority/native_model_functional_cached"
+    "same_allocation_model_prerequisite": "h200/20261127_job16238357_priority/native_model_functional_cached",
+    "same_allocation_model_prerequisite_status": "native_model_functional_review_passed; no quantitative performance/serving qualification",
+    "next_unfinished_owner_priority": "Matched16K\u201332Kstock/connector producer timing breakdown, then full-versus-qualified-restricted live consumer and end-to-end goodput; adapters and measurement still required"
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
   "last_closed_bootstrap": "h200/20261127_job16233972_bootstrap",
