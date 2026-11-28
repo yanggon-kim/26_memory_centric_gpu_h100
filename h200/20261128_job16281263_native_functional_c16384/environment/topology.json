@@ -1,0 +1,8 @@
+{
+  "command": [
+    "nvidia-smi",
+    "topo",
+    "-m"
+  ],
+  "output": "\t\u001b[4mGPU0\tGPU1\tNIC0\tNIC1\tNIC2\tNIC3\tNIC4\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tNV18\tNODE\tNODE\tPIX\tSYS\tNODE\t1,5,9,13,17\t2\t\tN/A\nGPU1\tNV18\t X \tNODE\tNODE\tNODE\tSYS\tPIX\t1,5,9,13,17\t2\t\tN/A\nNIC0\tNODE\tNODE\t X \tSYS\tNODE\tNODE\tNODE\t\t\t\t\nNIC1\tNODE\tNODE\tSYS\t X \tNODE\tNODE\tNODE\t\t\t\t\nNIC2\tPIX\tNODE\tNODE\tNODE\t X \tSYS\tNODE\t\t\t\t\nNIC3\tSYS\tSYS\tNODE\tNODE\tSYS\t X \tSYS\t\t\t\t\nNIC4\tNODE\tPIX\tNODE\tNODE\tNODE\tSYS\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0\n  NIC1: mlx5_1\n  NIC2: mlx5_2\n  NIC3: mlx5_3\n  NIC4: mlx5_4\n\n"
+}
