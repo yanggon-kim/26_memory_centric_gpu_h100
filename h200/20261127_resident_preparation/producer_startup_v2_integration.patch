@@ -1,0 +1,64 @@
+--- a/scripts/h200_producer_quant_campaign.py
++++ b/scripts/h200_producer_quant_campaign.py
+@@ -30,7 +30,11 @@
+     signal.signal(signal.SIGTERM,interrupted)
+     source=args.functional_root.resolve();root=args.root.resolve();pilot=args.pilot_root.resolve()
+     assert all(p.is_relative_to(PACKAGE/'h200') for p in (source,root,pilot)) and not root.exists()
+-    estimate=budget(pilot)
++    if getattr(args,'startup_failure_root',None) is not None:
++        from h200_producer_runtime_observations_v2 import revised_budget
++        estimate=revised_budget(pilot,args.startup_failure_root)
++    else:
++        estimate=budget(pilot)
+     assert estimate['all_bounds_within_existing660second_watchdog'],'pilot estimate exceeds existing role watchdog; no extension authorized by this adapter'
+     bases=[source/f'gpu{i}' for i in range(2)];sessions=[load(base/'session.json') for base in bases]
+     job=os.environ.get('SLURM_JOB_ID')
+@@ -46,6 +50,8 @@
+         *(dt.datetime.fromisoformat(s['launch_cutoff']).timestamp() for s in sessions))
+     assert cutoff-time.time()>=estimate['required_s'],'complete fixed3x10cohort and closeout budget do not fit'
+     names=(ENTRY,Path(__file__).name,'h200_producer_quant_budget.py','h200_review_producer_quant.py','shoreline_statistics.py')
++    if getattr(args,'startup_failure_root',None) is not None:
++        names+=('h200_producer_runtime_observations_v2.py','h200_producer_startup_budget_v2.py')
+     for session in sessions:
+         for name in names:assert sha(Path(session['frozen_source_root'])/'scripts'/name)==sha(PACKAGE/'scripts'/name)
+     with contextlib.ExitStack() as stack:
+@@ -158,6 +164,7 @@
+ if __name__=='__main__':
+     parser=argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--functional-root',type=Path,required=True);parser.add_argument('--pilot-root',type=Path,required=True)
++    parser.add_argument('--startup-failure-root',type=Path)
+     parser.add_argument('--root',type=Path,required=True);args=parser.parse_args()
+     try:main(args)
+     except BaseException as error:
+--- a/scripts/h200_producer_quant_entrypoint.py
++++ b/scripts/h200_producer_quant_entrypoint.py
+@@ -19,6 +19,10 @@
+     assert os.environ.get('SLURM_JOB_ID','').isdigit()
+     job=os.environ['SLURM_JOB_ID'];pilot=args.pilot_root.resolve()
+     assert pilot.is_relative_to(PACKAGE/'h200')
++    startup_failure=getattr(args,'startup_failure_root',None)
++    if startup_failure is not None:
++        startup_failure=startup_failure.resolve()
++        assert startup_failure.is_relative_to(PACKAGE/'h200')
+     subprocess.run([sys.executable,PACKAGE/'scripts/h200_native_functional_campaign.py',
+         '--context',str(args.context),'--preceding-job',args.preceding_job,'--spare-native-counter'],check=True)
+     roots=list((PACKAGE/'h200').glob('*_job'+job+'_native_functional_c'+str(args.context)));assert len(roots)==1
+@@ -26,8 +30,10 @@
+     assert outcome['status']=='functional_prerequisites_passed'
+     assert sha(Path(outcome['model_review']))==outcome['model_review_sha256']
+     quant=source.with_name(source.name+'_producer_quant')
+-    subprocess.run([sys.executable,PACKAGE/'scripts/h200_producer_quant_campaign.py','--functional-root',source,
+-        '--pilot-root',pilot,'--root',quant],check=True)
++    command=[sys.executable,PACKAGE/'scripts/h200_producer_quant_campaign.py','--functional-root',source,
++        '--pilot-root',pilot,'--root',quant]
++    if startup_failure is not None:command+=['--startup-failure-root',startup_failure]
++    subprocess.run(command,check=True)
+     from h200_planned_connector_followup import run_if_planned
+     return run_if_planned(source,quant)
+ 
+@@ -36,4 +42,5 @@
+     parser=argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--context',type=int,choices=(16384,32704),required=True)
+     parser.add_argument('--preceding-job',required=True);parser.add_argument('--pilot-root',type=Path,required=True)
++    parser.add_argument('--startup-failure-root',type=Path)
+     main(parser.parse_args())

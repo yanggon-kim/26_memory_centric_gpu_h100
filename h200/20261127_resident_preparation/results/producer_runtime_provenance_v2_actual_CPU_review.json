@@ -1,0 +1,322 @@
+{
+  "pilot": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+  "pilot_CPU_review": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/producer_timing_CPU_review.json",
+  "pilot_CPU_review_sha256": "188ec101e8ec500217116ef722d448e6cfc958b2c25f1e2f5eb382af9f2b239c",
+  "role_source_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+  "context": 16384,
+  "engine_settings": {
+    "model": "/storage/scratch1/6/jkim4112/models/h200_priority_hub/models--Qwen--Qwen2.5-32B-Instruct/snapshots/5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "dtype": "bfloat16",
+    "seed": 20261013,
+    "generation_config": "vllm",
+    "enable_prefix_caching": false,
+    "enable_chunked_prefill": true,
+    "disable_log_stats": false,
+    "async_scheduling": false,
+    "distributed_executor_backend": "uni",
+    "tensor_parallel_size": 1,
+    "max_model_len": 16448,
+    "max_num_seqs": 8,
+    "max_num_batched_tokens": 16384,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": false
+  },
+  "acquisitions": 3,
+  "warmups_per_condition": 3,
+  "timed_per_condition": 10,
+  "all_bounds_within_existing660second_watchdog": true,
+  "pilot_performance_data_used_in_comparison": false,
+  "protocol": "runtime_startup_envelope_v2_candidate",
+  "classification": "CPU runtime admission proposal only",
+  "phase_timeout_s": {
+    "stock_before": 336,
+    "native": 512,
+    "stock_after": 332
+  },
+  "required_s": 3900,
+  "original_pilot_phase_timeout_s": {
+    "stock_before": 251,
+    "native": 392,
+    "stock_after": 165
+  },
+  "original_pilot_role_estimates": [
+    {
+      "condition": "stock_before",
+      "role": "stock",
+      "timeout_s": 251,
+      "observed_process_s": 161.06076669692993,
+      "observed_initialization_warmups_and_other_s": 154.49042450792993,
+      "observed_slowest_timed_request_s": 2.207466479,
+      "predicted_warmups": 3,
+      "predicted_timed_requests": 10,
+      "formula": "ceil(1.25*(observed initialization/warmup/other time +10*slowest of3timed whole requests)+30s), floor120s",
+      "within_existing_role_watchdog": true,
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/runs/timing/run.json",
+      "run_sha256": "e12443142fab1d280b96d13d6c1942c04329036f4f57a7d9cb1dc3a924a28a7e",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/results/processes/matched_producer_timing.json",
+      "process_sha256": "f2deb124fcf3c75922e35dde40f69157a1488c230cbb0da6454e7d6f485c43fb",
+      "pilot_gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
+    },
+    {
+      "condition": "native",
+      "role": "producer",
+      "timeout_s": 390,
+      "observed_process_s": 261.5553059577942,
+      "observed_initialization_warmups_and_other_s": 250.5134679177942,
+      "observed_slowest_timed_request_s": 3.687700183,
+      "predicted_warmups": 3,
+      "predicted_timed_requests": 10,
+      "formula": "ceil(1.25*(observed initialization/warmup/other time +10*slowest of3timed whole requests)+30s), floor120s",
+      "within_existing_role_watchdog": true,
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/runs/timing/run.json",
+      "run_sha256": "d0edab23c142e8907e265dd72cc78b12b8ab8212dfc15203213a97c94f93cc59",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/results/processes/matched_producer_timing.json",
+      "process_sha256": "06ddf218279d0e1ff6f1dbfd1cb01f225d7c00fbd9a907bbcb1eddcc63058a71",
+      "pilot_gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
+    },
+    {
+      "condition": "native",
+      "role": "consumer",
+      "timeout_s": 392,
+      "observed_process_s": 263.7410922050476,
+      "observed_initialization_warmups_and_other_s": 252.7480403630476,
+      "observed_slowest_timed_request_s": 3.680486755,
+      "predicted_warmups": 3,
+      "predicted_timed_requests": 10,
+      "formula": "ceil(1.25*(observed initialization/warmup/other time +10*slowest of3timed whole requests)+30s), floor120s",
+      "within_existing_role_watchdog": true,
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/runs/timing/run.json",
+      "run_sha256": "4b398ca5b0fb1a2c897cedf16d484fc02e3404f08983b913515812f97a6feb39",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/results/processes/matched_producer_timing.json",
+      "process_sha256": "389834f72e93dbb3904ced697f914d88440b4edee826067eed8318881da9ad02",
+      "pilot_gpu_uuid": "GPU-748207af-6539-3f5f-d264-911646f90a4c",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
+    },
+    {
+      "condition": "stock_after",
+      "role": "stock",
+      "timeout_s": 165,
+      "observed_process_s": 91.75672173500061,
+      "observed_initialization_warmups_and_other_s": 85.18185758700061,
+      "observed_slowest_timed_request_s": 2.208020805,
+      "predicted_warmups": 3,
+      "predicted_timed_requests": 10,
+      "formula": "ceil(1.25*(observed initialization/warmup/other time +10*slowest of3timed whole requests)+30s), floor120s",
+      "within_existing_role_watchdog": true,
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/runs/timing/run.json",
+      "run_sha256": "b4cbe03a5e6a8a277dc9ef4381c1c22e82fc2f26ed5e66f8dee29e8bd3f8a414",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/results/processes/matched_producer_timing.json",
+      "process_sha256": "50f1134669756d880a4d99978f756b6c92d4781751b68d2a52d82512d08cc2f5",
+      "pilot_gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
+    }
+  ],
+  "margin_scope": "At least300s per role,50percent runtime envelope plus60s, then360s cohort overhead; unchanged660s role watchdog and actual allocation closeout reserve still apply.",
+  "observations": [
+    {
+      "condition": "stock_before",
+      "role": "stock",
+      "timeout_s": 325,
+      "observed_process_elapsed_s": 161.06076669692993,
+      "observed_completed_requests": 6,
+      "missing_to_fixed13requests": 7,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 176.60116135692994,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "native",
+      "role": "producer",
+      "timeout_s": 509,
+      "observed_process_elapsed_s": 261.5553059577942,
+      "observed_completed_requests": 6,
+      "missing_to_fixed13requests": 7,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 298.9402492387942,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "native",
+      "role": "consumer",
+      "timeout_s": 512,
+      "observed_process_elapsed_s": 263.7410922050476,
+      "observed_completed_requests": 6,
+      "missing_to_fixed13requests": 7,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 301.0186538620476,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "stock_after",
+      "role": "stock",
+      "timeout_s": 300,
+      "observed_process_elapsed_s": 91.75672173500061,
+      "observed_completed_requests": 6,
+      "missing_to_fixed13requests": 7,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 107.21286737000061,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "stock_before",
+      "role": "stock",
+      "timeout_s": 336,
+      "observed_process_elapsed_s": 183.69590377807617,
+      "observed_completed_requests": 13,
+      "missing_to_fixed13requests": 0,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 183.69590377807617,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "native",
+      "role": "producer",
+      "timeout_s": 389,
+      "observed_process_elapsed_s": 219.240873336792,
+      "observed_completed_requests": 13,
+      "missing_to_fixed13requests": 0,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 219.240873336792,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "native",
+      "role": "consumer",
+      "timeout_s": 393,
+      "observed_process_elapsed_s": 221.79418563842773,
+      "observed_completed_requests": 13,
+      "missing_to_fixed13requests": 0,
+      "elapsed_is_lower_bound": false,
+      "projected_full_process_s": 221.79418563842773,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    },
+    {
+      "condition": "stock_after",
+      "role": "stock",
+      "timeout_s": 332,
+      "observed_process_elapsed_s": 165.45502948760986,
+      "observed_completed_requests": 6,
+      "missing_to_fixed13requests": 7,
+      "elapsed_is_lower_bound": true,
+      "projected_full_process_s": 180.79568299760987,
+      "formula": "max(300,ceil(1.5*(observed elapsed + missing-to13 * slowest completed lifecycle)+60))",
+      "performance_samples_used": 0
+    }
+  ],
+  "performance_samples_used": 0,
+  "GPU_execution": false,
+  "scope": "Operational timeout repair only; role/collector/output/source/clock/isolation/drift gates and trial counts unchanged. A future controller must verify observation provenance, freeze/promote this version and recheck actual complete-cohort time. No current GPU launch or favorable-clock resampling.",
+  "runtime_provenance": [
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/runs/timing/run.json",
+      "run_sha256": "e12443142fab1d280b96d13d6c1942c04329036f4f57a7d9cb1dc3a924a28a7e",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/results/processes/matched_producer_timing.json",
+      "process_sha256": "f2deb124fcf3c75922e35dde40f69157a1488c230cbb0da6454e7d6f485c43fb",
+      "session_sha256": "491b0af73482a32f9ea2da0b52a2f1e130698ce93ef8cc54451e01ed38dbdee9",
+      "monitor_sha256": "ef67f68afeeca79124faf88dfe6ca222f2505635f04914931de8060bde0d6142",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/archive_transfer_2e831cb7a9ab.json",
+        "archive_sha256": "4ba85dd2cdc6edeea00e42a238b884935d681e57d71b14bee7eac1e7cf861053"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/runs/timing/run.json",
+      "run_sha256": "d0edab23c142e8907e265dd72cc78b12b8ab8212dfc15203213a97c94f93cc59",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/results/processes/matched_producer_timing.json",
+      "process_sha256": "06ddf218279d0e1ff6f1dbfd1cb01f225d7c00fbd9a907bbcb1eddcc63058a71",
+      "session_sha256": "e460d48103414e5f96a93f51da2d6f8222a84d5184d6f93689e67a98857a40e8",
+      "monitor_sha256": "968f1a95e25f717b2173c068a53f956cf44088b247ef0d194e34d2585881c2d1",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/archive_transfer_2e831cb7a9ab.json",
+        "archive_sha256": "4ba85dd2cdc6edeea00e42a238b884935d681e57d71b14bee7eac1e7cf861053"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/runs/timing/run.json",
+      "run_sha256": "4b398ca5b0fb1a2c897cedf16d484fc02e3404f08983b913515812f97a6feb39",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/results/processes/matched_producer_timing.json",
+      "process_sha256": "389834f72e93dbb3904ced697f914d88440b4edee826067eed8318881da9ad02",
+      "session_sha256": "69ef68b4e71e11dff84c33c2585768be9cf38ebe5f99d9120351ed072a3089e4",
+      "monitor_sha256": "1aa9dad6dd8910c223de4f82183c76a98d2e113178f1c7d8a09dfd9328613e82",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/archive_transfer_2e831cb7a9ab.json",
+        "archive_sha256": "4ba85dd2cdc6edeea00e42a238b884935d681e57d71b14bee7eac1e7cf861053"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/runs/timing/run.json",
+      "run_sha256": "b4cbe03a5e6a8a277dc9ef4381c1c22e82fc2f26ed5e66f8dee29e8bd3f8a414",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/results/processes/matched_producer_timing.json",
+      "process_sha256": "50f1134669756d880a4d99978f756b6c92d4781751b68d2a52d82512d08cc2f5",
+      "session_sha256": "68935038f7cb85afc457c8fe88740ff508c47cf09dd21ea3a5470009d9842221",
+      "monitor_sha256": "de472fe6eb6af2e9cfd686c02f3a17f56f5e6f00eff9844e0bf0d6747d301876",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/archive_transfer_2e831cb7a9ab.json",
+        "archive_sha256": "4ba85dd2cdc6edeea00e42a238b884935d681e57d71b14bee7eac1e7cf861053"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/stock_before/runs/timing/run.json",
+      "run_sha256": "30d98c89110f09a9ca67e86f9f21aca2750f8cea9b6df4cf16b9e7ff646df93b",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/stock_before/results/processes/matched_producer_timing.json",
+      "process_sha256": "e1a7e41f0f03b9399c5aff03fd0de7491a16671f53a6d5c22c82637882591a7e",
+      "session_sha256": "3ff3392f7a5f29a61943bbf23996c9c9721608da66e752ea4bac0e975fc5f2a6",
+      "monitor_sha256": "a1cdf04320b8264618656709402673eea4c5963100153c166dc40e856e18d441",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+        "archive_sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/native/producer/runs/timing/run.json",
+      "run_sha256": "ca7074070c9713b14838d478d845785780c4b9474ed6ba05a3f1ead7c99cebce",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/native/producer/results/processes/matched_producer_timing.json",
+      "process_sha256": "562525c053e769d87a5520fa6a7657bca9112a798337e3f2efff052e33bf878a",
+      "session_sha256": "b4931eff6ddc05dc5c3802e80ff2afdda6264914b12b519e3cd8aebeb44c0466",
+      "monitor_sha256": "4403025bad67f6e757c3866ee1d883a2bdf2a510240f6640d70ba044803aa8f8",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+        "archive_sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/native/consumer/runs/timing/run.json",
+      "run_sha256": "09d8d79174488d7fc919331352e2c2e227fc5bf735177b45f34855efbfd8dbf0",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/native/consumer/results/processes/matched_producer_timing.json",
+      "process_sha256": "f8ab2c5b9cd9703c43aceb88c2bdbb6d975a7c33a5a01e54e0c0fc395ec8b66f",
+      "session_sha256": "235df95a83b5df92c1feb513e8b77f6b88bf840398330d6d1cbbdb9f8e101956",
+      "monitor_sha256": "cb10dd080d2a009ebb6565e2b7dc2624ef52e4c2236cfa1fe29ff366e9ff7dc5",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+        "archive_sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
+      }
+    },
+    {
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/stock_after/runs/timing/run.json",
+      "run_sha256": "6bc4d6f2eec534c4954d3cad04b4ad1c17d254f339df5da4a181cde6640801e5",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/a0/stock_after/results/processes/matched_producer_timing.json",
+      "process_sha256": "c87f8879e58cb0ca0c8bcae8ba47961772bf3d6439cf8c9ee88657e6532bb4c2",
+      "session_sha256": "721d28915403fe228559c353b78f9d7650aca9e33a86fe3f3c76e3e17653b22f",
+      "monitor_sha256": "625e0112a279561365fcb546dcda95379548977bd4ba0a89dae0842bf748ed89",
+      "archive": {
+        "receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+        "archive_sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
+      }
+    }
+  ],
+  "runtime_reader_sha256": "365758b18e3a7a4911262c314d0fa8c9f63d06aaa908a13f9c80d09298e561ac",
+  "runtime_budget_source_sha256": "eb10001a044ea25568118b66647519764b9a47dd3762247dc6222315b0afd622"
+}

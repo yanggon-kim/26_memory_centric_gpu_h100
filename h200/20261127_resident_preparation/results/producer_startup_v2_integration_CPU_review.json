@@ -1,0 +1,39 @@
+{
+  "classification": "CPU-only unapplied controller/entrypoint integration candidate; no GPU launch",
+  "patch": "h200/20261127_resident_preparation/producer_startup_v2_integration.patch",
+  "patch_sha256": "103f4f5b2b6e62da2962a2abd9eed29c4ba4e2d13804faa4a8beaacdb1236c9e",
+  "baseline_source_sha256": {
+    "scripts/h200_producer_quant_campaign.py": "889f0de5e5b10adb50ec89ef5bc5198f8b4b81a721eb639994b6617b262543b3",
+    "scripts/h200_producer_quant_entrypoint.py": "2ec2e38653173c4cfb92124e9897146cd3839e624a5381ecb048f33e2bbcd691"
+  },
+  "candidate_source_sha256": {
+    "scripts/h200_producer_quant_campaign.py": "93d945c4161011ae3ef947344b75ac3d1a75de7fb8eb2895ecd32ae6d44dac1f",
+    "scripts/h200_producer_quant_entrypoint.py": "ab6934cf9d0e754eff0c31ef5ca9c56b9f9af814314b0b370c239f8825e4e855"
+  },
+  "candidate_syntax": "Both ast.parse passed",
+  "entrypoint_CPU_checks": [
+    {
+      "scenario": "legacy_default",
+      "passed": true
+    },
+    {
+      "scenario": "explicit_corrected",
+      "passed": true
+    },
+    {
+      "scenario": "outside_root",
+      "passed": true
+    },
+    {
+      "scenario": "primary_failure",
+      "passed": true
+    }
+  ],
+  "patch_applied": false,
+  "source_promotion_pending": true,
+  "required_promoted_helpers": [
+    "h200_producer_startup_budget_v2.py",
+    "h200_producer_runtime_observations_v2.py"
+  ],
+  "remaining": "After current job closes, review/rebase against exact baseline, promote helpers without preparation-only sys.path setup, apply patch, run canonical/default/new-route tests, then version/submit a fresh owned-pair cohort only if actual complete3900sbudget fits. Existing role/collector/counts/source/clock/isolation/drift and660srole cap stay unchanged. No claim of a successful repaired GPU comparison."
+}
