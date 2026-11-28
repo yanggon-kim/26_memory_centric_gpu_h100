@@ -29,6 +29,14 @@ def check_tokens(source, hf, contract, source_sha):
     count=contract['max_tokens'];context=len(contract['prompt_ids'])
     assert type(count) is int and 2<=count<=4096
     assert context+count<=contract['model']['max_positions']
+    def token_schema(output,length):
+        assert type(output) is list and len(output)==1
+        assert type(output[0]) is list and len(output[0])==length
+        assert all(type(token) is int and 0<=token<contract['model']['vocab_size'] for token in output[0]), 'integer token IDs required'
+    assert context>0
+    token_schema([contract['prompt_ids']],context)
+    token_schema(case['prompt_ids'],context)
+    token_schema(hf['prompt_ids'],context)
     assert (case['batch_size'],case['context_length'],case['generated_tokens'])==(1,context,count)
     assert case['prompt_ids']==[contract['prompt_ids']]
     assert (hf['model_id'],hf['revision'],hf['precision'])==(config['model_id'],config['model_revision'],'BF16')
@@ -36,11 +44,12 @@ def check_tokens(source, hf, contract, source_sha):
     assert hf['prompt_ids']==case['prompt_ids'] and hf['prompt_sha256']==case['prompt_sha256']
     assert hf['gpu_uuid']==source['hardware']['uuid']
     expected=case['trials'][0]['output_ids']
-    assert len(expected)==1 and len(expected[0])==count
-    assert all(type(token) is int and 0<=token<contract['model']['vocab_size'] for token in expected[0])
+    for output in case['warmup_output_ids']+[row['output_ids'] for row in case['trials']]:
+        token_schema(output,count)
     for arm in (hf,hf['static_cache_gate']):
         for phase in ('warmups','trials'):
             assert len(arm[phase])==3, 'three full warmups/trials required for both HF routes'
+            for row in arm[phase]:token_schema(row['output_ids'],count)
             assert all(row['output_ids']==expected for row in arm[phase]), 'full HF token sequence differs'
     for row in hf['static_cache_gate']['warmups']+hf['static_cache_gate']['trials']:
         assert row['cache_length']==context+count-1, 'strict cache progress differs'

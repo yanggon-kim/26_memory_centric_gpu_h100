@@ -52,5 +52,24 @@ class Tokens(unittest.TestCase):
             if change=='diagnostic':hf['deterministic_reference_diagnostic']=True
             with self.subTest(change=change),self.assertRaises(AssertionError):check_tokens(source,hf,contract,'pinned-source')
 
+    def test_numeric_equality_cannot_accept_float_tokens_in_either_engine(self):
+        for route in ('source_warmup','source_trial','HF_dynamic','HF_static'):
+            source,hf,contract=self.fixture()
+            if route=='source_warmup':source['cases'][0]['warmup_output_ids'][0]=[[7.0,8]]
+            if route=='source_trial':source['cases'][0]['trials'][0]['output_ids']=[[7,8.0]]
+            if route=='HF_dynamic':hf['trials'][0]['output_ids']=[[7.0,8]]
+            if route=='HF_static':hf['static_cache_gate']['warmups'][0]['output_ids']=[[7,8.0]]
+            with self.subTest(route=route),self.assertRaisesRegex(AssertionError,'integer token IDs'):
+                check_tokens(source,hf,contract,'pinned-source')
+
+    def test_prompt_ID_schema_is_required_for_contract_and_both_engines(self):
+        for route in ('contract','source','HF'):
+            source,hf,contract=self.fixture()
+            if route=='contract':contract['prompt_ids']=[1.0,2,3]
+            if route=='source':source['cases'][0]['prompt_ids']=[[1,2.0,3]]
+            if route=='HF':hf['prompt_ids']=[[1,2,3.0]]
+            with self.subTest(route=route),self.assertRaisesRegex(AssertionError,'integer token IDs'):
+                check_tokens(source,hf,contract,'pinned-source')
+
 
 if __name__=='__main__':unittest.main()
