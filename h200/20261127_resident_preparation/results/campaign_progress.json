@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T13:42:25.858423+00:00",
+  "updated_utc": "2026-11-28T13:42:58+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
-  "current_job_id": null,
-  "current_observed_state": "NO_ACTIVE_JOB",
+  "current_job_id": "16285315",
+  "current_observed_state": "PENDING",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -83,8 +83,8 @@
     {
       "id": "P3b",
       "status": "partial",
-      "reason": "C16384 real-model native KV functional prerequisite now passed on actual pair; quantitative producer/consumer/seat/goodput comparisons remain pending",
-      "evidence": "h200/20261128_job16266958_native_functional_c16384/model/results/native_model_CPU_review.json"
+      "reason": "Repeated current-pair C16384functional proof passed. Producer fixed3x10cohort partial on165s stock-after timeout; completed producer/stock roles rejected clocks. Dedicated attribution job16285315pending; loaded serving/goodput remains unfinished.",
+      "evidence": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/worker_outcome.json"
     },
     {
       "id": "P4a",
@@ -104,8 +104,8 @@
     {
       "id": "P5a",
       "status": "partial",
-      "reason": "C16384 real-model native KV functional prerequisite now passed on actual pair; quantitative producer/consumer/seat/goodput comparisons remain pending",
-      "evidence": "h200/20261128_job16266958_native_functional_c16384/model/results/native_model_CPU_review.json"
+      "reason": "Repeated current-pair C16384functional proof passed. Producer fixed3x10cohort partial on165s stock-after timeout; completed producer/stock roles rejected clocks. Dedicated attribution job16285315pending; loaded serving/goodput remains unfinished.",
+      "evidence": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/worker_outcome.json"
     },
     {
       "id": "P5b",
@@ -134,19 +134,16 @@
     "visible squeue checks approximately300s apart"
   ],
   "current_results": "h200/20261128_job16281263_native_functional_c16384_producer_quant",
-  "next_job_id": null,
-  "next_job_state": null,
-  "next_scope": "Finish current fixed C16384 producer cohort; optional connector continuation only after completed publication/archive and complete time admission. Inspect actual outcomes before any sequential replacement.",
+  "next_job_id": "16285315",
+  "next_job_state": "PENDING",
+  "next_scope": "Dedicated instrumented connector attribution after fresh current-pair strict stock/HF and12paired real-model functional gates; preserve partial producer cohort, no producer performance resampling.",
   "last_closed_job_id": "16281263",
   "current_job_time_limit": "02:00:00",
   "current_bootstrap": null,
-  "current_node": "atl1-1-03-019-14-0",
-  "current_allocation_end": "2026-11-28T10:05:20-05:00",
-  "current_first_preemption_eligible": "2026-11-28T09:05:18-05:00",
-  "current_GPU_UUIDs": [
-    "GPU-3f9a2800-c6fb-242a-e145-979b7a922277",
-    "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9"
-  ],
+  "current_node": null,
+  "current_allocation_end": null,
+  "current_first_preemption_eligible": null,
+  "current_GPU_UUIDs": [],
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
   ],
@@ -178,8 +175,8 @@
     ],
     "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
     "prepared_prerequisite_job": {
-      "status": "COMPLETE functional prerequisites, committed and archive verified; quantitative cohort now running",
-      "command": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job 16280236 --pilot-root h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+      "status": "PENDING dedicated connector job with fresh functional gates",
+      "command": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
       "minimum_GPUs": 2,
       "requested_time_max": "01:15:00",
       "requested_time_min": "01:15:00",
@@ -214,9 +211,9 @@
         "qualification": "functional permission/control only; no calibrated BW or model traffic",
         "cleanup": "owned descendants only, before paired model phase and parent Git publication"
       },
-      "job_id": "16281263",
+      "job_id": "16285315",
       "submission_commit": "9ec7c394a06159da0ecf1582d95395b87ab73f11",
-      "actual_root": "h200/20261128_job16281263_native_functional_c16384"
+      "actual_root": null
     },
     "portable_request_inputs": {
       "status": "CPU-prepared; GPU controller integration and serving pending",
@@ -299,22 +296,22 @@
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
   "last_closed_bootstrap": "h200/20261127_job16238357_bootstrap",
-  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_live_16281263.json",
+  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_queue_16285315.json",
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
-  "current_allocation_start": "2026-11-28T08:05:18-05:00",
-  "current_comparison_disposition": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/acquisitions.json",
-  "next_command": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
-  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
-  "next_experiment_command_after_current_job_closes_condition": "Actual current job is terminal; verified pilot supplies runtime bounds only. Fresh current-allocation functional refs and complete fixed3x10cohort retain all source/output/clock/isolation gates. Preserve rejected pilot, never resample it.",
-  "current_launch_cutoff": "2026-11-28T14:50:20+00:00",
+  "current_allocation_start": null,
+  "current_comparison_disposition": "h200/20261127_resident_preparation/results/connector_submission_16285315.json",
+  "next_command": "timeout 25s squeue -h -j 16285315 -o '%i|%T|%l|%Q|%M|%R'",
+  "next_experiment_command_after_current_job_closes": "Inspect actual connector outcome and unresolved source/coverage gates before selecting another sequential job; no overlapping reservation.",
+  "next_experiment_command_after_current_job_closes_condition": "Job16285315terminal with completed/partial evidence published and archived; fresh allocation required for subsequent GPU cases.",
+  "current_launch_cutoff": null,
   "progress_estimate": {
     "percent": 20,
     "classification": "rough planning estimate, not measured fraction or runtime forecast",
     "scope": "all currently eligible two-H200 experiment families including expanded follow-up",
     "counting": "Qualified scientific comparisons count; partial captures, blocked cases and CPU preparation are reported separately",
     "owner_request": "Include percentage in future progress updates",
-    "updated_utc": "2026-11-28T13:42:25.858423+00:00",
+    "updated_utc": "2026-11-28T13:42:58+00:00",
     "latest_basis": "Qualified conditioned eager retained; current16Kfunctional proof passed; producer cohort partial and clock-rejected, no additional qualified performance comparison counted."
   },
   "rental_strategy": {
@@ -324,8 +321,8 @@
     "policy": "sequential jobs; publish each completed case; preserve preempted partial captures; no overlapping reservation",
     "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
   },
-  "first_preemption_eligible": "2026-11-28T09:05:18",
-  "current_scope": "Preparing fresh dedicated connector attribution job after preserved partial timing cohort",
+  "first_preemption_eligible": null,
+  "current_scope": "Dedicated instrumented connector attribution after fresh current-pair strict stock/HF and12paired real-model functional gates; preserve partial producer cohort, no producer performance resampling.",
   "latest_completed_prerequisite": "h200/20261128_job16281263_native_functional_c16384/results/worker_outcome.json",
   "latest_producer_pilot": {
     "root": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
@@ -338,11 +335,11 @@
     "source_role_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
   },
   "scheduler_poll_interval_s": 300,
-  "next_scheduler_poll_not_before_utc": "2026-11-28T13:42:16+00:00",
+  "next_scheduler_poll_not_before_utc": "2026-11-28T13:47:58+00:00",
   "prepared_connector_continuation": {
     "plan": "h200/20261127_resident_preparation/results/connector_followup_16281263.json",
     "job_id": "16281263",
-    "status": "conditional barrier-v3pilot only; no GPU capture yet",
+    "status": "Historical R9conditional plan not invoked after primary failure; replaced by dedicated job16285315with fresh gates",
     "minimum_protected_time_s": 1860,
     "new_reservation": false,
     "CPU_tests_passed": 42,
