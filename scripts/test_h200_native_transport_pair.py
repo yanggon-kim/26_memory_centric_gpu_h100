@@ -17,6 +17,14 @@ class PairAdmission(unittest.TestCase):
                       {'status': 'prefill_acquisition_disposition', 'complete_acquisition_set': False}):
             with self.assertRaises(AssertionError): validate_returned([done, other])
 
+    def test_terminal_reference_block_needs_separate_evidence_review(self):
+        blocked={'status':'blocked_resident_pilot','complete_acquisition_set':False,'allow_context_expansion':True}
+        done={'status':'prefill_acquisition_disposition','complete_acquisition_set':True}
+        with self.assertRaises(AssertionError):validate_returned([blocked,done])
+        with self.assertRaises(AssertionError):
+            validate_returned([blocked,done],[{'status':'terminal_exact_reference_failure_verified','curve_qualified':True},None])
+        validate_returned([blocked,done],[{'status':'terminal_exact_reference_failure_verified','curve_qualified':False},None])
+
     def test_fail_closed_for_wrong_allocation_busy_or_duplicate_device(self):
         sessions = [{'gpu_uuid': uuid, 'python': '/p', 'cuda_home': '/c',
                      'slurm_job_id': '123', 'expected_hostname': 'node.example'}

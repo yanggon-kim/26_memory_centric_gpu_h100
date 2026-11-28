@@ -46,9 +46,51 @@ def choose_ports():
         return [s.getsockname()[1] for s in sockets]
 
 
-def validate_returned(outcomes):
+def verify_terminal_reference_block(prior, session):
+    """A published terminal correctness failure permits independent component work.
+
+    This verifies the failed full reference; it never qualifies its SM curve.
+    A brief idle gap or an arbitrary failure remains insufficient.
+    """
+    from h200_priority_campaign import valid_tokens
+    reference_path=prior/'results/resident_pilot_hf.json'
+    process_path=prior/'results/processes/resident_pilot_hf.json'
+    reference=load(reference_path);process=load(process_path)
+    assert reference['status']=='failed' and reference['gpu_uuid']==session['gpu_uuid']
+    assert process['status']=='failed' and process['exit_code']==1
+    assert process['source_freeze_identity']==session['frozen_source_identity']
+    assert process['monitor'] and not process['monitor'].get('failure')
+    monitor=Path(process['monitor']['source']);assert monitor.is_file()
+    source_path=Path(reference['source_run']);assert sha(source_path)==reference['source_sha256']
+    source=load(source_path);assert valid_tokens(source)
+    case=source['cases'][0]
+    assert (case['batch_size'],case['context_length'],case['generated_tokens'])==(
+        reference['batch'],reference['context'],reference['generated_tokens'])
+    assert case['prompt_ids']==reference['prompt_ids']
+    assert reference['dynamic_cache_gate_passed'] is False or reference['static_cache_gate']['passed'] is False
+    for arm in (reference,reference['static_cache_gate']):
+        for kind in ('warmups','trials'):
+            assert len(arm[kind])==3
+            assert all(len(row['output_ids'])==case['batch_size'] and
+                all(len(ids)==case['generated_tokens'] for ids in row['output_ids']) for row in arm[kind])
+    return {'status':'terminal_exact_reference_failure_verified','curve_qualified':False,
+        'failed_reference':str(reference_path),'failed_reference_sha256':sha(reference_path),
+        'failed_process':str(process_path),'failed_process_sha256':sha(process_path),
+        'monitor':str(monitor),'monitor_sha256':sha(monitor),
+        'source_run':str(source_path),'source_run_sha256':sha(source_path),
+        'scope':'Completed failed3warm/3full-output dynamic and unchanged StaticCache controls, not a complete or qualified curve. Independent full-GPU transport work is eligible after this terminal reviewed block.'}
+
+
+def validate_returned(outcomes, blocked_reviews=None):
     assert len(outcomes) == 2
-    for row in outcomes:
+    blocked_reviews = [None,None] if blocked_reviews is None else blocked_reviews
+    assert len(blocked_reviews)==2
+    for row,review in zip(outcomes,blocked_reviews):
+        if row.get('status')=='blocked_resident_pilot':
+            assert row.get('complete_acquisition_set') is False and row.get('allow_context_expansion') is True
+            assert review and review.get('status')=='terminal_exact_reference_failure_verified'
+            assert review.get('curve_qualified') is False
+            continue
         assert row.get('status') in ('resident_curve_disposition',
             'prefill_acquisition_disposition', 'partial_scientific_gates_separate')
         if row['status'] != 'partial_scientific_gates_separate':
@@ -99,7 +141,10 @@ def main(args):
                                     text=True, timeout=25)
     validate_sources(sessions, [load(p.parent/'results/current_process.json') for p in paths],
                      job, socket.gethostname(), os.getuid(), state)
-    validate_returned([load(p.parent/'results/worker_outcome.json') for p in paths])
+    outcomes=[load(p.parent/'results/worker_outcome.json') for p in paths]
+    blocked_reviews=[verify_terminal_reference_block(p.parent,s) if o.get('status')=='blocked_resident_pilot' else None
+                     for p,s,o in zip(paths,sessions,outcomes)]
+    validate_returned(outcomes,blocked_reviews)
     fields = dict(p.split('=', 1) for p in state.split() if '=' in p)
     timezone = dt.datetime.fromisoformat(sessions[0]['launch_cutoff']).tzinfo
     assert timezone is not None
@@ -136,6 +181,7 @@ def main(args):
                  'worker_outcome_sha256': sha(p.parent/'results/worker_outcome.json'),
                  'idle_record_sha256': sha(p.parent/'results/current_process.json')} for p in paths],
             'protected_cutoff_unix_s': cutoff, 'required_budget_s': 720,
+            'terminal_reference_block_reviews':blocked_reviews,
             'scope': 'Both original producer locks held; both selected UUIDs idle; published broad-curve eligibility rechecked'})
         publish(args.root, 'H200 native component: publish idle pair admission and launcher source')
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=PACKAGE, text=True).strip()
