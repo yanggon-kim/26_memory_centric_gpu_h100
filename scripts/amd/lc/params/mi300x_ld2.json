@@ -46,7 +46,10 @@
    "PUT"
   ]
  },
- "ld2_kv": [16, "PUT_ASYNC"],
+ "ld2_kv": [
+  16,
+  "PUT_ASYNC"
+ ],
  "ld2_rates": {
   "lclo": [
    0.2,
@@ -81,5 +84,10 @@
  "ld2_decode_gpu_mem": 0.8,
  "ld2_decode_kv_buffer": 20000000000.0,
  "ld2c": null,
- "note": "amendment 7 (design section 17): disaggregation-favouring scenarios. ld2_kv is filled from the phase A rule and ld2c from the phase B rule, each committed before the phase it governs."
+ "note": "amendment 7 (design section 17): disaggregation-favouring scenarios. ld2_kv is filled from the phase A rule and ld2c from the phase B rule, each committed before the phase it governs.",
+ "ld2b_fx_steps": [
+  "ld2b_lclo_colo8_mix8192_s202"
+ ],
+ "ld2_per_worker_cache": true,
+ "note_amendment8": "amendment 8 (design section 18): ld2b_fx_steps re-runs steps lost to the compile-cache startup race with --per-worker-cache; ld2c steps use --per-worker-cache"
 }

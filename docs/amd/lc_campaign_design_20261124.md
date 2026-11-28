@@ -517,3 +517,29 @@ mechanically, written to `ld2c` and committed before ld2c is submitted.
   (`lc_analyze._engine_crashed`) now counts an `EngineDeadError` only before the first `[shutdown]` line, and counts any
   HIP/accelerator abort. This removed false flags on colo4_whole. The ld/ldfx engine-death list and all ld decisions are
   unchanged.
+
+## 18. Amendment 8 (2026-11-28, after the first ld2b job, before any re-run or ld2c data): compile-cache startup race
+
+**What happened.** Step `ld2b_lclo_colo8_mix8192_s202` failed on both attempts (job 563412) before serving any request.
+- Attempt 1: workers w5 and w6 failed engine initialisation in torch-inductor autotuning ("@jit functions should be
+  defined in a Python file"; "Cubin file saved by TritonBundler not found").
+- Attempt 2: worker w4 failed with the TritonBundler error.
+- All workers of a `cp_disagg` step share one compile cache (`$WORK/cache/proc/<ts>_<pid>`, set once per container
+  by `vllm_in_container.sh`), so concurrent first compilations race on it. The same deployment on seed 201 and the
+  other 10 completed steps did not hit it.
+- This is an infrastructure failure, not a measurement. Both failed attempts are preserved, and the runner does not
+  retry the step.
+
+**Change.**
+- `cp_disagg.py --per-worker-cache` (opt-in) gives each worker its own `VLLM_CACHE_ROOT`, `TRITON_CACHE_DIR` and
+  `TORCHINDUCTOR_CACHE_DIR` under the step's cache.
+- Only the cache location changes. Every step already starts from an empty cache, so compiled kernels and steady-state
+  performance are unaffected.
+
+**Re-run and phase C.**
+- One re-run: `ld2b_lclo_colo8_mix8192_s202_fx` (`ld2b_fx_steps`), same configuration plus `--per-worker-cache`. It runs
+  in the ld2b resume job and replaces the original in the analysis, as `_fx` steps did under amendment 6.
+- At most two attempts. If it also fails, colo8_mix8192 has one seed and is excluded from all-seed decisions.
+- All ld2c steps use `--per-worker-cache` (`ld2_per_worker_cache`).
+- The remaining four ld2b steps were deferred by the job deadline and run unchanged.
+- Added cost: about 1.1 node-hours.

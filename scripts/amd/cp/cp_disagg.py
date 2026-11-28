@@ -108,6 +108,13 @@ def start_servers(a, cfg, out, uuids, idx):
             env['CP_POLICY'] = a.decode_policy  # lc amendment 5: decode workers keep stock mixed scheduling
         if a.nccl_debug:
             env['NCCL_DEBUG'] = 'INFO'
+        if a.per_worker_cache:
+            # lc amendment 8: the workers of one step otherwise share one empty compile cache and can race on it
+            # (TritonBundler 'Cubin file ... not found', ld2b colo8_mix8192_s202); only the cache location changes
+            for var, sub in (('VLLM_CACHE_ROOT', 'vllm'), ('TRITON_CACHE_DIR', 'triton'), ('TORCHINDUCTOR_CACHE_DIR', 'inductor')):
+                if env.get(var):
+                    env[var] = os.path.join(os.path.dirname(env[var]), f'w{k}', sub)
+                    os.makedirs(env[var], exist_ok=True)
         cus, grid = (a.decode_cus, a.decode_grid) if role == 'kv_consumer' else (a.cus, a.grid)
         if cus:
             env['HSA_CU_MASK'] = f'{idx[k]}:{mask_range(cus)}'
@@ -380,6 +387,7 @@ if __name__ == '__main__':
     p.add_argument('--kv-channels', type=int, default=16, help='disagg: P2pNccl nccl_num_channels (lc amendment 7)')
     p.add_argument('--kv-send-type', choices=('PUT_ASYNC', 'PUT', 'GET'), default='PUT_ASYNC',
                    help='disagg: P2pNccl send_type (lc amendment 7)')
+    p.add_argument('--per-worker-cache', action='store_true', help='one compile cache per worker (lc amendment 8)')
     p.add_argument('--p2p-none-blocks-fix', action='store_true', help='disagg: cp_sched._p2p_none_blocks connector fix')
     p.add_argument('--max-model-len', type=int, default=16384)
     p.add_argument('--gpu-mem', type=float, default=0.85)

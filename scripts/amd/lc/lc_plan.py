@@ -379,6 +379,10 @@ def ld2b(cohort, params):
                   ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n, '--drain-s', dr],
                   est=_ld2_est(n, rates, dr), model='q32', workload=wl, deployment=dn,
                   prefill_workers=int(dn[1]) if dn.startswith('d') else None, seed=seed, rates=rates)
+    # amendment 8: re-run of steps lost to the compile-cache startup race, with one compile cache per worker
+    for sid in params.get('ld2b_fx_steps', []):
+        st = next(x for x in p.steps if x['id'] == sid)
+        p.steps.append(dict(st, id=sid + '_fx', rerun_of=sid, args=st['args'] + ['--per-worker-cache']))
     return p, {'a': O8}, {'a': p.assign('a', list(O8))}
 
 
@@ -396,6 +400,8 @@ def ld2c(cohort, params):
     def add(tag, wl, dn, extra, arrival, seed):
         n, dr, rates = params['ld2_requests'][wl], params['ld2_drain'][wl], params['ld2_rates'][wl]
         base = dn.split('_dcu')[0]
+        if params.get('ld2_per_worker_cache'):  # amendment 8
+            extra = extra + ['--per-worker-cache']
         p.add('a', 'ld', f'ld2c_{tag}_{wl}_{dn}_s{seed}', DG, _LD2_BASE + extra + ['--workload', wl, '--arrivals', arrival,
               '--rates', ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n, '--drain-s', dr],
               est=_ld2_est(n, rates, dr), model='q32', workload=wl, deployment=dn,
