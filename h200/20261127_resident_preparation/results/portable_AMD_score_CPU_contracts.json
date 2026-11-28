@@ -1,0 +1,82 @@
+{
+  "created_utc": "2026-11-28T04:38:12.559426+00:00",
+  "classification": "CPU synthetic accounting contracts and pinned-source parity; no GPU or held-out performance result",
+  "AMD_reference_commit": "8c4cc5b9026342c084365be4edc1c33d36221106",
+  "AMD_analysis_source_path": "scripts/amd/cp/cp_analyze.py",
+  "AMD_analysis_source_sha256": "aa7aec0fce22b0965fcb5e6d4108e6189da28d94b72363cec3f3a1f4524b6050",
+  "AMD_design_source_path": "docs/amd/lc_campaign_design_20261124.md",
+  "definition": "Amendment7 SLOs and disagg_trace first10percent rule; exact H200 output references additionally required.",
+  "files": {
+    "scripts/h200_portable_serving_score.py": "5de4ad4bd8d6c0dbabef94060f96d572be9682b94e489a7f0dfb96d55fe55c6d",
+    "scripts/test_h200_portable_serving_score.py": "77f2c2cf4679f3e5143af91190b06841fc9231de43392f948471176c23fa2bb4"
+  },
+  "tests": {
+    "passed": 7,
+    "failed": 0,
+    "command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s scripts -p 'test_h200_portable_serving_score.py' -v"
+  },
+  "independent_source_parity": [
+    {
+      "CPU_fixture": "all_correct",
+      "matched_metrics": {
+        "attainment": 1.0,
+        "goodput_rps": 1.1055435063758552,
+        "goodput_tok_s": 722.9026150024342,
+        "attainment_stall250": 1.0,
+        "goodput_stall250_rps": 1.1055435063758552,
+        "attainment_stall500": 1.0,
+        "goodput_stall500_rps": 1.1055435063758552,
+        "attainment_stall1000": 1.0,
+        "goodput_stall1000_rps": 1.1055435063758552,
+        "attainment_stall2000": 1.0,
+        "goodput_stall2000_rps": 1.1055435063758552,
+        "attainment_itl50": 1.0,
+        "goodput_itl50_rps": 1.1055435063758552
+      },
+      "exact_parity": true
+    },
+    {
+      "CPU_fixture": "one_hidden_stall",
+      "matched_metrics": {
+        "attainment": 1.0,
+        "goodput_rps": 1.1055435063758552,
+        "goodput_tok_s": 722.9026150024342,
+        "attainment_stall250": 0.9629629629629629,
+        "goodput_stall250_rps": 1.064597450584157,
+        "attainment_stall500": 0.9629629629629629,
+        "goodput_stall500_rps": 1.064597450584157,
+        "attainment_stall1000": 0.9629629629629629,
+        "goodput_stall1000_rps": 1.064597450584157,
+        "attainment_stall2000": 1.0,
+        "goodput_stall2000_rps": 1.1055435063758552,
+        "attainment_itl50": 1.0,
+        "goodput_itl50_rps": 1.1055435063758552
+      },
+      "exact_parity": true
+    },
+    {
+      "CPU_fixture": "chat_TTFT_failure",
+      "matched_metrics": {
+        "attainment": 0.14814814814814814,
+        "goodput_rps": 0.16378422316679336,
+        "goodput_tok_s": 46.10525882145234,
+        "attainment_stall250": 0.14814814814814814,
+        "goodput_stall250_rps": 0.16378422316679336,
+        "attainment_stall500": 0.14814814814814814,
+        "goodput_stall500_rps": 0.16378422316679336,
+        "attainment_stall1000": 0.14814814814814814,
+        "goodput_stall1000_rps": 0.16378422316679336,
+        "attainment_stall2000": 0.14814814814814814,
+        "goodput_stall2000_rps": 0.16378422316679336,
+        "attainment_itl50": 0.14814814814814814,
+        "goodput_itl50_rps": 0.16378422316679336
+      },
+      "exact_parity": true
+    }
+  ],
+  "failures_retained": "Missing records, timeout/abort, wrong outputs and unavailable references remain in the offered denominator; warmups remain counted separately. Independent per-seed ladder prefix disallows recovery after a lower-rate failure and censors crash/missing/unqualified boundaries.",
+  "limitations": "No GPU serving controller integration or qualification; timestamps are client-visible host observations, not decoder-step latency. All scientific source/clock/isolation/reference provenance and repetitions must be reviewed externally; energy remainsNA. Existing finite64output pilot unchanged.",
+  "GPU_execution": false,
+  "serving_qualified": false,
+  "current_job_preserved": "16238357"
+}
