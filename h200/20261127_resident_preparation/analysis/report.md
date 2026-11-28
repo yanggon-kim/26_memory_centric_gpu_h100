@@ -311,3 +311,7 @@ Four CPU tests reject wrong final tokens hidden behind passed flags, shortened o
 ## Full-reference integer schema, CPU resolution
 
 A malformed synthetic fixture showed Python float/int equality could mask a token schema error. The prospective checker now requires exact integer IDs for contract/source/HF prompts and every output in all warmups/trials. Six CPU tests pass and the retained R9full64reference revalidated under original pair-pinned source/HF hashes and owned process records. No actual GPU reference failed or changed; earlier checker revisions/receipts remain available. Latest evidence: `../results/full_reference_integer_schema_CPU_repair_v3.json`. No GPU execution or new percentage credit.
+
+## Future functional-boundary cache export, CPU preparation
+
+Five CPU guard tests pass for a future serial-parent export between a completed/verified-archived functional unit and creation of any next experiment root. Owned pair/source, all idle records, NVML idleness, nonempty bounded cache payload and original archived certificate are required. A future parent must enforce a120second CPU subprocess bound. The current queued job is unchanged; no files were exported, no cache bundle exists and no startup speedup is measured. This prepares a remedy for the earlier export attempt that reached an already-ended allocation. Importer compatibility checks and fresh numerical gates remain required. Evidence: `../results/functional_boundary_cache_export_CPU_contracts.json`.
