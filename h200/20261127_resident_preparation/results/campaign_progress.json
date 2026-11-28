@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T04:57:14.028134+00:00",
+  "updated_utc": "2026-11-28T05:13:00.239035+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16238357",
-  "current_observed_state": "RUNNING; allocated runtime staging",
+  "current_observed_state": "RUNNING; B8strict reference blocked, C1024prefill repeated acquisitions active",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -54,9 +54,14 @@
       "id": "P1b",
       "status": "partial",
       "queued_job_id": "16238357",
-      "next": "Batch8 context4096 original resident eager protocol, then batch32 and long contexts subject to gates",
+      "next": "One bounded deterministic-reference diagnostic on identical B8inputs; retain all failures and then advance eligible full-GPU work",
       "reason": "Current full optimized C4096/C16384triplicates captured with exactdualHF/source/process/isolation, but clock-unqualified and thermally limited on GPU1; batch8queued and further widths/contexts pending",
-      "evidence": "h200/20261127_job16233972_priority/gpu1/results/full_context_CPU_review.json"
+      "evidence": "h200/20261127_job16233972_priority/gpu1/results/full_context_CPU_review.json",
+      "active_attempt": {
+        "job_id": "16238357",
+        "status": "blocked_exact_reference",
+        "evidence": "h200/20261127_job16238357_priority/gpu0/results/B8_exact_reference_limitation.json"
+      }
     },
     {
       "id": "P2a",
@@ -122,7 +127,7 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": null,
+  "current_results": "h200/20261127_job16238357_priority",
   "next_job_id": "16238357",
   "next_job_state": "RUNNING",
   "next_scope": "P1b batch8 context4096 resident eager original unconditioned protocol, own sparse/all-level placement and strict dynamic/StaticCache gates, three independent acquisitions x ten trials; spare P4a context1024 whole/chunk256/1024/4096/whole_end resident instrumented prefill; fresh functional/reference pilot before three independent acquisitions x ten trials",

@@ -1,0 +1,92 @@
+{
+  "observed_utc": "2026-11-28T05:13:00.239035+00:00",
+  "status": "blocked_exact_full_output_reference",
+  "classification": "CPU review of actual measured reference failure; no qualified B8 latency curve",
+  "reference": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu0/results/resident_pilot_hf.json",
+  "reference_sha256": "fd1c5fa03e093ac0314f5c42552df5baf6b7b0f5f0a758eb3c6d6fd6f33b8c00",
+  "batch": 8,
+  "context": 4096,
+  "generated_tokens": 64,
+  "dynamic_full_output_hashes": {
+    "warmups": [
+      "7872a48815d6bd852ed0934c268159877f3194d055fdd127b3cb04d6db090a26",
+      "bd93701b8eb3e0b4707fbeb4d2c191d043abb06b6ce64085d65bc92c135e356d",
+      "7872a48815d6bd852ed0934c268159877f3194d055fdd127b3cb04d6db090a26"
+    ],
+    "trials": [
+      "7872a48815d6bd852ed0934c268159877f3194d055fdd127b3cb04d6db090a26",
+      "8b93d332b9f48c9a3758edabf11f2a98a41bec80077623ad26bbfc2f1d7ba8a2",
+      "bd93701b8eb3e0b4707fbeb4d2c191d043abb06b6ce64085d65bc92c135e356d"
+    ]
+  },
+  "static_full_output_hashes": {
+    "warmups": [
+      "d7af13cc8ca76950a10fe1604e246e300b3557ff450f0f9405904dda3a719e83",
+      "bd93701b8eb3e0b4707fbeb4d2c191d043abb06b6ce64085d65bc92c135e356d",
+      "d7af13cc8ca76950a10fe1604e246e300b3557ff450f0f9405904dda3a719e83"
+    ],
+    "trials": [
+      "7872a48815d6bd852ed0934c268159877f3194d055fdd127b3cb04d6db090a26",
+      "7872a48815d6bd852ed0934c268159877f3194d055fdd127b3cb04d6db090a26",
+      "d1d624ae5bcb2d3fce7119e7849b14aa4adc853439b032de3935714e127ad832"
+    ]
+  },
+  "dynamic_passed": false,
+  "static_passed": false,
+  "first_source_difference": {
+    "request": 6,
+    "token_index": 1,
+    "reference": 14621,
+    "actual": 27352
+  },
+  "separate_score_diagnostic": {
+    "first_difference": {
+      "request": 6,
+      "token_index": 1,
+      "reference": 14621,
+      "actual": 27352
+    },
+    "scored_call_ids_match_reference": false,
+    "top8": [
+      {
+        "token": 27352,
+        "score": 14.6875
+      },
+      {
+        "token": 14621,
+        "score": 14.6875
+      },
+      {
+        "token": 34583,
+        "score": 14.5625
+      },
+      {
+        "token": 71703,
+        "score": 12.75
+      },
+      {
+        "token": 100345,
+        "score": 12.0625
+      },
+      {
+        "token": 785,
+        "score": 11.0625
+      },
+      {
+        "token": 73594,
+        "score": 9.8125
+      },
+      {
+        "token": 11622,
+        "score": 9.75
+      }
+    ],
+    "top2_margin": 0.0,
+    "reference_token_score": 14.6875,
+    "source_token_score": 14.6875,
+    "scope": "separate HF dynamic generate with returned scores; allocation can change; no tolerance or gate relaxation"
+  },
+  "consequence": "No full3acquisition B8SM curve was launched. Sparse placement/same-engine outputs are functional diagnostics only; no threshold or timing is qualified.",
+  "bounded_next_attempt": "New source cohort, same exact prompt/count/BF16/seed and unchanged HF generate/controlled StaticCache functions, with deterministic Torch algorithms plus explicit CUBLAS workspace; preserve source and all six dynamic/six static outputs, reject any unsupported operation or mismatch. No ties/tolerances are accepted.",
+  "resume": "After one bounded diagnostic, retain blocked shape if unresolved and advance eligible full-GPU traffic/native serving prerequisites. Do not select favorable prompts, outputs or retries."
+}
