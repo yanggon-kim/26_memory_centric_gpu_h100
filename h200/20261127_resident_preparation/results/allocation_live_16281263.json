@@ -1,0 +1,30 @@
+{
+  "observed_utc": "2026-11-28T13:13:35.393134+00:00",
+  "job_id": "16281263",
+  "state": "RUNNING",
+  "node": "atl1-1-03-019-14-0",
+  "GPU_UUIDs": [
+    "GPU-3f9a2800-c6fb-242a-e145-979b7a922277",
+    "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9"
+  ],
+  "start": "2026-11-28T08:05:18",
+  "end": "2026-11-28T10:05:20",
+  "first_preemption_eligible": "2026-11-28T09:05:18",
+  "launch_cutoff_unix_s": 1795877420.0,
+  "source_commit": "bd57238891bc950155c499f78080b94b6c3f5826",
+  "frozen_source_identity": "2db1236b77f8cf5482bba5db0248b67dcaab043de8487ad75f2b1552c1814134",
+  "both_frozen_sources_match_optional_barrier_plan": true,
+  "root": "h200/20261128_job16281263_native_functional_c16384",
+  "runtime_check": {
+    "exit_code": 0,
+    "elapsed_s": 220.919921875,
+    "command": [
+      "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python",
+      "-u",
+      "-c",
+      "import torch,vllm,transformers; assert torch.__version__.split('+')[0]=='2.11.0'; assert vllm.__version__=='0.22.1'; assert transformers.__version__=='4.57.6'; assert torch.version.cuda=='13.0'; assert torch.cuda.device_count()==2; print(torch.__version__,vllm.__version__,transformers.__version__,torch.version.cuda); print([(str(torch.cuda.get_device_properties(i).uuid),torch.cuda.get_device_properties(i).name,torch.cuda.get_device_properties(i).multi_processor_count) for i in range(2)])"
+    ],
+    "classification": "environment preparation; no model result"
+  },
+  "scope": "Actual owned allocation startup and both immutable source manifests; no quantitative performance claim"
+}
