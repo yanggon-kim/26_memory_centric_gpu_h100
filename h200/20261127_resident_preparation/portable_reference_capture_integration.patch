@@ -1,0 +1,39 @@
+--- a/scripts/controlled_vllm_experiments.py
++++ b/scripts/controlled_vllm_experiments.py
+@@ -183,6 +183,14 @@
+ def main(args):
+     config=json.loads(Path(args.config).read_text())
+     assert config['warmup_trials']>=3 and config['trials']>=3
++    portable=None
++    if config.get('portable_trace_file'):
++        assert args.mode=='timing' and not args.external_profiler and not args.collect_worker_metadata
++        assert config['batch_sizes']==[1] and len(config['context_lengths'])==1
++        assert args.generated_tokens is not None and 2<=args.generated_tokens<=4096
++        from h200_portable_prompt_contract import portable_prompts
++        portable=portable_prompts(config,1,config['context_lengths'][0],args.generated_tokens)
++        assert args.batch in (None,1) and args.context in (None,config['context_lengths'][0])
+     os.environ.update(HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',VLLM_NO_USAGE_STATS='1',DO_NOT_TRACK='1',
+                       VLLM_ENABLE_V1_MULTIPROCESSING='0')
+     if args.external_profiler:
+@@ -287,7 +295,11 @@
+         dump(args.output/'run.json',data)
+     for batch,context in pairs:
+         assert context+count<=settings['max_model_len'] and batch<=settings['max_num_seqs']
+-        if workload:
++        if portable is not None:
++            assert batch==1 and context==portable[1]['full_prompt_tokens'] and count==portable[1]['full_output_tokens']
++            prompts=[list(ids) for ids in portable[0]]
++            data['workload']=portable[1]
++        elif workload:
+             assert all(len(ids)>=context for ids in encoded[:batch]), 'versioned text shorter than selected context'
+             prompts=[ids[:context] for ids in encoded[:batch]]
+         else:
+@@ -295,7 +307,7 @@
+             prompts=torch.randint(0,vocabulary,(batch,context),generator=generator).tolist()
+         case={'batch_size':batch,'context_length':context,'generated_tokens':count,
+               'prompt_ids':prompts,'prompt_sha256':digest(prompts),'trials':[],
+-              'workload_version':workload['version'] if workload else 'seeded_synthetic_uniform_ids',
++              'workload_version':data.get('workload',{}).get('version','seeded_synthetic_uniform_ids'),
+               'hardware_before':describe(nvml,handle,torch),'warmup_output_ids':[]}
+         data['cases'].append(case)
+         dump(args.output/'run.json',data)

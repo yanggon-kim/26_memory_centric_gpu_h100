@@ -1,0 +1,32 @@
+{
+  "created_utc": "2026-11-28T13:52:10.508202+00:00",
+  "classification": "CPU-prepared exact-input helper and unapplied integration patch; no GPU validation",
+  "baseline_source": "scripts/controlled_vllm_experiments.py",
+  "baseline_sha256": "3295a8bd9359d7f9ba002345daea7148635d28e6bb6bb4cb52dd8352432be898",
+  "source_sha256": {
+    "h200/20261127_resident_preparation/h200_portable_prompt_contract.py": "93661f5a144c64a069c5d5760f29eb8580f413545bdd3b8d76ece8a207e786a9",
+    "h200/20261127_resident_preparation/test_h200_portable_prompt_contract.py": "6535cc2346b984245a51770d07696f6f9f258171f3843d025b2710f71b04bc26",
+    "h200/20261127_resident_preparation/portable_reference_capture_integration.patch": "015983678e34761e9f3886395ca1291735ee1ac76035bb9bec77abb68e04b67a"
+  },
+  "CPU_tests": {
+    "passed": 4,
+    "command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s h200/20261127_resident_preparation -p test_h200_portable_prompt_contract.py -v",
+    "scenarios": [
+      "Exact original full token IDs/counts returned",
+      "Shortened prompts/outputs and batch replication rejected",
+      "Changed file pin and modified sealed contents rejected",
+      "Wrong model/precision/seed/request or simultaneous input/conditioning rejected"
+    ]
+  },
+  "candidate_syntax": "ast.parse passed",
+  "patch_applied": false,
+  "GPU_execution": false,
+  "performance_qualified": false,
+  "integration_resume": "At a safe future case boundary, rebase/review patch against its exact baseline; promote helper into scripts without preparation-only sys.path setup, test default and new input routes, then version/bound an on-device serial reference pilot. Acquire unchanged full default dynamic and strict StaticCache gates. Do not modify current queued connector experiment sources.",
+  "required_config_keys": [
+    "portable_trace_file",
+    "portable_trace_file_sha256",
+    "portable_request_id"
+  ],
+  "scope": "Full original portable request only; no tokenizer or shortened prefix/output substitute. Input admission is not a passed output oracle, complete serving adapter, latency/SLO result or policy tuning."
+}

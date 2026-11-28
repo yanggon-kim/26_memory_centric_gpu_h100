@@ -297,3 +297,7 @@ Started05:24:42Eastern onatl1-1-03-019-2-0with two allocated H200UUIDs GPU-cef53
 ## Portable full-length reference work planning
 
 CPU-only planner and four tests passed. Identical content across arrival/rate variants is enumerated once for future full-length reference acquisition while every offered request, timestamp, output length and warmup occurrence is retained. Test-only rates are not GPU experiment settings. Each contract still requires actual default dynamic and unchanged strict StaticCache agreement with full serial outputs and provenance. Input equality does not qualify any reference or reuse timing/device/source/isolation gates. No GPU execution or percentage progress credited. Evidence: `../results/portable_reference_plan_CPU_contracts.json`.
+
+## Exact portable input adapter, CPU preparation
+
+Four tests pass for full original request IDs/output counts and rejection of shortened/modified/wrong-model input. An unapplied integration patch targets the pinned serial capture source and passes Python syntax parsing. Current numerical scripts and queued connector job are unchanged. Fresh default/unchanged StaticCache output gates, source integration and on-device validation remain pending. No new GPU result or percentage progress credited. Evidence: `../results/portable_prompt_contract_CPU_contracts.json`.
