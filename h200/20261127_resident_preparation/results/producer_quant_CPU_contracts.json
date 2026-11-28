@@ -1,0 +1,48 @@
+{
+  "created_utc": "2026-11-28T09:49:32.485280+00:00",
+  "classification": "CPU preparation for a fixed3acquisition/10timed producer comparison; no GPU measurements",
+  "files": {
+    "scripts/h200_producer_quant_budget.py": "efb7f09644674f9e5914ce8ebb222d4a58ece2ed533b76b3cfc708fdc9fd03a8",
+    "scripts/h200_producer_quant_campaign.py": "889f0de5e5b10adb50ec89ef5bc5198f8b4b81a721eb639994b6617b262543b3",
+    "scripts/h200_review_producer_quant.py": "6c35160d23d5e7197629c3978fb3fb08eb90f25eae359978db4bb02e6ddf3f35",
+    "scripts/h200_producer_quant_entrypoint.py": "6e5e083b12ccf53cb6592a8e9db76b304b95e79ddd33ec58207442c11d586500",
+    "scripts/h200_producer_timing_role.py": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+    "scripts/h200_review_producer_timing.py": "f367ba21fcb26fbad3cf7a0291367877ab40527f895d5e56c8e1565a408415ff",
+    "scripts/h200_planned_producer_followup.py": "108f18b343a9d8ce92826e1735e2654e75ede101f4b37a1fb420fb481c2bd4db",
+    "scripts/test_h200_producer_quant_budget.py": "1a30fd39867fc9f4fd5aac003d9cf284a0ae6240f548469f172350a5df461788",
+    "scripts/test_h200_producer_quant_campaign.py": "e04d35d710f26ef49f0f19e9df0334c300c13ed62997f87a1457cfeb2b20222e",
+    "scripts/test_h200_review_producer_quant.py": "97538d744dedf59c2000bd27486966ca6e2087bd83545e31382e51f06ed49795",
+    "scripts/test_h200_producer_timing_role.py": "1a54f0ddc50a25c4ccc073c35ee34ca2cbfbd7069f1b62dd39cd6fbb1e5b9095",
+    "scripts/test_h200_review_producer_timing.py": "53d3a4b0bdef3373f096ce5ae372604294f866e62e0fbbc319a27aafeb17a6ab",
+    "scripts/test_h200_planned_producer_followup.py": "5e84eb731e41da88f25b294129917e893e07632246c45a1742f1b800336d56e8",
+    "batch/h200_priority_producer_quant_20261128.sbatch": "2fb92145e325144a023b65f628167661328e4141afe4b40b055c9904a6da7591"
+  },
+  "GPU_execution": false,
+  "performance_qualified": false,
+  "CPU_tests": {
+    "passed": 24,
+    "failed": 0,
+    "log": "results/producer_quant_CPU_contracts.log",
+    "log_sha256": "aeb355b6f16864344922dd72f232b63851704c1e52cb857bf615ce7d7efe1b8d",
+    "command": "python -m unittest discover -s scripts -p test_h200*producer*.py -v",
+    "new_batch_syntax": "bash -n passed"
+  },
+  "repetitions": "Exactly3fresh process acquisitions; stock-before, native producer+consumer, stock-after;3warmups and10timed requests per condition",
+  "runtime_estimate": "Source-verified complete/correct pilot only; fixed initialization/warmup/other time +10times slowest of3timed whole-request lifecycles, with25percent allowance and30seconds per role, floor120s; role watchdog remains660s. Complete cohort adds360s setup/publication/closeout margin.",
+  "pilot_data_in_performance_estimator": 0,
+  "primary_anchor": "Same-acquisition stock-before; stock-after <=5percent within/across-acquisition drift guard",
+  "qualification": "Own current allocation/UUID/source/HF/native functional gates, every request cached-prefix/query/preemption accounting, full3x10counts, same physical pair, pooled5percent clock envelope per UUID, drift, exact outputs and source/isolation; paired acquisition bootstrap only after every gate passes",
+  "query_accounting": "Pinned vLLM0.22.1synchronous non-speculative request counters and per-output cache-hit counts. With local prefix caching disabled, each consumer must reuse full external context, execute one handoff query and62following queries, with no preemption. These are scheduled logical queries, not physical padded instruction counts.",
+  "review_safety": "Read-only by default; optional CLI output requires a new filename. Functional reader implementation is verified from preserved source snapshots so /tmp disappearance does not invalidate archival review.",
+  "energy_scope": "Raw counter/power retained; primary J/token remainsNA without aligned all-board window/cadence/agreement gates; file IPC is not HTTP/SLO/goodput.",
+  "initial_prepublication_guard_failure": {
+    "CPU_only": true,
+    "case": "elapsed5s but six1s request lifecycles",
+    "initial_result": "one-second consistency allowance admitted inconsistent timing; negative unit test failed",
+    "repair": "tightened allowance to1ms and retained negative/nonfinite tests; all final24checks pass",
+    "GPU_measurements_affected": false
+  },
+  "activation": "Job16266958may consider this one fixed cohort after its original functional case and complete correct pilot, only with exact frozen code and complete protected runtime budget. No additional reservation/submission.",
+  "future_batch_template": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job <closed-job-id> --pilot-root <verified-actual-pilot-root>",
+  "remaining": "Actual GPU validation and data; consumer SM-cut/serving/traffic families remain separate pending/blocked cases"
+}

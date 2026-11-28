@@ -8,7 +8,7 @@ import argparse
 from pathlib import Path
 import statistics
 from h200_priority_campaign import load,write,sha,limitation,valid_tokens,strict_reference_record
-from h200_producer_timing_role import descriptor_scope,checked_outputs
+from h200_producer_timing_role import descriptor_scope,checked_outputs,check_step_accounting,ACCOUNTING_SOURCES
 from h200_native_model_pilot import validate_queries
 from h200_review_native_model import verified_process
 
@@ -60,10 +60,12 @@ def check_trials(run,pair,expected):
     assert run['status']=='complete' and len(run['trials'])==count
     assert run['mode']==pair['mode'] and run['protocol']==pair['protocol']
     assert run['acquisition']==pair['acquisition']
+    assert run['request_accounting_source_sha256']==ACCOUNTING_SOURCES
     primary=[];first=[];decoder=[];readiness=[];energy=[]
     for index,row in enumerate(run['trials']):
         assert row['trial']==index and row['warmup'] is (index<3)
         assert row['status']=='exact_output_passed' and row['observer_present'] is (index<3)
+        assert row['query_accounting']==check_step_accounting(row,role,pair['context'])
         steps=row['host_step_intervals'];outputs=row['outputs']
         assert len(steps)==len(outputs)==(63 if role=='consumer' else 1)
         assert row['submit_unix_ns']<=steps[0]['start_unix_ns']

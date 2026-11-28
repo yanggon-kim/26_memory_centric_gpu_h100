@@ -1,6 +1,7 @@
 import copy
 import unittest
 from h200_review_producer_timing import check_trials,check_pair,raw_energy
+from h200_producer_timing_role import check_step_accounting,ACCOUNTING_SOURCES
 
 
 class ProducerReader(unittest.TestCase):
@@ -23,7 +24,10 @@ class ProducerReader(unittest.TestCase):
             for i in range(63 if role=='consumer' else 1):
                 start=100+10*i;end=start+5
                 steps.append({'start_unix_ns':start,'end_unix_ns':end,'elapsed_ns':5})
-                outputs.append({'observed_unix_ns':end,'output_ids':expected[1:i+2] if role=='consumer' else [0]})
+                outputs.append({'observed_unix_ns':end,'output_ids':expected[1:i+2] if role=='consumer' else [0],
+                    'num_cached_tokens':16384 if role=='consumer' else 0,
+                    'computed_tokens_before_step':0 if i==0 else 16384+i,
+                    'computed_tokens_after_step':16384+i+1 if role=='consumer' else 16384})
             queries=[{'request_id':rid,'computed_tokens_before_step':16384+i,'scheduled_input_queries':1,
                 'original_prompt_tokens':16385,'prompt_input_queries':int(i==0),'post_prompt_input_queries':int(i>0)} for i in range(63)] if role=='consumer' else [
                 {'request_id':rid,'computed_tokens_before_step':0,'scheduled_input_queries':16384,'original_prompt_tokens':16384}]
@@ -34,10 +38,19 @@ class ProducerReader(unittest.TestCase):
                 'consumer_completion_unix_ns':725,'native_sent_tensor_count':64,
                 'warmup_scheduler_rows':[{'any_preempted_request':False,'requests':queries}] if trial<3 else None,
                 'completed_unix_ns':900,
+                'engine_request_preemptions':0,
                 'raw_energy_counter':{'before':{'query_start_unix_ns':90,'query_end_unix_ns':91,'status':'available','energy_mj':100,'error':None},
                     'after':{'query_start_unix_ns':800,'query_end_unix_ns':801,'status':'available','energy_mj':110,'error':None},
                     'counter_unit':'mJ','primary_J_per_token':None}})
-        return {'status':'complete','role':role,'mode':'pilot','protocol':pair['protocol'],'acquisition':0,'trials':rows},pair,expected
+        for row in rows:row['query_accounting']=check_step_accounting(row,role,16384)
+        return {'status':'complete','role':role,'mode':'pilot','protocol':pair['protocol'],'acquisition':0,'trials':rows,
+            'request_accounting_source_sha256':ACCOUNTING_SOURCES},pair,expected
+
+    def test_actual_timed_prefix_recompute_or_preemption_is_rejected(self):
+        run,pair,expected=self.fixture('consumer');run['trials'][3]['outputs'][0]['num_cached_tokens']=0
+        with self.assertRaises(AssertionError):check_trials(run,pair,expected)
+        run,pair,expected=self.fixture('consumer');run['trials'][4]['engine_request_preemptions']=1
+        with self.assertRaises(AssertionError):check_trials(run,pair,expected)
 
     def test_raw_decoder_ticks_exclude_the_first_handoff_query(self):
         run,pair,expected=self.fixture('consumer');metrics=check_trials(run,pair,expected)

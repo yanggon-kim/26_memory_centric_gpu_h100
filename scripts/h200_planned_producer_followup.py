@@ -19,6 +19,61 @@ ENTRY='h200_producer_timing_followup.py'
 REQUIRED_SECONDS=1920 # controller1860s admission plus60s metadata/publication margin
 
 
+def quant_if_planned(core,pilot,plan,sessions):
+    if not plan.get('quantitative_followup'):return {'status':'not_planned'}
+    result={'status':'checking_fixed_cohort_budget','GPU_roles_verified':False,
+        'scope':'One prespecified fresh3x10cohort; pilot supplies runtime only, never comparison samples or clock qualification'}
+    receipt=core/'results/planned_producer_quant.json'
+    try:
+        entry='h200_producer_quant_campaign.py'
+        assert sha(PACKAGE/'scripts'/entry)==plan['quantitative_entry_sha256']
+        for session in sessions:
+            for name in (entry,'h200_producer_quant_budget.py','h200_review_producer_quant.py'):
+                assert sha(Path(session['frozen_source_root'])/'scripts'/name)==sha(PACKAGE/'scripts'/name)
+        from h200_producer_quant_budget import budget
+        estimate=budget(pilot)
+        raw=subprocess.check_output(['scontrol','show','job','-o',os.environ['SLURM_JOB_ID']],text=True,timeout=25)
+        fields=dict(item.split('=',1) for item in raw.split() if '=' in item)
+        assert fields['JobState']=='RUNNING' and fields['JobId']==sessions[0]['slurm_job_id']
+        cutoff=min(dt.datetime.fromisoformat(fields['EndTime']).timestamp()-900,
+            *(dt.datetime.fromisoformat(s['launch_cutoff']).timestamp() for s in sessions))
+        result.update(runtime_estimate=estimate,available_s=cutoff-time.time(),cutoff_unix_s=cutoff,
+            required_s=estimate['required_s']+60)
+        if not estimate['all_bounds_within_existing660second_watchdog'] or result['available_s']<result['required_s']:
+            result['status']='deferred_complete_fixed_cohort_does_not_fit'
+            write(receipt,result)
+            limitation(core,'post_pilot_fixed_cohort_budget','Complete fixed3x10cohort does not fit current protected time or existing role watchdog',
+                'results/planned_producer_quant.json','Used actual source-verified pilot startup/warmup and timed-request costs; no data or clock qualification transferred',
+                'After this allocation closes, reuse the pilot only for runtime bounds in a fresh identified complete3x10cohort. Preserve completed pilot and never shrink rep counts or drop acquisitions.')
+            return result
+        target=core.with_name(core.name+'_producer_quant');assert not target.exists()
+        command=[sys.executable,PACKAGE/'scripts'/entry,'--functional-root',core,'--pilot-root',pilot,'--root',target]
+        result.update(status='fixed_cohort_admitted_pending_controller',command=list(map(str,command)),root=str(target),GPU_roles_verified=None)
+        write(receipt,result)
+        publish(core,'H200 producer: publish complete fixed3x10admission; pilot samples excluded')
+        process=subprocess.run(list(map(str,command)),cwd=PACKAGE)
+        result.update(status='fixed_cohort_controller_returned' if process.returncode==0 else 'fixed_cohort_failed_or_partial',
+            controller_exit_code=process.returncode,
+            GPU_launch_evidence='See independent controller source/idle/time admission and monitored process records; exit0 is never qualification')
+        outcome=target/'results/worker_outcome.json'
+        if outcome.exists():result.update(outcome=str(outcome),outcome_sha256=sha(outcome))
+        if process.returncode!=0:
+            limitation(core,'post_pilot_fixed_cohort_outcome','Separately supervised fixed3x10cohort failed or was partial',
+                str(target)+'; results/planned_producer_quant.json','Original functional and pilot comparisons remain intact; all original gates and fixed repetitions retained',
+                'Inspect actual partial/rejected/complete disposition before selecting the next job. Never infer performance qualification from successful prerequisite cases.')
+    except BaseException as error:
+        result.update(status='fixed_cohort_admission_or_execution_failed',error=str(error),traceback=traceback.format_exc())
+        write(receipt,result)
+        limitation(core,'post_pilot_fixed_cohort_admission',str(error),'results/planned_producer_quant.json',
+            'Complete correct source-verified pilot and current frozen code/budget required; no unpinned or shortened cohort',
+            'Preserve original completed cases and inspect the exact failed gate before the next eligible fresh comparison')
+        if isinstance(error,(KeyboardInterrupt,SystemExit)):raise
+    finally:
+        write(receipt,result)
+        publish(core,'H200 producer: publish actual fixed cohort continuation disposition')
+    return result
+
+
 def admission(plan,job,context,fields,sessions,outcome,certificate,now):
     assert plan['job_id']==job and plan['context']==context and plan['enabled'] is True
     assert plan['entry']==ENTRY and plan['GPUs']==2
@@ -93,6 +148,8 @@ def run_if_planned(context):
                 str(followup)+'; results/planned_producer_followup.json',
                 'Preserved original successful functional case; launched only the source-verified bounded independent controller',
                 'Inspect the producer root first failing stage and preserved partial data. Publish actual disposition and select a bounded repair or next eligible case; do not call functional success a producer performance result.')
+        else:
+            result['fixed_cohort_continuation']=quant_if_planned(core,followup,plan,sessions)
     except BaseException as error:
         result.update(status='followup_admission_or_execution_failed',error=str(error),traceback=traceback.format_exc())
         write(receipt,result)

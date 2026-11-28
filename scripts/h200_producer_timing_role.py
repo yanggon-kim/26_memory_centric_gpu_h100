@@ -21,6 +21,35 @@ import traceback
 from h200_native_pd_contract import request_id
 from h200_native_model_pilot import validate_scope,validate_queries,CONNECTOR_SHA,ENGINE_SHA
 
+ACCOUNTING_SOURCES={
+    'outputs.py':'991c0960770a619066ccbf469cc08ce1e9523e7fe19e3a116c4cd13c1e1750a0',
+    'v1/request.py':'462c17cfde4308f0eb35eb0b2afa6b4ba3e628caa481dee9f476297bec373f1e',
+    'v1/core/sched/scheduler.py':'41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983',
+    'v1/engine/output_processor.py':'464c3cda347512cf1090f8e6471d0d3f0f65e286eb9a7b97be52efbc1ffd572a',
+    'v1/metrics/stats.py':'08eb6bb969ad47e4207ba5568beaec35bdb09192b6db046f046dab4892ac1bf3'}
+
+
+def check_step_accounting(row,role,context):
+    assert row['engine_request_preemptions']==0
+    outputs=row['outputs'];assert len(outputs)==(63 if role=='consumer' else 1)
+    previous_cached=0
+    for index,output in enumerate(outputs):
+        cached=output['num_cached_tokens']
+        assert type(cached) is int and cached==(context if role=='consumer' else 0)
+        before=output['computed_tokens_before_step'];after=output['computed_tokens_after_step']
+        assert type(before) is int and type(after) is int
+        assert before==(0 if index==0 else context+index)
+        actual_queries=after-before-(cached-previous_cached)
+        assert actual_queries==(1 if role=='consumer' else context)
+        assert after==(context+index+1 if role=='consumer' else context)
+        previous_cached=cached
+    return {'scheduled_input_queries':63 if role=='consumer' else context,
+        'original_prompt_queries':0 if role=='consumer' else context,
+        'first_augmented_prompt_query':1 if role=='consumer' else None,
+        'following_post_prompt_queries':62 if role=='consumer' else 0,
+        'external_prefix_tokens':context if role=='consumer' else 0,
+        'scope':'Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts.'}
+
 
 def descriptor_scope(pair,session,role,uuid,job,hostname):
     assert pair['protocol']=='matched_native_producer_host_timing_v1'
@@ -88,7 +117,7 @@ def main(args):
     assert not reference['config'].get('decode_conditioning')
     settings=reference['engine_settings']
     assert settings['tensor_parallel_size']==1 and settings['dtype']=='bfloat16'
-    assert not settings['enable_prefix_caching'] and settings['enforce_eager'] is False
+    assert not settings['enable_prefix_caching'] and settings['enforce_eager'] is False and settings['async_scheduling'] is False
     import h200_session
     allocation=h200_session.verify_allocation();assert allocation is not None
     deadline=min(time.time()+660,pair['deadline_unix_s'],allocation['effective_launch_cutoff_unix_s'],
@@ -121,6 +150,10 @@ def main(args):
         import torch
         verify_cuda(torch,args.gpu_uuid)
         import vllm
+        package=Path(vllm.__file__).parent
+        accounting={name:sha(package/name) for name in ACCOUNTING_SOURCES}
+        assert accounting==ACCOUNTING_SOURCES
+        ledger['request_accounting_source_sha256']=accounting
         from vllm.config import KVTransferConfig
         from vllm.sampling_params import RequestOutputKind
         from h200_scheduler_observer import Observer
@@ -144,6 +177,9 @@ def main(args):
         dump(args.output/'run.json',ledger)
         llm=vllm.LLM(**engine_settings);engine=llm.llm_engine
         assert type(engine.engine_core).__name__=='InprocClient'
+        core=engine.engine_core.engine_core
+        assert core.batch_queue is None and not core.async_scheduling and not core.use_spec_decode
+        scheduler=core.scheduler
         shared=Path(pair['shared_directory']);assert shared.is_dir()
         if args.role!='stock':
             connector=get_kv_transfer_group();native=connector.p2p_nccl_engine
@@ -175,7 +211,7 @@ def main(args):
             rid=request_id(pair['request_prefix']+'_'+marker,pair['host'],pair['roles']['producer']['port'],pair['host'],pair['roles']['consumer']['port'])
             row={'trial':trial,'warmup':trial<3,'request_id':rid,'status':'running','outputs':[],
                 'host_step_intervals':[],'warmup_scheduler_rows':None,'observer_present':trial<3,
-                'producer_first_step_return_unix_ns':None,'all_native_sends_observed_unix_ns':None,
+                'producer_first_step_return_unix_ns':None,'all_native_sends_observed_unix_ns':None,'engine_request_preemptions':None,
                 'raw_energy_counter':{'before':energy_readout(nv,handle),'after':None,
                     'counter_unit':'mJ','primary_J_per_token':None,
                     'scope':'Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts.'}}
@@ -194,8 +230,10 @@ def main(args):
                 row['hardware_before']=describe(nv,handle,torch)
                 row['submit_unix_ns']=time.time_ns();began=time.perf_counter_ns()
                 assert engine.add_request(rid,{'prompt_token_ids':tokens},sampling)==rid
+                request_ref=scheduler.requests[rid]
                 while engine.has_unfinished_requests():
                     assert time.time()<deadline
+                    computed_before=request_ref.num_computed_tokens
                     before_unix=time.time_ns();before=time.perf_counter_ns()
                     batch=engine.step()
                     after=time.perf_counter_ns();after_unix=time.time_ns()
@@ -203,11 +241,15 @@ def main(args):
                     assert len(batch)==1 and batch[0].request_id==rid
                     result=batch[0];actual=list(result.outputs[0].token_ids)
                     # Preserve actual output even when the exact gate rejects it.
-                    row['outputs'].append({'observed_unix_ns':after_unix,'output_ids':actual})
+                    row['outputs'].append({'observed_unix_ns':after_unix,'output_ids':actual,
+                        'num_cached_tokens':result.num_cached_tokens,'computed_tokens_before_step':computed_before,
+                        'computed_tokens_after_step':request_ref.num_computed_tokens})
                     checked_outputs(actual,expected,args.role)
                 row['submit_to_final_step_return_ns']=after-began
                 row['final_step_return_unix_ns']=after_unix
                 row['hardware_after']=describe(nv,handle,torch)
+                row['engine_request_preemptions']=request_ref.num_preemptions
+                row['query_accounting']=check_step_accounting(row,args.role,pair['context'])
                 assert result.finished and result.outputs[0].finish_reason=='length' and len(actual)==count
                 assert len(row['host_step_intervals'])==(63 if args.role=='consumer' else 1)
                 if observer is not None:

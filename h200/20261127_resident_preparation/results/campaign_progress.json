@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T08:49:22.158095+00:00",
+  "updated_utc": "2026-11-28T09:49:32.485280+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16266958",
@@ -133,7 +133,7 @@
   "current_results": "h200/20261127_job16238357_priority",
   "next_job_id": "16266958",
   "next_job_state": "PENDING",
-  "next_scope": "Original C16384functional prerequisite unchanged, then conditionally attempt prepared producer pilot on the same allocation if all prerequisites/time gates pass",
+  "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
   "last_closed_job_id": "16238357",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
@@ -281,6 +281,15 @@
       "status": "conditional at original completed functional boundary; no GPU case launched",
       "minimum_protected_time_s": 1920,
       "extra_GPU_reservation": false
+    },
+    "prepared_fixed_producer_cohort": {
+      "receipt": "h200/20261127_resident_preparation/results/producer_quant_CPU_contracts.json",
+      "status": "CPU-prepared; no GPU data",
+      "activation": "conditional after correct pilot and complete runtime admission on owned current pair, else fresh sequential job after closeout",
+      "minimum_GPUs": 2,
+      "acquisitions": 3,
+      "warmups": 3,
+      "timed": 10
     }
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",

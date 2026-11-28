@@ -2,21 +2,22 @@
   "created_utc": "2026-11-28T06:42:25.575252+00:00",
   "classification": "CPU prepared producer pilot; no GPU measurements or new submission",
   "files": {
-    "scripts/h200_producer_timing_role.py": "a0d40329115d2445538dc858a826e4b85fc6f23dddaa9ab506c11ba05302c38c",
+    "scripts/h200_producer_timing_role.py": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
     "scripts/h200_producer_timing_followup.py": "19c93607e3788e0fff59c45a32616ae5f03b9d0f32d68224cb44064929fd77cf",
     "scripts/h200_producer_campaign.py": "deb515599992d51d8a0133e5785f1d5201cd9ea3b0c6bbe33479abda41f9980b",
-    "scripts/h200_review_producer_timing.py": "2a168e196cebc55c53beba886d728ccf511298142f1c11122313d83af32b7c44",
+    "scripts/h200_review_producer_timing.py": "f367ba21fcb26fbad3cf7a0291367877ab40527f895d5e56c8e1565a408415ff",
     "scripts/test_h200_producer_timing_role.py": "1a54f0ddc50a25c4ccc073c35ee34ca2cbfbd7069f1b62dd39cd6fbb1e5b9095",
     "scripts/test_h200_producer_timing_followup.py": "6ca4fdde75cff69553d38935457de451b0de049b38c4555ef36937fa40d935d4",
     "scripts/test_h200_producer_campaign.py": "03a4de27ff04d922b706db77d1c3bcc9e33d9bd784dfd54766df44f511a644f3",
-    "scripts/test_h200_review_producer_timing.py": "9eaf2d1955bec6170a28abd63d66e2a42e222afa403a5eb7775ee2f92da81866",
+    "scripts/test_h200_review_producer_timing.py": "53d3a4b0bdef3373f096ce5ae372604294f866e62e0fbbc319a27aafeb17a6ab",
     "batch/h200_priority_producer_20261128.sbatch": "459758b85ea29b732b0fcfb46c5fb704e798b69ddeb86f8ad3b477684dfbdd0d"
   },
   "CPU_tests": {
-    "passed": 11,
+    "passed": 24,
     "failed": 0,
     "command": "python -m unittest discover -s scripts -p test_h200*producer*.py -v",
-    "batch_syntax": "bash -n passed"
+    "batch_syntax": "bash -n passed",
+    "scope": "Complete producer preparation group, including pilot/conditional/fixed-cohort gates"
   },
   "GPU_execution": false,
   "performance_qualified": false,
@@ -40,6 +41,8 @@
     "Independent connector GPU timeline coverage/per-layer attribution",
     "Live full/qualified-restricted consumer and separate serving goodput"
   ],
-  "updated_utc": "2026-11-28T06:50:57.024593+00:00",
-  "raw_energy_scope": "Raw NVML cumulative mJ snapshots with host query brackets before/after each role request lifecycle; no added GPU synchronization. Consumer readout begins before actualp0handoff and includes peer waiting. Endpoint counters and independent owned sampled power are retained; no aligned all-board/primary timing energy window or update cadence is established. Unsupported counters/resets are preserved immediately; primary J/token remains NA."
+  "updated_utc": "2026-11-28T09:49:32.485280+00:00",
+  "raw_energy_scope": "Raw NVML cumulative mJ snapshots with host query brackets before/after each role request lifecycle; no added GPU synchronization. Consumer readout begins before actualp0handoff and includes peer waiting. Endpoint counters and independent owned sampled power are retained; no aligned all-board/primary timing energy window or update cadence is established. Unsupported counters/resets are preserved immediately; primary J/token remains NA.",
+  "prepared_fixed_cohort_receipt": "results/producer_quant_CPU_contracts.json",
+  "request_accounting": "Pinned vLLM0.22.1synchronous non-speculative request counters and per-output cache-hit counts. With local prefix caching disabled, each consumer must reuse full external context, execute one handoff query and62following queries, with no preemption. These are scheduled logical queries, not physical padded instruction counts."
 }

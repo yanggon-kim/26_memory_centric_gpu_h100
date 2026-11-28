@@ -14,6 +14,26 @@ from h200_planned_producer_followup import admission,ENTRY,REQUIRED_SECONDS
 
 
 class ContinuationAdmission(unittest.TestCase):
+    def test_fixed_cohort_budget_deferral_keeps_pilot_and_never_starts_child(self):
+        with tempfile.TemporaryDirectory() as folder:
+            package=Path(folder);core=package/'h200/core';pilot=package/'h200/pilot'
+            (core/'results').mkdir(parents=True);pilot.mkdir();(pilot/'original').write_text('preserved')
+            scripts=package/'scripts';scripts.mkdir()
+            entry='h200_producer_quant_campaign.py'
+            for name in (entry,'h200_producer_quant_budget.py','h200_review_producer_quant.py'):(scripts/name).write_text('unused CPU test source\n')
+            now=time.time();end=dt.datetime.fromtimestamp(now+1500,dt.timezone.utc).isoformat()
+            sessions=[{'slurm_job_id':'123','frozen_source_root':str(package),'launch_cutoff':end}]*2
+            plan={'quantitative_followup':True,'quantitative_entry_sha256':sha(scripts/entry)}
+            raw='JobId=123 JobState=RUNNING EndTime='+end
+            with patch.dict(os.environ,{'SLURM_JOB_ID':'123'}),patch.object(continuation,'PACKAGE',package), \
+                 patch('h200_producer_quant_budget.budget',return_value={'required_s':1000,'all_bounds_within_existing660second_watchdog':True}), \
+                 patch.object(continuation.subprocess,'check_output',return_value=raw),patch.object(continuation.subprocess,'run') as run, \
+                 patch.object(continuation,'limitation') as limitation,patch.object(continuation,'publish'):
+                result=continuation.quant_if_planned(core,pilot,plan,sessions)
+            self.assertEqual(result['status'],'deferred_complete_fixed_cohort_does_not_fit')
+            run.assert_not_called();limitation.assert_called_once()
+            self.assertEqual((pilot/'original').read_text(),'preserved')
+
     def test_real_short_budget_path_preserves_core_without_starting_a_child(self):
         with tempfile.TemporaryDirectory() as folder:
             package=Path(folder);core=package/'h200/20261128_job123_native_functional_c16384'
