@@ -1,0 +1,43 @@
+{
+  "created_utc": "2026-11-28T06:42:25.575252+00:00",
+  "classification": "CPU prepared producer pilot; no GPU measurements or new submission",
+  "files": {
+    "scripts/h200_producer_timing_role.py": "1191fc91b4af1500c75a091e2c5e800e7550d02361e559396ceb14bf60a6ab6a",
+    "scripts/h200_producer_timing_followup.py": "19c93607e3788e0fff59c45a32616ae5f03b9d0f32d68224cb44064929fd77cf",
+    "scripts/h200_producer_campaign.py": "deb515599992d51d8a0133e5785f1d5201cd9ea3b0c6bbe33479abda41f9980b",
+    "scripts/h200_review_producer_timing.py": "c16cb923584e1c685ba4587bd9bd04e25b9452b35b8e14ffac1bbdf71c5a3c38",
+    "scripts/test_h200_producer_timing_role.py": "b528ceedec704ac79587a3bdb4b30e47cbabe91143feef8e9e86192644386bcc",
+    "scripts/test_h200_producer_timing_followup.py": "6ca4fdde75cff69553d38935457de451b0de049b38c4555ef36937fa40d935d4",
+    "scripts/test_h200_producer_campaign.py": "03a4de27ff04d922b706db77d1c3bcc9e33d9bd784dfd54766df44f511a644f3",
+    "scripts/test_h200_review_producer_timing.py": "e5e8ee160e65cc64ff354213354b77ee94bdff1777ab61287cc074e6cafab201",
+    "batch/h200_priority_producer_20261128.sbatch": "459758b85ea29b732b0fcfb46c5fb704e798b69ddeb86f8ad3b477684dfbdd0d"
+  },
+  "CPU_tests": {
+    "passed": 9,
+    "failed": 0,
+    "command": "python -m unittest discover -s scripts -p test_h200*producer*.py -v",
+    "batch_syntax": "bash -n passed"
+  },
+  "GPU_execution": false,
+  "performance_qualified": false,
+  "minimum_GPUs": 2,
+  "allocation_max": "01:15:00",
+  "allocation_min": "01:15:00",
+  "status": "Prepared; do not submit while job16266958is queued or running",
+  "candidate_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958",
+  "pipeline": [
+    "Fresh same-allocation long-context native functional gates and full64default strict HF references",
+    "Require completed functional certificate, source equality, exact idle owned pair and1860seconds of complete pilot budget",
+    "Same-GPU stock-before/default native producer+consumer/stock-after, each3warm+3timed",
+    "Independent source/output/phase/completion/causality/provenance/clock/drift CPU reader; raw host timings retained on rejection",
+    "Commit/push and closed-unit archive readback verification"
+  ],
+  "timing_scope": "Producer host submit-to-first-step-return, all-native-send receipt observation and consumer first handoff query/following62host calls are distinct. No added GPU synchronization or scheduler/connector hooks in timed requests; consumer whole-request elapsed includes per-step CPU bookkeeping. File IPC is not HTTP/deployed TTFT or serving goodput.",
+  "primary_gates": "Original pooled5percent clock envelope per UUID and same-producer stock before/after drift; pilot never qualifies3independent acquisitions/10timed comparison",
+  "remaining": [
+    "Actual on-device pilot and measured runtime admission",
+    "Fresh complete3x10matched comparison and uncertainty after pilot qualification",
+    "Independent connector GPU timeline coverage/per-layer attribution",
+    "Live full/qualified-restricted consumer and separate serving goodput"
+  ]
+}

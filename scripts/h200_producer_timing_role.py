@@ -87,7 +87,7 @@ def main(args):
         'reference_run_sha256':sha(source_path),'functional_CPU_review_sha256':sha(certificate_path),
         'engine_settings_without_KV_object':settings,'allocation_verification':allocation,'trials':[],
         'clean_timing_qualified':False,'serving_qualified':False,'primary_J_per_token':None,
-        'scope':'Producer submit-to-first-step-return host time is separate from all-native-send readiness, file IPC, consumer host step times and end-to-end serving goodput. No HTTP/SLO or clean GPU-event latency is measured. Warmup query proof is instrumented; timed rows have no observer, payload proof or added GPU synchronization.'}
+        'scope':'Producer submit-to-first-step-return host time is separate from all-native-send readiness, file IPC, consumer host step times and end-to-end serving goodput. No HTTP/SLO or clean GPU-event latency is measured. Warmup query proof is instrumented; timed rows have no scheduler/connector observer, payload proof or added GPU synchronization. Consumer per-step CPU recording/output checks occur between engine calls, so its whole-request elapsed includes that overhead.'}
     dump(args.output/'run.json',ledger)
     finished=threading.Event()
     def watchdog():
