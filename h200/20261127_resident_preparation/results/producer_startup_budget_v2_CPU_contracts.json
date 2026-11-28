@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-11-28T15:14:23.781421+00:00",
+  "classification": "CPU operational-budget proposal only; no GPU launch or performance resampling",
+  "source_sha256": {
+    "h200/20261127_resident_preparation/h200_producer_startup_budget_v2.py": "eb10001a044ea25568118b66647519764b9a47dd3762247dc6222315b0afd622",
+    "h200/20261127_resident_preparation/test_h200_producer_startup_budget_v2.py": "fe5a4801ca93f55ecf174813c5e509db71791e66e2f6e29a83b1cab59b7c068d"
+  },
+  "CPU_tests_passed": 5,
+  "CPU_test_command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s h200/20261127_resident_preparation -p test_h200_producer_startup_budget_v2.py -v",
+  "archived_runtime_records": 8,
+  "partial_timeout_records": 1,
+  "old_protected_s": 2784,
+  "proposed_protected_s": 3900,
+  "old_phase_timeout_s": {
+    "stock_before": 251,
+    "native": 392,
+    "stock_after": 165
+  },
+  "proposed_phase_timeout_s": {
+    "stock_before": 336,
+    "native": 512,
+    "stock_after": 332
+  },
+  "performance_samples_used": 0,
+  "original_cohort_status_unchanged": "blocked_or_partial_fixed3x10; clock-rejected completed stock/producer captures",
+  "queued_job_source_unchanged": "16285315",
+  "integrated_into_GPU_controller": false,
+  "GPU_execution": false,
+  "performance_qualified": false,
+  "CPU_schema_failure_preserved": "h200/20261127_resident_preparation/results/producer_startup_budget_v2_CPU_schema_reproduction.json",
+  "reproduction_command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python h200/20261127_resident_preparation/h200_producer_startup_budget_v2.py --inputs h200/20261127_resident_preparation/results/producer_startup_budget_v2_inputs.json --output <fresh-proposal.json>",
+  "resume": "After current job is terminal and evidence closed, version/promote the proposal with its archive-provenance reader into a future frozen controller, verify count/schema and phase integration, then require actual fresh owned-pair functional gates plus3900seconds protected time. Preserve every failed/clock-rejected capture and all original source/clock/isolation/drift gates. Never reuse old timing samples or retry a complete comparison merely for favorable clocks."
+}
