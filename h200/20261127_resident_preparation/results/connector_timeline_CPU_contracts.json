@@ -1,0 +1,38 @@
+{
+  "created_utc": "2026-11-28T12:01:15.501570+00:00",
+  "classification": "CPU read-only reanalysis/schema check of a retained R5resident placement trace; no new GPU acquisition, connector or timing result",
+  "source_database": "h200/20261127_job16233972_priority/gpu0/profiles/resident_b1_c4096_a0_proof.5.sqlite",
+  "source_database_sha256_before": "d2dfbe16a4e4af9cf5f1693aeb190d1c060ce1e249fd0d554ce68be45932bb02",
+  "source_database_sha256_after": "d2dfbe16a4e4af9cf5f1693aeb190d1c060ce1e249fd0d554ce68be45932bb02",
+  "actor_pid": 3133348,
+  "NVTX_range": "resident_green80_ticks_4_6",
+  "reader": "h200/20261127_resident_preparation/h200_connector_timeline.py",
+  "reader_sha256": "893838a93a52dc6f16bd6d6cf3f7b752359a487171cd979bce5ea22c813b04b4",
+  "CPU_tests": {
+    "command": "python -m unittest discover -s h200/20261127_resident_preparation -p test_connector_timeline.py -v",
+    "passed": 5,
+    "failed": 0
+  },
+  "output": "h200/20261127_resident_preparation/results/connector_timeline_retained_trace_CPU_review.json",
+  "observed": {
+    "actor_kernel_records": 2553,
+    "selected_launch_correlated_kernel_records": 2553,
+    "foreign_kernel_globalPids": [],
+    "nonempty_selected_launch_coverage": true,
+    "connector_NVTX_linked_kernel_records": 0,
+    "unmatched_connector_kernel_records": 2553,
+    "scientific_qualified": false
+  },
+  "unresolved_launch_count": 0,
+  "scope": "Only validates process/thread/schema and CUDA launch correlation on original scope. Resident trace has no connector NVTX, so connector assignment remains unmatched. Original R5curve/certificate/plots unchanged. Future actor-PID sidecar/provenance and NSYS coverage gates still required.",
+  "updated_utc": "2026-11-28T12:02:19.592764+00:00",
+  "source_matches_verified_original_archive_member": true,
+  "original_archive_manifest": "h200/20261127_job16233972_priority/results/archive_content_manifest_438b3c019c21.json",
+  "original_archive_member": {
+    "bytes": 1245184,
+    "path": "gpu0/profiles/resident_b1_c4096_a0_proof.5.sqlite",
+    "sha256": "d2dfbe16a4e4af9cf5f1693aeb190d1c060ce1e249fd0d554ce68be45932bb02"
+  },
+  "test_source": "h200/20261127_resident_preparation/test_connector_timeline.py",
+  "test_source_sha256": "a638738947d7c02db82a02edafd9baa8de914b1a836bb7e7a0998574ec830ba0"
+}

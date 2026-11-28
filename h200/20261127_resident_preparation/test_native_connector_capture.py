@@ -1,5 +1,6 @@
 """CPU lifecycle integration with fake engine/CUDA callbacks; no GPU evidence."""
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -60,6 +61,7 @@ class Lifecycle(unittest.TestCase):
             args=self.args(Path(folder));self.assertEqual(main(args),'functional-return')
             saved=json.loads((args.output/'profiler_capture_gate.json').read_text())
             self.assertEqual(saved['capture_count'],1);self.assertFalse(saved['GPU_kernel_coverage_verified'])
+            self.assertEqual(saved['actor_pid'],os.getpid())
             self.assertEqual(len([r for r in calls if isinstance(r,tuple)]),12)
             self.assertEqual([r for r in calls if isinstance(r,str)],['start','push','pop','stop','original_hooks_restored','owned_engine_cleanup'])
             self.assertIs(modules['h200_native_model_pilot'].NativeLedger,original)

@@ -6,6 +6,7 @@ are instrumented controls, never clean producer timing or deployed goodput.
 """
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -52,10 +53,10 @@ def main(args):
                 failures.append({'operation':operation,'type':type(error).__name__,'error':str(error)})
             try:self.capture_gate.close()
             except BaseException as error:failed('profiler_gate_close',error)
-            gate=self.capture_gate.summary();gate['protocol']=PROTOCOL
+            gate=self.capture_gate.summary();gate['protocol']=PROTOCOL;gate['actor_pid']=os.getpid()
             closed.append(gate)
             spans=self.connector_spans
-            document={'protocol':PROTOCOL,'classification':spans.classification,
+            document={'protocol':PROTOCOL,'actor_pid':os.getpid(),'classification':spans.classification,
                 'events':spans.events,'clean_timing_qualified':False,'GPU_compute_attributed':False,
                 'scope':'Host API/NVTX spans, not GPU duration. Nested/concurrent intervals are not additive. Payload-proof arms include hashing overhead and are excluded from selected metadata capture. Serialized handoff is not deployment latency.'}
             restored=False
