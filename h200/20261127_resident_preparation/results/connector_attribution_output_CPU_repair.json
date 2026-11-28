@@ -1,0 +1,18 @@
+{
+  "created_utc": "2026-11-28T11:46:07.453117+00:00",
+  "classification": "CPU attribution entrypoint repair only; no GPU acquisition",
+  "files": {
+    "scripts/h200_native_connector_attribution.py": "4718dfccabf742f0618f47722cab84f1caf76a2f31eab9ff9db220e7882f9a4a",
+    "scripts/test_h200_native_connector_attribution.py": "0d1628d96819c513749c6e9fe427e6a715a1545b36a632a387ca63fbd5e1a6e7"
+  },
+  "tests": {
+    "command": "python -m unittest discover -s scripts -p test_h200_native_connector_attribution.py -v",
+    "passed": 4,
+    "failed": 0
+  },
+  "reproduction": "results/connector_attribution_output_CPU_reproduction.json",
+  "repair": "After protocol admission create exclusive new output directory before delegated functional ledger; reject existing output, preserve partial files and restore original class after exception.",
+  "GPU_execution": false,
+  "current_job": "16281263unchanged; entrypoint is not used by queued producer quant pipeline",
+  "remaining": "Profiler gate integration, actual CUDA coverage, connector attribution and instrumentation calibration still pending"
+}

@@ -15,6 +15,7 @@ def main(args):
     pair=json.loads(args.pair_config.read_text())
     assert pair.get('connector_attribution_protocol')=='host_API_NVTX_functional_v1'
     assert pair['protocol']=='native_model_KV_long_context_functional_v2'
+    args.output.mkdir(parents=True,exist_ok=False)
     import h200_native_model_pilot as functional
     from h200_connector_spans import ConnectorSpans
     from software_decode_experiments import dump
