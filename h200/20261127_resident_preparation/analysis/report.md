@@ -315,3 +315,7 @@ A malformed synthetic fixture showed Python float/int equality could mask a toke
 ## Future functional-boundary cache export, CPU preparation
 
 Five CPU guard tests pass for a future serial-parent export between a completed/verified-archived functional unit and creation of any next experiment root. Owned pair/source, all idle records, NVML idleness, nonempty bounded cache payload and original archived certificate are required. A future parent must enforce a120second CPU subprocess bound. The current queued job is unchanged; no files were exported, no cache bundle exists and no startup speedup is measured. This prepares a remedy for the earlier export attempt that reached an already-ended allocation. Importer compatibility checks and fresh numerical gates remain required. Evidence: `../results/functional_boundary_cache_export_CPU_contracts.json`.
+
+## Retained CUDA graph launch-association check
+
+Read-only validation on the original R2optimized stock graph SQLite matched all 2,550 kernels to launch APIs, including 2,499 graph-node kernels; no unresolved or outside-selected launches. The raw database hash matches its original verified archive member. No connector NVTX ranges exist in that older control, so no method attribution is inferred. Historical trace PID is not evidence of a live process. Current native graph/profile and method-coverage gates remain pending; no GPU execution or percentage credit is added. Source remained unchanged. Evidence and exact reproduction command: `../results/connector_timeline_retained_graph_CPU_review.json`.
