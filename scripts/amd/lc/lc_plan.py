@@ -379,10 +379,18 @@ def ld2b(cohort, params):
                   ','.join(f'{r:.4g}' for r in rates), '--seeds', seed, '--requests', n, '--drain-s', dr],
                   est=_ld2_est(n, rates, dr), model='q32', workload=wl, deployment=dn,
                   prefill_workers=int(dn[1]) if dn.startswith('d') else None, seed=seed, rates=rates)
-    # amendment 8: re-run of steps lost to the compile-cache startup race, with one compile cache per worker
-    for sid in params.get('ld2b_fx_steps', []):
-        st = next(x for x in p.steps if x['id'] == sid)
-        p.steps.append(dict(st, id=sid + '_fx', rerun_of=sid, args=st['args'] + ['--per-worker-cache']))
+    return p, {'a': O8}, {'a': p.assign('a', list(O8))}
+
+
+def ld2bfx(cohort, params):
+    """Amendment 8: re-run of the ld2b steps params['ld2b_fx_steps'] (lost to the compile-cache startup race), same
+    configuration plus --per-worker-cache, in their own run root (the ld2b root resumes its frozen plan)."""
+    full, _, _ = ld2b(cohort, params)
+    p = Plan('ld2bfx', cohort)
+    for st in full.steps:
+        if st['id'] in params['ld2b_fx_steps']:
+            p.steps.append(dict(st, id=st['id'] + '_fx', rerun_of=st['id'], args=st['args'] + ['--per-worker-cache']))
+    assert len(p.steps) == len(params['ld2b_fx_steps'])
     return p, {'a': O8}, {'a': p.assign('a', list(O8))}
 
 
@@ -419,13 +427,13 @@ def ld2c(cohort, params):
 
 if __name__ == '__main__':
     q = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke', 'ldfx', 'ld2a', 'ld2b', 'ld2c'))
+    q.add_argument('which', choices=('smoke', 'lc1', 'lc2', 'lc3', 'lc3fx', 'ld', 'ld_smoke', 'ldfx', 'ld2a', 'ld2b', 'ld2bfx', 'ld2c'))
     q.add_argument('--params', type=Path)
     q.add_argument('--cohort', choices=sorted(COHORTS), required=True)
     q.add_argument('--out', type=Path, required=True)
     a = q.parse_args()
     p, lanes, load = (smoke(a.cohort) if a.which == 'smoke' else lc1(a.cohort) if a.which == 'lc1'
-                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld, 'ldfx': ldfx, 'ld2a': ld2a, 'ld2b': ld2b, 'ld2c': ld2c,
+                      else {'lc2': lc2, 'lc3': lc3, 'lc3fx': lc3fx, 'ld': ld, 'ldfx': ldfx, 'ld2a': ld2a, 'ld2b': ld2b, 'ld2bfx': ld2bfx, 'ld2c': ld2c,
                             'ld_smoke': lambda c, prm: ld(c, prm, smoke=True)}[a.which](a.cohort, json.loads(a.params.read_text())))
     plan = finalize(p, lanes, load)
     if a.which == 'smoke':  # one MI300X GPU on the single-GPU partition

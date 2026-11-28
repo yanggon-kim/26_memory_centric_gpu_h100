@@ -538,7 +538,8 @@ mechanically, written to `ld2c` and committed before ld2c is submitted.
 
 **Re-run and phase C.**
 - One re-run: `ld2b_lclo_colo8_mix8192_s202_fx` (`ld2b_fx_steps`), same configuration plus `--per-worker-cache`. It runs
-  in the ld2b resume job and replaces the original in the analysis, as `_fx` steps did under amendment 6.
+  under its own plan `ld2bfx` and run root, because the ld2b root resumes its frozen plan. It replaces the original in
+  the analysis (multi-root, as the `_fx` steps of amendment 6 did).
 - At most two attempts. If it also fails, colo8_mix8192 has one seed and is excluded from all-seed decisions.
 - All ld2c steps use `--per-worker-cache` (`ld2_per_worker_cache`).
 - The remaining four ld2b steps were deferred by the job deadline and run unchanged.
