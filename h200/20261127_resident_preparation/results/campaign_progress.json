@@ -1,18 +1,19 @@
 {
-  "updated_utc": "2026-11-28T10:42:17.981619+00:00",
+  "updated_utc": "2026-11-28T11:01:36.396988+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16266958",
-  "current_observed_state": "RUNNING",
+  "current_observed_state": "COMPLETED",
   "closed_job_ids": [
     "16163464",
     "16184819",
     "16210814",
     "16228671",
     "16233972",
-    "16238357"
+    "16238357",
+    "16266958"
   ],
-  "closed_allocated_gpu_hours": 12.01388888888889,
+  "closed_allocated_gpu_hours": 12.946666666666667,
   "families": [
     {
       "id": "P0",
@@ -80,8 +81,8 @@
     {
       "id": "P3b",
       "status": "partial",
-      "reason": "Same-pair real-model native KV functional prerequisite passed atC128; quantitative producer/consumer/seat/goodput comparisons remain pending",
-      "evidence": "h200/20261127_job16238357_priority/native_model_functional_cached/model/results/native_model_CPU_review.json"
+      "reason": "C16384 real-model native KV functional prerequisite now passed on actual pair; quantitative producer/consumer/seat/goodput comparisons remain pending",
+      "evidence": "h200/20261128_job16266958_native_functional_c16384/model/results/native_model_CPU_review.json"
     },
     {
       "id": "P4a",
@@ -101,8 +102,8 @@
     {
       "id": "P5a",
       "status": "partial",
-      "reason": "Same-pair real-model native KV functional prerequisite passed atC128; quantitative producer/consumer/seat/goodput comparisons remain pending",
-      "evidence": "h200/20261127_job16238357_priority/native_model_functional_cached/model/results/native_model_CPU_review.json"
+      "reason": "C16384 real-model native KV functional prerequisite now passed on actual pair; quantitative producer/consumer/seat/goodput comparisons remain pending",
+      "evidence": "h200/20261128_job16266958_native_functional_c16384/model/results/native_model_CPU_review.json"
     },
     {
       "id": "P5b",
@@ -134,7 +135,7 @@
   "next_job_id": "16266958",
   "next_job_state": "RUNNING",
   "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
-  "last_closed_job_id": "16238357",
+  "last_closed_job_id": "16266958",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
   "current_node": "atl1-1-03-019-2-0",
@@ -302,9 +303,24 @@
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
   "current_allocation_start": "2026-11-28T05:24:42-05:00",
-  "current_comparison_disposition": "h200/20261128_job16266958_native_functional_c16384/STATUS.json",
-  "next_command": "timeout 25s squeue -h -j 16266958 -o '%i|%T|%l|%Q|%M|%R'",
+  "current_comparison_disposition": "h200/20261128_job16266958_native_functional_c16384/results/allocation_closeout.json",
+  "next_command": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958",
   "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958",
   "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default.",
-  "current_launch_cutoff": "2026-11-28T06:22:42-05:00"
+  "current_launch_cutoff": "2026-11-28T06:22:42-05:00",
+  "progress_estimate": {
+    "percent": 20,
+    "classification": "rough planning estimate, not measured fraction or runtime forecast",
+    "scope": "all currently eligible two-H200 experiment families including expanded follow-up",
+    "counting": "Qualified scientific comparisons count; partial captures, blocked cases and CPU preparation are reported separately",
+    "owner_request": "Include percentage in future progress updates",
+    "updated_utc": "2026-11-28T11:01:36.396988+00:00"
+  },
+  "rental_strategy": {
+    "maximum_request": "02:00:00",
+    "closeout_reserve_s": 900,
+    "first_hour": "preemption risk, not hard launch deadline",
+    "policy": "sequential jobs; publish each completed case; preserve preempted partial captures; no overlapping reservation",
+    "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
+  }
 }

@@ -158,7 +158,7 @@ def main(args):
     assert fields['NodeList'] == socket.gethostname().split('.')[0] and 'gres/gpu:h200=2' in fields['AllocTRES'].split(',')
     end = dt.datetime.fromisoformat(fields['EndTime']).astimezone()
     start = dt.datetime.fromisoformat(fields['StartTime']).astimezone()
-    cutoff = min((end-dt.timedelta(seconds=900)).timestamp(),start.timestamp()+3600-120)
+    cutoff = (end-dt.timedelta(seconds=900)).timestamp()
     context=getattr(args,'context',128)
     assert context in (128,16384,32704) and context+64<=32768
     suffix='' if context==128 else '_c'+str(context)
@@ -178,7 +178,8 @@ def main(args):
             'campaign_manifest':str(progress_path),'campaign_manifest_sha256':sha(progress_path),
             'scope':'Prior allocation closeout is necessary; the submitting agent must also review the current scientific comparison disposition before selecting this prerequisite job'})
         write(root/'environment/slurm.json',{'state':state,'cutoff_unix_s':cutoff,
-            'scope':'Actual EndTime minus15minute closeout, additionally aim to finish2minutes before first-hour preemption eligibility; no guaranteed lease'})
+            'first_preemption_eligible_unix_s':start.timestamp()+3600,
+            'scope':'Actual EndTime minus15minute closeout. First-hour preemption eligibility is a risk, not an allocation deadline; preserve each completed case and partial acquisitions. No guaranteed lease.'})
         visibility = load(os.environ['H200_VISIBILITY_MANIFEST'])
         assert visibility['slurm_job_id'] == job and visibility['hostname'] == socket.gethostname()
         assert visibility['selected_cuda_visible_devices'] == os.environ['CUDA_VISIBLE_DEVICES']

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "job_id": "16266958",
-  "observed_utc": "2026-11-28T10:42:17.981619+00:00",
+  "observed_utc": "2026-11-28T11:01:36.396988+00:00",
   "classification": "Observed case status snapshot; pending/running entries are never evidence of completion",
   "context": 16384,
   "model": "Qwen/Qwen2.5-32B-Instruct",
@@ -29,24 +29,26 @@
     },
     {
       "id": "C16384_stock_reference",
-      "status": "running",
-      "scope": "fresh full64stock/default strict dualHF gate pending",
+      "status": "complete",
+      "scope": "Fresh full64stock/default dynamic and unchanged strict StaticCache passed; functional reference, not 3acquisition comparison",
       "evidence": "gpu0/runs/P0_native_model_reference/run.json"
     },
     {
       "id": "C16384_native_model_KV",
-      "status": "pending",
-      "scope": "actual64layer handoff, phase/query/payload/host-pool proof"
+      "status": "complete",
+      "scope": "12paired requests, real64layer 4GiB requested KV each, originalprompt queries0,63decode, exact64outputs, payload and host-pool proof",
+      "evidence": "model/results/native_model_CPU_review.json"
     },
     {
       "id": "producer_pilot",
-      "status": "pending",
-      "scope": "conditional after completed/published/archived functional case and32minutes protected time"
+      "status": "deferred",
+      "scope": "No pilot launched:1808.91s available against1920s bound",
+      "evidence": "results/planned_producer_followup.json"
     },
     {
       "id": "producer_fixed3x10",
       "status": "pending",
-      "scope": "conditional after correct source-verified pilot and full estimated cohort budget; no pilot samples in CI"
+      "scope": "Requires actual producer pilot and complete runtime-admitted cohort"
     }
   ]
 }
