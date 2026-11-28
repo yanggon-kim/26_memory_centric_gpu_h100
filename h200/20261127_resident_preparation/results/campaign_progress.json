@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T11:04:15.471711+00:00",
+  "updated_utc": "2026-11-28T11:29:59.532374+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16280236",
@@ -131,7 +131,7 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": "h200/20261128_job16280236_native_functional_c16384",
+  "current_results": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
   "next_job_id": "16266958",
   "next_job_state": "RUNNING",
   "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
@@ -303,7 +303,7 @@
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
   "current_allocation_start": "2026-11-28T06:03:04",
-  "current_comparison_disposition": "h200/20261127_resident_preparation/results/producer_submission_20261128.json",
+  "current_comparison_disposition": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/worker_outcome.json",
   "next_command": "timeout 25s squeue -h -j 16280236 -o '%i|%T|%l|%Q|%M|%R'",
   "next_experiment_command_after_current_job_closes": "Select after producer pilot outcome; quantitative cohort requires preserved correct actual pilot and full runtime budget",
   "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default.",
@@ -323,5 +323,7 @@
     "policy": "sequential jobs; publish each completed case; preserve preempted partial captures; no overlapping reservation",
     "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
   },
-  "first_preemption_eligible": "2026-11-28T07:03:04"
+  "first_preemption_eligible": "2026-11-28T07:03:04",
+  "current_scope": "16K matched stock/native/stock producer host-timing pilot; initial stock control complete, native pair next",
+  "latest_completed_prerequisite": "h200/20261128_job16280236_native_functional_c16384/results/worker_outcome.json"
 }
