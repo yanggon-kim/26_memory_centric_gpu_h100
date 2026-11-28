@@ -9,6 +9,28 @@ from h200_native_model_pilot import validate_scope, validate_queries, CONNECTOR_
 from h200_native_pd_contract import validate_layers, phase_contract
 
 
+def verified_process(base, label, entry, session):
+    process_path=base/'results/processes'/(label+'.json');process=load(process_path)
+    assert process['status']=='complete' and process['exit_code']==0
+    assert process['source_freeze_identity']==session['frozen_source_identity']
+    assert process['monitor'] and not process['monitor']['failure']
+    monitor_path=Path(process['monitor']['source'])
+    samples=[json.loads(line) for line in monitor_path.read_text().splitlines()]
+    assert samples and any(row['pids'] for row in samples)
+    assert all(row['gpu_uuid']==session['gpu_uuid'] and not row.get('rejection') and
+        all(value is True for value in row['owned_ancestry'].values()) for row in samples)
+    entry_sha=process['script_sha256'][entry]
+    snapshot=base/'environment/source_snapshots'/(entry_sha+'.py')
+    assert sha(snapshot)==entry_sha
+    log=base/'logs'/(label+'.log');assert sha(log)==process['log_sha256']
+    idle=base/'results/idle_checks'/(label+'.json')
+    assert load(idle)['passed'] is True and load(idle)['required_idle_s']>=10
+    return {'process':str(process_path),'process_sha256':sha(process_path),
+        'monitor':str(monitor_path),'monitor_sha256':sha(monitor_path),
+        'log':str(log),'log_sha256':sha(log),'entry_snapshot':str(snapshot),'entry_sha256':entry_sha,
+        'idle_check':str(idle),'idle_check_sha256':sha(idle)}
+
+
 def check_pair_trials(producer, consumer, expected, prompt, pair):
     assert len(producer) == len(consumer) == 12
     contract = phase_contract(prompt,expected[0])
@@ -61,6 +83,7 @@ def check_pair_trials(producer, consumer, expected, prompt, pair):
 
 def review(root):
     root = Path(root).resolve(); pair = load(root/'pair.json'); errors = []; records = []; summaries = []
+    reference_provenance=[]
     try:
         reference_path = Path(pair['reference_run']); reference = load(reference_path)
         assert sha(reference_path) == pair['reference_run_sha256'] and valid_tokens(reference)
@@ -68,6 +91,16 @@ def review(root):
         assert sha(pair['strict_HF_reference']) == pair['strict_HF_reference_sha256']
         assert strict_reference_record(hf,sha(reference_path))
         assert hf['gpu_uuid'] == reference['hardware']['uuid'] == pair['roles']['producer']['gpu_uuid']
+        base=reference_path.parents[2];reference_session=load(base/'session.json')
+        assert reference_session['gpu_uuid']==pair['roles']['producer']['gpu_uuid']
+        assert reference_session['slurm_job_id']==pair['job_id'] and reference_session['expected_hostname']==pair['hostname']
+        label=reference_path.parent.name
+        assert Path(pair['strict_HF_reference'])==base/'results'/(label+'_hf.json')
+        for suffix,entry in (('', 'controlled_vllm_experiments.py'),('_hf','hf_full_reference.py')):
+            reference_provenance.append(verified_process(base,label+suffix,entry,reference_session))
+        assert all(len(arm[kind])==3 for arm in (hf,hf['static_cache_gate']) for kind in ('warmups','trials'))
+        assert hf['static_cache_gate']['adapter_sha256']==load(base/'results/processes'/(label+'_hf.json'))['script_sha256']['software_decode_experiments.py']
+        assert not hf.get('deterministic_reference_diagnostic'), 'native functional prerequisite requires its declared default strict oracle'
         component = load(pair['native_component_CPU_review'])
         assert sha(pair['native_component_CPU_review']) == pair['native_component_CPU_review_sha256']
         assert component['status'] == 'known_data_transport_functional_review_passed' and not component['errors']
@@ -99,6 +132,9 @@ def review(root):
             assert run['source_identity'] == session['frozen_source_identity']
             assert run['connector_sha256'] == CONNECTOR_SHA and run['native_engine_sha256'] == ENGINE_SHA
             assert run['reference_run_sha256'] == sha(reference_path)
+            assert run['optional_dependencies']==component['optional_dependencies']
+            assert run['versions']==reference['versions']
+            assert session['frozen_source_identity']==reference_session['frozen_source_identity']
             assert run['quantitative_performance_qualified'] is False and run['serving_qualified'] is False
             assert run['model_KV_generated'] == (role=='producer')
             assert run['model_KV_injected_verified'] == (role=='consumer')
@@ -117,6 +153,7 @@ def review(root):
     result = {'status':'native_model_functional_review_passed' if not errors else 'failed_CPU_review',
         'classification':'CPU review of real-model native functional handoff',
         'job_id':pair['job_id'],'roles':records,'errors':errors,'requests':summaries,
+        'reference_process_provenance':reference_provenance,
         'functional_model_KV_verified':not errors,'quantitative_performance_qualified':False,
         'serving_qualified':False,'primary_J_per_token':None,'physical_HBM_or_NVLink_bytes':None,
         'implementation_sha256':sha(Path(__file__)),
