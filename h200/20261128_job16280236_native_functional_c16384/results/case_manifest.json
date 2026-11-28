@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "job_id": "16280236",
+  "observed_utc": "2026-11-28T11:22:45.731485+00:00",
+  "classification": "Observed case snapshot; running/pending entries are not completed results",
+  "context": 16384,
+  "model": "Qwen/Qwen2.5-32B-Instruct",
+  "revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "precision": "BF16",
+  "TP": 1,
+  "cases": [
+    {
+      "id": "runtime_inventory",
+      "status": "complete",
+      "evidence": "results/runtime_check.json"
+    },
+    {
+      "id": "known_native_transport",
+      "status": "complete",
+      "evidence": "transport/results/native_component_CPU_review.json",
+      "scope": "Synthetic known32MiB six-paired-trial functional control, not performance"
+    },
+    {
+      "id": "known_counter_GPU1",
+      "status": "complete",
+      "evidence": "gpu1/results/native_counter_disposition.json",
+      "scope": "Known512MiB permission/control only"
+    },
+    {
+      "id": "C16384_stock_reference",
+      "status": "complete",
+      "evidence": "gpu0/results/P0_native_model_reference_hf.json",
+      "scope": "Fresh full64 exact defaultHF dynamic and unchanged strict StaticCache; not 3acquisition comparison"
+    },
+    {
+      "id": "C16384_native_model_KV",
+      "status": "running",
+      "scope": "Fresh real64layer payload/query/host-pool proof pending"
+    },
+    {
+      "id": "producer_pilot",
+      "status": "pending",
+      "scope": "After functional success, archived core and own source/idle/fulltime admission"
+    },
+    {
+      "id": "producer_fixed3x10",
+      "status": "pending",
+      "scope": "Separate future cohort; actual correct pilot and full runtime admission needed"
+    }
+  ]
+}
