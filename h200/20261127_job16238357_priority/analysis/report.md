@@ -1,5 +1,29 @@
-# Two-H200 priority campaign
+# H200 allocation16238357: current comparisons
 
-No measurements yet. New separately labeled resident eager Qwen2.5-32B BF16/TP1 B8/C4096 SM curve first, one model per independent acquisition. Fixed memory conditioning: False. Bounded stock/full-Green/40SM proof and HF reference before full actual-decoder proof and3x10 acquisitions; spare full-GPU contexts after core disposition.
+B8/C4096resident eager stopped at its strict reference gate; no full3acquisition B8curve launched. The original B1conditioned eager curve remains separately qualified in its recorded scope. The completed C1024prefill capture is exact-output/source/isolation valid but fails clocks, so it supplies no qualified prefill latency ratio or ordinary TTFT.
 
-- Limitation P0_new_pair_KV: Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair. Evidence: results/P0_prior_KV_software_validation.json. Tried: Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate. Resume: At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs.
+## B8strict correctness block
+
+Deterministic HFdynamic outputs repeat exactly across3warm/3trials, but do not match source and unchanged StaticCache. First source mismatch now request5/token_index1 (83vs67), separate score margin0.03125. Original tie sensitivity is not established as the sole cause.
+
+All failed default and deterministic-control outputs, scores, commands, NUM/session/process/monitor hashes and raw placement pilots remain. The deterministic control changes only process-local algorithm settings; it does not replace or promote the default oracle, accept ties, change precision or select favorable prompts. See `gpu0/results/B8_exact_reference_limitation.json` and `gpu0_deterministic_reference/results/worker_outcome.json`.
+
+## C1024prefill comparison
+
+Each row contains3independent acquisitions,3warmups and10timed trials per acquisition; full64outputs, prefix coverage and a separate63decode window pass. The following medians are retained raw observations. Policy/observer/events are included; no qualified ratios, ordinary TTFT, traffic or energy are inferred.
+
+| Condition | Raw service median ms by acquisition | Raw submitted-first-token median ms by acquisition | Qualified |
+|---|---|---|---|
+| whole | 110.272, 109.645, 110.084 | 110.902, 110.261, 110.732 | No: clocks |
+| chunk256 | 136.781, 137.658, 136.968 | 137.408, 138.336, 137.596 | No: clocks |
+| chunk1024 | 109.856, 109.553, 109.865 | 110.537, 110.243, 110.544 | No: clocks |
+| chunk4096 | 111.062, 110.465, 110.362 | 111.745, 111.119, 111.048 | No: clocks |
+| whole_end | 109.926, 110.395, 110.958 | 110.627, 111.098, 111.667 | No: clocks |
+
+Observed service-window SMclock envelope is1305–1980MHz (1.517241x), outside the unchanged<=1.05gate; memory clocks stay3201MHz. All15condition envelopes fail, not a missing capture. Evidence: `gpu1/results/prefill_CPU_review.json` and `gpu1/analysis/prefill_CPU_review.md`. No favorable trials are discarded or repeated.
+
+## Independent continuation
+
+Both original workers returned. The bounded native transport component is running on the same owned pair after source-bound terminal-reference review, both original producer locks, GPU idleness and actual scheduler/budget checks. It transfers synthetic known BF16 blocks only; a component success will require CPU payload/source/isolation review before any real-model native KV pilot. Four/eight-GPU work remains deferred.
+
+Actual scheduled end:2026-11-28T01:22:19-05:00; preemption eligible from00:52:18. Final allocated GPU-hours and archive closeout are pending actual job termination. Current source/evidence checkpoints are pushed throughout.

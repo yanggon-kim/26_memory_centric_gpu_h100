@@ -1,0 +1,1575 @@
+{
+  "classification": "CPU review of measured instrumented resident-prefill acquisitions",
+  "session": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/session.json",
+  "session_sha256": "7a9f68fcbe3dc7061a5e7f678761694f079f5758c938ec1f958a39e4510877f9",
+  "smoke_receipt": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/prefill_smoke.json",
+  "smoke_receipt_sha256": "c878d398918c23a6555087f166add9fdac2e121309f0a4364a659726e125053b",
+  "workload": {
+    "model_id": "Qwen/Qwen2.5-32B-Instruct",
+    "model_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "precision": "BF16",
+    "seed": 20261013,
+    "batch": 1,
+    "context": 1024,
+    "generated_tokens": 64
+  },
+  "complete_acquisition_set": true,
+  "instrumented_service_qualified": false,
+  "instrumented_submitted_first_token_qualified": false,
+  "ordinary_TTFT_qualified": false,
+  "physical_traffic_measured": false,
+  "service_pooled_clock_ratios": {},
+  "submitted_pooled_clock_ratios": {},
+  "rows": [
+    {
+      "acquisition": 0,
+      "condition": "whole",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a0/whole/run.json",
+      "run_sha256": "e0b58b1b5f0f3365e260418eafb85bd2f5b215c806eee6a6987547955ab4345b",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a0.json",
+      "process_sha256": "f7b399a3d38492825b3b53b6be15fd7da8afee96514261ed568bb24c3ae71530",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a0.jsonl",
+      "monitor_sha256": "39274a6a45cdcacb70738f412707269223074b400a50f513961098ad5fd81b48",
+      "service_wall_ms": [
+        109.88446185365319,
+        111.66412988677621,
+        110.63120514154434,
+        110.97812885418534,
+        110.97214091569185,
+        109.912920743227,
+        109.1483156196773,
+        109.48462598025799,
+        107.77104087173939,
+        110.86486419662833
+      ],
+      "service_gpu_event_ms": [
+        109.80025482177734,
+        111.5755844116211,
+        110.55046081542969,
+        110.90140533447266,
+        110.89839935302734,
+        109.86422729492188,
+        109.1041259765625,
+        109.37078094482422,
+        107.68303680419922,
+        110.7784652709961
+      ],
+      "submitted_first_token_wall_ms": [
+        110.53572501987219,
+        112.25450783967972,
+        111.26917973160744,
+        111.61633394658566,
+        111.60332197323442,
+        110.49230489879847,
+        109.72347715869546,
+        110.06108997389674,
+        108.40952768921852,
+        111.49323265999556
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 0,
+      "condition": "chunk256",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a0/chunk256/run.json",
+      "run_sha256": "30db1dbbc79382c0f8bc9c93276101585d3fea3dc484b12f9e99fb9f77fa3b1c",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a0.json",
+      "process_sha256": "f7b399a3d38492825b3b53b6be15fd7da8afee96514261ed568bb24c3ae71530",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a0.jsonl",
+      "monitor_sha256": "39274a6a45cdcacb70738f412707269223074b400a50f513961098ad5fd81b48",
+      "service_wall_ms": [
+        137.3794819228351,
+        136.7603992111981,
+        135.49051899462938,
+        137.14633509516716,
+        136.80213503539562,
+        134.62428096681833,
+        136.84876123443246,
+        136.3495192490518,
+        135.65592607483268,
+        138.3847650140524
+      ],
+      "service_gpu_event_ms": [
+        137.31471252441406,
+        136.69448852539062,
+        135.3976593017578,
+        137.05162048339844,
+        136.71923828125,
+        134.55113220214844,
+        136.7763214111328,
+        136.2728271484375,
+        135.5793914794922,
+        138.29087829589844
+      ],
+      "submitted_first_token_wall_ms": [
+        137.98140082508326,
+        137.37702183425426,
+        136.1553450115025,
+        137.82456191256642,
+        137.43994710966945,
+        135.25105686858296,
+        137.49397778883576,
+        136.9827506132424,
+        136.3173658028245,
+        139.05448140576482
+      ],
+      "prefill_steps": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1305,
+            "maximum": 1980,
+            "max_min_ratio": 1.5172413793103448,
+            "samples": 48
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 48
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1305,
+            "maximum": 1980,
+            "max_min_ratio": 1.5172413793103448,
+            "samples": 48
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 48
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 0,
+      "condition": "chunk1024",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a0/chunk1024/run.json",
+      "run_sha256": "7ea434f63c9280500bd5e6abbec2ad28bf69b9ab83d6f963ae4c552f693b104e",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a0.json",
+      "process_sha256": "f7b399a3d38492825b3b53b6be15fd7da8afee96514261ed568bb24c3ae71530",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a0.jsonl",
+      "monitor_sha256": "39274a6a45cdcacb70738f412707269223074b400a50f513961098ad5fd81b48",
+      "service_wall_ms": [
+        108.97874413058162,
+        109.91984605789185,
+        108.74521592631936,
+        111.07105342671275,
+        111.53789656236768,
+        110.24760594591498,
+        111.9445888325572,
+        109.13215205073357,
+        109.79141527786851,
+        108.46234578639269
+      ],
+      "service_gpu_event_ms": [
+        108.89984130859375,
+        109.81993865966797,
+        108.65158081054688,
+        110.98812866210938,
+        111.46540832519531,
+        110.17475128173828,
+        111.84844970703125,
+        109.03427124023438,
+        109.70706939697266,
+        108.38054656982422
+      ],
+      "submitted_first_token_wall_ms": [
+        109.58681209012866,
+        110.58610118925571,
+        109.41655281931162,
+        111.73204518854618,
+        112.19925107434392,
+        110.88132299482822,
+        112.62620100751519,
+        109.79609098285437,
+        110.48705177381635,
+        109.1131241992116
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 0,
+      "condition": "chunk4096",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a0/chunk4096/run.json",
+      "run_sha256": "dfceef07c1f0c2edf5c99b70bf003a01d518222e4688e9dea3bf640650f526d2",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a0.json",
+      "process_sha256": "f7b399a3d38492825b3b53b6be15fd7da8afee96514261ed568bb24c3ae71530",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a0.jsonl",
+      "monitor_sha256": "39274a6a45cdcacb70738f412707269223074b400a50f513961098ad5fd81b48",
+      "service_wall_ms": [
+        111.76976328715682,
+        111.19012208655477,
+        106.60770395770669,
+        112.632947973907,
+        112.701958976686,
+        110.93367077410221,
+        110.1355361752212,
+        111.70931393280625,
+        110.62851594761014,
+        110.68911012262106
+      ],
+      "service_gpu_event_ms": [
+        111.68844604492188,
+        111.11164855957031,
+        106.50908660888672,
+        112.52432250976562,
+        112.60912322998047,
+        110.8466567993164,
+        110.02137756347656,
+        111.6148452758789,
+        110.54415893554688,
+        110.61228942871094
+      ],
+      "submitted_first_token_wall_ms": [
+        112.42692405357957,
+        111.86775891110301,
+        107.28199034929276,
+        113.32586919888854,
+        113.40750101953745,
+        111.62187531590462,
+        110.82011414691806,
+        112.45440691709518,
+        111.30509106442332,
+        111.35357990860939
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 0,
+      "condition": "whole_end",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a0/whole_end/run.json",
+      "run_sha256": "b256783631f399c08d6ba70d318c7f079a5bc3bffbf42d8d0122f810cc6608e2",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a0.json",
+      "process_sha256": "f7b399a3d38492825b3b53b6be15fd7da8afee96514261ed568bb24c3ae71530",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a0.jsonl",
+      "monitor_sha256": "39274a6a45cdcacb70738f412707269223074b400a50f513961098ad5fd81b48",
+      "service_wall_ms": [
+        109.30850403383374,
+        107.98787605017424,
+        111.50804813951254,
+        111.30233807489276,
+        111.22904671356082,
+        107.8699748031795,
+        109.41068409010768,
+        111.08258971944451,
+        110.44185608625412,
+        109.17666926980019
+      ],
+      "service_gpu_event_ms": [
+        109.2154541015625,
+        107.89328002929688,
+        111.40636444091797,
+        111.21548461914062,
+        111.11894226074219,
+        107.75936126708984,
+        109.3177261352539,
+        110.9775390625,
+        110.35308837890625,
+        109.08819580078125
+      ],
+      "submitted_first_token_wall_ms": [
+        110.00568186864257,
+        108.8474178686738,
+        112.22525266930461,
+        111.99953127652407,
+        111.89253116026521,
+        108.56514284387231,
+        110.11384380981326,
+        111.77252093330026,
+        111.13924207165837,
+        109.9141351878643
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 41
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 41
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 1,
+      "condition": "whole",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a1/whole/run.json",
+      "run_sha256": "2ff4b932ea5345b617d8539e0d97b3356231870f5bebf922742df20d9601310f",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a1.json",
+      "process_sha256": "b4bd24a8659895c64646f3d59cfb21d91dbe1706d0010b04c0b5f0b8d8bfbb6b",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a1.jsonl",
+      "monitor_sha256": "2c009a7a13428c96574c0f8838e77931c8959a368c3d3f1c4db5d39eae3e022c",
+      "service_wall_ms": [
+        108.09859400615096,
+        111.1441059038043,
+        108.73738722875714,
+        111.68240895494819,
+        110.47464935109019,
+        112.00171196833253,
+        111.29909195005894,
+        108.65694005042315,
+        108.81456593051553,
+        108.52961102500558
+      ],
+      "service_gpu_event_ms": [
+        108.02047729492188,
+        111.06175994873047,
+        108.65122985839844,
+        111.62258911132812,
+        110.3656005859375,
+        111.83433532714844,
+        111.1263656616211,
+        108.49043273925781,
+        108.65878295898438,
+        108.41088104248047
+      ],
+      "submitted_first_token_wall_ms": [
+        108.74111298471689,
+        111.782091204077,
+        109.37179066240788,
+        112.31967387720942,
+        111.11499182879925,
+        112.61335108429193,
+        111.92759405821562,
+        109.34217600151896,
+        109.40788313746452,
+        109.17377891018987
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 1,
+      "condition": "chunk256",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a1/chunk256/run.json",
+      "run_sha256": "2e214b016d8c5e710dd84c63d5d30ae9f7a015d73d0d01cd35e91ed3f144822b",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a1.json",
+      "process_sha256": "b4bd24a8659895c64646f3d59cfb21d91dbe1706d0010b04c0b5f0b8d8bfbb6b",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a1.jsonl",
+      "monitor_sha256": "2c009a7a13428c96574c0f8838e77931c8959a368c3d3f1c4db5d39eae3e022c",
+      "service_wall_ms": [
+        136.0325776040554,
+        136.53030199930072,
+        136.7958579212427,
+        138.24808690696955,
+        139.71699867397547,
+        137.48438842594624,
+        136.50189992040396,
+        137.8323039971292,
+        138.85687105357647,
+        137.88013299927115
+      ],
+      "service_gpu_event_ms": [
+        135.93734741210938,
+        136.44297790527344,
+        136.6906280517578,
+        138.14486694335938,
+        139.55718994140625,
+        137.36557006835938,
+        136.3870391845703,
+        137.7243194580078,
+        138.7355194091797,
+        137.75990295410156
+      ],
+      "submitted_first_token_wall_ms": [
+        136.67414197698236,
+        137.177349999547,
+        137.48248293995857,
+        138.93376989290118,
+        140.39195468649268,
+        138.164893258363,
+        137.1673159301281,
+        138.50776897743344,
+        139.59709601476789,
+        138.5796768590808
+      ],
+      "prefill_steps": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 49
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 49
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1410,
+            "maximum": 1980,
+            "max_min_ratio": 1.4042553191489362,
+            "samples": 49
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 49
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 1,
+      "condition": "chunk1024",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a1/chunk1024/run.json",
+      "run_sha256": "f9191bdd1717b511b16bd5bd49f0d265460d1bb0d9d4869654f1168b1a8502c3",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a1.json",
+      "process_sha256": "b4bd24a8659895c64646f3d59cfb21d91dbe1706d0010b04c0b5f0b8d8bfbb6b",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a1.jsonl",
+      "monitor_sha256": "2c009a7a13428c96574c0f8838e77931c8959a368c3d3f1c4db5d39eae3e022c",
+      "service_wall_ms": [
+        108.10304991900921,
+        107.9423138871789,
+        109.48251932859421,
+        105.06267473101616,
+        111.21174599975348,
+        110.80060107633471,
+        109.6228901296854,
+        109.75417774170637,
+        109.38532510772347,
+        112.14153002947569
+      ],
+      "service_gpu_event_ms": [
+        108.00371551513672,
+        107.8001937866211,
+        109.34127807617188,
+        104.99689483642578,
+        111.15846252441406,
+        110.74211120605469,
+        109.55916595458984,
+        109.69542694091797,
+        109.32355499267578,
+        112.0838394165039
+      ],
+      "submitted_first_token_wall_ms": [
+        108.76647382974625,
+        108.58655394986272,
+        110.23297999054193,
+        105.7198978960514,
+        111.83928605169058,
+        111.43375281244516,
+        110.25317292660475,
+        110.37953896448016,
+        110.02565128728747,
+        112.78068600222468
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 1,
+      "condition": "chunk4096",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a1/chunk4096/run.json",
+      "run_sha256": "874b4d9e0db14934291f6ac98a7c305d0f58712fdf2a510e6cf0dcea5695c6e7",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a1.json",
+      "process_sha256": "b4bd24a8659895c64646f3d59cfb21d91dbe1706d0010b04c0b5f0b8d8bfbb6b",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a1.jsonl",
+      "monitor_sha256": "2c009a7a13428c96574c0f8838e77931c8959a368c3d3f1c4db5d39eae3e022c",
+      "service_wall_ms": [
+        106.07011104002595,
+        110.70302315056324,
+        108.77187410369515,
+        112.5452690757811,
+        112.48782323673368,
+        112.32146294787526,
+        109.95292104780674,
+        106.13729897886515,
+        111.92259378731251,
+        110.22676527500153
+      ],
+      "service_gpu_event_ms": [
+        105.96729278564453,
+        110.5373764038086,
+        108.66646575927734,
+        112.46176147460938,
+        112.329345703125,
+        112.21202850341797,
+        109.85759735107422,
+        106.02464294433594,
+        111.81158447265625,
+        110.1470718383789
+      ],
+      "submitted_first_token_wall_ms": [
+        106.67969193309546,
+        111.31719499826431,
+        109.4625168479979,
+        113.22558578103781,
+        113.21291979402304,
+        113.03239408880472,
+        110.65335478633642,
+        106.86177993193269,
+        112.63261223211884,
+        110.92082876712084
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1470,
+            "maximum": 1980,
+            "max_min_ratio": 1.346938775510204,
+            "samples": 44
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 44
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1470,
+            "maximum": 1980,
+            "max_min_ratio": 1.346938775510204,
+            "samples": 44
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 44
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 1,
+      "condition": "whole_end",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a1/whole_end/run.json",
+      "run_sha256": "8502e0eec1eee7cae67b65412a4b5abfaa0844df24c4f292a10b338d79f72fd1",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a1.json",
+      "process_sha256": "b4bd24a8659895c64646f3d59cfb21d91dbe1706d0010b04c0b5f0b8d8bfbb6b",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a1.jsonl",
+      "monitor_sha256": "2c009a7a13428c96574c0f8838e77931c8959a368c3d3f1c4db5d39eae3e022c",
+      "service_wall_ms": [
+        108.72130515053868,
+        107.7713742852211,
+        110.78715603798628,
+        110.1843761280179,
+        111.9124498218298,
+        110.60479981824756,
+        108.78039197996259,
+        109.65810995548964,
+        112.95218905434012,
+        113.1759830750525
+      ],
+      "service_gpu_event_ms": [
+        108.65190124511719,
+        107.69500732421875,
+        110.70259094238281,
+        110.0882568359375,
+        111.83309173583984,
+        110.4774398803711,
+        108.62073516845703,
+        109.49878692626953,
+        112.78425598144531,
+        113.00780487060547
+      ],
+      "submitted_first_token_wall_ms": [
+        109.3997792340815,
+        108.45832712948322,
+        111.45679093897343,
+        110.91190995648503,
+        112.62461822479963,
+        111.28370091319084,
+        109.51869981363416,
+        110.36822944879532,
+        113.66694327443838,
+        113.89279598370194
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 43
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 43
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 2,
+      "condition": "whole",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a2/whole/run.json",
+      "run_sha256": "69e3d0a622df0647650d003d0aed59a33b12f9e8ab8befe3d8a33e9c27b4d556",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a2.json",
+      "process_sha256": "97fd7639efe0827530b9c9945b2aa9bc36282ad429459ee61714e80ae3bb6f89",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a2.jsonl",
+      "monitor_sha256": "8b63c46b6694e5be6d48711c537e3ec4620d123070cabcf65ec7dfe936f50696",
+      "service_wall_ms": [
+        109.91330025717616,
+        110.25439109653234,
+        107.09173418581486,
+        111.28325713798404,
+        110.62629986554384,
+        108.14617341384292,
+        111.39078205451369,
+        109.39387790858746,
+        110.47188006341457,
+        107.12430626153946
+      ],
+      "service_gpu_event_ms": [
+        109.82921600341797,
+        110.1871337890625,
+        107.03097534179688,
+        111.21782684326172,
+        110.56495666503906,
+        108.08390045166016,
+        111.31094360351562,
+        109.31314849853516,
+        110.39839935302734,
+        107.02767944335938
+      ],
+      "submitted_first_token_wall_ms": [
+        110.5717490427196,
+        110.8913510106504,
+        107.74759016931057,
+        111.91355902701616,
+        111.24405590817332,
+        108.93130768090487,
+        111.99389910325408,
+        110.06251303479075,
+        111.34948721155524,
+        107.79608879238367
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 2,
+      "condition": "chunk256",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a2/chunk256/run.json",
+      "run_sha256": "23a9ec0ebb723ca3aa17cc8873baedd9af7f4f4c1189d0154e3c0af56b40bc8e",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a2.json",
+      "process_sha256": "97fd7639efe0827530b9c9945b2aa9bc36282ad429459ee61714e80ae3bb6f89",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a2.jsonl",
+      "monitor_sha256": "8b63c46b6694e5be6d48711c537e3ec4620d123070cabcf65ec7dfe936f50696",
+      "service_wall_ms": [
+        136.03425212204456,
+        136.18542114272714,
+        137.47616205364466,
+        137.0266447775066,
+        135.96444530412555,
+        137.6442788168788,
+        137.3913693241775,
+        137.02807761728764,
+        136.63272466510534,
+        136.9084888137877
+      ],
+      "service_gpu_event_ms": [
+        135.95843505859375,
+        136.11062622070312,
+        137.42044067382812,
+        136.9661407470703,
+        135.89199829101562,
+        137.57583618164062,
+        137.32461547851562,
+        136.9686737060547,
+        136.56536865234375,
+        136.83209228515625
+      ],
+      "submitted_first_token_wall_ms": [
+        136.69222593307495,
+        136.8610728532076,
+        138.10000009834766,
+        137.7318729646504,
+        136.61204278469086,
+        138.3045632392168,
+        138.03618401288986,
+        137.64530792832375,
+        137.28623185306787,
+        137.54729740321636
+      ],
+      "prefill_steps": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1320,
+            "maximum": 1980,
+            "max_min_ratio": 1.5,
+            "samples": 45
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 45
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1320,
+            "maximum": 1980,
+            "max_min_ratio": 1.5,
+            "samples": 46
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 46
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 2,
+      "condition": "chunk1024",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a2/chunk1024/run.json",
+      "run_sha256": "e784a362ace3a8fa0b814d147cd16c4dee21f176e97f2c8a0160f2e355ad149a",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a2.json",
+      "process_sha256": "97fd7639efe0827530b9c9945b2aa9bc36282ad429459ee61714e80ae3bb6f89",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a2.jsonl",
+      "monitor_sha256": "8b63c46b6694e5be6d48711c537e3ec4620d123070cabcf65ec7dfe936f50696",
+      "service_wall_ms": [
+        110.72661587968469,
+        109.45435427129269,
+        110.8796801418066,
+        108.6551658809185,
+        108.56704600155354,
+        112.74963291361928,
+        107.95354563742876,
+        107.82520705834031,
+        110.27593491598964,
+        111.60099599510431
+      ],
+      "service_gpu_event_ms": [
+        110.65824127197266,
+        109.39046478271484,
+        110.80406188964844,
+        108.57017517089844,
+        108.47666931152344,
+        112.6494369506836,
+        107.87773132324219,
+        107.75177764892578,
+        110.17327880859375,
+        111.51542663574219
+      ],
+      "submitted_first_token_wall_ms": [
+        111.38727702200413,
+        110.08396092802286,
+        111.53820483013988,
+        109.34081813320518,
+        109.26194908097386,
+        113.48778288811445,
+        108.69452077895403,
+        108.50001685321331,
+        111.00494582206011,
+        112.30422416701913
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1425,
+            "maximum": 1980,
+            "max_min_ratio": 1.3894736842105264,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1425,
+            "maximum": 1980,
+            "max_min_ratio": 1.3894736842105264,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 2,
+      "condition": "chunk4096",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a2/chunk4096/run.json",
+      "run_sha256": "8196f1201b401cb3c745d404de4916e68e0dde29ebc2780c563590dad5e1d508",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a2.json",
+      "process_sha256": "97fd7639efe0827530b9c9945b2aa9bc36282ad429459ee61714e80ae3bb6f89",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a2.jsonl",
+      "monitor_sha256": "8b63c46b6694e5be6d48711c537e3ec4620d123070cabcf65ec7dfe936f50696",
+      "service_wall_ms": [
+        111.03954492136836,
+        108.88184513896704,
+        111.34401988238096,
+        110.78813811764121,
+        108.15695812925696,
+        111.4610549993813,
+        109.78141520172358,
+        109.93554582819343,
+        111.88877699896693,
+        107.93498903512955
+      ],
+      "service_gpu_event_ms": [
+        110.95954895019531,
+        108.80003356933594,
+        111.2630386352539,
+        110.704833984375,
+        108.07193756103516,
+        111.385986328125,
+        109.70547485351562,
+        109.86422729492188,
+        111.8057632446289,
+        107.8529281616211
+      ],
+      "submitted_first_token_wall_ms": [
+        111.98732489719987,
+        109.57385879009962,
+        112.03490011394024,
+        111.47909006103873,
+        108.85047679767013,
+        112.15086607262492,
+        110.4764649644494,
+        110.61786999925971,
+        112.58516693487763,
+        108.61895699054003
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1395,
+            "maximum": 1980,
+            "max_min_ratio": 1.4193548387096775,
+            "samples": 42
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 42
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "acquisition": 2,
+      "condition": "whole_end",
+      "source_verified": true,
+      "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "source_identity": "6bcbeaea311ee258152c74d7eb36a97e85f1adee0063d86c6ea989ceb46ee478",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/runs/P4a_prefill_c1024_a2/whole_end/run.json",
+      "run_sha256": "351ab5e834201e56ffa759175a78f565d9d5afec2376ab1df5ecfad4079af5c2",
+      "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/processes/P4a_prefill_c1024_a2.json",
+      "process_sha256": "97fd7639efe0827530b9c9945b2aa9bc36282ad429459ee61714e80ae3bb6f89",
+      "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261127_job16238357_priority/gpu1/results/monitors/P4a_prefill_c1024_a2.jsonl",
+      "monitor_sha256": "8b63c46b6694e5be6d48711c537e3ec4620d123070cabcf65ec7dfe936f50696",
+      "service_wall_ms": [
+        106.80438484996557,
+        110.50195479765534,
+        110.62167817726731,
+        109.22060627490282,
+        110.80085067078471,
+        111.25916382297873,
+        111.1970660276711,
+        111.2783569842577,
+        111.54790222644806,
+        111.11509939655662
+      ],
+      "service_gpu_event_ms": [
+        106.72291564941406,
+        110.4224624633789,
+        110.54662322998047,
+        109.13868713378906,
+        110.70972442626953,
+        111.17635345458984,
+        111.11203002929688,
+        111.18966674804688,
+        111.46348571777344,
+        111.0379867553711
+      ],
+      "submitted_first_token_wall_ms": [
+        107.49822529032826,
+        111.22181080281734,
+        111.33383074775338,
+        109.94000360369682,
+        111.48870270699263,
+        111.96191608905792,
+        111.90954688936472,
+        112.07575118169188,
+        112.24266095086932,
+        111.84585839509964
+      ],
+      "prefill_steps": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "service_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 40
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 40
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      },
+      "submit_clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1380,
+            "maximum": 1980,
+            "max_min_ratio": 1.434782608695652,
+            "samples": 40
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 40
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    }
+  ],
+  "errors": [],
+  "conditions": [
+    {
+      "condition": "whole",
+      "acquisitions": [
+        0,
+        1,
+        2
+      ],
+      "raw_median_service_wall_ms": [
+        110.27206294238567,
+        109.64460764080286,
+        110.08384567685425
+      ],
+      "raw_median_submitted_first_token_ms": [
+        110.90245237573981,
+        110.26143748313189,
+        110.731550026685
+      ]
+    },
+    {
+      "condition": "chunk256",
+      "acquisitions": [
+        0,
+        1,
+        2
+      ],
+      "raw_median_service_wall_ms": [
+        136.78126712329686,
+        137.65834621153772,
+        136.96756679564714
+      ],
+      "raw_median_submitted_first_token_ms": [
+        137.40848447196186,
+        138.33633111789823,
+        137.59630266577005
+      ]
+    },
+    {
+      "condition": "chunk1024",
+      "acquisitions": [
+        0,
+        1,
+        2
+      ],
+      "raw_median_service_wall_ms": [
+        109.85563066788018,
+        109.5527047291398,
+        109.86514459364116
+      ],
+      "raw_median_submitted_first_token_ms": [
+        110.53657648153603,
+        110.24307645857334,
+        110.54445337504148
+      ]
+    },
+    {
+      "condition": "chunk4096",
+      "acquisitions": [
+        0,
+        1,
+        2
+      ],
+      "raw_median_service_wall_ms": [
+        111.06189643032849,
+        110.46489421278238,
+        110.36184197291732
+      ],
+      "raw_median_submitted_first_token_ms": [
+        111.74481711350381,
+        111.11901188269258,
+        111.04848003014922
+      ]
+    },
+    {
+      "condition": "whole_end",
+      "acquisitions": [
+        0,
+        1,
+        2
+      ],
+      "raw_median_service_wall_ms": [
+        109.9262700881809,
+        110.39458797313273,
+        110.95797503367066
+      ],
+      "raw_median_submitted_first_token_ms": [
+        110.62654294073582,
+        111.09780543483794,
+        111.66728055104613
+      ]
+    }
+  ],
+  "implementation_sha256": "d7183a71cbb40ef4222d34936da6794ec87bde28b421d831ebacf3edddfde8f9",
+  "scope": "Instrumented pretokenized engine submission and prefill service only. Policy/observer/event costs remain included; ordinary TTFT, offered-load SLOs, physical bytes and energy remain separate gates. All rejected observations are retained."
+}
