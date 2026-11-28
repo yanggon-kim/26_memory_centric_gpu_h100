@@ -89,8 +89,10 @@ def score(trace, records, expected_outputs, observation_end_s):
     assert len(measured)>=2
     offered_span = measured[-1]['offered_s']-measured[0]['offered_s']
     assert offered_span>=0
-    including_drain = observation_end_s-measured[0]['offered_s']
-    assert including_drain>0
+    elapsed_after_measured_start = observation_end_s-measured[0]['offered_s']
+    # An aborted engine can end observation before this window starts. Keep
+    # every planned request in the denominator without inventing future time.
+    including_drain = elapsed_after_measured_start if elapsed_after_measured_start>0 else None
     metrics = ('primary','stall250','stall500','stall1000','stall2000','itl50')
 
     def group(rows, measured_window=True):
@@ -110,8 +112,8 @@ def score(trace, records, expected_outputs, observation_end_s):
                 'attainment':sum(bool(r[name]) for r in rows)/denom if denom else None,
                 'compliant_requests_per_s_over_measured_offered_span':sum(bool(r[name]) for r in rows)/offered_span if measured_window and offered_span>0 else None,
                 'compliant_output_tokens_per_s_over_measured_offered_span':sum(r['output_token_count'] for r in rows if r[name])/offered_span if measured_window and offered_span>0 else None,
-                'compliant_requests_per_s_including_drain':sum(bool(r[name]) for r in rows)/including_drain if measured_window else None,
-                'compliant_output_tokens_per_s_including_drain':sum(r['output_token_count'] for r in rows if r[name])/including_drain if measured_window else None}
+                'compliant_requests_per_s_including_drain':sum(bool(r[name]) for r in rows)/including_drain if measured_window and including_drain is not None else None,
+                'compliant_output_tokens_per_s_including_drain':sum(r['output_token_count'] for r in rows if r[name])/including_drain if measured_window and including_drain is not None else None}
                 for name in metrics}}
     return {'classification':'CPU accounting of supplied client request observations; no independent GPU qualification',
         'trace_sha256':trace['sha256'],'AMD_trace_sha256':trace['AMD_trace_sha256'],
@@ -125,10 +127,13 @@ def score(trace, records, expected_outputs, observation_end_s):
         'measured':group(measured),
         'measured_by_class':{name:group([r for r in measured if r['class']==name]) for name in sorted({r['class'] for r in measured})},
         'observation_end_s':observation_end_s,'measured_offered_span_s':offered_span,
+        'measured_window_started':elapsed_after_measured_start>0,
+        'planned_arrivals_reached_by_observation_end':sum(q['arrival_s']<=observation_end_s for q in trace['requests']),
+        'observation_ended_before_last_planned_arrival':observation_end_s<trace['requests'][-1]['arrival_s'],
         'measured_window_including_drain_s':including_drain,'per_request':per_request,
         'steady_state_demonstrated':False,'quantitative_performance_qualified':False,
         'decoder_step_latency_ms':None,'primary_J_per_token':None,
-        'scope':'First10percent are retained warmups. Every remaining offered request remains in the SLO denominator, including failures, missing records and timeouts. Conditional latency summaries retain counts. Client token gaps include queue/transport effects and are separate from clean decoder-step latency. Rate selection, source/clock/isolation/reference provenance, independent acquisitions and calibrated all-board energy need separate qualification.'}
+        'scope':'First10percent are retained warmups. Every remaining planned offered request remains in the SLO denominator, including failures, missing records, arrivals unreached after an early abort and timeouts. An unstarted measured window has no including-drain duration or rate; planned offered-span rates use the original trace span. Conditional latency summaries retain counts. Client token gaps include queue/transport effects and are separate from clean decoder-step latency. Rate selection, source/clock/isolation/reference provenance, independent acquisitions and calibrated all-board energy need separate qualification.'}
 
 
 def sustainable(rows, rates, seeds, objective='primary'):

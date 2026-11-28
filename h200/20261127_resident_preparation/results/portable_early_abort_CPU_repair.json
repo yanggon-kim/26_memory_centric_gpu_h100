@@ -1,0 +1,92 @@
+{
+  "created_utc": "2026-11-28T11:10:30.027974+00:00",
+  "classification": "CPU-only scoring repair and regression checks; no new GPU measurements",
+  "reproduction": "results/portable_early_abort_CPU_reproduction.json",
+  "CPU_tests": {
+    "command": "python -m unittest discover -s scripts -p test_h200_portable_serving_score.py -v",
+    "passed": 8,
+    "failed": 0
+  },
+  "files": {
+    "scripts/h200_portable_serving_score.py": "dcce74d7fb08089eb9cb1081c7d2abe4cdd3b158be59164b92cc11c9543929ff",
+    "scripts/test_h200_portable_serving_score.py": "f262ab0be0d4a2c0ecc37324633cc3b32089fbba4e1eaa12fa0b8ed5bb5bed97"
+  },
+  "repaired_reproduction": {
+    "all_offered": 30,
+    "all_attempted": 0,
+    "observation_end_s": 0.001,
+    "measured_window_started": false,
+    "measured_window_including_drain_s": null,
+    "planned_arrivals_reached_by_observation_end": 1,
+    "observation_ended_before_last_planned_arrival": true
+  },
+  "measured": {
+    "offered": 27,
+    "attempted": 0,
+    "completed_by_count_and_length": 0,
+    "exact_reference_completed": 0,
+    "incomplete": 27,
+    "completed_without_exact_reference": 0,
+    "completed_with_wrong_outputs": 0,
+    "conditional_completed_ttft_p50_s": null,
+    "conditional_completed_ttft_p99_s": null,
+    "conditional_completed_request_max_gap_p99_ms": null,
+    "objectives": {
+      "primary": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      },
+      "stall250": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      },
+      "stall500": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      },
+      "stall1000": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      },
+      "stall2000": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      },
+      "itl50": {
+        "compliant": 0,
+        "compliant_output_tokens": 0,
+        "attainment": 0.0,
+        "compliant_requests_per_s_over_measured_offered_span": 0.0,
+        "compliant_output_tokens_per_s_over_measured_offered_span": 0.0,
+        "compliant_requests_per_s_including_drain": null,
+        "compliant_output_tokens_per_s_including_drain": null
+      }
+    }
+  },
+  "scope": "Normal completed windows keep original arithmetic. Early abort retains every planned arrival, with explicit unreached-arrival counts; no invented observation time. Active producer snapshots and source roles unchanged. Future serving controller/GPU qualification remains pending."
+}

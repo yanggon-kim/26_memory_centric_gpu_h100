@@ -48,6 +48,25 @@ class Accounting(unittest.TestCase):
         self.assertFalse(row['stall1000'])
         self.assertTrue(row['stall2000'])
 
+    def test_abort_before_or_at_measured_start_preserves_all_planned_failures(self):
+        first=self.trace['requests'][self.trace['warmup_requests']]['arrival_s']
+        for end in (.001,first):
+            with self.subTest(end=end):
+                result=scoring.score(self.trace,[],{},end)
+                self.assertEqual(result['observation_end_s'],end)
+                self.assertEqual(result['all_offered'],30)
+                self.assertEqual(result['measured']['offered'],27)
+                self.assertEqual(len(result['all_failed_or_incomplete_ids']),30)
+                self.assertEqual(result['all_attempted'],0)
+                self.assertFalse(result['measured_window_started'])
+                self.assertTrue(result['observation_ended_before_last_planned_arrival'])
+                self.assertIsNone(result['measured_window_including_drain_s'])
+                for objective in result['measured']['objectives'].values():
+                    self.assertEqual(objective['attainment'],0)
+                    self.assertIsNone(objective['compliant_requests_per_s_including_drain'])
+                    self.assertIsNone(objective['compliant_output_tokens_per_s_including_drain'])
+                self.assertFalse(result['quantitative_performance_qualified'])
+
     def test_mixdoc_class_limits_and_class_counts(self):
         records=copy.deepcopy(self.records)
         for record in records:
