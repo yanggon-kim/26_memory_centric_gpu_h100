@@ -1,0 +1,80 @@
+{
+  "created_utc": "2026-11-28T14:08:24.909358+00:00",
+  "classification": "CPU reproduction and pinned-source interpretation of actual closed paired raw host observations",
+  "implementation_sha256": "73e0cdaff261b0cf8e001307de6907bc13a736c082e5ad83b089fb3d9153c2e3",
+  "all10request_rows_reproduced": true,
+  "all10metric_summaries_reproduced": true,
+  "original_derived": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant/results/partial_a0_host_handoff_timeline.json",
+  "original_derived_sha256": "a99121a6d4a3a588b30f94fc890d1a30d5c8a866708d144eb14cdc22eab68ac1",
+  "source_only_semantics": {
+    "p2p_nccl_engine.py": {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_engine.py",
+      "sha256": "bcbb73c586bc82d51c84e89e6b0dca9dc2354fa7a48856c1ae3a9f7dc45fd17a",
+      "methods": [
+        {
+          "class_name": "P2pNcclEngine",
+          "method": "send_async",
+          "line": 476,
+          "end_line": 484
+        },
+        {
+          "class_name": "P2pNcclEngine",
+          "method": "wait_for_sent",
+          "line": 486,
+          "end_line": 498
+        },
+        {
+          "class_name": "P2pNcclEngine",
+          "method": "send_sync",
+          "line": 500,
+          "end_line": 538
+        },
+        {
+          "class_name": "P2pNcclEngine",
+          "method": "get_finished",
+          "line": 540,
+          "end_line": 573
+        },
+        {
+          "class_name": "P2pNcclEngine",
+          "method": "send",
+          "line": 589,
+          "end_line": 606
+        }
+      ]
+    },
+    "p2p_nccl_connector.py": {
+      "path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_connector.py",
+      "sha256": "13e2e1b5baa8cd503c68a0729fe50124ee36d41320b63c94335bd7d0e04266a9",
+      "methods": [
+        {
+          "class_name": "P2pNcclConnector",
+          "method": "save_kv_layer",
+          "line": 242,
+          "end_line": 307
+        },
+        {
+          "class_name": "P2pNcclConnector",
+          "method": "wait_for_save",
+          "line": 309,
+          "end_line": 312
+        },
+        {
+          "class_name": "P2pNcclConnector",
+          "method": "request_finished",
+          "line": 478,
+          "end_line": 496
+        }
+      ]
+    }
+  },
+  "source_interpretation": [
+    "send_async removes an item before send_sync; wait_for_sent waits on queue emptiness, so queue-empty alone is not final send completion",
+    "send_sync calls send, which synchronizes its stream, before recording sent tensor ID in PUT_ASYNC",
+    "The timing collector polls all64sent IDs after producer return; the observed timestamp includes host polling and bookkeeping and is not an isolated network duration",
+    "Source inspection does not validate concurrent loaded serving or establish physical link/HBM byte counts"
+  ],
+  "performance_qualified": false,
+  "GPU_execution": false,
+  "exact_reproduction_command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python h200/20261127_resident_preparation/h200_partial_host_handoff.py --root /storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16281263_native_functional_c16384_producer_quant --acquisition 0"
+}
