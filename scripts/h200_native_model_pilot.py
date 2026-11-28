@@ -77,14 +77,18 @@ class NativeLedger:
 
         def send(identifier, tensor, remote):
             if self.active is not None:
-                self.active['sent'].append(tensor_record(identifier, tensor, self.active['payload_proof']))
+                row = tensor_record(identifier, tensor, self.active['payload_proof'])
+                row['remote_address'] = remote
+                self.active['sent'].append(row)
             return self.originals['send_tensor'](identifier, tensor, remote)
 
         def recv(identifier, remote):
             tensor = self.originals['recv_tensor'](identifier, remote)
             if self.active is not None:
                 assert tensor is not None, 'native receive returned no payload'
-                self.active['received'].append(tensor_record(identifier, tensor, self.active['payload_proof']))
+                row = tensor_record(identifier, tensor, self.active['payload_proof'])
+                row['remote_address'] = remote
+                self.active['received'].append(row)
             return tensor
 
         def finished(ids, layers):
@@ -216,8 +220,14 @@ def main(args):
         assert type(engine.engine_core).__name__ == 'InprocClient'
         connector = get_kv_transfer_group(); native = connector.p2p_nccl_engine
         assert type(connector).__name__ == 'P2pNcclConnector'
+        assert connector.is_producer == (args.role=='producer')
         assert native.zmq_address == f"127.0.0.1:{pair['roles'][args.role]['port']}"
         assert native.send_type == 'PUT_ASYNC'
+        ledger['effective_native_transport'] = {'own_address':native.zmq_address,
+            'send_type':native.send_type,'GPU_staging_threshold_bytes':native.buffer_size_threshold,
+            'pinned_host_pool_bytes':native.pool.max_block_size,
+            'configured_nccl_channels':native.nccl_num_channels,
+            'channel_scope':'recorded connector configuration, not independently observed NCCL kernel channel count'}
         hook = NativeLedger(connector)
         dump(shared/(args.role+'_model_ready.json'), {'gpu_uuid':args.gpu_uuid,'job_id':pair['job_id']})
         peer_role = 'consumer' if args.role=='producer' else 'producer'

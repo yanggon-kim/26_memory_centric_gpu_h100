@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T00:47:30.754894+00:00",
+  "updated_utc": "2026-11-28T01:24:51.342543+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16238357",
@@ -161,7 +161,22 @@
       "Producer/connector timing breakdown with real model KV transfer and output correctness",
       "Full-versus-qualified-restricted live decode-worker comparison; separate decoder step latency from end-to-end goodput"
     ],
-    "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites"
+    "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
+    "prepared_prerequisite_job": {
+      "status": "CPU-prepared; NOT submitted",
+      "command": "sbatch --parsable --dependency=afterany:16238357 batch/h200_priority_native_functional_20261127.sbatch",
+      "minimum_GPUs": 2,
+      "requested_time_max": "01:15:00",
+      "requested_time_min": "01:00:00",
+      "prerequisites": [
+        "Current comparison reviewed, closed and published; preceding job must appear in closed_job_ids",
+        "Safe-boundary fast-forward-only pull and both7843c845/f2bc4f90ancestor checks",
+        "Actual owned allocation has enough time for complete gated stages"
+      ],
+      "role": "Functional model-KV prerequisite for owner-prioritized producer/connector and full-versus-restricted consumer studies",
+      "CPU_receipt": "h200/20261127_resident_preparation/results/native_functional_campaign_CPU_contracts.json",
+      "next_unimplemented": "Matched clean stock/connector producer timing with per-layer breakdown, live restricted consumer/loaded serving and compliant goodput"
+    }
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json"
 }
