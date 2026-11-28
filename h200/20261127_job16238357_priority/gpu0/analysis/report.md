@@ -1,1 +1,5 @@
 # GPU 0: GPU-08d345dc-08ac-061a-6911-a5b4a1a612c9
+
+- Limitation resident_protocol_scope: Prior optimized graph restriction remains blocked; repeated model initialization prevented a complete fresh-model-per-point curve before preemption.. Evidence: h200/20261127_job16210814_priority/analysis/current_work_20261127.md. Tried: Versioned one-resident-model-per-acquisition eager protocol; bounded stock/full-green/40SM pilot before full proof and3fresh acquisitions. Resume: Never pool prior timings; retain exact outputs, actual decoder placement, all references and clock/isolation gates; optimized restriction remains independently blocked.
+
+- Limitation resident_pilot: Strict independent HF dynamic/StaticCache SDPA exact-token gate failed or is incomplete. Evidence: h200/20261127_job16238357_priority/gpu0/results/resident_pilot_hf.json. Tried: Independent full-length dynamic and unchanged controlled StaticCache references; both must pass. Resume: Diagnose first differing token without weakening correctness.
