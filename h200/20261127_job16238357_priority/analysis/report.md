@@ -27,3 +27,12 @@ Observed service-window SMclock envelope is1305–1980MHz (1.517241x), outside t
 Both original workers returned. The bounded native transport component is running on the same owned pair after source-bound terminal-reference review, both original producer locks, GPU idleness and actual scheduler/budget checks. It transfers synthetic known BF16 blocks only; a component success will require CPU payload/source/isolation review before any real-model native KV pilot. Four/eight-GPU work remains deferred.
 
 Actual scheduled end:2026-11-28T01:22:19-05:00; preemption eligible from00:52:18. Final allocated GPU-hours and archive closeout are pending actual job termination. Current source/evidence checkpoints are pushed throughout.
+
+## Native component dependency block
+
+Both native component roles failed before trial0because the pinned vLLM P2pNccl module imports msgpack, absent from the campaign runtime lock and installed environment. No transfer/model KV/serving result exists. The detailed limitation and failure logs remain in `native_transport_component/analysis/report.md`. A single pinned virtual-environment dependency repair and new-root component retry is planned; no default result is promoted.
+
+## Preserved initial allocation limitation
+
+- Limitation P0_new_pair_KV: Fresh paired HF handoff deferred until after first complete SM sweep; prior adapter validation applies only to its recorded physical pair. Evidence: results/P0_prior_KV_software_validation.json. Tried: Validated unchanged adapter/model source hashes; fresh allocated-pair peer-copy smoke remains separate. Resume: At a safe completed-curve boundary, run the existing real-KV pilot on the new allocated pair; never relabel prior UUIDs.
+

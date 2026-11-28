@@ -95,6 +95,14 @@ def main(args):
         torch.manual_seed(20261013)
         ledger['hardware']=describe(nv,handle,torch)
         from vllm.config import KVTransferConfig
+        import msgpack
+        from importlib.metadata import version
+        assert version('msgpack')=='1.1.1', 'native optional dependency needs a new versioned runtime review'
+        ledger['optional_dependencies']={'msgpack':version('msgpack'),
+            'module_path':msgpack.__file__,
+            'package_file_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in sorted(Path(msgpack.__file__).parent.iterdir()) if p.is_file()}}
+        dump(args.output/'run.json',ledger)
         from vllm.distributed.kv_transfer.kv_connector.v1.p2p import p2p_nccl_engine
         actual=hashlib.sha256(Path(p2p_nccl_engine.__file__).read_bytes()).hexdigest()
         assert actual==ENGINE_SHA,'native transport requires a new source review'
