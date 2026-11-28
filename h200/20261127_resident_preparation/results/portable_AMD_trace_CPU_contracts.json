@@ -1,0 +1,85 @@
+{
+  "created_utc": "2026-11-28T04:34:06.730735+00:00",
+  "classification": "CPU-only portable workload contracts; no GPU measurements or performance judging",
+  "AMD_reference_commit": "8c4cc5b9026342c084365be4edc1c33d36221106",
+  "AMD_source_path": "scripts/amd/cp/cp_trace.py",
+  "AMD_generator_sha256": "75a1e42657498055d49a6e1e5b56bb3bf8891931cfa20d6eb5c557a26c5f1821",
+  "python": "3.10.13 (main, Sep 11 2023, 13:44:35) [GCC 11.2.0]",
+  "tests": {
+    "command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s scripts -p 'test_h200_portable_serving_trace.py' -v",
+    "passed": 5,
+    "failed": 0
+  },
+  "files": {
+    "scripts/h200_amd_trace_source.py": "75a1e42657498055d49a6e1e5b56bb3bf8891931cfa20d6eb5c557a26c5f1821",
+    "scripts/h200_portable_serving_trace.py": "e36fb5c56768dd422706f7c586e44096d1fd10b36a9efb6d9353bd2ab0bb8ea5",
+    "scripts/test_h200_portable_serving_trace.py": "9f77ba1c14f8e0442d597cc3e87deb8d6ac2deb5cc079393a9ed0864d5ae96b6"
+  },
+  "fixtures": [
+    {
+      "workload": "lclo",
+      "arrival": "poisson",
+      "configured_rate_requests_s": 1.0,
+      "rate_rng_seed_text": "1.0",
+      "seed": 101,
+      "split": "development",
+      "request_count": 30,
+      "warmup_requests": 3,
+      "AMD_trace_sha256": "c4e2e139fd3c3ae39678b958361df96bebfd71ca8b32cb0f24de2d5c631f9dab",
+      "content_sha256": "383d0e067b39f2de5cc3ad6f4d923650dff5bf2c6f97712966eedd3befb33bc1",
+      "demand": {
+        "requests": 30,
+        "prompt_tokens": 367456,
+        "output_tokens": 92362,
+        "p_to_d": 3.978432688768108,
+        "span_s": 26.99019147873956
+      },
+      "equal_adjacent_arrival_timestamps": 0
+    },
+    {
+      "workload": "mixdoc",
+      "arrival": "bursty",
+      "configured_rate_requests_s": 1.0,
+      "rate_rng_seed_text": "1.0",
+      "seed": 101,
+      "split": "development",
+      "request_count": 30,
+      "warmup_requests": 3,
+      "AMD_trace_sha256": "70a92a725b4272741b96f8f75b7d395645e46b6414ca1fd56f4255cada12325b",
+      "content_sha256": "06f7013d2c59acc518beaae94fbdbcab26cee4bad68c0396844368b5775b58a2",
+      "demand": {
+        "requests": 30,
+        "prompt_tokens": 121340,
+        "output_tokens": 19788,
+        "p_to_d": 6.131999191429149,
+        "span_s": 37.33520796181264
+      },
+      "equal_adjacent_arrival_timestamps": 1
+    },
+    {
+      "workload": "lctx",
+      "arrival": "poisson",
+      "configured_rate_requests_s": 0.1,
+      "rate_rng_seed_text": "0.1",
+      "seed": 201,
+      "split": "judging",
+      "request_count": 30,
+      "warmup_requests": 3,
+      "AMD_trace_sha256": "6b791ec240a8d9aaf6324429b8e0935e70a640b51d391bbe51ec53c6edb4db6b",
+      "content_sha256": "ea0d3b3342718fc30bd790fa5c5c152c22556215b98c1d626e6ed466264e7f6a",
+      "demand": {
+        "requests": 30,
+        "prompt_tokens": 351750,
+        "output_tokens": 30048,
+        "p_to_d": 11.706269968051119,
+        "span_s": 238.89652400995874
+      },
+      "equal_adjacent_arrival_timestamps": 0
+    }
+  ],
+  "fixture_provenance": "Independent digests obtained by executing git show AMD_COMMIT:scripts/amd/cp/cp_trace.py without the H200 adapter; held-out fixture tests only generator parity, no measured outputs or policy selection.",
+  "current_job_preserved": "16238357",
+  "GPU_execution": false,
+  "serving_qualified": false,
+  "next_required": "Use the sealed generator in a future versioned loaded-serving controller only after native functional gates; retain arrivals and offered denominator, exact same-shape references, independent repetitions and all clock/source/isolation gates."
+}

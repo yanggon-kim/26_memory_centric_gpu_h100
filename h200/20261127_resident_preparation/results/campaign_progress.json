@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T03:33:43.225962+00:00",
+  "updated_utc": "2026-11-28T04:34:06.730735+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16238357",
@@ -178,6 +178,13 @@
       "next_unimplemented": "Matched clean stock/connector producer timing with per-layer breakdown, live restricted consumer/loaded serving and compliant goodput",
       "latest_failure_preservation_CPU_receipt": "h200/20261127_resident_preparation/results/native_failure_preservation_CPU_contracts.json",
       "latest_output_provenance_CPU_receipt": "h200/20261127_resident_preparation/results/native_actual_output_publication_CPU_contracts.json"
+    },
+    "portable_request_inputs": {
+      "status": "CPU-prepared; GPU controller integration and serving pending",
+      "receipt": "h200/20261127_resident_preparation/results/portable_AMD_trace_CPU_contracts.json",
+      "generator_sha256": "75a1e42657498055d49a6e1e5b56bb3bf8891931cfa20d6eb5c557a26c5f1821",
+      "command_template": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python scripts/h200_portable_serving_trace.py --workload lclo --arrival poisson --rate <development-rate> --requests 30 --seed 101 --split development --output <new-trace.json>",
+      "preserves_bursty_ties": true
     }
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
