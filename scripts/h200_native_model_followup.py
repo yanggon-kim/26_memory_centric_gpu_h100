@@ -12,6 +12,7 @@ import fcntl
 import os
 from pathlib import Path
 import signal
+import shutil
 import socket
 import subprocess
 import time
@@ -19,6 +20,27 @@ import traceback
 from h200_priority_campaign import PACKAGE,load,write,sha,publish,limitation,config,valid_tokens,strict_reference_record
 from h200_native_transport_pair import validate_sources,validate_returned,verify_terminal_reference_block,choose_ports
 from h200_native_functional_campaign import run_one,run_pair,copy_role
+
+
+def copy_runtime_cache(source, target):
+    """Copy only compilation/registry caches, with byte checks, before a GPU run."""
+    names=('vllm','torchinductor','triton','cuda')
+    assert all(not (source/'cache'/name).is_symlink() for name in names)
+    entries=[p for name in names for p in (source/'cache'/name).rglob('*')]
+    assert all(not p.is_symlink() and p.stat().st_uid==os.getuid() for p in entries)
+    files=[p for p in entries if p.is_file()]
+    size=sum(p.stat().st_size for p in files)
+    assert size<=4*1024**3 and shutil.disk_usage(target).free>=size+512*1024**2
+    rows=[]
+    for name in names:
+        old=source/'cache'/name
+        if old.exists():shutil.copytree(old,target/'cache'/name)
+    for path in files:
+        relative=path.relative_to(source/'cache');copied=target/'cache'/relative
+        digest=sha(path);assert sha(copied)==digest
+        rows.append({'path':str(relative),'bytes':path.stat().st_size,'sha256':digest})
+    return {'source_workspace':str(source),'destination_workspace':str(target),'bytes':size,'files':rows,
+        'scope':'Only owned closed compilation/registry caches; no HF credentials, weights, outputs or correctness qualification copied. Fresh independent reference/output gates remain mandatory.'}
 
 
 def main(args):
@@ -37,7 +59,16 @@ def main(args):
     fields=dict(item.split('=',1) for item in raw.split() if '=' in item)
     cutoff=min(dt.datetime.fromisoformat(fields['EndTime']).timestamp()-900,
                *(dt.datetime.fromisoformat(s['launch_cutoff']).timestamp() for s in sessions))
-    assert cutoff-time.time()>=1440, 'complete stock300/reference240/model720 plus180second staging/publication budget does not fit'
+    cached=bool(getattr(args,'cache_source_session',None))
+    stock_limit=600 if cached else 300
+    required=stock_limit+240+720+180
+    assert cutoff-time.time()>=required, 'complete stock/reference/model plus180second staging/publication budget does not fit'
+    cache_session=load(args.cache_source_session) if cached else None
+    if cached:
+        assert cache_session['slurm_job_id']==job and cache_session['expected_hostname']==socket.gethostname()
+        assert Path(args.cache_source_session).resolve() in paths
+        cache_outcome=load(Path(args.cache_source_session).resolve().parent/'results/worker_outcome.json')
+        assert cache_outcome['status']=='prefill_acquisition_disposition' and cache_outcome['complete_acquisition_set'] is True
     from h200_review_native_transport import review as component_review
     reviewed=component_review(args.component)
     assert reviewed['status']=='known_data_transport_functional_review_passed'
@@ -60,7 +91,7 @@ def main(args):
         write(args.root/'environment/idle_admission.json',{'job_id':job,'slurm':raw,
             'original_sessions':[{'path':str(p),'sha256':sha(p)} for p in paths],
             'terminal_reference_block_reviews':terminal,'native_component_review':str(review_path),
-            'native_component_review_sha256':sha(review_path),'required_s':1440,'available_s':cutoff-time.time(),
+            'native_component_review_sha256':sha(review_path),'required_s':required,'stock_reference_limit_s':stock_limit,'available_s':cutoff-time.time(),
             'cutoff_unix_s':cutoff,'first_preemption_eligible':fields.get('PreemptEligibleTime'),
             'scope':'Actual scheduler end minus15minute reserve; first-hour preemption may interrupt sooner. Both original locks held, original workers returned, selected UUIDs idle. No allocation or unrelated process stopped.'})
         write(args.root/'environment/orchestrator_source.json',{'path':str(Path(__file__).resolve()),'sha256':sha(Path(__file__))})
@@ -74,11 +105,16 @@ def main(args):
             base=args.root/f'gpu{index}'
             for name in ('environment','results','logs','analysis','configs','runs'):(base/name).mkdir(parents=True,exist_ok=True)
             session={k:v for k,v in old.items() if k not in ('frozen_source_root','frozen_source_identity')}
-            session.update(workspace=old['workspace']+'_model_'+args.root.name,protocol='native_model_functional_followup_v1',
+            session.update(workspace=old['workspace']+'_model_'+args.root.name,
+                protocol='native_model_functional_cached_startup_v2' if cached else 'native_model_functional_followup_v1',
                 source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PACKAGE,text=True).strip())
             Path(session['workspace']).mkdir(exist_ok=False)
             write(base/'session.json',session)
             subprocess.run([session['python'],PACKAGE/'scripts/freeze_shoreline.py','--session',base/'session.json','--activate'],check=True,timeout=120)
+            if cached:
+                copied=copy_runtime_cache(Path(cache_session['workspace']),Path(session['workspace']))
+                copied.update(source_session=str(args.cache_source_session),source_session_sha256=sha(args.cache_source_session))
+                write(base/'environment/runtime_cache_copy.json',copied)
             bases.append(base)
         assert len({load(b/'session.json')['frozen_source_identity'] for b in bases})==1
         outcome={'status':'preparing','quantitative_performance_qualified':False,'serving_qualified':False}
@@ -88,7 +124,7 @@ def main(args):
             cfg=config(reference_root,'graph',128,3,1)
             source=reference_root/'runs/P0_native_model_reference/run.json'
             run_one(reference_root,'P0_native_model_reference','controlled_vllm_experiments.py',[
-                '--config',cfg,'--gpu-uuid',sessions[0]['gpu_uuid'],'--output',source.parent,'--mode','timing','--generated-tokens','64'],300,cutoff)
+                '--config',cfg,'--gpu-uuid',sessions[0]['gpu_uuid'],'--output',source.parent,'--mode','timing','--generated-tokens','64'],stock_limit,cutoff)
             assert valid_tokens(load(source))
             hf=reference_root/'results/P0_native_model_reference_hf.json'
             run_one(reference_root,'P0_native_model_reference_hf','hf_full_reference.py',[
@@ -133,4 +169,5 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--source-session',type=Path,action='append',required=True)
     p.add_argument('--component',type=Path,required=True);p.add_argument('--root',type=Path,required=True)
+    p.add_argument('--cache-source-session',type=Path,help='Explicit bounded startup repair: owned completed prefill cache,600second stock bound; no output/source qualification transfer')
     main(p.parse_args())

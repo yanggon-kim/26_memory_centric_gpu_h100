@@ -11,6 +11,22 @@ import h200_native_model_followup as followup
 
 
 class ModelFollowupAdmission(unittest.TestCase):
+    def test_runtime_copy_verifies_bytes_and_excludes_credentials(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source=Path(folder)/'source';target=Path(folder)/'target';target.mkdir()
+            (source/'cache/vllm').mkdir(parents=True)
+            (source/'cache/vllm/compiled.bin').write_bytes(b'compiled-fixture')
+            (source/'cache/huggingface').mkdir()
+            (source/'cache/huggingface/token').write_text('private-fixture')
+            record=followup.copy_runtime_cache(source,target)
+            self.assertEqual(record['bytes'],len(b'compiled-fixture'))
+            self.assertEqual((target/'cache/vllm/compiled.bin').read_bytes(),b'compiled-fixture')
+            self.assertFalse((target/'cache/huggingface').exists())
+            (source/'cache/vllm/external').symlink_to(source/'cache/huggingface',target_is_directory=True)
+            other=Path(folder)/'other';other.mkdir()
+            with self.assertRaises(AssertionError):followup.copy_runtime_cache(source,other)
+            self.assertFalse((other/'cache').exists())
+
     def test_failed_component_or_wrong_job_cannot_launch_model(self):
         with tempfile.TemporaryDirectory() as folder:
             package=Path(folder);source=package/'h200/source';paths=[]
