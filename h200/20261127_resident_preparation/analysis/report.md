@@ -177,3 +177,5 @@ This is a prerequisite job, not the requested producer-penalty or live restricte
 ## Pending scheduler handoff,2026-11-28 02:46UTC
 
 Job16238357remains PENDING/Priority, reported priority9, TimeMin75minutes and TimeLimit90minutes. The live scheduler reports a tentative start of2026-11-27 22:29:08Eastern; this is a forecast, not an allocation or guaranteed start. No current node, UUID, actual StartTime or EndTime is claimed. Receipt: `results/scheduler_pending_20261128T0246.json`. The stale current-bootstrap field has been moved to last_closed_bootstrap; the pending job has no bootstrap yet. Five-minute visible queue checks continue. No new GPU measurements or additional job submissions occurred.
+
+Prepared native role handoff markers now carry actual producer/consumer output IDs, with the saved reference retained only for independent exact-output checks. The18CPUtests passed; actual GPU validation is still pending. Receipt: `results/native_actual_output_publication_CPU_contracts.json`.

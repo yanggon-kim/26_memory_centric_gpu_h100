@@ -300,19 +300,20 @@ def main(args):
                     while not all_native_sends_completed(native,rid,identifiers):
                         assert time.time() < deadline; time.sleep(.001)
                     for sent in row['sent']: sent['completed'] = True
-                    dump(shared/(marker+'_first.json'), {'request_id':rid,'first_token':expected[0],
+                    dump(shared/(marker+'_first.json'), {'request_id':rid,'first_token':outputs[-1]['output_ids'][0],
                          'send_completion_unix_ns':time.time_ns(),'sent':row['sent']})
                     acknowledged = wait_json(shared/(marker+'_ack.json'), deadline)
                     assert acknowledged['request_id'] == rid and acknowledged['canonical_output_ids'] == expected
                 else:
                     assert len(row['received']) == 64
                     assert set(row['native_receive_completions']) == {r['tensor_id'] for r in row['received']}
-                    assert [produced['first_token']]+outputs[-1]['output_ids'] == expected
+                    canonical = [produced['first_token']]+outputs[-1]['output_ids']
+                    assert canonical == expected
                     if payload:
                         from h200_native_pd_contract import validate_layers
                         total_bytes = phase_contract(prompt,expected[0])['analytical_requested_KV_tensor_bytes']
                         row['payload_gate'] = validate_layers(produced['sent'],row['injected'],rid,total_bytes)
-                    dump(shared/(marker+'_ack.json'), {'request_id':rid,'canonical_output_ids':expected,
+                    dump(shared/(marker+'_ack.json'), {'request_id':rid,'canonical_output_ids':canonical,
                          'completion_unix_ns':time.time_ns()})
                 row.update(status='functional_phase_passed',completed_unix_ns=time.time_ns())
                 hook.active = None; dump(args.output/'run.json',ledger)
