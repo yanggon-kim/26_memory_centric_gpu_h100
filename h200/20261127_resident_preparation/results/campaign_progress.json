@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T13:13:35.393134+00:00",
+  "updated_utc": "2026-11-28T13:25:57.071227+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16281263",
@@ -133,15 +133,15 @@
     "visible squeue checks approximately300s apart"
   ],
   "current_results": "h200/20261128_job16281263_native_functional_c16384",
-  "next_job_id": "16266958",
-  "next_job_state": "RUNNING",
-  "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
+  "next_job_id": null,
+  "next_job_state": null,
+  "next_scope": "Finish current fixed C16384 producer cohort; optional connector continuation only after completed publication/archive and complete time admission. Inspect actual outcomes before any sequential replacement.",
   "last_closed_job_id": "16280236",
-  "current_job_time_limit": "01:15:00",
+  "current_job_time_limit": "02:00:00",
   "current_bootstrap": null,
   "current_node": "atl1-1-03-019-14-0",
-  "current_allocation_end": "2026-11-28T10:05:20",
-  "current_first_preemption_eligible": "2026-11-28T06:24:42-05:00",
+  "current_allocation_end": "2026-11-28T10:05:20-05:00",
+  "current_first_preemption_eligible": "2026-11-28T09:05:18-05:00",
   "current_GPU_UUIDs": [
     "GPU-3f9a2800-c6fb-242a-e145-979b7a922277",
     "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9"
@@ -149,16 +149,13 @@
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
   ],
-  "last_closed_results": "h200/20261127_job16238357_priority",
+  "last_closed_results": "h200/20261128_job16280236_native_functional_c16384",
   "last_closed_archive": {
-    "receipt": "h200/20261127_job16238357_priority/results/archive_transfer_63f562f6a687.json",
-    "archive": "/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261127_job16238357_priority_63f562f6a687.tar.gz",
-    "archive_sha256": "b969e6077efaed959800a88ad75fa93e94192178c41e7d722184930c61248bac",
-    "source_content_identity": "63f562f6a6873c67e0a453569adc6a25f15a5a3a49949250177be09e6f456940",
-    "verified": true,
-    "every_member_verified": true
+    "receipt_root": "h200/20261128_job16280236_native_functional_c16384/results",
+    "scope": "Core and producer pilot separate verified archives; see transfer receipts",
+    "verified": true
   },
-  "current_job_time_min": "01:15:00",
+  "current_job_time_min": "02:00:00",
   "next_job_time_min": "01:15:00",
   "expanded_followup": {
     "runbook": "docs/h200_amd_long_context_followup.md",
@@ -179,8 +176,8 @@
     ],
     "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
     "prepared_prerequisite_job": {
-      "status": "RUNNING; known controls passed, new C16384stock/default HF and model gates in progress",
-      "command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter",
+      "status": "RUNNING; fresh stock and both strict HF gates passed; paired real-model KV validation running",
+      "command": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job 16280236 --pilot-root h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
       "minimum_GPUs": 2,
       "requested_time_max": "01:15:00",
       "requested_time_min": "01:15:00",
@@ -215,9 +212,9 @@
         "qualification": "functional permission/control only; no calibrated BW or model traffic",
         "cleanup": "owned descendants only, before paired model phase and parent Git publication"
       },
-      "job_id": "16266958",
+      "job_id": "16281263",
       "submission_commit": "9ec7c394a06159da0ecf1582d95395b87ab73f11",
-      "actual_root": "h200/20261128_job16266958_native_functional_c16384"
+      "actual_root": "h200/20261128_job16281263_native_functional_c16384"
     },
     "portable_request_inputs": {
       "status": "CPU-prepared; GPU controller integration and serving pending",
@@ -303,7 +300,7 @@
   "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_live_16281263.json",
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
-  "current_allocation_start": "2026-11-28T08:05:18",
+  "current_allocation_start": "2026-11-28T08:05:18-05:00",
   "current_comparison_disposition": "h200/20261127_resident_preparation/results/producer_quant_submission_20261128.json",
   "next_command": "timeout 25s squeue -h -j 16281263 -o '%i|%T|%l|%Q|%M|%R'",
   "next_experiment_command_after_current_job_closes": "Inspect actual producer and optional connector outcomes before selecting next sequential job; never repeat a completed cohort by default.",
@@ -315,7 +312,8 @@
     "scope": "all currently eligible two-H200 experiment families including expanded follow-up",
     "counting": "Qualified scientific comparisons count; partial captures, blocked cases and CPU preparation are reported separately",
     "owner_request": "Include percentage in future progress updates",
-    "updated_utc": "2026-11-28T11:01:36.396988+00:00"
+    "updated_utc": "2026-11-28T13:25:57.071227+00:00",
+    "latest_basis": "Qualified B1/C4096 conditioned eager curve retained. Current C16384 fresh stock and both strict HF gates passed; paired KV functional validation running. Current cohort not counted before complete review."
   },
   "rental_strategy": {
     "maximum_request": "02:00:00",
@@ -338,7 +336,7 @@
     "source_role_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
   },
   "scheduler_poll_interval_s": 300,
-  "next_scheduler_poll_not_before_utc": "2026-11-28T12:52:40.929147+00:00",
+  "next_scheduler_poll_not_before_utc": "2026-11-28T13:31:48+00:00",
   "prepared_connector_continuation": {
     "plan": "h200/20261127_resident_preparation/results/connector_followup_16281263.json",
     "job_id": "16281263",
