@@ -1,13 +1,30 @@
 {
-  "observed_utc": "2026-11-28T06:25:57.697822+00:00",
+  "observed_utc": "2026-11-28T10:42:17.981619+00:00",
   "job_id": "16266958",
-  "state": "PENDING",
-  "scheduler_raw": "JobId=16266958 JobName=yg-h200-native UserId=jkim4112(3449576) GroupId=pace-dmahajan7(450745) MCS_label=N/A Priority=1 Nice=0 Account=gts-dmahajan7 QOS=embers JobState=PENDING Reason=Priority Dependency=(null) Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0 RunTime=00:00:00 TimeLimit=01:15:00 TimeMin=01:15:00 SubmitTime=2026-11-28T01:25:26 EligibleTime=2026-11-28T01:25:26 AccrueTime=2026-11-28T01:25:26 StartTime=Unknown EndTime=Unknown Deadline=N/A SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-11-28T01:25:57 Scheduler=Main Partition=gpu-h200 AllocNode:Sid=login-phoenix-gnr-3.pace.gatech.edu:2018151 ReqNodeList=(null) ExcNodeList=atl1-1-02-014-9-0 NodeList= NumNodes=1-1 NumCPUs=16 NumTasks=1 CPUs/Task=16 ReqB:S:C:T=0:0:*:* ReqTRES=cpu=16,mem=392G,node=1,billing=104762,gres/gpu=2,gres/gpu:h200=2 AllocTRES=(null) Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=* MinCPUsNode=16 MinMemoryTRES=196G MinTmpDiskNode=0 Features=(null) DelayBoot=00:00:00 OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null) Command=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/batch/h200_priority_native_functional_20261127.sbatch SubmitLine=sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter WorkDir=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100 StdErr= StdIn=/dev/null StdOut=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200-native-16266958.out MemPerTres=gres/gpu:200704 TresPerNode=gres/gpu:h200:2 TresPerTask=cpu=16\n",
-  "submission_commit": "9ec7c394a06159da0ecf1582d95395b87ab73f11",
-  "requested_GPUs": 2,
-  "requested_time_max": "01:15:00",
-  "requested_time_min": "01:15:00",
-  "start_time": "Unknown",
-  "allocated_GPU_hours": 0,
-  "scope": "C16384native model functional prerequisite; independent known512MiB counter smoke; not producer timing or loaded serving"
+  "state": "RUNNING",
+  "node": "atl1-1-03-019-2-0",
+  "GPU_UUIDs": [
+    "GPU-cef53330-5214-b247-8ee2-ea62cc683988",
+    "GPU-567384ae-5a3d-7d51-84f6-19cb41e0f93d"
+  ],
+  "start_local": "2026-11-28T05:24:42-05:00",
+  "scheduled_end_local": "2026-11-28T06:39:42-05:00",
+  "first_preemption_eligible_local": "2026-11-28T06:24:42-05:00",
+  "current_launch_cutoff_local": "2026-11-28T06:22:42-05:00",
+  "root": "h200/20261128_job16266958_native_functional_c16384",
+  "actual_stage": {
+    "status": "running_stock_reference",
+    "job_id": "16266958",
+    "quantitative_qualified": false,
+    "serving_qualified": false,
+    "stage": "new C16384 full64stock and strict dualHF"
+  },
+  "source_commit": "498331e04db770da96b0d0cf4293a8ff15c71c20",
+  "frozen_source_identity": "c3dccc5f1af171a27f6ee089bd9e844ec29ef2c7e6232317e926ef1068a71ccf",
+  "runtime_check_elapsed_s": 380.22882056236267,
+  "known_native_component": "known_data_transport_functional_review_passed",
+  "known_counter_GPU1": "permission_functional_counter_pilot_passed",
+  "model_KV_C16384_verified": false,
+  "serving_qualified": false,
+  "scope": "Actual current owned pair; known-data transport/counter controls complete, model reference/long-KV proof still in progress. No new performance comparison is claimed."
 }

@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T09:49:32.485280+00:00",
+  "updated_utc": "2026-11-28T10:42:17.981619+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16266958",
-  "current_observed_state": "PENDING",
+  "current_observed_state": "RUNNING",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -130,17 +130,20 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": "h200/20261127_job16238357_priority",
+  "current_results": "h200/20261128_job16266958_native_functional_c16384",
   "next_job_id": "16266958",
-  "next_job_state": "PENDING",
+  "next_job_state": "RUNNING",
   "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
   "last_closed_job_id": "16238357",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
-  "current_node": null,
-  "current_allocation_end": null,
-  "current_first_preemption_eligible": null,
-  "current_GPU_UUIDs": [],
+  "current_node": "atl1-1-03-019-2-0",
+  "current_allocation_end": "2026-11-28T06:39:42-05:00",
+  "current_first_preemption_eligible": "2026-11-28T06:24:42-05:00",
+  "current_GPU_UUIDs": [
+    "GPU-cef53330-5214-b247-8ee2-ea62cc683988",
+    "GPU-567384ae-5a3d-7d51-84f6-19cb41e0f93d"
+  ],
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
   ],
@@ -174,7 +177,7 @@
     ],
     "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
     "prepared_prerequisite_job": {
-      "status": "submitted PENDING",
+      "status": "RUNNING; known controls passed, new C16384stock/default HF and model gates in progress",
       "command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter",
       "minimum_GPUs": 2,
       "requested_time_max": "01:15:00",
@@ -211,7 +214,8 @@
         "cleanup": "owned descendants only, before paired model phase and parent Git publication"
       },
       "job_id": "16266958",
-      "submission_commit": "9ec7c394a06159da0ecf1582d95395b87ab73f11"
+      "submission_commit": "9ec7c394a06159da0ecf1582d95395b87ab73f11",
+      "actual_root": "h200/20261128_job16266958_native_functional_c16384"
     },
     "portable_request_inputs": {
       "status": "CPU-prepared; GPU controller integration and serving pending",
@@ -294,12 +298,13 @@
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
   "last_closed_bootstrap": "h200/20261127_job16238357_bootstrap",
-  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_queue_16266958.json",
+  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_live_16266958.json",
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
-  "current_allocation_start": null,
-  "current_comparison_disposition": "h200/20261127_job16238357_priority/results/current_comparison_disposition.json",
+  "current_allocation_start": "2026-11-28T05:24:42-05:00",
+  "current_comparison_disposition": "h200/20261128_job16266958_native_functional_c16384/STATUS.json",
   "next_command": "timeout 25s squeue -h -j 16266958 -o '%i|%T|%l|%Q|%M|%R'",
   "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958",
-  "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default."
+  "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default.",
+  "current_launch_cutoff": "2026-11-28T06:22:42-05:00"
 }
