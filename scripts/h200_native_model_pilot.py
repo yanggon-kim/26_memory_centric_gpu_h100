@@ -99,7 +99,9 @@ class NativeLedger:
                     if _action!='store_tensor' and arguments[0] in self.pool_addresses:
                         active=self.pool_addresses[arguments[0]]['row']
                     event={'operation':_action,'status':'running','host_start_unix_ns':time.time_ns(),
-                        'thread_id':threading.get_ident(),'request_id':active['request_id'] if active is not None else None}
+                        'thread_id':threading.get_ident(),'request_id':active['request_id'] if active is not None else None,
+                        'address':None,'requested_tensor_bytes':None,'allocated_block_bytes':None,
+                        'allocated_block_bytes_before':None,'error':None,'host_end_unix_ns':None}
                     events=active.setdefault('host_pool_events',[]) if active is not None else self.unassigned_pool_events
                     if _action=='store_tensor':
                         event['requested_tensor_bytes']=arguments[0].numel()*arguments[0].element_size()

@@ -5,10 +5,44 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
-from h200_native_functional_campaign import run_pair,run_one
+from h200_native_functional_campaign import run_pair,run_one,start_spare_counter,finish_spare_counter
+from unittest.mock import Mock
 
 
 class PairedSupervisor(unittest.TestCase):
+    def test_optional_counter_short_budget_never_launches(self):
+        with patch('h200_native_functional_campaign.subprocess.Popen') as spawn:
+            with self.assertRaises(AssertionError):
+                start_spare_counter(Path('/unused'),Path('/unused'),time.time()+300)
+            spawn.assert_not_called()
+
+    def test_optional_counter_exit_zero_without_evidence_is_failure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);(root/'results').mkdir()
+            process=Mock(returncode=0);log=Mock()
+            task={'process':process,'log':log,'base':root,'command':['fake'], 'started':time.time()}
+            with patch('h200_native_functional_campaign.stop_owned_role') as stop, \
+                 patch('h200_native_functional_campaign.limitation') as limitation, \
+                 patch('h200_native_functional_campaign.publish'):
+                result=finish_spare_counter(root,task,time.time()+1000)
+            self.assertEqual(result['status'],'failed_or_missing_disposition')
+            stop.assert_called_once_with(process,root);log.close.assert_called_once()
+            limitation.assert_called_once()
+
+    def test_optional_counter_timeout_cleans_owned_process_before_publication(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);(root/'results').mkdir()
+            process=Mock();process.wait.side_effect=subprocess.TimeoutExpired('fake',1)
+            task={'process':process,'log':Mock(),'base':root,'command':['fake'],'started':time.time()-359}
+            order=[]
+            with patch('h200_native_functional_campaign.stop_owned_role',side_effect=lambda *a:order.append('stop')), \
+                 patch('h200_native_functional_campaign.limitation'), \
+                 patch('h200_native_functional_campaign.publish',side_effect=lambda *a:order.append('publish')):
+                result=finish_spare_counter(root,task,time.time()+1000)
+            self.assertEqual(result['status'],'bounded_counter_coordinator_timeout')
+            self.assertLessEqual(process.wait.call_args.kwargs['timeout'],1)
+            self.assertEqual(order,['stop','publish'])
+
     def test_no_role_is_launched_without_complete_budget(self):
         with patch('h200_native_functional_campaign.subprocess.Popen') as spawn:
             with self.assertRaises(AssertionError):

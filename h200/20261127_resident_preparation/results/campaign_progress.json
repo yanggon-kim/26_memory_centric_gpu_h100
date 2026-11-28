@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T06:11:48.163337+00:00",
+  "updated_utc": "2026-11-28T06:24:30.357593+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": null,
@@ -54,7 +54,6 @@
     {
       "id": "P1b",
       "status": "partial",
-      "queued_job_id": "16238357",
       "next": "B8default strict correctness remains blocked after one deterministic control; retain all outputs and advance eligible full-GPU traffic/native serving prerequisites. Other widths/contexts remain separately pending.",
       "reason": "Current full optimized C4096/C16384triplicates captured with exactdualHF/source/process/isolation, but clock-unqualified and thermally limited on GPU1; batch8queued and further widths/contexts pending",
       "evidence": "h200/20261127_job16233972_priority/gpu1/results/full_context_CPU_review.json",
@@ -89,7 +88,6 @@
       "status": "partial",
       "reason": "C1024resident prefill complete3x5x10capture with strict HF, phase/output/source/isolation gates; service/submitted timing rejected by original clock envelope",
       "evidence": "h200/20261127_job16238357_priority/gpu1/results/prefill_CPU_review.json",
-      "queued_job_id": "16238357",
       "next": "Preserve raw complete comparison and advance owner-prioritized paired prerequisites; attribution/longer prompts remain pending"
     },
     {
@@ -176,8 +174,8 @@
     ],
     "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
     "prepared_prerequisite_job": {
-      "status": "CPU-prepared long-context prerequisite; not yet submitted",
-      "command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357",
+      "status": "CPU reviewed and ready for publication/submission",
+      "command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter",
       "minimum_GPUs": 2,
       "requested_time_max": "01:15:00",
       "requested_time_min": "01:15:00",
@@ -194,7 +192,24 @@
       "stock_reference_limit_s": 600,
       "complete_pipeline_admission_s": 2400,
       "latest_startup_repair_evidence": "h200/20261127_job16238357_priority/native_model_functional/gpu0/results/processes/P0_native_model_reference.json",
-      "context": 16384
+      "context": 16384,
+      "optional_spare_counter": {
+        "GPU": "consumer device while producer stock/HFreference runs",
+        "coordinator_bound_s": 360,
+        "GPU_command_bound_s": 180,
+        "metrics": [
+          "dram__bytes_read.sum",
+          "dram__bytes_write.sum",
+          "gpu__time_duration.sum",
+          "lts__t_bytes.sum"
+        ],
+        "kernel_replay": true,
+        "clock_control": "none",
+        "cache_control": "none",
+        "payload": "known512MiB native control",
+        "qualification": "functional permission/control only; no calibrated BW or model traffic",
+        "cleanup": "owned descendants only, before paired model phase and parent Git publication"
+      }
     },
     "portable_request_inputs": {
       "status": "CPU-prepared; GPU controller integration and serving pending",
@@ -221,5 +236,5 @@
   "pending_forecast_is_not_allocation": true,
   "current_allocation_start": null,
   "current_comparison_disposition": "h200/20261127_job16238357_priority/results/current_comparison_disposition.json",
-  "next_command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357"
+  "next_command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter"
 }

@@ -113,6 +113,40 @@ def stage(root,name,command,limit,cutoff):
     assert result.returncode == 0, name+' failed'
 
 
+def start_spare_counter(root,base,cutoff):
+    assert remaining(cutoff)>=360, 'complete optional counter bound does not fit'
+    session,scripts,env=role_environment(base)
+    command=[session['python'],PACKAGE/'scripts/h200_native_counter_campaign.py','--root',base,'--session',base/'session.json']
+    log=(root/'logs/spare_counter_coordinator.log').open('x')
+    try:
+        process=subprocess.Popen(list(map(str,command)),cwd=PACKAGE,env=env,stdout=log,
+            stderr=subprocess.STDOUT,start_new_session=True)
+    except BaseException:
+        log.close();raise
+    return {'process':process,'log':log,'started':time.time(),'base':base,'command':list(map(str,command))}
+
+
+def finish_spare_counter(root,task,cutoff):
+    process=task['process'];base=task['base']
+    result={'command':task['command'],'scientific_gate':'see independent native counter disposition; never inferred from coordinator exit0'}
+    try:
+        process.wait(timeout=max(1,min(360-(time.time()-task['started']),remaining(cutoff)-30)))
+        path=base/'results/native_counter_disposition.json'
+        result.update(exit_code=process.returncode,status='finished' if process.returncode==0 and path.exists() else 'failed_or_missing_disposition',
+            disposition=str(path),disposition_sha256=sha(path) if path.exists() else None)
+    except subprocess.TimeoutExpired:
+        result.update(status='bounded_counter_coordinator_timeout')
+    finally:
+        stop_owned_role(process,base);task['log'].close()
+    write(root/'results/optional_native_counter.json',result)
+    if result['status']!='finished':
+        limitation(root,'optional_native_counter_coordinator',result['status'],'results/optional_native_counter.json',
+            'Independent single-UUID coordinator with360second total bound during the other GPUs stock/HFreference; owned-child cleanup only',
+            'Inspect preserved native/profiler evidence; independent model functional gates remain mandatory and eligible')
+    publish(root,'H200 independent known-payload counter: publish actual disposition before paired model phases')
+    return result
+
+
 def main(args):
     def interrupted(signum,frame): raise SystemExit(128+signum)
     signal.signal(signal.SIGTERM,interrupted)
@@ -134,6 +168,7 @@ def main(args):
     (root/'analysis/report.md').write_text('# Native model KV functional prerequisites\n\nNo deployment timing or serving qualification. Preserve known-data component, metadata-only model controls and intrusive payload proof separately. At initial setup, no GPU measurements had been made.\n')
     outcome = {'status':'preparing','job_id':job,'quantitative_qualified':False,'serving_qualified':False}
     active_root = root
+    counter_task=None
     write(root/'STATUS.json',outcome)
     try:
         progress_path = PACKAGE/'h200/20261127_resident_preparation/results/campaign_progress.json'
@@ -203,6 +238,14 @@ def main(args):
         reviewed = review_component(component); assert reviewed['status']=='known_data_transport_functional_review_passed'
         publish(root,'H200 native component: publish independently reviewed known-data pair')
         outcome.update(status='component_passed_model_pending')
+        if getattr(args,'spare_native_counter',False):
+            try:
+                counter_task=start_spare_counter(root,bases[1],cutoff)
+            except (OSError,AssertionError) as error:
+                write(root/'results/optional_native_counter_start_failure.json',{'error':str(error),'traceback':traceback.format_exc()})
+                limitation(root,'optional_native_counter_start',str(error),'results/optional_native_counter_start_failure.json',
+                    'Bounded optional spare-device control; required model functional stages are independent',
+                    'Inspect the preserved startup error; continue required model gates without claiming counters')
         reference_root = bases[0]; cfg = config(reference_root,'graph',context,3,1)
         active_root = reference_root
         write(root/'STATUS.json',dict(outcome,status='running_stock_reference',stage=f'new C{context} full64stock and strict dualHF'))
@@ -214,6 +257,8 @@ def main(args):
         run_one(reference_root,'P0_native_model_reference_hf','hf_full_reference.py',[
             '--source-run',source,'--gpu-uuid',uuids[0],'--output',hf],240,cutoff)
         assert strict_reference_record(load(hf),sha(source))
+        if counter_task is not None:
+            finish_spare_counter(root,counter_task,cutoff);counter_task=None
         model = root/'model'
         for name in ('results','analysis','shared','logs'):
             (model/name).mkdir(parents=True,exist_ok=True)
@@ -246,6 +291,8 @@ def main(args):
                 'Inspect this comparison before a new bounded cohort; no timing or serving conclusion')
         raise
     finally:
+        if counter_task is not None:
+            finish_spare_counter(root,counter_task,cutoff);counter_task=None
         outcome.update(next_command=f'{PYTHON} -m json.tool {root}/results/worker_outcome.json',
             next_required_work='Inspect the first failing stage; after functional gates pass, implement matched clean producer/connector timing controls before loaded serving. This exact next command inspects evidence; no unimplemented experiment is presented as ready.',
             completed_scope='Only the component/model functional stages explicitly passed by their CPU readers count; no producer-penalty, full-versus-restricted live worker or goodput comparison is completed here')
@@ -270,4 +317,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preceding-job',default='16238357')
     parser.add_argument('--context',type=int,choices=(128,16384,32704),default=128)
+    parser.add_argument('--spare-native-counter',action='store_true',help='Independent known512MiB DRAM/L2 counter control on GPU1while GPU0runs its required stock/HFreference')
     main(parser.parse_args())
