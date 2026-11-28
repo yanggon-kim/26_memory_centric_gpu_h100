@@ -10,7 +10,7 @@
 #SBATCH --gres=gpu:H200:2
 #SBATCH --mem-per-gpu=196G
 #SBATCH --time=01:15:00
-#SBATCH --time-min=01:00:00
+#SBATCH --time-min=01:15:00
 #SBATCH --exclude=atl1-1-02-014-9-0
 #SBATCH --no-requeue
 #SBATCH --output=h200-native-%j.out

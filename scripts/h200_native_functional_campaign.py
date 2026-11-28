@@ -157,9 +157,9 @@ def main(args):
         write(root/'environment/storage.json',budgets)
         from h200_resident_campaign import verify_published_core
         gate = verify_published_core(PACKAGE/'h200/20261127_job16228671_priority/gpu0/results/resident_curve_CPU_review.json')
-        assert remaining(cutoff)>=2100, 'complete functional pipeline budget no longer fits after staging'
-        write(root/'results/admission.json',{'available_s':remaining(cutoff),'required_s':2100,
-            'basis':'Bounded component540s, stock300s, reference240s, model720s plus preparation/publication/cleanup margin; not measured runtime'})
+        assert remaining(cutoff)>=2400, 'complete functional pipeline budget no longer fits after staging'
+        write(root/'results/admission.json',{'available_s':remaining(cutoff),'required_s':2400,
+            'basis':'Bounded component540s, stock600s, reference240s, model720s plus preparation/publication/cleanup margin. The earlier300second cold stock bound timed out during initialization on job16238357; no numerical gate is changed.'})
         write(root/'environment/topology.json',{'command':['nvidia-smi','topo','-m'],
             'output':subprocess.check_output(['nvidia-smi','topo','-m'],text=True,timeout=25)})
         params = Path('/proc/driver/nvidia/params')
@@ -205,7 +205,7 @@ def main(args):
         write(root/'STATUS.json',dict(outcome,status='running_stock_reference',stage='new C128 full64stock and strict dualHF'))
         source = reference_root/'runs/P0_native_model_reference/run.json'
         run_one(reference_root,'P0_native_model_reference','controlled_vllm_experiments.py',[
-            '--config',cfg,'--gpu-uuid',uuids[0],'--output',source.parent,'--mode','timing','--generated-tokens','64'],300,cutoff)
+            '--config',cfg,'--gpu-uuid',uuids[0],'--output',source.parent,'--mode','timing','--generated-tokens','64'],600,cutoff)
         assert valid_tokens(load(source))
         hf = reference_root/'results/P0_native_model_reference_hf.json'
         run_one(reference_root,'P0_native_model_reference_hf','hf_full_reference.py',[

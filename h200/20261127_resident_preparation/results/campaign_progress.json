@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T05:22:19.290797+00:00",
+  "updated_utc": "2026-11-28T05:39:35.547980+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16238357",
-  "current_observed_state": "RUNNING; original comparisons reviewed, native component active",
+  "current_observed_state": "RUNNING; native component passed CPUreview, same-pair cached model functional prerequisite active",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -171,11 +171,11 @@
     ],
     "priority_authority": "Explicit owner instruction received2026-11-27Eastern; applies after current SM/traffic comparison and required correctness/transport prerequisites",
     "prepared_prerequisite_job": {
-      "status": "CPU-prepared; NOT submitted",
+      "status": "CPU-prepared standalone fallback; NOT submitted. Same-allocation native model prerequisite is currently active and must be reviewed before selecting the next job.",
       "command": "sbatch --parsable --dependency=afterany:16238357 batch/h200_priority_native_functional_20261127.sbatch",
       "minimum_GPUs": 2,
       "requested_time_max": "01:15:00",
-      "requested_time_min": "01:00:00",
+      "requested_time_min": "01:15:00",
       "prerequisites": [
         "Current comparison reviewed, closed and published; preceding job must appear in closed_job_ids",
         "Safe-boundary fast-forward-only pull and both7843c845/f2bc4f90ancestor checks",
@@ -185,7 +185,10 @@
       "CPU_receipt": "h200/20261127_resident_preparation/results/native_functional_campaign_CPU_contracts.json",
       "next_unimplemented": "Matched clean stock/connector producer timing with per-layer breakdown, live restricted consumer/loaded serving and compliant goodput",
       "latest_failure_preservation_CPU_receipt": "h200/20261127_resident_preparation/results/native_failure_preservation_CPU_contracts.json",
-      "latest_output_provenance_CPU_receipt": "h200/20261127_resident_preparation/results/native_actual_output_publication_CPU_contracts.json"
+      "latest_output_provenance_CPU_receipt": "h200/20261127_resident_preparation/results/native_actual_output_publication_CPU_contracts.json",
+      "stock_reference_limit_s": 600,
+      "complete_pipeline_admission_s": 2400,
+      "latest_startup_repair_evidence": "h200/20261127_job16238357_priority/native_model_functional/gpu0/results/processes/P0_native_model_reference.json"
     },
     "portable_request_inputs": {
       "status": "CPU-prepared; GPU controller integration and serving pending",
@@ -194,7 +197,14 @@
       "command_template": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python scripts/h200_portable_serving_trace.py --workload lclo --arrival poisson --rate <development-rate> --requests 30 --seed 101 --split development --output <new-trace.json>",
       "preserves_bursty_ties": true,
       "scoring_CPU_receipt": "h200/20261127_resident_preparation/results/portable_AMD_score_CPU_contracts.json"
-    }
+    },
+    "same_pair_native_component": {
+      "status": "known_data_transport_functional_review_passed",
+      "root": "h200/20261127_job16238357_priority/native_transport_component_msgpack",
+      "model_KV_verified": false,
+      "serving_qualified": false
+    },
+    "same_allocation_model_prerequisite": "h200/20261127_job16238357_priority/native_model_functional_cached"
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
   "last_closed_bootstrap": "h200/20261127_job16233972_bootstrap",
