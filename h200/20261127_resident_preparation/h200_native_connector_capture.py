@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 import sys
 
-PROTOCOL='host_API_NVTX_metadata_range_v2'
+PROTOCOL='host_API_NVTX_metadata_barrier_v3'
 
 
 def main(args):
@@ -21,6 +21,8 @@ def main(args):
     import h200_native_model_pilot as functional
     from h200_connector_spans import ConnectorSpans
     from h200_connector_capture_gate import CaptureGate
+    from h200_connector_capture_barrier import PeerBarrier
+    from h200_native_transport_probe import wait_json
     from software_decode_experiments import dump
     original=functional.NativeLedger
     failures=[];closed=[]
@@ -32,6 +34,7 @@ def main(args):
             import torch
             self.capture_gate=CaptureGate(torch.cuda.profiler.start,torch.cuda.profiler.stop,
                 torch.cuda.nvtx.range_push,torch.cuda.nvtx.range_pop)
+            self.peer_barrier=PeerBarrier(pair,args.role,os.getpid(),dump,wait_json)
             try:
                 self.connector_spans=ConnectorSpans(connector,torch.cuda.nvtx.range_push,torch.cuda.nvtx.range_pop)
             except BaseException:
@@ -43,8 +46,14 @@ def main(args):
 
         @active.setter
         def active(self,row):
+            previous=self._active
             self._active=row
-            if self.capture_gate is not None:self.capture_gate.observe_active(row)
+            if self.capture_gate is not None:
+                self.capture_gate.observe_active(row)
+                if row is not None and row['mode']=='metadata_control' and row['trial']==3:
+                    self.peer_barrier.meet('started',row['request_id'])
+                elif row is None and previous is not None and previous['mode']=='metadata_control' and previous['trial']==3:
+                    self.peer_barrier.meet('stopped',previous['request_id'])
 
         def close(self):
             # Defer diagnostic failures until functional.main has executed its
@@ -54,6 +63,7 @@ def main(args):
             try:self.capture_gate.close()
             except BaseException as error:failed('profiler_gate_close',error)
             gate=self.capture_gate.summary();gate['protocol']=PROTOCOL;gate['actor_pid']=os.getpid()
+            gate['peer_barriers']=self.peer_barrier.history
             closed.append(gate)
             spans=self.connector_spans
             document={'protocol':PROTOCOL,'actor_pid':os.getpid(),'classification':spans.classification,

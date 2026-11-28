@@ -8,7 +8,7 @@ from types import ModuleType,SimpleNamespace
 import unittest
 from unittest.mock import Mock,patch
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
+sys.path.append(str(Path(__file__).resolve().parents[2]/'scripts'))
 from h200_priority_campaign import sha
 from h200_producer_quant_entrypoint_candidate import main
 

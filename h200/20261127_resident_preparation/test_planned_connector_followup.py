@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
+sys.path.append(str(Path(__file__).resolve().parents[2]/'scripts'))
 from h200_planned_connector_followup import completed_comparison_gate,run_if_planned
 
 

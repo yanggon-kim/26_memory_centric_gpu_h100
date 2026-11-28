@@ -25,7 +25,7 @@ ENTRY='h200_native_connector_capture.py'
 LABEL='native_model_KV_functional'
 PAIR_BOUND=840
 REQUIRED=1800
-PROTOCOL='host_API_NVTX_metadata_range_v2'
+PROTOCOL='host_API_NVTX_metadata_barrier_v3'
 
 
 def admission(sessions,currents,job,hostname,uid,slurm,outcome,certificate,pair,now):
@@ -110,7 +110,7 @@ def main(args):
     pair=load(core/'model/pair.json')
     gate=admission(sessions,[load(core/f'gpu{i}/results/current_process.json') for i in (0,1)],
         os.environ.get('SLURM_JOB_ID'),socket.gethostname(),os.getuid(),slurm,outcome,load(cert),pair,time.time())
-    needed=(ENTRY,'h200_connector_capture_gate.py','h200_connector_spans.py',
+    needed=(ENTRY,'h200_connector_capture_gate.py','h200_connector_capture_barrier.py','h200_connector_spans.py',
         'h200_connector_timeline.py','h200_review_connector_capture.py',Path(__file__).name)
     for session in sessions:
         assert sys.executable==session['python']

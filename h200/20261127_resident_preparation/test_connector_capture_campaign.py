@@ -10,7 +10,7 @@ import time
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts'))
+sys.path.append(str(Path(__file__).resolve().parents[2]/'scripts'))
 from h200_connector_capture_campaign import admission,profiled_command,run_profile_pair,PAIR_BOUND
 
 

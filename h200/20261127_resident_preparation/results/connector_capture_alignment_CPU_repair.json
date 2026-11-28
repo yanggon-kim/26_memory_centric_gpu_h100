@@ -1,0 +1,32 @@
+{
+  "created_utc": "2026-11-28T13:01:04.584206+00:00",
+  "classification": "CPU-only capture-alignment repair before any GPU attribution run",
+  "protocol": "host_API_NVTX_metadata_barrier_v3",
+  "files": {
+    "h200_connector_capture_campaign.py": "8b7c65f21bd442df4bc93b3b2b15151dee227784e9ed5d496f7f16527d37ef54",
+    "h200_native_connector_capture.py": "c6179988b5d33ec3f1602dc7c576d1354de300361e34cbadff82e287b8839413",
+    "h200_connector_capture_gate.py": "9faf07e31f28816dc54585606df44a27cd78f00f05401cfebd0b44eb93b5cc22",
+    "h200_connector_capture_barrier.py": "eae1908691b3e0ac4195217b57028861bf1179c60dd0d8728460ee3957a4a1da",
+    "h200_connector_spans.py": "f63841b456129765c9fc8fea70ba396561bf6b62fad58f64059979673227b269",
+    "h200_connector_timeline.py": "893838a93a52dc6f16bd6d6cf3f7b752359a487171cd979bce5ea22c813b04b4",
+    "h200_review_connector_capture.py": "d81ea417e1e7a9394a4166614b8d6dd60f650fef928d2ab7a2a97ed7e04b84b0",
+    "h200_planned_connector_followup.py": "4f1a09248b86431e16268572910a14a45ad0daa50e8b5fd488a4f69a10fb65ad",
+    "h200_producer_quant_entrypoint.py": "2ec2e38653173c4cfb92124e9897146cd3839e624a5381ecb048f33e2bbcd691"
+  },
+  "CPU_tests": {
+    "connector_command": "python -m unittest discover -s scripts -p test_h200*connector*.py -v",
+    "connector_passed": 39,
+    "entrypoint_command": "python -m unittest discover -s scripts -p test_h200_producer_quant_continuation.py -v",
+    "entrypoint_passed": 3,
+    "failed": 0
+  },
+  "source_audit": "results/connector_capture_alignment_CPU_audit.json",
+  "repair": "Both actor profiler-start messages precede selected request submission; both stop messages precede next request. Host-only atomic file handshake has60second bound and retains failures; independent reader checks both actors timestamps/PIDs/UUIDs/request IDs.",
+  "GPU_execution": false,
+  "actual_CUDA_capture_alignment_verified": false,
+  "primary_numerical_role_changed": false,
+  "job_id": "16281263",
+  "observed_job_state": "PENDING",
+  "plan_reenabled": true,
+  "remaining": "Actual CUDA/NVTX launch and copy coverage, instrumentation calibration and semantic layer compute remain pending. Existing source/strictHF/3x10/clock/UUID/time gates remain intact."
+}

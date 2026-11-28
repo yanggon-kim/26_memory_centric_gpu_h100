@@ -17,6 +17,7 @@ from h200_priority_campaign import PACKAGE,load,write,sha,publish,limitation
 ENTRY='h200_connector_capture_campaign.py'
 REQUIRED=1860
 SOURCE_NAMES=(ENTRY,'h200_native_connector_capture.py','h200_connector_capture_gate.py',
+    'h200_connector_capture_barrier.py',
     'h200_connector_spans.py','h200_connector_timeline.py','h200_review_connector_capture.py',
     Path(__file__).name,'h200_producer_quant_entrypoint.py')
 

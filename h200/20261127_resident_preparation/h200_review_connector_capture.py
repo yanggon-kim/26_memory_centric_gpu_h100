@@ -9,7 +9,7 @@ from h200_review_native_model import verified_process
 from h200_connector_timeline import read,union_ns
 
 ENTRY='h200_native_connector_capture.py'
-PROTOCOL='host_API_NVTX_metadata_range_v2'
+PROTOCOL='host_API_NVTX_metadata_barrier_v3'
 LABEL='native_model_KV_functional'
 
 
@@ -30,7 +30,35 @@ def checked_gate(gate,run):
         and r['payload_proof']==(r['mode']=='payload_proof') for r in run['trials'])
     selected=run['trials'][3]
     assert event['request_id']==selected['request_id'] and not selected['warmup'] and not selected['payload_proof']
+    assert event['host_begin_unix_ns']<=selected['submit_unix_ns']<=selected['completed_unix_ns']<=event['host_end_unix_ns']
+    barriers=gate['peer_barriers'];assert len(barriers)==2
+    assert [b['stage'] for b in barriers]==['started','stopped']
+    for barrier in barriers:
+        assert barrier['status']=='peer_ready_verified' and barrier['request_id']==selected['request_id']
+        assert barrier['actor_pid']==gate['actor_pid'] and barrier['gpu_uuid']==run['gpu_uuid'] and barrier['role']==run['role']
+        assert type(barrier['peer_actor_pid']) is int and barrier['peer_actor_pid']>0 and barrier['peer_actor_pid']!=gate['actor_pid']
+        assert barrier['peer_received_unix_ns']>=max(barrier['self_ready_unix_ns'],barrier['peer_ready_unix_ns'])
+    assert barriers[0]['self_ready_unix_ns']>=event['host_begin_unix_ns']
+    assert barriers[0]['peer_received_unix_ns']<=selected['submit_unix_ns']
+    assert barriers[1]['self_ready_unix_ns']>=event['host_end_unix_ns']
+    assert barriers[1]['peer_received_unix_ns']<=run['trials'][4]['submit_unix_ns']
     return selected
+
+
+def paired_barrier_consistency(rows):
+    assert len(rows)==2
+    by_role={r['role']:r for r in rows};assert set(by_role)=={'producer','consumer'}
+    assert rows[0]['selected_request_id']==rows[1]['selected_request_id']
+    for row in rows:
+        peer=by_role['consumer' if row['role']=='producer' else 'producer']
+        for index,barrier in enumerate(row['peer_barriers']):
+            assert barrier['peer_role']==peer['role'] and barrier['peer_actor_pid']==peer['actor_pid']
+            assert barrier['peer_gpu_uuid']==peer['gpu_uuid']
+            assert barrier['peer_ready_unix_ns']==peer['peer_barriers'][index]['self_ready_unix_ns']
+    start=max(r['peer_barriers'][0]['self_ready_unix_ns'] for r in rows)
+    stop=max(r['peer_barriers'][1]['self_ready_unix_ns'] for r in rows)
+    assert all(r['selected_submit_unix_ns']>=start and r['next_submit_unix_ns']>=stop for r in rows)
+    return True
 
 
 def method_associations(timeline,spans):
@@ -102,9 +130,14 @@ def review(root):
                 'provenance':provenance,'gate':str(gate_path),'gate_sha256':sha(gate_path),
                 'spans':str(spans_path),'spans_sha256':sha(spans_path),'trace':trace,
                 'selected_request_id':selected['request_id'],'actor_pid':gate['actor_pid'],
+                'peer_barriers':gate['peer_barriers'],'selected_submit_unix_ns':selected['submit_unix_ns'],
+                'next_submit_unix_ns':run['trials'][4]['submit_unix_ns'],
                 'structure_passed':bool(structure),'timeline':timeline,'method_associations':associations,
                 'association_errors':association_errors})
         except (OSError,ValueError,KeyError,AssertionError,sqlite3.Error) as error:errors.append({'role':role,'error':str(error),'error_type':type(error).__name__})
+    if len(rows)==2:
+        try:paired_barrier_consistency(rows)
+        except (AssertionError,KeyError,ValueError) as error:errors.append({'scope':'peer_capture_alignment','error':str(error)})
     complete=len(rows)==2 and not errors and all(r['structure_passed'] for r in rows)
     return {'classification':'Independent structural/source/functional review of instrumented connector traces; no clean performance qualification',
         'status':'instrumented_capture_structure_passed' if complete else 'partial_or_rejected_connector_capture',

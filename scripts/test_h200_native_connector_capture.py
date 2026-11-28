@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import time
 from types import ModuleType,SimpleNamespace
 import unittest
 from unittest.mock import patch
@@ -48,10 +49,20 @@ class Lifecycle(unittest.TestCase):
         torch.cuda=SimpleNamespace(profiler=SimpleNamespace(start=lambda:calls.append('start'),stop=lambda:calls.append('stop')),
             nvtx=SimpleNamespace(range_push=lambda name:calls.append('push'),range_pop=pop))
         spans=ModuleType('h200_connector_spans');spans.ConnectorSpans=Spans
-        return {'h200_native_model_pilot':functional,'torch':torch,'h200_connector_spans':spans},calls,Original
+        transport=ModuleType('h200_native_transport_probe')
+        def peer_ready(path,deadline):
+            own=Path(str(path).replace('_consumer.json','_producer.json'))
+            data=json.loads(own.read_text());data.update(role='consumer',gpu_uuid='GPU-peer',actor_pid=data['actor_pid']+1)
+            return data
+        transport.wait_json=peer_ready
+        return {'h200_native_model_pilot':functional,'torch':torch,'h200_connector_spans':spans,
+            'h200_native_transport_probe':transport},calls,Original
 
     def args(self,root,protocol=PROTOCOL):
-        pair=root/'pair.json';pair.write_text(json.dumps({'protocol':'native_model_KV_long_context_functional_v2','connector_attribution_protocol':protocol}))
+        shared=root/'shared';shared.mkdir()
+        pair=root/'pair.json';pair.write_text(json.dumps({'protocol':'native_model_KV_long_context_functional_v2','connector_attribution_protocol':protocol,
+            'job_id':'123','shared_directory':str(shared),'deadline_unix_s':time.time()+5,
+            'roles':{'producer':{'gpu_uuid':'CPU-fixture'},'consumer':{'gpu_uuid':'GPU-peer'}}}))
         return SimpleNamespace(pair_config=pair,output=root/'new-output',role='producer',gpu_uuid='CPU-fixture')
 
     def test_original_twelve_requests_and_exactly_one_capture_are_retained(self):
@@ -61,6 +72,8 @@ class Lifecycle(unittest.TestCase):
             saved=json.loads((args.output/'profiler_capture_gate.json').read_text())
             self.assertEqual(saved['capture_count'],1);self.assertFalse(saved['GPU_kernel_coverage_verified'])
             self.assertEqual(saved['actor_pid'],os.getpid())
+            self.assertEqual([r['stage'] for r in saved['peer_barriers']],['started','stopped'])
+            self.assertTrue(all(r['status']=='peer_ready_verified' for r in saved['peer_barriers']))
             self.assertEqual(len([r for r in calls if isinstance(r,tuple)]),12)
             self.assertEqual([r for r in calls if isinstance(r,str)],['start','push','pop','stop','original_hooks_restored','owned_engine_cleanup'])
             self.assertIs(modules['h200_native_model_pilot'].NativeLedger,original)
