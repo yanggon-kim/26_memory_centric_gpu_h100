@@ -1,0 +1,15 @@
+{
+  "status": "runtime_check_completed_after_slow_startup",
+  "elapsed_s": 380.22882056236267,
+  "exit_code": 0,
+  "evidence": [
+    "results/runtime_check.json",
+    "logs/runtime_check.log",
+    "results/runtime_preparation_process_snapshot.json",
+    "results/runtime_preparation_process_identity.json"
+  ],
+  "consequence": "Reduced protected case/continuation time; not a model service latency or proven CUDA failure",
+  "attempted": "Read-only CPU process snapshots inside existing allocation; no restart, signals, clock/driver changes or extra allocation",
+  "interpretation": "Later preparatory child had filesystem wait channels; snapshot was after the runtime check and does not establish the cause of its380second delay. Runtime/version/device check eventually passed.",
+  "resume": "Continue actual admitted case; budget later comparisons on actual remaining time. Consider a separately identified startup/cache investigation only if this recurs."
+}

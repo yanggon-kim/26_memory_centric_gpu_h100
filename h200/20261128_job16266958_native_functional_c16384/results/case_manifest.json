@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "job_id": "16266958",
+  "observed_utc": "2026-11-28T10:42:17.981619+00:00",
+  "classification": "Observed case status snapshot; pending/running entries are never evidence of completion",
+  "context": 16384,
+  "model": "Qwen/Qwen2.5-32B-Instruct",
+  "revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "precision": "BF16",
+  "TP": 1,
+  "cases": [
+    {
+      "id": "runtime_inventory",
+      "status": "complete",
+      "scope": "environment only",
+      "evidence": "results/runtime_check.json"
+    },
+    {
+      "id": "known_native_transport",
+      "status": "complete",
+      "scope": "synthetic known32MiB,6paired functional trials; not modelKV or timing qualification",
+      "evidence": "transport/results/native_component_CPU_review.json"
+    },
+    {
+      "id": "known_counter_GPU1",
+      "status": "complete",
+      "scope": "known512MiB DRAM/L2/time counter permission/control only",
+      "evidence": "gpu1/results/native_counter_disposition.json"
+    },
+    {
+      "id": "C16384_stock_reference",
+      "status": "running",
+      "scope": "fresh full64stock/default strict dualHF gate pending",
+      "evidence": "gpu0/runs/P0_native_model_reference/run.json"
+    },
+    {
+      "id": "C16384_native_model_KV",
+      "status": "pending",
+      "scope": "actual64layer handoff, phase/query/payload/host-pool proof"
+    },
+    {
+      "id": "producer_pilot",
+      "status": "pending",
+      "scope": "conditional after completed/published/archived functional case and32minutes protected time"
+    },
+    {
+      "id": "producer_fixed3x10",
+      "status": "pending",
+      "scope": "conditional after correct source-verified pilot and full estimated cohort budget; no pilot samples in CI"
+    }
+  ]
+}
