@@ -223,3 +223,5 @@ Twenty-three native CPUchecks passed, including long-context query boundaries, p
 All26native CPUchecks passed after the final source edits. The bounded spare-device coordinator uses only its allocated UUID, known512MiB native data and four DRAM/L2/time counters, with clock/cache control disabled. It runs while the other device performs required stock/HFreferences; owned descendants are cleaned before the paired model stage. Missing evidence despite exit0 and coordinator timeouts are preserved as failures. Counter failure does not qualify or replace the independent model gates. No new GPU result is claimed.
 
 Exact submission command: `sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357 --spare-native-counter`.
+
+Job16266958submitted at2026-11-28T06:25:57.697822+00:00, requested twoH200s/75minutes. Initial scheduler statePENDING; StartTime=Unknown. No allocation or new measurement is claimed by submission. Source9ec7c394a06159da0ecf1582d95395b87ab73f11published; fast-forward-only pull and both required ancestors passed before submission.
