@@ -1,0 +1,572 @@
+{
+  "classification": "CPU review of producer host pilot; timed rows have no scheduler/connector hooks, but retain CPU timing/output bookkeeping",
+  "status": "pilot_partial_or_rejected",
+  "capture_complete_and_correct": true,
+  "clock_gate_passed": false,
+  "pooled_clock_ratios_by_UUID": {
+    "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd": {
+      "sm_clock_mhz": 2.75,
+      "memory_clock_mhz": 1.0
+    },
+    "GPU-748207af-6539-3f5f-d264-911646f90a4c": {
+      "sm_clock_mhz": 1.0,
+      "memory_clock_mhz": 1.0
+    }
+  },
+  "same_GPU_stock_before_after_drift_ratio": 1.0006346623446598,
+  "rows": [
+    {
+      "condition": "stock_before",
+      "role": "stock",
+      "gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/runs/timing/run.json",
+      "run_sha256": "e12443142fab1d280b96d13d6c1942c04329036f4f57a7d9cb1dc3a924a28a7e",
+      "provenance": {
+        "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/results/processes/matched_producer_timing.json",
+        "process_sha256": "f2deb124fcf3c75922e35dde40f69157a1488c230cbb0da6454e7d6f485c43fb",
+        "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/results/monitors/matched_producer_timing.jsonl",
+        "monitor_sha256": "ef67f68afeeca79124faf88dfe6ca222f2505635f04914931de8060bde0d6142",
+        "log": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/logs/matched_producer_timing.log",
+        "log_sha256": "2aade983ccfc70ad6ed7e47ca5208f4f783d2d94bdc801af548db88c0780cbe2",
+        "entry_snapshot": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/environment/source_snapshots/c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94.py",
+        "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+        "idle_check": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_before/results/idle_checks/matched_producer_timing.json",
+        "idle_check_sha256": "d27b9d828611c6618305bff85b1b3e7858905846b4b40106a2e526eac4e79d70"
+      },
+      "metrics": {
+        "submit_to_final_step_return_host_ms": [
+          2154.985748,
+          2156.852398,
+          2158.159003
+        ],
+        "consumer_first_handoff_query_host_ms": [],
+        "consumer_following62query_host_ms": [],
+        "producer_all_native_sends_observed_host_ms": [],
+        "raw_energy_per_warmup_and_timed_request": [
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1184992,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1204357,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1215864,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1218194,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1217880,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1199849,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          }
+        ],
+        "scope": "Raw host intervals. Consumer first query includes native handoff/load; following62are separate decode calls. No GPU-event timing, HTTP TTFT, serving goodput, physical link/HBM bytes or primary energy."
+      },
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1155,
+            "maximum": 1425,
+            "max_min_ratio": 1.2337662337662338,
+            "samples": 135
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 135
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "condition": "native",
+      "role": "producer",
+      "gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/runs/timing/run.json",
+      "run_sha256": "d0edab23c142e8907e265dd72cc78b12b8ab8212dfc15203213a97c94f93cc59",
+      "provenance": {
+        "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/results/processes/matched_producer_timing.json",
+        "process_sha256": "06ddf218279d0e1ff6f1dbfd1cb01f225d7c00fbd9a907bbcb1eddcc63058a71",
+        "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/results/monitors/matched_producer_timing.jsonl",
+        "monitor_sha256": "968f1a95e25f717b2173c068a53f956cf44088b247ef0d194e34d2585881c2d1",
+        "log": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/logs/matched_producer_timing.log",
+        "log_sha256": "01cc75e35f412c08d3ad1c3d4a74b4b10e7128654a2e17ba8cee1acd19cb5b77",
+        "entry_snapshot": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/environment/source_snapshots/c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94.py",
+        "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+        "idle_check": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/producer/results/idle_checks/matched_producer_timing.json",
+        "idle_check_sha256": "30b33a98780697047b39665a436867eb87a5edcd17267c9590e4d60e779785c5"
+      },
+      "metrics": {
+        "submit_to_final_step_return_host_ms": [
+          2258.109589,
+          2256.48635,
+          2263.712737
+        ],
+        "consumer_first_handoff_query_host_ms": [],
+        "consumer_following62query_host_ms": [],
+        "producer_all_native_sends_observed_host_ms": [
+          2272.234218,
+          2296.608098,
+          2265.737534
+        ],
+        "raw_energy_per_warmup_and_timed_request": [
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1635160,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1443633,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1445219,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1445230,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1441300,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1445300,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          }
+        ],
+        "scope": "Raw host intervals. Consumer first query includes native handoff/load; following62are separate decode calls. No GPU-event timing, HTTP TTFT, serving goodput, physical link/HBM bytes or primary energy."
+      },
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 720,
+            "maximum": 1980,
+            "max_min_ratio": 2.75,
+            "samples": 135
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 135
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "condition": "native",
+      "role": "consumer",
+      "gpu_uuid": "GPU-748207af-6539-3f5f-d264-911646f90a4c",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/runs/timing/run.json",
+      "run_sha256": "4b398ca5b0fb1a2c897cedf16d484fc02e3404f08983b913515812f97a6feb39",
+      "provenance": {
+        "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/results/processes/matched_producer_timing.json",
+        "process_sha256": "389834f72e93dbb3904ced697f914d88440b4edee826067eed8318881da9ad02",
+        "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/results/monitors/matched_producer_timing.jsonl",
+        "monitor_sha256": "1aa9dad6dd8910c223de4f82183c76a98d2e113178f1c7d8a09dfd9328613e82",
+        "log": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/logs/matched_producer_timing.log",
+        "log_sha256": "a37699c9194befbdc4bf12cbce5376d65a347c7075e4bbf0b647bbf39ca9123b",
+        "entry_snapshot": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/environment/source_snapshots/c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94.py",
+        "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+        "idle_check": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/native/consumer/results/idle_checks/matched_producer_timing.json",
+        "idle_check_sha256": "30b60ddb7b263bb1aa15789c48aa5e5ceb33a3f48d4389d2aecba949aff22d8d"
+      },
+      "metrics": {
+        "submit_to_final_step_return_host_ms": [
+          1349.437386,
+          1351.538943,
+          1350.248454
+        ],
+        "consumer_first_handoff_query_host_ms": [
+          94.627187,
+          95.040119,
+          95.378828
+        ],
+        "consumer_following62query_host_ms": [
+          20.267573,
+          20.221915,
+          20.177759,
+          20.170609,
+          20.206764,
+          20.171186,
+          20.165117,
+          20.153243,
+          20.212364,
+          20.131513,
+          20.204202,
+          20.161442,
+          20.156423,
+          20.223257,
+          20.143678,
+          20.16893,
+          20.186463,
+          20.163807,
+          20.142532,
+          20.196195,
+          20.176729,
+          20.172695,
+          20.144002,
+          20.150759,
+          20.128988,
+          20.190204,
+          20.189563,
+          20.18317,
+          20.165373,
+          20.159845,
+          20.194127,
+          20.194816,
+          20.135183,
+          20.171673,
+          20.134801,
+          20.189226,
+          20.135205,
+          20.143464,
+          20.152173,
+          20.180913,
+          20.129854,
+          20.225947,
+          20.134631,
+          20.16692,
+          20.211064,
+          20.158816,
+          20.186406,
+          20.196406,
+          20.132084,
+          20.192601,
+          20.131451,
+          20.169732,
+          20.20695,
+          20.127144,
+          20.143533,
+          20.160954,
+          20.432455,
+          20.209453,
+          20.134389,
+          20.142314,
+          20.186509,
+          20.558706,
+          20.476475,
+          20.30741,
+          20.227224,
+          20.182464,
+          20.271644,
+          20.228602,
+          20.224395,
+          20.201259,
+          20.165459,
+          20.220587,
+          20.165623,
+          20.197226,
+          20.167983,
+          20.218225,
+          20.204587,
+          20.217671,
+          20.189671,
+          20.20152,
+          20.174938,
+          20.123058,
+          20.196773,
+          20.141943,
+          20.187462,
+          20.151841,
+          20.177962,
+          20.156255,
+          20.175043,
+          20.13955,
+          20.200655,
+          20.188114,
+          20.192018,
+          20.21395,
+          20.140206,
+          20.173577,
+          20.156276,
+          20.342166,
+          20.408793,
+          20.321641,
+          20.277208,
+          20.211143,
+          20.151111,
+          20.195827,
+          20.129021,
+          20.190849,
+          20.136994,
+          20.185815,
+          20.151729,
+          20.221943,
+          20.173235,
+          20.230033,
+          20.133803,
+          20.177369,
+          20.177612,
+          20.165269,
+          20.152322,
+          20.190584,
+          20.164908,
+          20.181941,
+          20.165217,
+          20.166034,
+          20.229357,
+          20.58008,
+          20.376817,
+          20.183733,
+          20.209087,
+          20.14332,
+          20.184336,
+          20.148457,
+          20.16291,
+          20.166054,
+          20.183919,
+          20.190549,
+          20.200372,
+          20.166273,
+          20.158761,
+          20.201242,
+          20.139083,
+          20.224135,
+          20.145826,
+          20.173959,
+          20.168479,
+          20.200291,
+          20.163335,
+          20.18295,
+          20.209597,
+          20.185773,
+          20.187137,
+          20.175498,
+          20.146019,
+          20.15126,
+          20.170913,
+          19.846518,
+          20.187469,
+          20.193007,
+          20.165736,
+          20.13768,
+          20.207541,
+          20.109462,
+          20.154113,
+          20.147304,
+          20.174189,
+          20.167266,
+          20.151546,
+          20.203376,
+          20.144626,
+          20.164335,
+          20.199243,
+          20.231272,
+          20.230762,
+          20.283857,
+          20.289441,
+          20.195037,
+          20.188555,
+          20.123174,
+          20.208429,
+          20.166,
+          20.148958,
+          20.180247,
+          20.120903,
+          20.159547,
+          20.152623,
+          20.182209,
+          20.150589,
+          20.563325
+        ],
+        "producer_all_native_sends_observed_host_ms": [],
+        "raw_energy_per_warmup_and_timed_request": [
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1197169,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1080291,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1054379,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1068489,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1067101,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1077105,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          }
+        ],
+        "scope": "Raw host intervals. Consumer first query includes native handoff/load; following62are separate decode calls. No GPU-event timing, HTTP TTFT, serving goodput, physical link/HBM bytes or primary energy."
+      },
+      "clock": {
+        "passed": true,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 1980,
+            "maximum": 1980,
+            "max_min_ratio": 1.0,
+            "samples": 86
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 86
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    },
+    {
+      "condition": "stock_after",
+      "role": "stock",
+      "gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+      "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+      "run": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/runs/timing/run.json",
+      "run_sha256": "b4cbe03a5e6a8a277dc9ef4381c1c22e82fc2f26ed5e66f8dee29e8bd3f8a414",
+      "provenance": {
+        "process": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/results/processes/matched_producer_timing.json",
+        "process_sha256": "50f1134669756d880a4d99978f756b6c92d4781751b68d2a52d82512d08cc2f5",
+        "monitor": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/results/monitors/matched_producer_timing.jsonl",
+        "monitor_sha256": "de472fe6eb6af2e9cfd686c02f3a17f56f5e6f00eff9844e0bf0d6747d301876",
+        "log": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/logs/matched_producer_timing.log",
+        "log_sha256": "889940c39a3a0defe831c5a03228f1ff1c7f83428af085f009ae8c5c1c97685d",
+        "entry_snapshot": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/environment/source_snapshots/c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94.py",
+        "entry_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94",
+        "idle_check": "/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100/h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/stock_after/results/idle_checks/matched_producer_timing.json",
+        "idle_check_sha256": "cd8082acaeb17c9305e75f90a666fc8244a997cbbc44d5642819d7ecd3e5e5a5"
+      },
+      "metrics": {
+        "submit_to_final_step_return_host_ms": [
+          2158.221271,
+          2157.811366,
+          2159.647943
+        ],
+        "consumer_first_handoff_query_host_ms": [],
+        "consumer_following62query_host_ms": [],
+        "producer_all_native_sends_observed_host_ms": [],
+        "raw_energy_per_warmup_and_timed_request": [
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1200562,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1217713,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1218084,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1160983,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1212976,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          },
+          {
+            "status": "available_unqualified",
+            "raw_counter_delta_mj": 1216302,
+            "primary_J_per_token": null,
+            "scope": "Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling."
+          }
+        ],
+        "scope": "Raw host intervals. Consumer first query includes native handoff/load; following62are separate decode calls. No GPU-event timing, HTTP TTFT, serving goodput, physical link/HBM bytes or primary energy."
+      },
+      "clock": {
+        "passed": false,
+        "clocks": {
+          "sm_clock_mhz": {
+            "minimum": 900,
+            "maximum": 1875,
+            "max_min_ratio": 2.0833333333333335,
+            "samples": 127
+          },
+          "memory_clock_mhz": {
+            "minimum": 3201,
+            "maximum": 3201,
+            "max_min_ratio": 1.0,
+            "samples": 127
+          }
+        },
+        "reason": "predeclared <=5% clock envelope; all trials retained"
+      }
+    }
+  ],
+  "errors": [],
+  "performance_comparison_qualified": false,
+  "qualified_producer_penalty_ratio": null,
+  "reason": "Pilot3warm+3timed only; even passed pilot gates do not replace3independent acquisitions/10timed per condition",
+  "serving_qualified": false,
+  "primary_J_per_token": null,
+  "raw_energy_status_counts": {
+    "available_unqualified": 24
+  },
+  "next_required": "After actual pilot time/clock/source/drift review, budget a fresh complete3x10matched stock/native/stock cohort on the same physical producer UUID. Keep connector profiling separate."
+}
