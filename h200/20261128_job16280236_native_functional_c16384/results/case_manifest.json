@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "job_id": "16280236",
-  "observed_utc": "2026-11-28T11:22:45.731485+00:00",
+  "observed_utc": "2026-11-28T11:38:41.078083+00:00",
   "classification": "Observed case snapshot; running/pending entries are not completed results",
   "context": 16384,
   "model": "Qwen/Qwen2.5-32B-Instruct",
@@ -34,18 +34,22 @@
     },
     {
       "id": "C16384_native_model_KV",
-      "status": "running",
-      "scope": "Fresh real64layer payload/query/host-pool proof pending"
+      "status": "complete",
+      "scope": "All12paired real-model requests passed payload/query/output/host-pool proof; functional only, not producer timing",
+      "evidence": "model/results/native_model_CPU_review.json"
     },
     {
       "id": "producer_pilot",
-      "status": "pending",
-      "scope": "After functional success, archived core and own source/idle/fulltime admission"
+      "status": "complete",
+      "scope": "All four role captures complete/correct3warm3timed; primary ratioNA under original clock gate; not3acquisition comparison",
+      "evidence": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/producer_timing_CPU_review.json",
+      "qualification": "clock_rejected"
     },
     {
       "id": "producer_fixed3x10",
       "status": "pending",
       "scope": "Separate future cohort; actual correct pilot and full runtime admission needed"
     }
-  ]
+  ],
+  "archive_scope_note": "Original core archive predates later pilot status and allocation closeout metadata; original raw runs/certificate unchanged."
 }

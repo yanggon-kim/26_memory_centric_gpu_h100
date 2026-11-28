@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T11:29:59.532374+00:00",
+  "updated_utc": "2026-11-28T11:38:41.078083+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16280236",
-  "current_observed_state": "RUNNING",
+  "current_observed_state": "COMPLETED",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -11,9 +11,10 @@
     "16228671",
     "16233972",
     "16238357",
-    "16266958"
+    "16266958",
+    "16280236"
   ],
-  "closed_allocated_gpu_hours": 12.946666666666667,
+  "closed_allocated_gpu_hours": 14.046111111111111,
   "families": [
     {
       "id": "P0",
@@ -135,7 +136,7 @@
   "next_job_id": "16266958",
   "next_job_state": "RUNNING",
   "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
-  "last_closed_job_id": "16266958",
+  "last_closed_job_id": "16280236",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
   "current_node": "atl1-1-03-019-2-0",
@@ -303,10 +304,10 @@
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
   "current_allocation_start": "2026-11-28T06:03:04",
-  "current_comparison_disposition": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot/results/worker_outcome.json",
-  "next_command": "timeout 25s squeue -h -j 16280236 -o '%i|%T|%l|%Q|%M|%R'",
-  "next_experiment_command_after_current_job_closes": "Select after producer pilot outcome; quantitative cohort requires preserved correct actual pilot and full runtime budget",
-  "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default.",
+  "current_comparison_disposition": "h200/20261128_job16280236_native_functional_c16384/results/allocation_closeout.json",
+  "next_command": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job 16280236 --pilot-root h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_quant_20261128.sbatch --context 16384 --preceding-job 16280236 --pilot-root h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+  "next_experiment_command_after_current_job_closes_condition": "Actual current job is terminal; verified pilot supplies runtime bounds only. Fresh current-allocation functional refs and complete fixed3x10cohort retain all source/output/clock/isolation gates. Preserve rejected pilot, never resample it.",
   "current_launch_cutoff": null,
   "progress_estimate": {
     "percent": 20,
@@ -325,5 +326,15 @@
   },
   "first_preemption_eligible": "2026-11-28T07:03:04",
   "current_scope": "16K matched stock/native/stock producer host-timing pilot; initial stock control complete, native pair next",
-  "latest_completed_prerequisite": "h200/20261128_job16280236_native_functional_c16384/results/worker_outcome.json"
+  "latest_completed_prerequisite": "h200/20261128_job16280236_native_functional_c16384/results/worker_outcome.json",
+  "latest_producer_pilot": {
+    "root": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
+    "status": "pilot_partial_or_rejected",
+    "capture_complete_and_correct": true,
+    "clock_gate_passed": false,
+    "qualified_ratio": null,
+    "runtime_only_reuse": true,
+    "full_cohort_required_s": 2784,
+    "source_role_sha256": "c99d4ec05ef79bd18d096eb8699521f55de7605a516889edff951f79d2c55c94"
+  }
 }
