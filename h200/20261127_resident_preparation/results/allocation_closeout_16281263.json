@@ -1,0 +1,40 @@
+{
+  "observed_utc": "2026-11-28T13:42:25.858423+00:00",
+  "job_id": "16281263",
+  "state": "FAILED",
+  "exit_code": "1:0",
+  "elapsed_s": 2009,
+  "allocated_GPUs": 2,
+  "allocated_GPU_hours": 1.116111111111111,
+  "core_status": "functional_prerequisites_passed",
+  "producer_status": "blocked_or_partial_fixed3x10",
+  "completed_role_captures": 3,
+  "partial_stock_after": {
+    "warmups_complete": 3,
+    "timed_complete": 3,
+    "timed_partial": 1,
+    "process_timeout_s": 165,
+    "actual_process_elapsed_s": 165.45502948760986
+  },
+  "clock_rejection_already_observed": true,
+  "qualified_ratio": null,
+  "connector_capture_launched": false,
+  "reason": "Stock-after process exceeded prior-pilot-derived165s total bound, not preemption; entrypoint check=True prevented conditional connector continuation.",
+  "archives": [
+    {
+      "root": "h200/20261128_job16281263_native_functional_c16384",
+      "receipt": "h200/20261128_job16281263_native_functional_c16384/results/archive_transfer_ffb613dfbf44.json",
+      "archive": "/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261128_job16281263_native_functional_c16384_ffb613dfbf44.tar.gz",
+      "sha256": "bb0170afd0046ab801b1d50dac1ead43fca5b88ffe62ce50ff2ccaff0e53e7eb"
+    },
+    {
+      "root": "h200/20261128_job16281263_native_functional_c16384_producer_quant",
+      "receipt": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+      "archive": "/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261128_job16281263_native_functional_c16384_producer_quant_678b2293f89c.tar.gz",
+      "sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
+    }
+  ],
+  "next_scope": "Fresh strict functional gates then dedicated instrumented connector pilot, without resampling producer cohort",
+  "next_command": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
+  "archive_scope": "Closeout and later metadata postdate original byte-verified archives; canonical raw runs/reviews and archives are preserved."
+}

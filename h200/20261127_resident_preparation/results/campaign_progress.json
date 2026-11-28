@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T13:30:34.481769+00:00",
+  "updated_utc": "2026-11-28T13:42:25.858423+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
-  "current_job_id": "16281263",
-  "current_observed_state": "RUNNING",
+  "current_job_id": null,
+  "current_observed_state": "NO_ACTIVE_JOB",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -12,9 +12,10 @@
     "16233972",
     "16238357",
     "16266958",
-    "16280236"
+    "16280236",
+    "16281263"
   ],
-  "closed_allocated_gpu_hours": 14.046111111111111,
+  "closed_allocated_gpu_hours": 15.162222222222223,
   "families": [
     {
       "id": "P0",
@@ -136,7 +137,7 @@
   "next_job_id": null,
   "next_job_state": null,
   "next_scope": "Finish current fixed C16384 producer cohort; optional connector continuation only after completed publication/archive and complete time admission. Inspect actual outcomes before any sequential replacement.",
-  "last_closed_job_id": "16280236",
+  "last_closed_job_id": "16281263",
   "current_job_time_limit": "02:00:00",
   "current_bootstrap": null,
   "current_node": "atl1-1-03-019-14-0",
@@ -149,11 +150,12 @@
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
   ],
-  "last_closed_results": "h200/20261128_job16280236_native_functional_c16384",
+  "last_closed_results": "h200/20261128_job16281263_native_functional_c16384_producer_quant",
   "last_closed_archive": {
-    "receipt_root": "h200/20261128_job16280236_native_functional_c16384/results",
-    "scope": "Core and producer pilot separate verified archives; see transfer receipts",
-    "verified": true
+    "root": "h200/20261128_job16281263_native_functional_c16384_producer_quant",
+    "receipt": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/archive_transfer_678b2293f89c.json",
+    "archive": "/storage/project/r-dmahajan7-0/jkim4112/h200_priority_archives/20261128_job16281263_native_functional_c16384_producer_quant_678b2293f89c.tar.gz",
+    "sha256": "ae40d1f9bcea51258847d95b41d9ed73200d3055d79666e34ffc403daac547cb"
   },
   "current_job_time_min": "02:00:00",
   "next_job_time_min": "01:15:00",
@@ -302,8 +304,8 @@
   "pending_forecast_is_not_allocation": true,
   "current_allocation_start": "2026-11-28T08:05:18-05:00",
   "current_comparison_disposition": "h200/20261128_job16281263_native_functional_c16384_producer_quant/results/acquisitions.json",
-  "next_command": "timeout 25s squeue -h -j 16281263 -o '%i|%T|%l|%Q|%M|%R'",
-  "next_experiment_command_after_current_job_closes": "Inspect actual producer and optional connector outcomes before selecting next sequential job; never repeat a completed cohort by default.",
+  "next_command": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
+  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_connector_20261128.sbatch --context 16384 --preceding-job 16281263",
   "next_experiment_command_after_current_job_closes_condition": "Actual current job is terminal; verified pilot supplies runtime bounds only. Fresh current-allocation functional refs and complete fixed3x10cohort retain all source/output/clock/isolation gates. Preserve rejected pilot, never resample it.",
   "current_launch_cutoff": "2026-11-28T14:50:20+00:00",
   "progress_estimate": {
@@ -312,8 +314,8 @@
     "scope": "all currently eligible two-H200 experiment families including expanded follow-up",
     "counting": "Qualified scientific comparisons count; partial captures, blocked cases and CPU preparation are reported separately",
     "owner_request": "Include percentage in future progress updates",
-    "updated_utc": "2026-11-28T13:25:57.071227+00:00",
-    "latest_basis": "Current pair all12real-model KV functional requests independently reviewed/passed and archive verified. Fixed3x10producer cohort running, not yet counted as qualified evidence."
+    "updated_utc": "2026-11-28T13:42:25.858423+00:00",
+    "latest_basis": "Qualified conditioned eager retained; current16Kfunctional proof passed; producer cohort partial and clock-rejected, no additional qualified performance comparison counted."
   },
   "rental_strategy": {
     "maximum_request": "02:00:00",
@@ -323,7 +325,7 @@
     "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
   },
   "first_preemption_eligible": "2026-11-28T09:05:18",
-  "current_scope": "Running fixed16K3x10producer cohort after current-pair strict HF and all12real-model KV requests passed; optional connector follow-up remains conditional.",
+  "current_scope": "Preparing fresh dedicated connector attribution job after preserved partial timing cohort",
   "latest_completed_prerequisite": "h200/20261128_job16281263_native_functional_c16384/results/worker_outcome.json",
   "latest_producer_pilot": {
     "root": "h200/20261128_job16280236_native_functional_c16384_producer_timing_pilot",
@@ -369,5 +371,6 @@
     ],
     "qualified_ratio": null,
     "final_cohort_review_pending": true
-  }
+  },
+  "last_closed_outcome": "h200/20261127_resident_preparation/results/allocation_closeout_16281263.json"
 }
