@@ -225,6 +225,13 @@ def main(args):
         from vllm.sampling_params import RequestOutputKind
         from vllm.distributed.kv_transfer import get_kv_transfer_group
         from vllm.distributed.kv_transfer.kv_connector.v1.p2p import p2p_nccl_connector, p2p_nccl_engine
+        import msgpack
+        from importlib.metadata import version
+        optional={'msgpack':version('msgpack'),'module_path':msgpack.__file__,
+            'package_file_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                for p in sorted(Path(msgpack.__file__).parent.iterdir()) if p.is_file()}}
+        assert optional==component['optional_dependencies'] and optional['msgpack']=='1.1.1'
+        ledger['optional_dependencies']=optional
         for module, expected_sha in ((p2p_nccl_connector,CONNECTOR_SHA),(p2p_nccl_engine,ENGINE_SHA)):
             assert hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest() == expected_sha
         ledger.update(hardware=describe(nv,handle,torch),versions={'torch':torch.__version__,

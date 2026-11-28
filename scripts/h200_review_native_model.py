@@ -71,6 +71,7 @@ def review(root):
         component = load(pair['native_component_CPU_review'])
         assert sha(pair['native_component_CPU_review']) == pair['native_component_CPU_review_sha256']
         assert component['status'] == 'known_data_transport_functional_review_passed' and not component['errors']
+        assert component['optional_dependencies']['msgpack']=='1.1.1'
         assert component['job_id'] == pair['job_id'] and set(component['gpu_uuids']) == {r['gpu_uuid'] for r in pair['roles'].values()}
         for item in component['roles']:
             for name in ('run','process','monitor','session'):
