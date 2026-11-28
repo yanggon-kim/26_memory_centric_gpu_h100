@@ -1,0 +1,1990 @@
+{
+  "policy": {
+    "version": "separate_policy_v2",
+    "policy": "chunked_separate",
+    "token_budget": 1024,
+    "scheduler_source_sha256": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983",
+    "adapter_source_sha256": "38161b51d978b237265f4ae735acde5a40711e6a28ba3fc04139716a4beba409",
+    "clean_timing_eligible": false,
+    "scope": "experimental policy with per-step checks; held requests keep seats and KV; internal vLLM running-count statistics during masking are not used as actual queue depth"
+  },
+  "observer": {
+    "scheduler_class": "Scheduler",
+    "source_path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/scheduler.py",
+    "source_sha256": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983",
+    "observer_source_sha256": "cebfb261a70d8d7f9838b3712656fd91ba8124a1d9e71d02dfaf1e15701150bd",
+    "clean_timing_eligible": false,
+    "scope": "instrumented scheduling decisions; matched overhead pilot required"
+  },
+  "rows": [
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1024,
+          "prompt_input_queries": 1024,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 1024,
+      "post_prompt_input_queries": 0,
+      "composition": "prefill_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 0,
+      "schedule_start_unix_ns": 1795843083818580652,
+      "observation_end_unix_ns": 1795843083818849282,
+      "queue_before": {
+        "running": 0,
+        "waiting": 1
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1024,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 1,
+      "schedule_start_unix_ns": 1795843083929998130,
+      "observation_end_unix_ns": 1795843083930132382,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1025,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 2,
+      "schedule_start_unix_ns": 1795843083950980366,
+      "observation_end_unix_ns": 1795843083951090163,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1026,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 3,
+      "schedule_start_unix_ns": 1795843083970498694,
+      "observation_end_unix_ns": 1795843083970603130,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1027,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 4,
+      "schedule_start_unix_ns": 1795843083989729336,
+      "observation_end_unix_ns": 1795843083989827462,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1028,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 5,
+      "schedule_start_unix_ns": 1795843084008795911,
+      "observation_end_unix_ns": 1795843084008891325,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1029,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 6,
+      "schedule_start_unix_ns": 1795843084027862694,
+      "observation_end_unix_ns": 1795843084027958129,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1030,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 7,
+      "schedule_start_unix_ns": 1795843084046884754,
+      "observation_end_unix_ns": 1795843084046972212,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1031,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 8,
+      "schedule_start_unix_ns": 1795843084065872844,
+      "observation_end_unix_ns": 1795843084065971955,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1032,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 9,
+      "schedule_start_unix_ns": 1795843084084929893,
+      "observation_end_unix_ns": 1795843084085026635,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1033,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 10,
+      "schedule_start_unix_ns": 1795843084103955260,
+      "observation_end_unix_ns": 1795843084104050915,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1034,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 11,
+      "schedule_start_unix_ns": 1795843084122993123,
+      "observation_end_unix_ns": 1795843084123087747,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1035,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 12,
+      "schedule_start_unix_ns": 1795843084142003544,
+      "observation_end_unix_ns": 1795843084142091770,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1036,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 13,
+      "schedule_start_unix_ns": 1795843084160993410,
+      "observation_end_unix_ns": 1795843084161091682,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1037,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 14,
+      "schedule_start_unix_ns": 1795843084179993160,
+      "observation_end_unix_ns": 1795843084180085952,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1038,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 15,
+      "schedule_start_unix_ns": 1795843084198975723,
+      "observation_end_unix_ns": 1795843084199077874,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1039,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 16,
+      "schedule_start_unix_ns": 1795843084218000044,
+      "observation_end_unix_ns": 1795843084218094451,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1040,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 17,
+      "schedule_start_unix_ns": 1795843084237018683,
+      "observation_end_unix_ns": 1795843084237112845,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1041,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 18,
+      "schedule_start_unix_ns": 1795843084256001854,
+      "observation_end_unix_ns": 1795843084256097440,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1042,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 19,
+      "schedule_start_unix_ns": 1795843084275068308,
+      "observation_end_unix_ns": 1795843084275163930,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1043,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 20,
+      "schedule_start_unix_ns": 1795843084294078506,
+      "observation_end_unix_ns": 1795843084294161419,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1044,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 21,
+      "schedule_start_unix_ns": 1795843084313057892,
+      "observation_end_unix_ns": 1795843084313157327,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1045,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 22,
+      "schedule_start_unix_ns": 1795843084332176641,
+      "observation_end_unix_ns": 1795843084332322291,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1046,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 23,
+      "schedule_start_unix_ns": 1795843084351631529,
+      "observation_end_unix_ns": 1795843084351725682,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1047,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 24,
+      "schedule_start_unix_ns": 1795843084370611247,
+      "observation_end_unix_ns": 1795843084370706195,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1048,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 25,
+      "schedule_start_unix_ns": 1795843084389605826,
+      "observation_end_unix_ns": 1795843084389703388,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1049,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 26,
+      "schedule_start_unix_ns": 1795843084408611146,
+      "observation_end_unix_ns": 1795843084408710218,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1050,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 27,
+      "schedule_start_unix_ns": 1795843084427611936,
+      "observation_end_unix_ns": 1795843084427708909,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1051,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 28,
+      "schedule_start_unix_ns": 1795843084446610887,
+      "observation_end_unix_ns": 1795843084446703556,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1052,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 29,
+      "schedule_start_unix_ns": 1795843084465591020,
+      "observation_end_unix_ns": 1795843084465677971,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1053,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 30,
+      "schedule_start_unix_ns": 1795843084484556241,
+      "observation_end_unix_ns": 1795843084484653720,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1054,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 31,
+      "schedule_start_unix_ns": 1795843084503572980,
+      "observation_end_unix_ns": 1795843084503671324,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1055,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 32,
+      "schedule_start_unix_ns": 1795843084522575425,
+      "observation_end_unix_ns": 1795843084522670035,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1056,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 33,
+      "schedule_start_unix_ns": 1795843084541579535,
+      "observation_end_unix_ns": 1795843084541690709,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1057,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 34,
+      "schedule_start_unix_ns": 1795843084560623207,
+      "observation_end_unix_ns": 1795843084560708623,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1058,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 35,
+      "schedule_start_unix_ns": 1795843084579577521,
+      "observation_end_unix_ns": 1795843084579670189,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1059,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 36,
+      "schedule_start_unix_ns": 1795843084598551881,
+      "observation_end_unix_ns": 1795843084598648754,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1060,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 37,
+      "schedule_start_unix_ns": 1795843084617542650,
+      "observation_end_unix_ns": 1795843084617632578,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1061,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 38,
+      "schedule_start_unix_ns": 1795843084636494976,
+      "observation_end_unix_ns": 1795843084636589231,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1062,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 39,
+      "schedule_start_unix_ns": 1795843084655487969,
+      "observation_end_unix_ns": 1795843084655586076,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1063,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 40,
+      "schedule_start_unix_ns": 1795843084674450031,
+      "observation_end_unix_ns": 1795843084674554205,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1064,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 41,
+      "schedule_start_unix_ns": 1795843084693454636,
+      "observation_end_unix_ns": 1795843084693555349,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1065,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 42,
+      "schedule_start_unix_ns": 1795843084712439245,
+      "observation_end_unix_ns": 1795843084712520768,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1066,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 43,
+      "schedule_start_unix_ns": 1795843084731412028,
+      "observation_end_unix_ns": 1795843084731510538,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1067,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 44,
+      "schedule_start_unix_ns": 1795843084750417450,
+      "observation_end_unix_ns": 1795843084750510661,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1068,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 45,
+      "schedule_start_unix_ns": 1795843084769415903,
+      "observation_end_unix_ns": 1795843084769513770,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1069,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 46,
+      "schedule_start_unix_ns": 1795843084788450047,
+      "observation_end_unix_ns": 1795843084788544548,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1070,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 47,
+      "schedule_start_unix_ns": 1795843084807451559,
+      "observation_end_unix_ns": 1795843084807539663,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1071,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 48,
+      "schedule_start_unix_ns": 1795843084826420083,
+      "observation_end_unix_ns": 1795843084826518680,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1072,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 49,
+      "schedule_start_unix_ns": 1795843084845449842,
+      "observation_end_unix_ns": 1795843084845557154,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1073,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 50,
+      "schedule_start_unix_ns": 1795843084864480701,
+      "observation_end_unix_ns": 1795843084864573599,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1074,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 51,
+      "schedule_start_unix_ns": 1795843084883440942,
+      "observation_end_unix_ns": 1795843084883537598,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1075,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 52,
+      "schedule_start_unix_ns": 1795843084902474525,
+      "observation_end_unix_ns": 1795843084902574228,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1076,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 53,
+      "schedule_start_unix_ns": 1795843084921445242,
+      "observation_end_unix_ns": 1795843084921539413,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1077,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 54,
+      "schedule_start_unix_ns": 1795843084940405017,
+      "observation_end_unix_ns": 1795843084940501227,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1078,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 55,
+      "schedule_start_unix_ns": 1795843084959432598,
+      "observation_end_unix_ns": 1795843084959527058,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1079,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 56,
+      "schedule_start_unix_ns": 1795843084978430119,
+      "observation_end_unix_ns": 1795843084978514470,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1080,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 57,
+      "schedule_start_unix_ns": 1795843084997373148,
+      "observation_end_unix_ns": 1795843084997464699,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1081,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 58,
+      "schedule_start_unix_ns": 1795843085016357829,
+      "observation_end_unix_ns": 1795843085016456118,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1082,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 59,
+      "schedule_start_unix_ns": 1795843085035366381,
+      "observation_end_unix_ns": 1795843085035460343,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1083,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 60,
+      "schedule_start_unix_ns": 1795843085054360752,
+      "observation_end_unix_ns": 1795843085054457652,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1084,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 61,
+      "schedule_start_unix_ns": 1795843085073429972,
+      "observation_end_unix_ns": 1795843085073531840,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1085,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 62,
+      "schedule_start_unix_ns": 1795843085092430822,
+      "observation_end_unix_ns": 1795843085092528414,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "chunk1024_warmup0_0-b6d06c84",
+          "computed_tokens_before_step": 1086,
+          "original_prompt_tokens": 1024,
+          "scheduled_input_queries": 1,
+          "prompt_input_queries": 0,
+          "post_prompt_input_queries": 1,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 0,
+      "post_prompt_input_queries": 1,
+      "composition": "decode_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 63,
+      "schedule_start_unix_ns": 1795843085111445130,
+      "observation_end_unix_ns": 1795843085111541720,
+      "queue_before": {
+        "running": 1,
+        "waiting": 0
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    }
+  ],
+  "prefill": {
+    "wall_ms": 110.57673394680023,
+    "gpu_event_ms": 110.4955825805664,
+    "wall_start_unix_ns": 1795843083818563445,
+    "wall_end_unix_ns": 1795843083929140642,
+    "hardware_before": {
+      "uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "name": "NVIDIA H200",
+      "sm_count": 132,
+      "compute_capability": [
+        9,
+        0
+      ],
+      "total_memory_bytes": 150156607488,
+      "driver": "615.71.09",
+      "l2_bytes": 62914560,
+      "l2_source": "queried CUDA device properties L2_cache_size",
+      "l2_unavailable_reason": "",
+      "readout_scope": "capture setup; clocks/power limits observed, not modified",
+      "sm_clock_mhz": 1980,
+      "memory_clock_mhz": 3201,
+      "power_limit_w": 560.0,
+      "power_w": 458.385,
+      "temperature_c": 46,
+      "used_memory_bytes": 127621464064
+    },
+    "hardware_after": {
+      "uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "name": "NVIDIA H200",
+      "sm_count": 132,
+      "compute_capability": [
+        9,
+        0
+      ],
+      "total_memory_bytes": 150156607488,
+      "driver": "615.71.09",
+      "l2_bytes": 62914560,
+      "l2_source": "queried CUDA device properties L2_cache_size",
+      "l2_unavailable_reason": "",
+      "readout_scope": "capture setup; clocks/power limits observed, not modified",
+      "sm_clock_mhz": 1500,
+      "memory_clock_mhz": 3201,
+      "power_limit_w": 560.0,
+      "power_w": 454.087,
+      "temperature_c": 49,
+      "used_memory_bytes": 127621464064
+    },
+    "actual_prefill_steps": 1,
+    "input_prompt_tokens": 1024,
+    "first_selected_tokens": 1,
+    "token_budget": 1024,
+    "whole": false,
+    "scheduler_rows": [
+      {
+        "requests": [
+          {
+            "request_id": "chunk1024_warmup0_0-b6d06c84",
+            "computed_tokens_before_step": 0,
+            "original_prompt_tokens": 1024,
+            "scheduled_input_queries": 1024,
+            "prompt_input_queries": 1024,
+            "post_prompt_input_queries": 0,
+            "num_preemptions": 0
+          }
+        ],
+        "prompt_input_queries": 1024,
+        "post_prompt_input_queries": 0,
+        "composition": "prefill_only",
+        "any_preempted_request": false,
+        "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+        "index": 0,
+        "schedule_start_unix_ns": 1795843083818580652,
+        "observation_end_unix_ns": 1795843083818849282,
+        "queue_before": {
+          "running": 0,
+          "waiting": 1
+        },
+        "queue_after": {
+          "running": 1,
+          "waiting": 0
+        }
+      }
+    ],
+    "scope": "instrumented complete prefill plus first selected token; includes policy/observer/event and chunk launch costs; excludes later63decode steps",
+    "submit_start_unix_ns": 1795843083817753917,
+    "submission_hardware_before": {
+      "uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+      "name": "NVIDIA H200",
+      "sm_count": 132,
+      "compute_capability": [
+        9,
+        0
+      ],
+      "total_memory_bytes": 150156607488,
+      "driver": "615.71.09",
+      "l2_bytes": 62914560,
+      "l2_source": "queried CUDA device properties L2_cache_size",
+      "l2_unavailable_reason": "",
+      "readout_scope": "capture setup; clocks/power limits observed, not modified",
+      "sm_clock_mhz": 1980,
+      "memory_clock_mhz": 3201,
+      "power_limit_w": 560.0,
+      "power_w": 458.385,
+      "temperature_c": 46,
+      "used_memory_bytes": 127621464064
+    },
+    "submit_end_unix_ns": 1795843083818134851,
+    "first_token_observed_unix_ns": 1795843083929004152,
+    "submit_call_wall_ms": 0.38009602576494217,
+    "submit_to_first_token_wall_ms": 111.24920891597867,
+    "submit_timing_scope": "pretokenized engine submission through first host-visible token; instrumented, not an offered-load/HTTP/SLO measurement"
+  },
+  "scope": "instrumented request trajectory; not clean baseline timing"
+}
