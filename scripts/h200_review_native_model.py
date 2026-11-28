@@ -31,6 +31,36 @@ def verified_process(base, label, entry, session):
         'idle_check':str(idle),'idle_check_sha256':sha(idle)}
 
 
+def host_pool_accounting(source,target,payload_bytes):
+    """Actual native pool APIs; delayed releases stay with their owning request."""
+    assert source['host_pool_events']==[]
+    groups={name:[] for name in ('store_tensor','load_tensor','free')}
+    for event in target['host_pool_events']:
+        assert event['request_id']==target['request_id'] and event['status']=='complete'
+        assert event['host_start_unix_ns']<=event['host_end_unix_ns']
+        assert type(event['address']) is int and event['address']>0
+        groups[event['operation']].append(event)
+    stores={e['address']:e for e in groups['store_tensor']}
+    loads={e['address']:e for e in groups['load_tensor']}
+    released={e['address']:e for e in groups['free']}
+    assert len(stores)==len(groups['store_tensor']) and len(loads)==len(groups['load_tensor'])
+    assert len(released)==len(groups['free']) and stores.keys()==loads.keys() and released.keys()<=stores.keys()
+    for addr,stored in stores.items():
+        assert 0<stored['requested_tensor_bytes']==loads[addr]['requested_tensor_bytes']<=stored['allocated_block_bytes']
+        assert loads[addr]['host_start_unix_ns']>=stored['host_end_unix_ns']
+        if addr in released:
+            assert released[addr]['allocated_block_bytes_before']==stored['allocated_block_bytes']
+            assert released[addr]['host_start_unix_ns']>=loads[addr]['host_end_unix_ns']
+    total=sum(e['requested_tensor_bytes'] for e in stores.values());assert total<=payload_bytes
+    retained=[{'address':addr,'request_id':target['request_id'],'requested_tensor_bytes':e['requested_tensor_bytes']}
+              for addr,e in stores.items() if addr not in released]
+    return {'native_host_spill_tensor_bytes':total,
+        'native_host_restore_tensor_bytes':sum(e['requested_tensor_bytes'] for e in loads.values()),
+        'retained_before_owned_cleanup':retained,
+        'physical_HBM_or_link_bytes':None,
+        'scope':'Actual native pool store/load/free API payload counts; delayed free events remain assigned to their original request. Outstanding bytes are observed before owned engine/process cleanup, not evidence of a post-exit leak. Host call spans include native copies/blocking and instrumentation; no clean latency or GPU-staging peak claim.'}
+
+
 def check_pair_trials(producer, consumer, expected, prompt, pair):
     assert len(producer) == len(consumer) == 12
     contract = phase_contract(prompt,expected[0])
@@ -45,8 +75,8 @@ def check_pair_trials(producer, consumer, expected, prompt, pair):
             assert row['trial'] == index%6 and row['warmup'] is (index%6 < 3)
             assert row['internal_request_id'] == row['request_id']
         rid = source['request_id']; assert target['request_id'] == rid
-        validate_queries(source['scheduler_rows'],'producer',rid)
-        validate_queries(target['scheduler_rows'],'consumer',rid)
+        validate_queries(source['scheduler_rows'],'producer',rid,context=len(prompt))
+        validate_queries(target['scheduler_rows'],'consumer',rid,context=len(prompt))
         assert len(source['outputs']) == 1 and source['outputs'][0]['output_ids'] == expected[:1]
         assert len(target['outputs']) == 63
         for step,row in enumerate(target['outputs']):
@@ -75,9 +105,12 @@ def check_pair_trials(producer, consumer, expected, prompt, pair):
             assert target['payload_gate'] == checked
         else:
             assert target['injected'] == []
-        summaries.append({'request_id':rid,'mode':mode,'trial':index%6,'warmup':index%6<3,
+        summary={'request_id':rid,'mode':mode,'trial':index%6,'warmup':index%6<3,
             'actual_requested_KV_tensor_bytes':payload_bytes,'canonical_outputs':64,
-            'consumer_original_prompt_queries':0,'consumer_canonical_decode_queries':63})
+            'consumer_original_prompt_queries':0,'consumer_canonical_decode_queries':63}
+        if pair.get('protocol')=='native_model_KV_long_context_functional_v2':
+            summary['native_host_pool']=host_pool_accounting(source,target,payload_bytes)
+        summaries.append(summary)
     return summaries
 
 
@@ -146,8 +179,14 @@ def review(root):
                 'run':str(run_path),'run_sha256':sha(run_path),'process':str(process_path),
                 'process_sha256':sha(process_path),'monitor':str(monitor_path),'monitor_sha256':sha(monitor_path)})
         assert len(set(identities)) == 1
-        case = reference['cases'][0]; assert (case['batch_size'],case['context_length'],case['generated_tokens']) == (1,128,64)
+        case = reference['cases'][0]; assert (case['batch_size'],case['context_length'],case['generated_tokens']) == (1,pair['context'],64)
         summaries = check_pair_trials(runs[0]['trials'],runs[1]['trials'],case['trials'][0]['output_ids'][0],case['prompt_ids'][0],pair)
+        if pair['protocol']=='native_model_KV_long_context_functional_v2':
+            assert all(r['unassigned_host_pool_events']==[] for r in runs)
+            retained=[item for s in summaries for item in s['native_host_pool']['retained_before_owned_cleanup']]
+            key=lambda item:(item['request_id'],item['address'])
+            assert sorted(retained,key=key)==sorted(runs[1]['host_pool_retained_before_owned_cleanup'],key=key)
+            assert runs[0]['host_pool_retained_before_owned_cleanup']==[]
     except (OSError,ValueError,KeyError,AssertionError,TypeError,IndexError) as error:
         errors.append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
     result = {'status':'native_model_functional_review_passed' if not errors else 'failed_CPU_review',

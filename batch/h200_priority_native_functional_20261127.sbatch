@@ -15,6 +15,7 @@
 #SBATCH --no-requeue
 #SBATCH --output=h200-native-%j.out
 set -euo pipefail
+test "$#" -gt 0 # explicit reviewed context/scope, never silently repeat C128
 repo=/storage/scratch1/6/jkim4112/gpullm/02_mem_centric/26_memory_centric_gpu_h100
 cd "$repo"
 exec 9>.git/h200_priority_batch.lock
@@ -36,4 +37,4 @@ srun --ntasks=1 --cpus-per-task="$h200_task_cpus" --gpus-per-task=2 --gpu-bind=n
     /usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3 scripts/h200_allocated_visibility.py --output "$H200_VISIBILITY_MANIFEST"
     CUDA_VISIBLE_DEVICES=$(/usr/local/pace-apps/manual/packages/anaconda3/2023.03/bin/python3 -c '\''import json,os; print(json.load(open(os.environ["H200_VISIBILITY_MANIFEST"]))["selected_cuda_visible_devices"])'\'')
     export CUDA_VISIBLE_DEVICES CUDA_DEVICE_ORDER=PCI_BUS_ID
-    exec /storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -u scripts/h200_native_functional_campaign.py'
+    exec /storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -u scripts/h200_native_functional_campaign.py "$@"' h200-native "$@"

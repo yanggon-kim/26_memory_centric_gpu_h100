@@ -24,7 +24,7 @@ ENGINE_SHA = 'bcbb73c586bc82d51c84e89e6b0dca9dc2354fa7a48856c1ae3a9f7dc45fd17a'
 
 
 def validate_scope(pair, session, role, uuid, job, hostname):
-    assert pair['protocol'] == 'native_model_KV_functional_v1'
+    assert pair['protocol'] in ('native_model_KV_functional_v1','native_model_KV_long_context_functional_v2')
     assert pair['synthetic_payload'] is False
     assert pair['job_id'] == session['slurm_job_id'] == job
     assert pair['hostname'] == session['expected_hostname'] == hostname
@@ -34,7 +34,9 @@ def validate_scope(pair, session, role, uuid, job, hostname):
     assert pair['host'] == '127.0.0.1'
     request_id(pair['request_prefix'], pair['host'], pair['roles']['producer']['port'],
                pair['host'], pair['roles']['consumer']['port'])
-    assert pair['generated_tokens'] == 64 and pair['context'] == 128
+    assert pair['generated_tokens'] == 64
+    assert pair['context'] in ((128,) if pair['protocol']=='native_model_KV_functional_v1' else (16384,32704))
+    assert pair['context']+pair['generated_tokens']<=32768
 
 
 def validate_queries(rows, role, rid, context=128):
@@ -85,6 +87,43 @@ class NativeLedger:
         self.active = None
         self.originals = {name: getattr(self.native, name) for name in ('send_tensor', 'recv_tensor', 'get_finished')}
         self.load = connector.start_load_kv
+        self.pool_originals = {}
+        self.unassigned_pool_events = []
+        self.pool_addresses = {}
+        if hasattr(self.native,'pool'):
+            pool=self.native.pool
+            for name in ('store_tensor','load_tensor','free'):
+                original=getattr(pool,name);self.pool_originals[name]=original
+                def observed(*arguments,_action=name,_original=original):
+                    active=self.active
+                    if _action!='store_tensor' and arguments[0] in self.pool_addresses:
+                        active=self.pool_addresses[arguments[0]]['row']
+                    event={'operation':_action,'status':'running','host_start_unix_ns':time.time_ns(),
+                        'thread_id':threading.get_ident(),'request_id':active['request_id'] if active is not None else None}
+                    events=active.setdefault('host_pool_events',[]) if active is not None else self.unassigned_pool_events
+                    if _action=='store_tensor':
+                        event['requested_tensor_bytes']=arguments[0].numel()*arguments[0].element_size()
+                    else:
+                        event['address']=int(arguments[0])
+                        block=pool.allocated_blocks.get(arguments[0])
+                        event['allocated_block_bytes_before']=block.size if block is not None else None
+                    events.append(event)
+                    try:
+                        result=_original(*arguments)
+                        if _action=='store_tensor':
+                            event['address']=int(result)
+                            event['allocated_block_bytes']=pool.allocated_blocks[result].size
+                            assert result not in self.pool_addresses
+                            self.pool_addresses[result]={'row':active,'nbytes':event['requested_tensor_bytes']}
+                        elif _action=='load_tensor':
+                            event['requested_tensor_bytes']=result.numel()*result.element_size()
+                        elif _action=='free':self.pool_addresses.pop(arguments[0],None)
+                        event['status']='complete'
+                        return result
+                    except BaseException as error:
+                        event.update(status='failed',error=str(error));raise
+                    finally:event['host_end_unix_ns']=time.time_ns()
+                setattr(pool,name,observed)
 
         def send(identifier, tensor, remote):
             if self.active is not None:
@@ -142,6 +181,11 @@ class NativeLedger:
         for name, method in self.originals.items():
             setattr(self.native, name, method)
         self.connector.start_load_kv = self.load
+        for name,method in self.pool_originals.items():setattr(self.native.pool,name,method)
+
+    def host_pool_snapshot(self):
+        return [{'address':int(address),'request_id':entry['row']['request_id'] if entry['row'] is not None else None,
+                 'requested_tensor_bytes':entry['nbytes']} for address,entry in sorted(self.pool_addresses.items())]
 
 
 def main(args):
@@ -165,7 +209,7 @@ def main(args):
     assert component['job_id'] == pair['job_id']
     assert set(component['gpu_uuids']) == {r['gpu_uuid'] for r in pair['roles'].values()}
     case = reference['cases'][0]
-    assert (case['batch_size'], case['context_length'], case['generated_tokens']) == (1,128,64)
+    assert (case['batch_size'], case['context_length'], case['generated_tokens']) == (1,pair['context'],64)
     prompt = case['prompt_ids'][0]; expected = case['trials'][0]['output_ids'][0]
     assert reference['config']['seed'] == 20261013 and reference['engine_settings']['dtype'] == 'bfloat16'
     assert reference['config']['model_id'] == 'Qwen/Qwen2.5-32B-Instruct'
@@ -258,6 +302,8 @@ def main(args):
             'configured_nccl_channels':native.nccl_num_channels,
             'channel_scope':'recorded connector configuration, not independently observed NCCL kernel channel count'}
         hook = NativeLedger(connector)
+        ledger['unassigned_host_pool_events']=hook.unassigned_pool_events
+        ledger['host_pool_observation_scope']='Actual native store/load/free API calls and requested tensor bytes, with no added GPU copies or synchronization. Functional instrumentation only; not physical DRAM/NVLink bytes, clean copy latency or an exhaustive GPU-staging peak.'
         dump(shared/(args.role+'_model_ready.json'), {'gpu_uuid':args.gpu_uuid,'job_id':pair['job_id']})
         peer_role = 'consumer' if args.role=='producer' else 'producer'
         ready = wait_json(shared/(peer_role+'_model_ready.json'), deadline)
@@ -270,7 +316,7 @@ def main(args):
                     pair['host'],pair['roles']['producer']['port'],pair['host'],pair['roles']['consumer']['port'])
                 row = {'request_id':rid,'mode':mode,'payload_proof':payload,'trial':trial,'warmup':trial<3,
                        'status':'running','sent':[],'received':[],'injected':[],'native_receive_completions':[],
-                       'outputs':[]}
+                       'outputs':[],'host_pool_events':[]}
                 ledger['trials'].append(row); hook.active = row; dump(args.output/'run.json',ledger)
                 marker = mode+'_'+str(trial)
                 if args.role == 'consumer':
@@ -297,7 +343,7 @@ def main(args):
                         observe_output(outputs,ids,expected,args.role,time.time_ns())
                     assert result.finished and result.outputs[0].finish_reason == 'length' and len(outputs) == count
                     row.update(outputs=outputs,scheduler_rows=observer.rows,observer_identity=observer.identity)
-                    validate_queries(observer.rows,args.role,rid)
+                    validate_queries(observer.rows,args.role,rid,context=pair['context'])
                 finally:
                     observer.close()
                 if args.role == 'producer':
@@ -325,12 +371,14 @@ def main(args):
                 row.update(status='functional_phase_passed',completed_unix_ns=time.time_ns())
                 hook.active = None; dump(args.output/'run.json',ledger)
         ledger.update(status='native_model_functional_captured_pending_pair_review',
-            model_KV_injected_verified=args.role=='consumer')
+            model_KV_injected_verified=args.role=='consumer',
+            host_pool_retained_before_owned_cleanup=hook.host_pool_snapshot())
         dump(args.output/'run.json',ledger)
         dump(shared/(args.role+'_model_complete.json'), {'status':ledger['status']})
         assert wait_json(shared/(peer_role+'_model_complete.json'),deadline)['status'] == ledger['status']
     except BaseException as error:
         ledger.update(status='failed',error=str(error),traceback=traceback.format_exc())
+        if hook is not None:ledger['host_pool_retained_before_owned_cleanup']=hook.host_pool_snapshot()
         dump(args.output/'run.json',ledger)
         raise
     finally:

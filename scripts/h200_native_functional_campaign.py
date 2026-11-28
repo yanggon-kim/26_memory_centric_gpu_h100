@@ -125,7 +125,10 @@ def main(args):
     end = dt.datetime.fromisoformat(fields['EndTime']).astimezone()
     start = dt.datetime.fromisoformat(fields['StartTime']).astimezone()
     cutoff = min((end-dt.timedelta(seconds=900)).timestamp(),start.timestamp()+3600-120)
-    root = PACKAGE/'h200'/f'{dt.datetime.now():%Y%m%d}_job{job}_native_functional'
+    context=getattr(args,'context',128)
+    assert context in (128,16384,32704) and context+64<=32768
+    suffix='' if context==128 else '_c'+str(context)
+    root = PACKAGE/'h200'/f'{dt.datetime.now():%Y%m%d}_job{job}_native_functional{suffix}'
     for name in ('environment','results','logs','analysis','configs'):
         (root/name).mkdir(parents=True,exist_ok=False)
     (root/'analysis/report.md').write_text('# Native model KV functional prerequisites\n\nNo deployment timing or serving qualification. Preserve known-data component, metadata-only model controls and intrusive payload proof separately. At initial setup, no GPU measurements had been made.\n')
@@ -200,9 +203,9 @@ def main(args):
         reviewed = review_component(component); assert reviewed['status']=='known_data_transport_functional_review_passed'
         publish(root,'H200 native component: publish independently reviewed known-data pair')
         outcome.update(status='component_passed_model_pending')
-        reference_root = bases[0]; cfg = config(reference_root,'graph',128,3,1)
+        reference_root = bases[0]; cfg = config(reference_root,'graph',context,3,1)
         active_root = reference_root
-        write(root/'STATUS.json',dict(outcome,status='running_stock_reference',stage='new C128 full64stock and strict dualHF'))
+        write(root/'STATUS.json',dict(outcome,status='running_stock_reference',stage=f'new C{context} full64stock and strict dualHF'))
         source = reference_root/'runs/P0_native_model_reference/run.json'
         run_one(reference_root,'P0_native_model_reference','controlled_vllm_experiments.py',[
             '--config',cfg,'--gpu-uuid',uuids[0],'--output',source.parent,'--mode','timing','--generated-tokens','64'],600,cutoff)
@@ -218,7 +221,7 @@ def main(args):
         active_root = model
         for role,base in zip(('producer','consumer'),bases): copy_role(base,model/role)
         ports = choose_ports()
-        pair.update(protocol='native_model_KV_functional_v1',synthetic_payload=False,context=128,generated_tokens=64,
+        pair.update(protocol='native_model_KV_functional_v1' if context==128 else 'native_model_KV_long_context_functional_v2',synthetic_payload=False,context=context,generated_tokens=64,
             roles={role:{'gpu_uuid':uuid,'port':port} for role,uuid,port in zip(('producer','consumer'),uuids,ports)},
             request_prefix='h200_model_'+job+'_'+str(time.time_ns()),shared_directory=str(model/'shared'),
             reference_run=str(source),reference_run_sha256=sha(source),strict_HF_reference=str(hf),strict_HF_reference_sha256=sha(hf),
@@ -266,4 +269,5 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preceding-job',default='16238357')
+    parser.add_argument('--context',type=int,choices=(128,16384,32704),default=128)
     main(parser.parse_args())

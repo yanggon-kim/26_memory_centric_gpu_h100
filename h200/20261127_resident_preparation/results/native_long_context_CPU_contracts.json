@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-11-28T06:11:48.163337+00:00",
+  "classification": "CPU preparation for unmeasured long-context native functional prerequisite",
+  "prior_functional_evidence": "h200/20261127_job16238357_priority/native_model_functional_cached/model/results/native_model_CPU_review.json",
+  "prior_scope": "C128/N64only,12paired functional requests; no long-prompt or serving/producer timing transfer",
+  "new_context": 16384,
+  "model": "Qwen/Qwen2.5-32B-Instruct",
+  "revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+  "precision": "BF16 weights/KV",
+  "generated_tokens": 64,
+  "TP": 1,
+  "analytical_requested_tensor_bytes_per_request": 4294967296,
+  "new_protocol": "native_model_KV_long_context_functional_v2",
+  "trials": "3warm/3diagnostic metadata controls then3warm/3diagnostic intrusive payload proofs; not3independent performance acquisitions",
+  "host_pool_observation": "Record actual store/load/freecalls and API tensor bytes without extra GPU copies or synchronizations. Attribute delayed frees to the owning request by pool address; report retained bytes before owned cleanup without alleging post-exit leaks. Not physical HBM/NVLink bytes or clean copy timing.",
+  "CPU_tests": {
+    "passed": 23,
+    "failed": 0,
+    "command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s scripts -p 'test_h200*native*.py' -v"
+  },
+  "files": {
+    "scripts/h200_native_model_pilot.py": "710949932b8fb4966bc2215f22bcf79e6171c2d9cc065b1ce72ff315234870d1",
+    "scripts/h200_review_native_model.py": "9623eedb14a614398c1b067653287f298f51cb88d182a0b9e9f0d28495ab6320",
+    "scripts/h200_native_functional_campaign.py": "2cbb5e8287e1cf6560cd214a06dd3a5c1ae079a8d09c3816b58ef59bcdc9048b",
+    "scripts/test_h200_native_model_pilot.py": "9dd39849cbd966540bc47bc74efce4cc97635e36c52e18fe3c36214f244b47ca",
+    "batch/h200_priority_native_functional_20261127.sbatch": "c9a1472397cb25986e12a531304862b6da6830a7c7b1840efa81f97316d43d00"
+  },
+  "GPU_execution": false,
+  "quantitative_performance_qualified": false,
+  "serving_qualified": false,
+  "selection_reason": "Owner-prioritized16K\u201332Kproducer timing requires a correct actual long-prompt native handoff. C128proof is reused only as software prerequisite evidence; default long KV staging/spill/phase behavior is unmeasured.",
+  "next_command": "sbatch --parsable batch/h200_priority_native_functional_20261127.sbatch --context 16384 --preceding-job 16238357"
+}
