@@ -1,0 +1,215 @@
+{
+  "status": "running",
+  "classification": "measured-real-GPU-instrumented",
+  "policy_identity": {
+    "version": "separate_policy_v2",
+    "policy": "whole_separate",
+    "token_budget": 8192,
+    "scheduler_source_sha256": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983",
+    "adapter_source_sha256": "38161b51d978b237265f4ae735acde5a40711e6a28ba3fc04139716a4beba409",
+    "clean_timing_eligible": false,
+    "scope": "experimental policy with per-step checks; held requests keep seats and KV; internal vLLM running-count statistics during masking are not used as actual queue depth"
+  },
+  "observer_identity": {
+    "scheduler_class": "Scheduler",
+    "source_path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/v1/core/sched/scheduler.py",
+    "source_sha256": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983",
+    "observer_source_sha256": "cebfb261a70d8d7f9838b3712656fd91ba8124a1d9e71d02dfaf1e15701150bd",
+    "clean_timing_eligible": false,
+    "scope": "instrumented scheduling decisions; matched overhead pilot required"
+  },
+  "requests": {
+    "whole_separate_0": {
+      "offered_s": 0.0,
+      "admitted_s": 0.00029334286227822304,
+      "output_ids": [
+        9370
+      ],
+      "token_observed_s": [
+        0.45104578183963895
+      ],
+      "internal_request_id": "whole_separate_0-887e8f21",
+      "first_token_s": 0.45104578183963895,
+      "ttft_s": 0.45104578183963895,
+      "admission_to_first_token_s": 0.4507524389773607
+    },
+    "whole_separate_1": {
+      "offered_s": 0.01,
+      "admitted_s": 0.5395575328730047,
+      "output_ids": [
+        9370
+      ],
+      "token_observed_s": [
+        1.4540877202525735
+      ],
+      "internal_request_id": "whole_separate_1-a6a3d7ac",
+      "first_token_s": 1.4540877202525735,
+      "ttft_s": 1.4440877202525735,
+      "admission_to_first_token_s": 0.9145301873795688
+    },
+    "whole_separate_2": {
+      "offered_s": 0.02,
+      "admitted_s": 0.539727927185595,
+      "output_ids": [
+        9370
+      ],
+      "token_observed_s": [
+        1.4540877202525735
+      ],
+      "internal_request_id": "whole_separate_2-88e1ea54",
+      "first_token_s": 1.4540877202525735,
+      "ttft_s": 1.4340877202525735,
+      "admission_to_first_token_s": 0.9143597930669785
+    }
+  },
+  "policy_rows": [
+    {
+      "requests": [
+        {
+          "request_id": "whole_separate_0-887e8f21",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 4096,
+      "post_prompt_input_queries": 0,
+      "composition": "prefill_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "policy": "whole_separate",
+      "requested_phase": "prefill",
+      "token_budget": 8192,
+      "actual_running": 1,
+      "actual_waiting": 0
+    },
+    {
+      "requests": [
+        {
+          "request_id": "whole_separate_1-a6a3d7ac",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        },
+        {
+          "request_id": "whole_separate_2-88e1ea54",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 8192,
+      "post_prompt_input_queries": 0,
+      "composition": "prefill_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "policy": "whole_separate",
+      "requested_phase": "prefill",
+      "token_budget": 8192,
+      "actual_running": 3,
+      "actual_waiting": 0
+    }
+  ],
+  "scheduler_rows": [
+    {
+      "requests": [
+        {
+          "request_id": "whole_separate_0-887e8f21",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 4096,
+      "post_prompt_input_queries": 0,
+      "composition": "prefill_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 0,
+      "schedule_start_unix_ns": 1795845159107111380,
+      "observation_end_unix_ns": 1795845159107328204,
+      "queue_before": {
+        "running": 0,
+        "waiting": 1
+      },
+      "queue_after": {
+        "running": 1,
+        "waiting": 0
+      }
+    },
+    {
+      "requests": [
+        {
+          "request_id": "whole_separate_1-a6a3d7ac",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        },
+        {
+          "request_id": "whole_separate_2-88e1ea54",
+          "computed_tokens_before_step": 0,
+          "original_prompt_tokens": 4096,
+          "scheduled_input_queries": 4096,
+          "prompt_input_queries": 4096,
+          "post_prompt_input_queries": 0,
+          "num_preemptions": 0
+        }
+      ],
+      "prompt_input_queries": 8192,
+      "post_prompt_input_queries": 0,
+      "composition": "prefill_only",
+      "any_preempted_request": false,
+      "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+      "index": 1,
+      "schedule_start_unix_ns": 1795845159646545379,
+      "observation_end_unix_ns": 1795845159646895311,
+      "queue_before": {
+        "running": 1,
+        "waiting": 2
+      },
+      "queue_after": {
+        "running": 3,
+        "waiting": 0
+      }
+    }
+  ],
+  "steps": [
+    {
+      "start_s": 0.0003441479057073593,
+      "end_s": 0.45104578183963895,
+      "wall_ms": 450.7016339339316,
+      "gpu_event_ms": 450.6625671386719,
+      "composition": "prefill_only",
+      "output_requests": [
+        "whole_separate_0"
+      ]
+    },
+    {
+      "start_s": 0.5397779471240938,
+      "end_s": 1.4540877202525735,
+      "wall_ms": 914.3097731284797,
+      "gpu_event_ms": 914.2710571289062,
+      "composition": "prefill_only",
+      "output_requests": [
+        "whole_separate_1",
+        "whole_separate_2"
+      ]
+    }
+  ],
+  "scope": "three fixed requests, one prospectively fixed arrival pattern; functional policy proof only, no throughput/SLO/energy or independent-trace comparison"
+}

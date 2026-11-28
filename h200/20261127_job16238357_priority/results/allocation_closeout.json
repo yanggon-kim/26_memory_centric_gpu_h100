@@ -1,0 +1,38 @@
+{
+  "status": "allocation_preempted",
+  "classification": "terminal Slurm accounting and preserved partial-case closeout",
+  "job_id": "16238357",
+  "start_local": "2026-11-27T23:52:18",
+  "end_local": "2026-11-28T00:52:47",
+  "elapsed_s": 3629,
+  "allocated_GPUs": 2,
+  "allocated_GPU_hours": 2.016111111111111,
+  "accounting": "environment/final_slurm_accounting.psv",
+  "accounting_sha256": "2500fcbc8d89f59a015f69dab375bb4054f03f6014a085d79ec35276aeb22f81",
+  "overlapping_steps": "Every step belongs to the same two allocated GPUs; no additional GPU-hours are added for overlap.",
+  "serving_partial": {
+    "process": "gpu1_serving_development/results/processes/P3a_openloop_development_pilot.json",
+    "process_sha256": "abb15108909e6e125f601daf1fbb5b13756a9a6479c0d7370cbbeb7a9ea999f7",
+    "source_run_status": "running",
+    "retained_cases": [
+      {
+        "batch": 1,
+        "context": 4096,
+        "timed_trials": 0,
+        "warmup_outputs": 3
+      }
+    ],
+    "completed_serving_traces": 0,
+    "strict_HF_reference_captured": false,
+    "scope": "Externally interrupted at Slurm preemption; local supervisor says timeout159s, below its660s bound, so this is not evidence of a660s software deadline or a correctness failure."
+  },
+  "completed": [
+    "C1024prefill3x5x10capture, clock-rejected and preserved",
+    "same-pair known-data native transport with CPU payload/completion/source/isolation review",
+    "real-model native KV12paired functional requests with independent default stock/HF and payload/injection/phase/source/isolation review; verified archive"
+  ],
+  "blocked": [
+    "B8/C4096default exact reference and one deterministic control failed; no full3acquisition SMcurve launched"
+  ],
+  "remaining": "Finite serving pilot interrupted; matched long-prompt producer/connector timing, live consumer SM cuts and separate end-to-end goodput, traffic/long-context/tuned serving families remain unresolved."
+}

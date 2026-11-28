@@ -46,3 +46,9 @@ This is deliberately serialized functional handoff, not producer-penalty timing,
 ## Remaining allocation
 
 GPU1has started the prepared finite serving development pilot after its original prefill worker returned, all15source/phase rows were checked, its original lock was held and its exact UUIDwas idle. A new frozen cached-startup protocol copies only verified owned compilation/registry files. The complete1020second admission uses actual EndTime/session closeout, rechecked after inventory; first-hour preemption can still interrupt sooner. This is a new independent case, not a timing extension of the clock-rejected prefill comparison or a held-out/steady-state serving result. GPU0is idle while current evidence is published and the owner-prioritized timing adapter is prepared. No extra allocation has been submitted.
+
+## Terminal allocation closeout
+
+Slurm PREEMPTED job16238357after3629seconds (1h00m29s), before its90minute limit. Serving step.8was cancelled during its fresh pilot; local timeout159sreflects external termination, not the660second software limit. No serving trace or strict serving HF reference completed. Parent allocation ran23:52:18–00:52:47Eastern and used2.016111111allocated GPU-hours. Overlapping steps used the same owned pair and are not added again. The original requested end01:22:19was not reached. Evidence: `environment/final_slurm_accounting.psv` and `results/allocation_closeout.json`.
+
+The completed native functional result and clock-rejected prefill comparison remain intact and archived. The interrupted serving run remains statusrunning with its partial baseline case and zero complete traces; it is not promoted to a serving result. B8stays blocked by exact reference, rather than by preemption. No new Slurm job has yet been submitted; next select a versioned owner-prioritized long-prompt producer timing pilot, reusing qualified prerequisites and preserving pending families.
