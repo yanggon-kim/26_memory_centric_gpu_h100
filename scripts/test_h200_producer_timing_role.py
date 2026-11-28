@@ -1,9 +1,23 @@
 import copy
 import unittest
-from h200_producer_timing_role import descriptor_scope,checked_outputs
+from h200_producer_timing_role import descriptor_scope,checked_outputs,energy_readout
+from types import SimpleNamespace
 
 
 class ProducerTimingContracts(unittest.TestCase):
+    def test_raw_energy_unavailability_is_retained_without_fabricated_value(self):
+        nv=SimpleNamespace(NVMLError=RuntimeError,nvmlDeviceGetTotalEnergyConsumption=lambda handle:123456)
+        result=energy_readout(nv,object())
+        self.assertEqual(result['energy_mj'],123456)
+        self.assertEqual(result['status'],'available')
+        self.assertLessEqual(result['query_start_unix_ns'],result['query_end_unix_ns'])
+        def unavailable(handle):raise RuntimeError('counter unsupported')
+        nv.nvmlDeviceGetTotalEnergyConsumption=unavailable
+        result=energy_readout(nv,object())
+        self.assertIsNone(result['energy_mj'])
+        self.assertEqual(result['status'],'unavailable')
+        self.assertIn('counter unsupported',result['error'])
+
     def fixture(self):
         pair={'protocol':'matched_native_producer_host_timing_v1','synthetic_payload':False,
             'job_id':'123','hostname':'node','host':'127.0.0.1','request_prefix':'timing123',

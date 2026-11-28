@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T06:46:47.352260+00:00",
+  "updated_utc": "2026-11-28T06:50:57.024593+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16266958",
@@ -234,18 +234,18 @@
       "created_utc": "2026-11-28T06:42:25.575252+00:00",
       "classification": "CPU prepared producer pilot; no GPU measurements or new submission",
       "files": {
-        "scripts/h200_producer_timing_role.py": "1191fc91b4af1500c75a091e2c5e800e7550d02361e559396ceb14bf60a6ab6a",
+        "scripts/h200_producer_timing_role.py": "a0d40329115d2445538dc858a826e4b85fc6f23dddaa9ab506c11ba05302c38c",
         "scripts/h200_producer_timing_followup.py": "19c93607e3788e0fff59c45a32616ae5f03b9d0f32d68224cb44064929fd77cf",
         "scripts/h200_producer_campaign.py": "deb515599992d51d8a0133e5785f1d5201cd9ea3b0c6bbe33479abda41f9980b",
-        "scripts/h200_review_producer_timing.py": "c16cb923584e1c685ba4587bd9bd04e25b9452b35b8e14ffac1bbdf71c5a3c38",
-        "scripts/test_h200_producer_timing_role.py": "b528ceedec704ac79587a3bdb4b30e47cbabe91143feef8e9e86192644386bcc",
+        "scripts/h200_review_producer_timing.py": "2a168e196cebc55c53beba886d728ccf511298142f1c11122313d83af32b7c44",
+        "scripts/test_h200_producer_timing_role.py": "1a54f0ddc50a25c4ccc073c35ee34ca2cbfbd7069f1b62dd39cd6fbb1e5b9095",
         "scripts/test_h200_producer_timing_followup.py": "6ca4fdde75cff69553d38935457de451b0de049b38c4555ef36937fa40d935d4",
         "scripts/test_h200_producer_campaign.py": "03a4de27ff04d922b706db77d1c3bcc9e33d9bd784dfd54766df44f511a644f3",
-        "scripts/test_h200_review_producer_timing.py": "e5e8ee160e65cc64ff354213354b77ee94bdff1777ab61287cc074e6cafab201",
+        "scripts/test_h200_review_producer_timing.py": "9eaf2d1955bec6170a28abd63d66e2a42e222afa403a5eb7775ee2f92da81866",
         "batch/h200_priority_producer_20261128.sbatch": "459758b85ea29b732b0fcfb46c5fb704e798b69ddeb86f8ad3b477684dfbdd0d"
       },
       "CPU_tests": {
-        "passed": 9,
+        "passed": 11,
         "failed": 0,
         "command": "python -m unittest discover -s scripts -p test_h200*producer*.py -v",
         "batch_syntax": "bash -n passed"
@@ -271,7 +271,9 @@
         "Fresh complete3x10matched comparison and uncertainty after pilot qualification",
         "Independent connector GPU timeline coverage/per-layer attribution",
         "Live full/qualified-restricted consumer and separate serving goodput"
-      ]
+      ],
+      "updated_utc": "2026-11-28T06:50:57.024593+00:00",
+      "raw_energy_scope": "Raw NVML cumulative mJ snapshots with host query brackets before/after each role request lifecycle; no added GPU synchronization. Consumer readout begins before actualp0handoff and includes peer waiting. Endpoint counters and independent owned sampled power are retained; no aligned all-board/primary timing energy window or update cadence is established. Unsupported counters/resets are preserved immediately; primary J/token remains NA."
     }
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",

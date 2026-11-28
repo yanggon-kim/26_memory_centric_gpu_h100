@@ -38,9 +38,23 @@ def checked_outputs(actual,expected,role):
     assert actual==wanted,'exact reference output differs'
 
 
+def energy_readout(nv,handle):
+    """Raw NVML board counter, with its host query bracket; no estimate."""
+    result={'query_start_unix_ns':time.time_ns(),'query_end_unix_ns':None,
+        'energy_mj':None,'status':'unavailable','error':None}
+    try:
+        value=nv.nvmlDeviceGetTotalEnergyConsumption(handle)
+        assert type(value) is int and value>=0,'invalid cumulative energy counter'
+        result.update(energy_mj=value,status='available')
+    except (AttributeError,nv.NVMLError,AssertionError) as error:
+        result['error']=type(error).__name__+': '+str(error)
+    finally:result['query_end_unix_ns']=time.time_ns()
+    return result
+
+
 def main(args):
     from software_decode_experiments import dump
-    from h200_priority_campaign import load,sha,valid_tokens,strict_reference_record
+    from h200_priority_campaign import load,sha,valid_tokens,strict_reference_record,write,limitation
     from h200_native_transport_probe import wait_json,all_native_sends_completed
     session_path=Path(os.environ['H200_SESSION_CONFIG']);session=load(session_path);pair=load(args.pair_config)
     descriptor_scope(pair,session,args.role,args.gpu_uuid,os.environ.get('SLURM_JOB_ID'),socket.gethostname())
@@ -143,13 +157,30 @@ def main(args):
             ready=wait_json(shared/(peer+'_timing_ready.json'),deadline)
             assert ready['job_id']==pair['job_id'] and ready['gpu_uuid']==pair['roles'][peer]['gpu_uuid']
         total=pair['warmup_trials']+pair['timed_trials']
+        energy_notice_written=False
+        def energy_notice(raw):
+            nonlocal energy_notice_written
+            reads=[raw[k] for k in ('before','after') if raw[k] is not None]
+            bad=any(r['status']!='available' for r in reads)
+            reset=len(reads)==2 and not bad and reads[1]['energy_mj']<reads[0]['energy_mj']
+            if (bad or reset) and not energy_notice_written:
+                write(session_path.parent/'results/energy_counter_limitation.json',raw)
+                limitation(session_path.parent,'producer_raw_energy_counter','Cumulative energy counter unavailable or reset; primary J/token remains NA',
+                    'results/energy_counter_limitation.json; runs/timing/run.json',
+                    'Record raw counter values/errors with host query brackets outside the primary producer window; sampled power is independently retained',
+                    'Qualify declared aligned energy windows, cadence and counter/power agreement before any primary energy claim; latency gates remain independent')
+                energy_notice_written=True
         for trial in range(total):
             marker='a'+str(pair['acquisition'])+'_t'+str(trial)
             rid=request_id(pair['request_prefix']+'_'+marker,pair['host'],pair['roles']['producer']['port'],pair['host'],pair['roles']['consumer']['port'])
             row={'trial':trial,'warmup':trial<3,'request_id':rid,'status':'running','outputs':[],
                 'host_step_intervals':[],'warmup_scheduler_rows':None,'observer_present':trial<3,
-                'producer_first_step_return_unix_ns':None,'all_native_sends_observed_unix_ns':None}
+                'producer_first_step_return_unix_ns':None,'all_native_sends_observed_unix_ns':None,
+                'raw_energy_counter':{'before':energy_readout(nv,handle),'after':None,
+                    'counter_unit':'mJ','primary_J_per_token':None,
+                    'scope':'Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts.'}}
             ledger['trials'].append(row);dump(args.output/'run.json',ledger)
+            energy_notice(row['raw_energy_counter'])
             if args.role=='consumer':
                 first=wait_json(shared/(marker+'_first.json'),deadline)
                 assert first['request_id']==rid and first['first_token']==expected[0]
@@ -204,6 +235,8 @@ def main(args):
                 assert len(row['outputs'])==63 and expected[:1]+actual==expected
                 dump(shared/(marker+'_ack.json'),{'request_id':rid,'canonical_output_ids':expected,
                     'completion_unix_ns':after_unix})
+            row['raw_energy_counter']['after']=energy_readout(nv,handle)
+            energy_notice(row['raw_energy_counter'])
             row['status']='exact_output_passed';row['completed_unix_ns']=time.time_ns()
             dump(args.output/'run.json',ledger)
         ledger['status']='complete';dump(args.output/'run.json',ledger)

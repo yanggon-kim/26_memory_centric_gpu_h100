@@ -1,9 +1,19 @@
 import copy
 import unittest
-from h200_review_producer_timing import check_trials,check_pair
+from h200_review_producer_timing import check_trials,check_pair,raw_energy
 
 
 class ProducerReader(unittest.TestCase):
+    def test_counter_reset_and_unavailability_never_yield_primary_energy(self):
+        run,_,_=self.fixture('producer');row=run['trials'][0]
+        self.assertEqual(raw_energy(row)['raw_counter_delta_mj'],10)
+        self.assertIsNone(raw_energy(row)['primary_J_per_token'])
+        row['raw_energy_counter']['after']['energy_mj']=1
+        self.assertEqual(raw_energy(row)['status'],'counter_reset')
+        row['raw_energy_counter']['after'].update(status='unavailable',energy_mj=None,error='unsupported')
+        self.assertEqual(raw_energy(row)['status'],'counter_unavailable')
+        self.assertIsNone(raw_energy(row)['primary_J_per_token'])
+
     def fixture(self,role):
         expected=list(range(64));pair={'warmup_trials':3,'timed_trials':3,'mode':'pilot','acquisition':0,
             'protocol':'matched_native_producer_host_timing_v1','context':16384}
@@ -22,7 +32,11 @@ class ProducerReader(unittest.TestCase):
                 'final_step_return_unix_ns':steps[-1]['end_unix_ns'],'first_token_file_read_unix_ns':98,
                 'producer_first_step_return_unix_ns':105,'all_native_sends_observed_unix_ns':108,
                 'consumer_completion_unix_ns':725,'native_sent_tensor_count':64,
-                'warmup_scheduler_rows':[{'any_preempted_request':False,'requests':queries}] if trial<3 else None})
+                'warmup_scheduler_rows':[{'any_preempted_request':False,'requests':queries}] if trial<3 else None,
+                'completed_unix_ns':900,
+                'raw_energy_counter':{'before':{'query_start_unix_ns':90,'query_end_unix_ns':91,'status':'available','energy_mj':100,'error':None},
+                    'after':{'query_start_unix_ns':800,'query_end_unix_ns':801,'status':'available','energy_mj':110,'error':None},
+                    'counter_unit':'mJ','primary_J_per_token':None}})
         return {'status':'complete','role':role,'mode':'pilot','protocol':pair['protocol'],'acquisition':0,'trials':rows},pair,expected
 
     def test_raw_decoder_ticks_exclude_the_first_handoff_query(self):

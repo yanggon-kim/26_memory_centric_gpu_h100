@@ -16,6 +16,23 @@ LABEL='matched_producer_timing'
 ENTRY='h200_producer_timing_role.py'
 
 
+def raw_energy(row):
+    raw=row['raw_energy_counter'];assert raw['counter_unit']=='mJ' and raw['primary_J_per_token'] is None
+    before=raw['before'];after=raw['after']
+    for readout in (before,after):
+        assert readout['query_start_unix_ns']<=readout['query_end_unix_ns']
+        if readout['status']=='available':assert type(readout['energy_mj']) is int and readout['energy_mj']>=0
+        else:assert readout['status']=='unavailable' and readout['energy_mj'] is None and readout['error']
+    assert before['query_end_unix_ns']<=row['submit_unix_ns']
+    assert after['query_start_unix_ns']>=row['final_step_return_unix_ns']
+    assert after['query_end_unix_ns']<=row['completed_unix_ns']
+    present=before['status']==after['status']=='available'
+    delta=after['energy_mj']-before['energy_mj'] if present else None
+    return {'status':'available_unqualified' if present and delta>=0 else 'counter_reset' if present else 'counter_unavailable',
+        'raw_counter_delta_mj':delta,'primary_J_per_token':None,
+        'scope':'Per-role lifecycle counter difference only, including waiting. No aligned primary/all-board window, update cadence or counter/power agreement qualification; no rescaling.'}
+
+
 def checked_certificate(path,pair,session):
     cert=load(path)
     assert cert['status']=='native_model_functional_review_passed' and cert['job_id']==session['slurm_job_id']
@@ -43,7 +60,7 @@ def check_trials(run,pair,expected):
     assert run['status']=='complete' and len(run['trials'])==count
     assert run['mode']==pair['mode'] and run['protocol']==pair['protocol']
     assert run['acquisition']==pair['acquisition']
-    primary=[];first=[];decoder=[];readiness=[]
+    primary=[];first=[];decoder=[];readiness=[];energy=[]
     for index,row in enumerate(run['trials']):
         assert row['trial']==index and row['warmup'] is (index<3)
         assert row['status']=='exact_output_passed' and row['observer_present'] is (index<3)
@@ -52,6 +69,7 @@ def check_trials(run,pair,expected):
         assert row['submit_unix_ns']<=steps[0]['start_unix_ns']
         assert row['final_step_return_unix_ns']==steps[-1]['end_unix_ns']
         assert row['submit_to_final_step_return_ns']>0
+        energy.append(raw_energy(row))
         for step,output in zip(steps,outputs):
             assert step['start_unix_ns']<=step['end_unix_ns']==output['observed_unix_ns']
             assert step['elapsed_ns']>0
@@ -76,6 +94,7 @@ def check_trials(run,pair,expected):
             if role=='producer':readiness.append((row['all_native_sends_observed_unix_ns']-row['submit_unix_ns'])/1e6)
     return {'submit_to_final_step_return_host_ms':primary,'consumer_first_handoff_query_host_ms':first,
         'consumer_following62query_host_ms':decoder,'producer_all_native_sends_observed_host_ms':readiness,
+        'raw_energy_per_warmup_and_timed_request':energy,
         'scope':'Raw host intervals. Consumer first query includes native handoff/load; following62are separate decode calls. No GPU-event timing, HTTP TTFT, serving goodput, physical link/HBM bytes or primary energy.'}
 
 
@@ -152,6 +171,10 @@ def review(root):
     controls={r['condition']:statistics.median(r['metrics']['submit_to_final_step_return_host_ms']) for r in rows if r['role']=='stock'}
     drift=max(controls.values())/min(controls.values()) if len(controls)==2 else None
     complete=set(runs)==expected_keys and not errors
+    energy_status_counts={}
+    for row in rows:
+        for diagnostic in row['metrics']['raw_energy_per_warmup_and_timed_request']:
+            name=diagnostic['status'];energy_status_counts[name]=energy_status_counts.get(name,0)+1
     result={'classification':'CPU review of producer host pilot; timed rows have no scheduler/connector hooks, but retain CPU timing/output bookkeeping',
         'status':'pilot_review_passed' if complete and clocks_ok and drift<=1.05 else 'pilot_partial_or_rejected',
         'capture_complete_and_correct':complete,'clock_gate_passed':clocks_ok,'pooled_clock_ratios_by_UUID':pooled,
@@ -159,12 +182,14 @@ def review(root):
         'performance_comparison_qualified':False,'qualified_producer_penalty_ratio':None,
         'reason':'Pilot3warm+3timed only; even passed pilot gates do not replace3independent acquisitions/10timed per condition',
         'serving_qualified':False,'primary_J_per_token':None,
+        'raw_energy_status_counts':energy_status_counts,
         'next_required':'After actual pilot time/clock/source/drift review, budget a fresh complete3x10matched stock/native/stock cohort on the same physical producer UUID. Keep connector profiling separate.'}
     write(root/'results/producer_timing_CPU_review.json',result)
     lines=['# Producer host-timing pilot CPU review','',result['status']+'. '+result['reason'],
         '', '| Condition | Role | Raw median submit-to-final-return host ms | Clock gate |','|---|---|---:|---|']
     for row in rows:lines.append('| '+row['condition']+' | '+row['role']+' | '+str(statistics.median(row['metrics']['submit_to_final_step_return_host_ms']))+' | '+str(row['clock']['passed'])+' |')
     lines.extend(['','Same-GPU stock before/after drift ratio: '+str(drift)+'. Qualified producer penalty ratio: NA.',
+        '', 'Raw per-role lifecycle energy-counter dispositions: '+str(energy_status_counts)+'. Primary J/token remains NA: aligned all-board windows, counter cadence and agreement with sampled power are not established.',
         '', 'Consumer first handoff query and following62host decode calls are separate in the JSON. File IPC is not HTTP/deployed TTFT or serving goodput; no physical bytes or primary energy are inferred.'])
     (root/'analysis/producer_timing_CPU_review.md').write_text('\n'.join(lines)+'\n')
     if result['status']!='pilot_review_passed':
