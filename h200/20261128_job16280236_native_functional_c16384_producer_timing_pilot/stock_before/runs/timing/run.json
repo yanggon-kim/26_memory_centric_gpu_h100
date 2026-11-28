@@ -1,0 +1,791 @@
+{
+  "status": "complete",
+  "classification": "real GPU host-timing pilot",
+  "protocol": "matched_native_producer_host_timing_v1",
+  "role": "stock",
+  "gpu_uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+  "acquisition": 0,
+  "mode": "pilot",
+  "source_identity": "b4c3a4ace6814d36d2fae1daa069c9f7c81132d02cfbae3d550804e592659f89",
+  "pair_sha256": "a8cdf3069f2071ede7ad9e965d6afb853e43499182e3ef34cb828375c436b80b",
+  "reference_run_sha256": "8d9aadf3ac615f8d1521987a372ea2520de191d426aef87856ee67630b66f61a",
+  "functional_CPU_review_sha256": "bab2ff80305314b8aaa288e5c1cb051001e18c98325633f24d19c66da78cedb9",
+  "engine_settings_without_KV_object": {
+    "model": "/storage/scratch1/6/jkim4112/models/h200_priority_hub/models--Qwen--Qwen2.5-32B-Instruct/snapshots/5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "dtype": "bfloat16",
+    "seed": 20261013,
+    "generation_config": "vllm",
+    "enable_prefix_caching": false,
+    "enable_chunked_prefill": true,
+    "disable_log_stats": false,
+    "async_scheduling": false,
+    "distributed_executor_backend": "uni",
+    "tensor_parallel_size": 1,
+    "max_model_len": 16448,
+    "max_num_seqs": 8,
+    "max_num_batched_tokens": 16384,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": false
+  },
+  "allocation_verification": {
+    "job_id": "16280236",
+    "hostname": "atl1-1-03-019-2-0.pace.gatech.edu",
+    "state": "RUNNING",
+    "scheduler_end_unix_s": 1795870984.0,
+    "effective_launch_cutoff_unix_s": 1795870084.0,
+    "verified_utc": "2026-11-28T11:26:31.290018+00:00",
+    "transient_query_failures": []
+  },
+  "trials": [
+    {
+      "trial": 0,
+      "warmup": true,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t0___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865336472120501,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865334290979100,
+          "end_unix_ns": 1795865336472120501,
+          "elapsed_ns": 2181140467
+        }
+      ],
+      "warmup_scheduler_rows": [
+        {
+          "requests": [
+            {
+              "request_id": "h200_producer_16280236_1795865175533219386_a0_t0___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+              "computed_tokens_before_step": 0,
+              "original_prompt_tokens": 16384,
+              "scheduled_input_queries": 16384,
+              "prompt_input_queries": 16384,
+              "post_prompt_input_queries": 0,
+              "num_preemptions": 0
+            }
+          ],
+          "prompt_input_queries": 16384,
+          "post_prompt_input_queries": 0,
+          "composition": "prefill_only",
+          "any_preempted_request": false,
+          "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+          "index": 0,
+          "schedule_start_unix_ns": 1795865334290999844,
+          "observation_end_unix_ns": 1795865334291471368,
+          "queue_before": {
+            "running": 0,
+            "waiting": 1
+          },
+          "queue_after": {
+            "running": 1,
+            "waiting": 0
+          }
+        }
+      ],
+      "observer_present": true,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865334256192723,
+          "query_end_unix_ns": 1795865334259968571,
+          "energy_mj": 79435233055,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865336472643745,
+          "query_end_unix_ns": 1795865336476243001,
+          "energy_mj": 79436418047,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1980,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 189.556,
+        "temperature_c": 32,
+        "used_memory_bytes": 125843079168
+      },
+      "submit_unix_ns": 1795865334263574475,
+      "submit_to_final_step_return_ns": 2208544649,
+      "final_step_return_unix_ns": 1795865336472120501,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1260,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 553.832,
+        "temperature_c": 44,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865336476249103
+    },
+    {
+      "trial": 1,
+      "warmup": true,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t1___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865338738337266,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865336563172032,
+          "end_unix_ns": 1795865338738337266,
+          "elapsed_ns": 2175164397
+        }
+      ],
+      "warmup_scheduler_rows": [
+        {
+          "requests": [
+            {
+              "request_id": "h200_producer_16280236_1795865175533219386_a0_t1___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+              "computed_tokens_before_step": 0,
+              "original_prompt_tokens": 16384,
+              "scheduled_input_queries": 16384,
+              "prompt_input_queries": 16384,
+              "post_prompt_input_queries": 0,
+              "num_preemptions": 0
+            }
+          ],
+          "prompt_input_queries": 16384,
+          "post_prompt_input_queries": 0,
+          "composition": "prefill_only",
+          "any_preempted_request": false,
+          "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+          "index": 0,
+          "schedule_start_unix_ns": 1795865336563187271,
+          "observation_end_unix_ns": 1795865336563687780,
+          "queue_before": {
+            "running": 0,
+            "waiting": 1
+          },
+          "queue_after": {
+            "running": 1,
+            "waiting": 0
+          }
+        }
+      ],
+      "observer_present": true,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865336550937885,
+          "query_end_unix_ns": 1795865336555377341,
+          "energy_mj": 79436462831,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865338738851911,
+          "query_end_unix_ns": 1795865338742451374,
+          "energy_mj": 79437667188,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1800,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 529.591,
+        "temperature_c": 44,
+        "used_memory_bytes": 130238709760
+      },
+      "submit_unix_ns": 1795865336562674734,
+      "submit_to_final_step_return_ns": 2175661214,
+      "final_step_return_unix_ns": 1795865338738337266,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1275,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 555.048,
+        "temperature_c": 45,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865338742455884
+    },
+    {
+      "trial": 2,
+      "warmup": true,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t2___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865340926492974,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865338765006265,
+          "end_unix_ns": 1795865340926492974,
+          "elapsed_ns": 2161485720
+        }
+      ],
+      "warmup_scheduler_rows": [
+        {
+          "requests": [
+            {
+              "request_id": "h200_producer_16280236_1795865175533219386_a0_t2___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+              "computed_tokens_before_step": 0,
+              "original_prompt_tokens": 16384,
+              "scheduled_input_queries": 16384,
+              "prompt_input_queries": 16384,
+              "post_prompt_input_queries": 0,
+              "num_preemptions": 0
+            }
+          ],
+          "prompt_input_queries": 16384,
+          "post_prompt_input_queries": 0,
+          "composition": "prefill_only",
+          "any_preempted_request": false,
+          "interpretation": "input queries relative to original prompt boundary; post-prompt queries can include recomputation after preemption; not a generated-output-token count",
+          "index": 0,
+          "schedule_start_unix_ns": 1795865338765018706,
+          "observation_end_unix_ns": 1795865338765498411,
+          "queue_before": {
+            "running": 0,
+            "waiting": 1
+          },
+          "queue_after": {
+            "running": 1,
+            "waiting": 0
+          }
+        }
+      ],
+      "observer_present": true,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865338758139566,
+          "query_end_unix_ns": 1795865338761906667,
+          "energy_mj": 79437667188,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865340927030321,
+          "query_end_unix_ns": 1795865340932463320,
+          "energy_mj": 79438883052,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1275,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 555.048,
+        "temperature_c": 45,
+        "used_memory_bytes": 130238709760
+      },
+      "submit_unix_ns": 1795865338764577788,
+      "submit_to_final_step_return_ns": 2161913890,
+      "final_step_return_unix_ns": 1795865340926492974,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1305,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 556.972,
+        "temperature_c": 46,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865340932469978
+    },
+    {
+      "trial": 3,
+      "warmup": false,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t3___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865343109970439,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865340955472937,
+          "end_unix_ns": 1795865343109970439,
+          "elapsed_ns": 2154496593
+        }
+      ],
+      "warmup_scheduler_rows": null,
+      "observer_present": false,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865340946377299,
+          "query_end_unix_ns": 1795865340952567082,
+          "energy_mj": 79438883052,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865343110473737,
+          "query_end_unix_ns": 1795865343123902630,
+          "energy_mj": 79440101246,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1290,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 554.42,
+        "temperature_c": 46,
+        "used_memory_bytes": 130238709760
+      },
+      "submit_unix_ns": 1795865340954983469,
+      "submit_to_final_step_return_ns": 2154985748,
+      "final_step_return_unix_ns": 1795865343109970439,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1275,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 556.996,
+        "temperature_c": 46,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865343123908623
+    },
+    {
+      "trial": 4,
+      "warmup": false,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t4___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865345300838246,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865343144468099,
+          "end_unix_ns": 1795865345300838246,
+          "elapsed_ns": 2156369161
+        }
+      ],
+      "warmup_scheduler_rows": null,
+      "observer_present": false,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865343126368648,
+          "query_end_unix_ns": 1795865343134346184,
+          "energy_mj": 79440101246,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865345301307808,
+          "query_end_unix_ns": 1795865345311707262,
+          "energy_mj": 79441319126,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1320,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 549.331,
+        "temperature_c": 47,
+        "used_memory_bytes": 130238709760
+      },
+      "submit_unix_ns": 1795865343143984628,
+      "submit_to_final_step_return_ns": 2156852398,
+      "final_step_return_unix_ns": 1795865345300838246,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1305,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 555.257,
+        "temperature_c": 47,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865345311713034
+    },
+    {
+      "trial": 5,
+      "warmup": false,
+      "request_id": "h200_producer_16280236_1795865175533219386_a0_t5___prefill_addr_127.0.0.1:38617___decode_addr_127.0.0.1:49481",
+      "status": "exact_output_passed",
+      "outputs": [
+        {
+          "observed_unix_ns": 1795865347534390468,
+          "output_ids": [
+            220
+          ],
+          "num_cached_tokens": 0,
+          "computed_tokens_before_step": 0,
+          "computed_tokens_after_step": 16384
+        }
+      ],
+      "host_step_intervals": [
+        {
+          "start_unix_ns": 1795865345376678760,
+          "end_unix_ns": 1795865347534390468,
+          "elapsed_ns": 2157710606
+        }
+      ],
+      "warmup_scheduler_rows": null,
+      "observer_present": false,
+      "producer_first_step_return_unix_ns": null,
+      "all_native_sends_observed_unix_ns": null,
+      "engine_request_preemptions": 0,
+      "raw_energy_counter": {
+        "before": {
+          "query_start_unix_ns": 1795865345331054633,
+          "query_end_unix_ns": 1795865345354592742,
+          "energy_mj": 79441319126,
+          "status": "available",
+          "error": null
+        },
+        "after": {
+          "query_start_unix_ns": 1795865347534892966,
+          "query_end_unix_ns": 1795865347538515313,
+          "energy_mj": 79442518975,
+          "status": "available",
+          "error": null
+        },
+        "counter_unit": "mJ",
+        "primary_J_per_token": null,
+        "scope": "Per-role request lifecycle including handoff/peer waiting, not the primary producer timing window or an aligned all-board deployment window. Power samples are retained by the independent owned monitor; counter cadence/window/agreement gates are not established by these two readouts."
+      },
+      "hardware_before": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1305,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 530.275,
+        "temperature_c": 41,
+        "used_memory_bytes": 130238709760
+      },
+      "submit_unix_ns": 1795865345376230172,
+      "submit_to_final_step_return_ns": 2158159003,
+      "final_step_return_unix_ns": 1795865347534390468,
+      "hardware_after": {
+        "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+        "name": "NVIDIA H200",
+        "sm_count": 132,
+        "compute_capability": [
+          9,
+          0
+        ],
+        "total_memory_bytes": 150156607488,
+        "driver": "615.71.09",
+        "l2_bytes": 62914560,
+        "l2_source": "queried CUDA device properties L2_cache_size",
+        "l2_unavailable_reason": "",
+        "readout_scope": "capture setup; clocks/power limits observed, not modified",
+        "sm_clock_mhz": 1275,
+        "memory_clock_mhz": 3201,
+        "power_limit_w": 560.0,
+        "power_w": 554.948,
+        "temperature_c": 47,
+        "used_memory_bytes": 130238709760
+      },
+      "query_accounting": {
+        "scheduled_input_queries": 16384,
+        "original_prompt_queries": 16384,
+        "first_augmented_prompt_query": null,
+        "following_post_prompt_queries": 0,
+        "external_prefix_tokens": 0,
+        "scope": "Pinned synchronous non-speculative request counters and output cache hits; local prefix caching disabled, no preemption. Scheduled logical queries, not physical padded GPU instruction counts."
+      },
+      "completed_unix_ns": 1795865347538521112
+    }
+  ],
+  "clean_timing_qualified": false,
+  "serving_qualified": false,
+  "primary_J_per_token": null,
+  "scope": "Producer submit-to-first-step-return host time is separate from all-native-send readiness, file IPC, consumer host step times and end-to-end serving goodput. No HTTP/SLO or clean GPU-event latency is measured. Warmup query proof is instrumented; timed rows have no scheduler/connector observer, payload proof or added GPU synchronization. Consumer per-step CPU recording/output checks occur between engine calls, so its whole-request elapsed includes that overhead.",
+  "request_accounting_source_sha256": {
+    "outputs.py": "991c0960770a619066ccbf469cc08ce1e9523e7fe19e3a116c4cd13c1e1750a0",
+    "v1/request.py": "462c17cfde4308f0eb35eb0b2afa6b4ba3e628caa481dee9f476297bec373f1e",
+    "v1/core/sched/scheduler.py": "41ff2e524c90d9aa72b72cd77492eb62ee2a729a773bd8233e970f39abbb5983",
+    "v1/engine/output_processor.py": "464c3cda347512cf1090f8e6471d0d3f0f65e286eb9a7b97be52efbc1ffd572a",
+    "v1/metrics/stats.py": "08eb6bb969ad47e4207ba5568beaec35bdb09192b6db046f046dab4892ac1bf3"
+  },
+  "optional_dependencies": {
+    "msgpack": "1.1.1",
+    "module_path": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/msgpack/__init__.py",
+    "package_file_sha256": {
+      "__init__.py": "ab64f93d1b084d5a5ecad812d16892aa893d218f15fda1620bc5559574c24e00",
+      "_cmsgpack.cpython-310-x86_64-linux-gnu.so": "9cef037491b44b93d51ce849bb3cc9e572c4ee94a321ced6b989c4296847e732",
+      "exceptions.py": "7424d67a2f1da64accb100dc8d093be004e5f47b08047d326edf3338f36a3187",
+      "ext.py": "92d789bf4de7f6d633779a28df1628a554e8e2f45a031a27050409857a21659a",
+      "fallback.py": "d20d4fce9d2fb66044989e70f45decffe24c55444ff114b81b571ce5345a02c2"
+    }
+  },
+  "hardware": {
+    "uuid": "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "compute_capability": [
+      9,
+      0
+    ],
+    "total_memory_bytes": 150156607488,
+    "driver": "615.71.09",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": "",
+    "readout_scope": "capture setup; clocks/power limits observed, not modified",
+    "sm_clock_mhz": 345,
+    "memory_clock_mhz": 3201,
+    "power_limit_w": 560.0,
+    "power_w": 77.699,
+    "temperature_c": 29,
+    "used_memory_bytes": 601620480
+  },
+  "versions": {
+    "torch": "2.11.0+cu130",
+    "vllm": "0.22.1",
+    "cuda_runtime": "13.0"
+  }
+}
