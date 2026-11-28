@@ -1,9 +1,9 @@
 {
-  "updated_utc": "2026-11-28T11:03:01.523613+00:00",
+  "updated_utc": "2026-11-28T11:04:15.471711+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16280236",
-  "current_observed_state": "SUBMITTED",
+  "current_observed_state": "RUNNING",
   "closed_job_ids": [
     "16163464",
     "16184819",
@@ -131,17 +131,20 @@
     "request only2H200s; no overlapping replacement allocation",
     "visible squeue checks approximately300s apart"
   ],
-  "current_results": null,
+  "current_results": "h200/20261128_job16280236_native_functional_c16384",
   "next_job_id": "16266958",
   "next_job_state": "RUNNING",
   "next_scope": "Original C16384functional case, then conditionally producer pilot and complete fixed3x10cohort if actual frozen-source/correctness/time gates pass; no extra reservation",
   "last_closed_job_id": "16266958",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
-  "current_node": null,
-  "current_allocation_end": "2026-11-28T06:39:42-05:00",
+  "current_node": "atl1-1-03-019-2-0",
+  "current_allocation_end": "2026-11-28T08:03:04",
   "current_first_preemption_eligible": "2026-11-28T06:24:42-05:00",
-  "current_GPU_UUIDs": [],
+  "current_GPU_UUIDs": [
+    "GPU-76caaef5-f804-0465-e0b9-aded15ef44bd",
+    "GPU-748207af-6539-3f5f-d264-911646f90a4c"
+  ],
   "next_excluded_nodes": [
     "atl1-1-02-014-9-0"
   ],
@@ -296,10 +299,10 @@
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
   "last_closed_bootstrap": "h200/20261127_job16238357_bootstrap",
-  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_live_16266958.json",
+  "last_scheduler_observation": "h200/20261127_resident_preparation/results/allocation_live_16280236.json",
   "last_reported_pending_start_estimate": null,
   "pending_forecast_is_not_allocation": true,
-  "current_allocation_start": null,
+  "current_allocation_start": "2026-11-28T06:03:04",
   "current_comparison_disposition": "h200/20261127_resident_preparation/results/producer_submission_20261128.json",
   "next_command": "timeout 25s squeue -h -j 16280236 -o '%i|%T|%l|%Q|%M|%R'",
   "next_experiment_command_after_current_job_closes": "Select after producer pilot outcome; quantitative cohort requires preserved correct actual pilot and full runtime budget",
@@ -319,5 +322,6 @@
     "first_hour": "preemption risk, not hard launch deadline",
     "policy": "sequential jobs; publish each completed case; preserve preempted partial captures; no overlapping reservation",
     "reason": "R7 core passed but artificial58minute cap deferred producer pilot by111.09seconds"
-  }
+  },
+  "first_preemption_eligible": "2026-11-28T07:03:04"
 }
