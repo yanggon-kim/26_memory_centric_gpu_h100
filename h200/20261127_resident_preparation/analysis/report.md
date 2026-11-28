@@ -301,3 +301,7 @@ CPU-only planner and four tests passed. Identical content across arrival/rate va
 ## Exact portable input adapter, CPU preparation
 
 Four tests pass for full original request IDs/output counts and rejection of shortened/modified/wrong-model input. An unapplied integration patch targets the pinned serial capture source and passes Python syntax parsing. Current numerical scripts and queued connector job are unchanged. Fresh default/unchanged StaticCache output gates, source integration and on-device validation remain pending. No new GPU result or percentage progress credited. Evidence: `../results/portable_prompt_contract_CPU_contracts.json`.
+
+## Full-output reference checker preparation
+
+Four CPU tests reject wrong final tokens hidden behind passed flags, shortened outputs, missing HF trials and wrong cache/input/device/history. A read-only check of the retained R9B1/C16384full64reference passed original process/log/monitor/idle/source provenance and both full HF routes. Source, HF and pair files match the original verified archive members. This validates the reader on existing evidence; it is not an AMD portable request, new acquisition or serving qualification. Future full-length captures and sealed-trace integration remain pending. Evidence: `../results/full_reference_contract_CPU_contracts.json`.

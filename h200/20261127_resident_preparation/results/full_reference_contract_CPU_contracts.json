@@ -1,0 +1,42 @@
+{
+  "created_utc": "2026-11-28T13:57:11.568754+00:00",
+  "classification": "CPU-only full-output checker preparation and retained-reference validation",
+  "source_sha256": {
+    "h200/20261127_resident_preparation/h200_full_reference_contract.py": "e44c9d5f3362db11eb875e13e8d4bd5945fe80a186f01a96206fd7805ca877f8",
+    "h200/20261127_resident_preparation/test_h200_full_reference_contract.py": "8810f27705fd0110830c2d0afc55ec8bdbb48bbfac7f529154918866d2396a54"
+  },
+  "CPU_tests": {
+    "passed": 4,
+    "command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s h200/20261127_resident_preparation -p test_h200_full_reference_contract.py -v",
+    "scenarios": [
+      "Complete default and unchangedStaticCache outputs agree",
+      "Passed flags cannot hide wrong final tokens in either route/phase",
+      "Short outputs and missing full trials rejected",
+      "Wrong cache progression, prompt, GPU, conditioning or deterministic-reference diagnostic rejected"
+    ]
+  },
+  "actual_retained_review": "h200/20261127_resident_preparation/results/full_reference_retained_CPU_review.json",
+  "actual_retained_fixture": "R9B1/C16384full64only; no portable AMD workload or new measurement",
+  "original_archive_binding": {
+    "receipt": "h200/20261128_job16281263_native_functional_c16384/results/archive_transfer_ffb613dfbf44.json",
+    "archive_sha256": "bb0170afd0046ab801b1d50dac1ead43fca5b88ffe62ce50ff2ccaff0e53e7eb",
+    "manifest_sha256": "99836ab3312bedbc9530864433ddd90fc8b98a0e21418c70a2096638be169f63",
+    "members": [
+      {
+        "path": "gpu0/runs/P0_native_model_reference/run.json",
+        "sha256": "1d2fb50750d11fdcec0b4f52ca7bd2495ccc6bae3dd9e39e38661314fd9d99bb"
+      },
+      {
+        "path": "gpu0/results/P0_native_model_reference_hf.json",
+        "sha256": "1d99be79aa34876fb192dc4fb1c6d96e4d90fe75b8b8d1e01619e1f1f3d2ccc9"
+      },
+      {
+        "path": "model/pair.json",
+        "sha256": "f8760ee064b1d9e1faa86d0398ebb82a0f3062de3e4e4ec2b4d5d730f2eabcaf"
+      }
+    ]
+  },
+  "GPU_execution": false,
+  "performance_qualified": false,
+  "remaining": "Future controller must join source input contract to the sealed full offered request and verify source/runtime/settings reuse rules before actual serving. New long-output source/defaultdynamic/strictStaticCache captures still pending."
+}
