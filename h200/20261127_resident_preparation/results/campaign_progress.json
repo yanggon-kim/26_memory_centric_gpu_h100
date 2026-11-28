@@ -1,5 +1,5 @@
 {
-  "updated_utc": "2026-11-28T07:09:09.989725+00:00",
+  "updated_utc": "2026-11-28T08:49:22.158095+00:00",
   "objective": "Finish all eligible two-H200 families one by one with sequential replacement Slurm jobs, including the expanded H200 follow-up; after the current SM/traffic comparison prioritize producer/connector timing and full-versus-restricted live decode-worker measurements, keeping decoder latency separate from end-to-end goodput.",
   "active_goal": "owner explicitly requested ongoing completion on2026-11-27",
   "current_job_id": "16266958",
@@ -133,7 +133,7 @@
   "current_results": "h200/20261127_job16238357_priority",
   "next_job_id": "16266958",
   "next_job_state": "PENDING",
-  "next_scope": "Fresh pair known-data smoke, new C16384full64stock/default strict HF, native long-prompt model KV/host spill functional gates before owner-prioritized producer timing",
+  "next_scope": "Original C16384functional prerequisite unchanged, then conditionally attempt prepared producer pilot on the same allocation if all prerequisites/time gates pass",
   "last_closed_job_id": "16238357",
   "current_job_time_limit": "01:15:00",
   "current_bootstrap": null,
@@ -274,6 +274,13 @@
       ],
       "updated_utc": "2026-11-28T06:50:57.024593+00:00",
       "raw_energy_scope": "Raw NVML cumulative mJ snapshots with host query brackets before/after each role request lifecycle; no added GPU synchronization. Consumer readout begins before actualp0handoff and includes peer waiting. Endpoint counters and independent owned sampled power are retained; no aligned all-board/primary timing energy window or update cadence is established. Unsupported counters/resets are preserved immediately; primary J/token remains NA."
+    },
+    "same_allocation_producer_continuation": {
+      "plan": "h200/20261127_resident_preparation/results/same_allocation_followup_16266958.json",
+      "job_id": "16266958",
+      "status": "conditional at original completed functional boundary; no GPU case launched",
+      "minimum_protected_time_s": 1920,
+      "extra_GPU_reservation": false
     }
   },
   "owner_goal_extension": "h200/20261127_resident_preparation/results/owner_goal_extension_20261127.json",
@@ -284,5 +291,6 @@
   "current_allocation_start": null,
   "current_comparison_disposition": "h200/20261127_job16238357_priority/results/current_comparison_disposition.json",
   "next_command": "timeout 25s squeue -h -j 16266958 -o '%i|%T|%l|%Q|%M|%R'",
-  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958"
+  "next_experiment_command_after_current_job_closes": "sbatch --parsable batch/h200_priority_producer_20261128.sbatch --context 16384 --preceding-job 16266958",
+  "next_experiment_command_after_current_job_closes_condition": "Use candidate only if producer pilot was not already captured by the same-allocation continuation; inspect actual closed case disposition first, reuse qualified results, never repeat a complete comparison by default."
 }

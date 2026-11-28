@@ -318,4 +318,9 @@ if __name__ == '__main__':
     parser.add_argument('--preceding-job',default='16238357')
     parser.add_argument('--context',type=int,choices=(128,16384,32704),default=128)
     parser.add_argument('--spare-native-counter',action='store_true',help='Independent known512MiB DRAM/L2 counter control on GPU1while GPU0runs its required stock/HFreference')
-    main(parser.parse_args())
+    args=parser.parse_args()
+    main(args)
+    # The original case is fully published and archived before considering
+    # a separately planned, job-specific continuation on the same allocation.
+    from h200_planned_producer_followup import run_if_planned
+    run_if_planned(args.context)
