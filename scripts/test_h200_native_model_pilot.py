@@ -2,10 +2,22 @@ import copy
 import types
 import unittest
 from unittest.mock import patch
-from h200_native_model_pilot import validate_scope, validate_queries, NativeLedger
+from h200_native_model_pilot import validate_scope, validate_queries, NativeLedger, observe_output
 
 
 class NativeModelContracts(unittest.TestCase):
+    def test_first_bad_token_or_extra_progress_is_retained_before_rejection(self):
+        expected = list(range(64)); outputs = []
+        with self.assertRaises(AssertionError): observe_output(outputs,[999],expected,'consumer',123)
+        self.assertEqual(outputs,[{'output_ids':[999],'host_observed_unix_ns':123}])
+        outputs = []
+        with self.assertRaises(AssertionError): observe_output(outputs,[1,2],expected,'consumer',124)
+        self.assertEqual(outputs[0]['output_ids'],[1,2])
+        outputs = []
+        observe_output(outputs,[1],expected,'consumer',125)
+        observe_output(outputs,[1,2],expected,'consumer',126)
+        self.assertEqual(len(outputs),2)
+
     def test_receiver_executes_first_token_query_and62more_without_reprefill(self):
         rows = [{'any_preempted_request':False, 'requests':[{
             'request_id':'rid','computed_tokens_before_step':i,

@@ -21,6 +21,7 @@ def check_pair_trials(producer, consumer, expected, prompt, pair):
             assert row['status'] == 'functional_phase_passed'
             assert row['mode'] == mode and row['payload_proof'] is payload
             assert row['trial'] == index%6 and row['warmup'] is (index%6 < 3)
+            assert row['internal_request_id'] == row['request_id']
         rid = source['request_id']; assert target['request_id'] == rid
         validate_queries(source['scheduler_rows'],'producer',rid)
         validate_queries(target['scheduler_rows'],'consumer',rid)

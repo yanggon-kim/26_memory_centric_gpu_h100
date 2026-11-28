@@ -11,7 +11,7 @@ class ModelPairReader(unittest.TestCase):
         for index in range(12):
             payload = index>=6; rid = f'r{index}'
             common = {'status':'functional_phase_passed','mode':'payload_proof' if payload else 'metadata_control',
-                'payload_proof':payload,'trial':index%6,'warmup':index%6<3,'request_id':rid}
+                'payload_proof':payload,'trial':index%6,'warmup':index%6<3,'request_id':rid,'internal_request_id':rid}
             sent = []
             for layer in range(64):
                 row = {'tensor_id':f'{rid}#model.layers.{layer}.self_attn.attn','layer_index':layer,

@@ -54,7 +54,9 @@ def validate_queries(rows, role, rid, context=128):
 
 
 def tensor_record(tensor_id, tensor, payload):
-    assert tensor.is_cuda and tensor.is_contiguous() and str(tensor.dtype) == 'torch.bfloat16'
+    assert tensor.is_cuda and tensor.is_contiguous() and str(tensor.dtype) == 'torch.bfloat16', (
+        f'invalid native tensor {tensor_id}: shape={list(tensor.shape)}, dtype={tensor.dtype}, '
+        f'is_cuda={tensor.is_cuda}, contiguous={tensor.is_contiguous()}')
     match = re.search(r'\.layers\.(\d+)\.', tensor_id)
     assert match is not None
     row = {'tensor_id': tensor_id, 'layer_index': int(match.group(1)),
@@ -64,6 +66,15 @@ def tensor_record(tensor_id, tensor, payload):
         import torch
         row['sha256'] = hashlib.sha256(tensor.detach().cpu().view(torch.uint8).numpy().tobytes()).hexdigest()
     return row
+
+
+def observe_output(outputs, ids, expected, role, observed_ns):
+    previous = len(outputs)
+    # Preserve even the first wrong output before rejecting its acquisition.
+    outputs.append({'output_ids':list(ids),'host_observed_unix_ns':observed_ns})
+    assert len(ids) == previous+1, 'native output progression failed; observed IDs retained'
+    wanted = expected[:1] if role=='producer' else expected[1:len(ids)+1]
+    assert ids == wanted, 'native greedy mismatch; observed IDs retained'
 
 
 class NativeLedger:
@@ -117,9 +128,9 @@ class NativeLedger:
                         assert cache.shape[0] == 2
                         injected = cache[:, req.block_ids[:source['shape'][1]], ...]
                     row = tensor_record(identifier, injected, True)
-                    assert row['shape'] == source['shape'] and row['sha256'] == source['sha256']
                     row.update(injected=True, completed=True)
                     self.active['injected'].append(row)
+                    assert row['shape'] == source['shape'] and row['sha256'] == source['sha256'], 'received/injected mismatch; both payload records retained'
             return result
 
         self.native.send_tensor = send
@@ -168,11 +179,22 @@ def main(args):
     deadline = min(time.time()+660, pair['deadline_unix_s'],
                    allocation['effective_launch_cutoff_unix_s'],
                    dt.datetime.fromisoformat(session['launch_cutoff']).timestamp())
+    assert deadline > time.time(), 'no native model role budget remains'
     finished = threading.Event()
+    ledger = None
     def watchdog():
         if not finished.wait(max(0, deadline-time.time())):
-            dump(args.output/'deadline.json', {'status':'failed_deadline','deadline_unix_s':deadline})
-            os._exit(124)
+            snapshot_error = None
+            try:
+                if ledger is not None:
+                    dump(args.output/'run.json',dict(ledger,status='failed_deadline'))
+            except BaseException as error:
+                snapshot_error = type(error).__name__+': '+str(error)
+            try:
+                dump(args.output/'deadline.json', {'status':'failed_deadline','deadline_unix_s':deadline,
+                     'live_ledger_snapshot_error':snapshot_error})
+            finally:
+                os._exit(124)
     threading.Thread(target=watchdog, daemon=True).start()
     os.environ.update(CUDA_VISIBLE_DEVICES=args.gpu_uuid, CUDA_DEVICE_ORDER='PCI_BUS_ID',
         VLLM_HOST_IP='127.0.0.1', VLLM_DISABLE_REQUEST_ID_RANDOMIZATION='1',
@@ -240,7 +262,8 @@ def main(args):
                 rid = request_id(pair['request_prefix']+'_'+mode+'_'+str(trial),
                     pair['host'],pair['roles']['producer']['port'],pair['host'],pair['roles']['consumer']['port'])
                 row = {'request_id':rid,'mode':mode,'payload_proof':payload,'trial':trial,'warmup':trial<3,
-                       'status':'running','sent':[],'received':[],'injected':[],'native_receive_completions':[]}
+                       'status':'running','sent':[],'received':[],'injected':[],'native_receive_completions':[],
+                       'outputs':[]}
                 ledger['trials'].append(row); hook.active = row; dump(args.output/'run.json',ledger)
                 marker = mode+'_'+str(trial)
                 if args.role == 'consumer':
@@ -252,19 +275,19 @@ def main(args):
                 sampling = vllm.SamplingParams(temperature=0,repetition_penalty=1.0,ignore_eos=True,
                     detokenize=False,max_tokens=count,seed=20261013,output_kind=RequestOutputKind.CUMULATIVE)
                 observer = Observer(engine)
+                row.update(scheduler_rows=observer.rows,observer_identity=observer.identity)
                 try:
                     row['submit_unix_ns'] = time.time_ns()
                     internal = engine.add_request(rid,{'prompt_token_ids':tokens},sampling)
+                    row['internal_request_id'] = internal
                     assert internal == rid, 'native producer/consumer request key differs'
-                    outputs = []
+                    outputs = row['outputs']
                     while engine.has_unfinished_requests():
                         assert time.time() < deadline
                         batch = engine.step()
                         assert len(batch) == 1 and batch[0].request_id == rid
                         result = batch[0]; ids = list(result.outputs[0].token_ids)
-                        assert len(ids) == len(outputs)+1
-                        assert ids == (expected[:1] if args.role=='producer' else expected[1:len(ids)+1])
-                        outputs.append({'output_ids':ids,'host_observed_unix_ns':time.time_ns()})
+                        observe_output(outputs,ids,expected,args.role,time.time_ns())
                     assert result.finished and result.outputs[0].finish_reason == 'length' and len(outputs) == count
                     row.update(outputs=outputs,scheduler_rows=observer.rows,observer_identity=observer.identity)
                     validate_queries(observer.rows,args.role,rid)

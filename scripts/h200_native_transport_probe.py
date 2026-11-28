@@ -54,12 +54,23 @@ def main(args):
     shared=Path(pair['shared_directory']);assert shared.is_dir()
     deadline=min(time.time()+480,float(pair['deadline_unix_s']),
                  dt.datetime.fromisoformat(session['launch_cutoff']).timestamp())
+    assert deadline>time.time(),'no native component role budget remains'
     finished=threading.Event()
+    ledger=None
     def watchdog():
         if not finished.wait(max(0,deadline-time.time())):
-            dump(args.output/'deadline.json',{'status':'failed_deadline','deadline_unix_s':deadline,
-                'scope':'owned probe worker exit124; native call did not return within its bound'})
-            os._exit(124)
+            snapshot_error=None
+            try:
+                if ledger is not None:
+                    dump(args.output/'run.json',dict(ledger,status='failed_deadline'))
+            except BaseException as error:
+                snapshot_error=type(error).__name__+': '+str(error)
+            try:
+                dump(args.output/'deadline.json',{'status':'failed_deadline','deadline_unix_s':deadline,
+                    'live_ledger_snapshot_error':snapshot_error,
+                    'scope':'owned probe worker exit124; native call did not return within its bound'})
+            finally:
+                os._exit(124)
     threading.Thread(target=watchdog,daemon=True).start()
     os.environ.update(CUDA_VISIBLE_DEVICES=args.gpu_uuid,CUDA_DEVICE_ORDER='PCI_BUS_ID',
                       VLLM_HOST_IP='127.0.0.1',VLLM_ENABLE_V1_MULTIPROCESSING='0',

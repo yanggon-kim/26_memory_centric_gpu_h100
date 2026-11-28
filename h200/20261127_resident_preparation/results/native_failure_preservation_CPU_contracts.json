@@ -1,0 +1,21 @@
+{
+  "created_utc": "2026-11-28T01:44:51.603903+00:00",
+  "classification": "CPU source/failure-preservation check; no GPU execution",
+  "CPU_tests_passed": 18,
+  "test_command": "/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/bin/python -m unittest discover -s scripts -p 'test_h200*native*.py' -v",
+  "before_model_role_sha256": "f53d260268cc484e99ec69100e4b0445da37aab814b2cd0d1daa7f6f07c7593e",
+  "source_sha256": {
+    "scripts/h200_native_model_pilot.py": "8c74fdf7393eac91b9ccc2590e39f0d4d172043e38ee57afb0b0df6b71cb7701",
+    "scripts/h200_native_transport_probe.py": "a5a04c2bd89ea7b59ffd4f74a774277f4f670e2c190826facf1c1ce35672c455",
+    "scripts/h200_review_native_model.py": "da6841312adc1506487e8f7ab2ad683b7397edb3babfa8322422cacc15dd4b78",
+    "scripts/test_h200_native_model_pilot.py": "62d44fbe95c2bbd72f92dcad70d3babc4007c706b0c6cd58451487d36698bfa8",
+    "scripts/test_h200_review_native_model.py": "2e6c763e7eb6fd0232eac14a0039bc0b50e29df2bfc3f5bedd0349f48b3300e4"
+  },
+  "fixes": [
+    "Append actual observed token IDs before progression/exact-output rejection",
+    "Attach live scheduler and actual internal request IDs before executing the role",
+    "Preserve actual received/injected payload records before hash mismatch rejection",
+    "Snapshot live native role ledgers on watchdog deadlines; preserve snapshot errors separately"
+  ],
+  "scope": "Prepared adapters only. No observed GPU mismatch, transfer failure or native serving result is claimed. Existing qualified eager results are unchanged."
+}
