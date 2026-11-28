@@ -1,0 +1,51 @@
+{
+  "status": "failed",
+  "classification": "measured-real-GPU-known-data-transport",
+  "role": "consumer",
+  "gpu_uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+  "pair_config_sha256": "5f7cd8fc05d887f4626a12457b7210f36028c027b4887a26bb17379374d97caa",
+  "session_sha256": "5369560341366c5a07452b9111e7d51c6188bb8157ecf06be16a198c197bf14f",
+  "numerical_source_identity": "d4dd41d7fc89548b9fdcbec3614ae8e0924752d11f5941beecaa7135941143d6",
+  "shape": [
+    2,
+    8,
+    16,
+    8,
+    128
+  ],
+  "dtype": "torch.bfloat16",
+  "packed_layer_tensors": 64,
+  "requested_tensor_bytes_per_trial": 33554432,
+  "seed": 20261013,
+  "source_fill": "deterministic full blocks: float((trial*64+layer)%128); no RNG-dependent tensor values",
+  "synthetic_payload": true,
+  "model_KV_generated": false,
+  "model_KV_injected": false,
+  "physical_HBM_or_NVLink_bytes": null,
+  "qualified_performance": false,
+  "trials": [],
+  "scope": "Synthetic full-block BF16 fills through the installed native transport only. Not a real model KV handoff, instruction trace, serving result, physical link/HBM byte count or calibrated bandwidth.",
+  "hardware": {
+    "uuid": "GPU-5fdf3697-20d4-8564-a920-317ecda4e1a9",
+    "name": "NVIDIA H200",
+    "sm_count": 132,
+    "compute_capability": [
+      9,
+      0
+    ],
+    "total_memory_bytes": 150156607488,
+    "driver": "615.71.09",
+    "l2_bytes": 62914560,
+    "l2_source": "queried CUDA device properties L2_cache_size",
+    "l2_unavailable_reason": "",
+    "readout_scope": "capture setup; clocks/power limits observed, not modified",
+    "sm_clock_mhz": 855,
+    "memory_clock_mhz": 3201,
+    "power_limit_w": 560.0,
+    "power_w": 77.884,
+    "temperature_c": 32,
+    "used_memory_bytes": 601620480
+  },
+  "error": "No module named 'msgpack'",
+  "traceback": "Traceback (most recent call last):\n  File \"/tmp/h200_priority_3449576_16238357_1_native_native_transport_component/frozen/d4dd41d7fc89548b9fdcbec3614ae8e0924752d11f5941beecaa7135941143d6/scripts/h200_native_transport_probe.py\", line 98, in main\n    from vllm.distributed.kv_transfer.kv_connector.v1.p2p import p2p_nccl_engine\n  File \"/storage/scratch1/6/jkim4112/envs/h200_priority_20261125/lib/python3.10/site-packages/vllm/distributed/kv_transfer/kv_connector/v1/p2p/p2p_nccl_engine.py\", line 14, in <module>\n    import msgpack\nModuleNotFoundError: No module named 'msgpack'\n"
+}
